@@ -24,6 +24,7 @@ public class TwilioService {
     }
 
     public String sendOtp(String to, String otp) {
+        logger.info("Sending OTP to " + to);
         Message message = Message.creator(
                 new PhoneNumber(to),
                 new PhoneNumber(twilioConfig.getTwilioPhoneNumber()),
@@ -31,4 +32,12 @@ public class TwilioService {
         ).create();
         return message.getSid();
     }
+
+    public String formatPhoneToInternational(String phone) {
+        if (phone.startsWith("0")) {
+            return "+84" + phone.substring(1);
+        }
+        return phone; // Nếu đã đúng định dạng quốc tế
+    }
+
 }

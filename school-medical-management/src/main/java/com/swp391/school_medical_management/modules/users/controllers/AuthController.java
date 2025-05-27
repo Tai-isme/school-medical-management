@@ -4,19 +4,19 @@ import com.swp391.school_medical_management.helpers.ErrorDTO;
 import com.swp391.school_medical_management.modules.users.dtos.request.LoginRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.OtpVerifyRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.LoginResponse;
+import com.swp391.school_medical_management.modules.users.dtos.response.OtpSentResponse;
 import com.swp391.school_medical_management.modules.users.services.impl.UserService;
 import jakarta.validation.Valid;
-import lombok.extern.java.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.TimeUnit;
 
 @Validated
 @RestController
@@ -28,11 +28,17 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
     @PostMapping("login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        logger.info("Login request received");
-        Object result = userService.login(request);
+        return userService.sendOtp(request);
+    }
 
+    @PostMapping("verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody OtpVerifyRequest request) {
+        Object result = userService.verifyOtp(request);
         if (result instanceof LoginResponse loginResponse) {
             return ResponseEntity.ok(loginResponse);
         }
@@ -42,10 +48,12 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Network Error");
     }
 
-    @PostMapping("verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestBody OtpVerifyRequest request) {
-    return null;
+    @PostMapping("set-otp")
+    public ResponseEntity<?> setTestOtp(@RequestBody OtpVerifyRequest request) {
+        String redisKey = "otp:" + request.getPhone();
+        String otp = request.getOtp();
+        stringRedisTemplate.opsForValue().set(redisKey, otp, 1, TimeUnit.MINUTES);
+        return ResponseEntity.ok("OTP set in Redis for testing");
     }
-
 }
 

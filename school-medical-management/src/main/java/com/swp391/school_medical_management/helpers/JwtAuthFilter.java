@@ -36,7 +36,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        if(request.getRequestURI().equals("/api/auth/login")) {
+        if(request.getRequestURI().equals("/api/auth/login") || request.getRequestURI().equals("/api/auth/verify-otp") || request.getRequestURI().equals("/api/auth/set-otp")) {
             filterChain.doFilter(request, response);
             return;
         }
