@@ -1,17 +1,23 @@
 package com.swp391.school_medical_management.service;
 
 import com.swp391.school_medical_management.config.JwtConfig;
+import com.swp391.school_medical_management.modules.users.repositories.BlacklistedTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -19,30 +25,39 @@ public class JwtService {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
 
+    @Autowired
+    private BlacklistedTokenRepository blacklistedTokenRepository;
+
     private JwtConfig jwtConfig;
     private Key key;
 
-    public JwtService(JwtConfig jwtConfig) {
+    public JwtService(JwtConfig jwtConfig, BlacklistedTokenRepository blacklistedTokenRepository) {
         this.jwtConfig = jwtConfig;
         this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtConfig.getSecretKey()));
     }
 
-    public String generateToken(Long userId, String role) {
+    public String generateToken(String email, String user_id, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationTime());
         return Jwts.builder()
                 .issuer(jwtConfig.getIssuer())
                 .issuedAt(now)
-                .subject(String.valueOf(userId))
+                .subject(email)
+                .claim("userId", user_id)
                 .claim("role", role)
                 .expiration(expiryDate)
                 .signWith(key)
                 .compact();
     }
 
-    public String getUserIdFromJwt(String token) {
+    public String getEmailFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
         return claims.getSubject();
+    }
+
+    public String getUserIdFromJwt(String token) {
+        Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return claims.get("userId", String.class);
     }
 
     public String getRoleFromJwt(String token) {
@@ -70,6 +85,7 @@ public class JwtService {
             return false;
         }
     }
+
 
     public Key getSigningKey() {
         byte[] keyBytes = jwtConfig.getSecretKey().getBytes();
@@ -103,6 +119,9 @@ public class JwtService {
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = getAllClaimsFromToken(token);
         return claimsResolver.apply(claims);
+    }
+    public boolean isBlackListedToken(String token) {
+        return blacklistedTokenRepository.existsByToken(token);
     }
 
 }

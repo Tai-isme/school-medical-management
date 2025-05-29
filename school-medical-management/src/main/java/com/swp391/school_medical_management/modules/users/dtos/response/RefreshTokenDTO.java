@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class OtpSentResponse {
-    private String message;
+public class RefreshTokenDTO {
+    private String token;
+    private String refreshToken;
 }

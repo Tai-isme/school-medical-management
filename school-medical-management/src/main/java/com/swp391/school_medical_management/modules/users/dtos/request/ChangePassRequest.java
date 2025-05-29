@@ -5,12 +5,13 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class LoginRequest {
-    @Email(message = "Email not valid!")
-    @NotBlank(message = "Email cannot blank!")
+public class ChangePassRequest {
+    @NotBlank
+    private String oldPassword;
+    @NotBlank
+    private String newPassword;
+    @NotBlank
+    @Email
     private String email;
-    @NotBlank(message = "Email cannot blank!")
-    private String password;
 }
-
 

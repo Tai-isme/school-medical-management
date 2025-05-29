@@ -19,9 +19,11 @@ public class User {
     @Column(name = "fullName")
     private String fullName;
     private String email;
+    private String password;
     private String phone;
     private String address;
     private String role;
+    private boolean is_activated;
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
     private List<Student> students;

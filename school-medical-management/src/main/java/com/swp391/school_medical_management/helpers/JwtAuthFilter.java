@@ -36,7 +36,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        if(request.getRequestURI().equals("/api/auth/login") || request.getRequestURI().equals("/api/auth/verify-otp") || request.getRequestURI().equals("/api/auth/set-otp")) {
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/active") || path.startsWith("/api/auth/blacklisted_tokens")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -45,6 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String jwt;
         final String userId;
         final String role;
+        final String email;
 
         logger.info("authHeader: " + authHeader);
 
@@ -95,13 +97,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     "Nguon token khong hop le");
             return;
         }
+
+        if(jwtService.isBlackListedToken(jwt)){
+            logger.info("Blacklisted token");
+            sendErrorResponse(response,
+                    request,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Xac thuc khong thanh cong!",
+                    "Token bi khoa");
+            return;
+        }
+
         userId = jwtService.getUserIdFromJwt(jwt);
         role = jwtService.getRoleFromJwt(jwt);
-        logger.info("userId: " + userId);
-        logger.info("role: " + role);
+        email = jwtService.getEmailFromToken(jwt);
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             List<GrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
-            logger.info("Authorities created: " + authorities);
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userId,
                     null,
