@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.dtos.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,5 +21,4 @@ public class UserDTO{
     private String password;
     private String address;
     private String role;
-    private boolean is_activated;
 }

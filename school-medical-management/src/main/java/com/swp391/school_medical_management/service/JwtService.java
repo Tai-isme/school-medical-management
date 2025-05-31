@@ -1,7 +1,11 @@
 package com.swp391.school_medical_management.service;
 
 import com.swp391.school_medical_management.config.JwtConfig;
+import com.swp391.school_medical_management.modules.users.entities.RefreshToken;
+import com.swp391.school_medical_management.modules.users.entities.User;
 import com.swp391.school_medical_management.modules.users.repositories.BlacklistedTokenRepository;
+import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -28,36 +32,73 @@ public class JwtService {
     @Autowired
     private BlacklistedTokenRepository blacklistedTokenRepository;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
     private JwtConfig jwtConfig;
+
     private Key key;
+    private Key refreshKey;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public JwtService(JwtConfig jwtConfig, BlacklistedTokenRepository blacklistedTokenRepository) {
         this.jwtConfig = jwtConfig;
         this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtConfig.getSecretKey()));
+        this.refreshKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtConfig.getSecretKey()));
     }
 
-    public String generateToken(String email, String user_id, String role) {
+    public String generateToken(Long userId,String email , String phone, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationTime());
         return Jwts.builder()
                 .issuer(jwtConfig.getIssuer())
                 .issuedAt(now)
-                .subject(email)
-                .claim("userId", user_id)
+                .subject(String.valueOf(userId))
+                .claim("email", email)
+                .claim("phone", phone)
                 .claim("role", role)
                 .expiration(expiryDate)
                 .signWith(key)
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return claims.getSubject();
+    public String generateRefreshToken(Long userId) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationRefreshTime());
+
+        String refreshToken = UUID.randomUUID().toString();
+
+        LocalDateTime localExpiryDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new RuntimeException("User not found"));
+        Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository.findByUserId(userId);
+        if (optionalRefreshToken.isPresent()) {
+            RefreshToken dBRefreshToken = optionalRefreshToken.get();
+            dBRefreshToken.setRefreshToken(refreshToken);
+            dBRefreshToken.setExpiryDate(localExpiryDate);
+            refreshTokenRepository.save(dBRefreshToken);
+        } else {
+            RefreshToken insertToken = new RefreshToken();
+            insertToken.setRefreshToken(refreshToken);
+            insertToken.setExpiryDate(expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+            insertToken.setUser(user);
+            refreshTokenRepository.save(insertToken);
+        }
+        return refreshToken;
     }
 
     public String getUserIdFromJwt(String token) {
         Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return claims.get("userId", String.class);
+        return claims.getSubject();
+    }
+
+    public String getEmailFromToken(String token) {
+        Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return claims.get("email", String.class);
     }
 
     public String getRoleFromJwt(String token) {
@@ -86,7 +127,6 @@ public class JwtService {
         }
     }
 
-
     public Key getSigningKey() {
         byte[] keyBytes = jwtConfig.getSecretKey().getBytes();
         return Keys.hmacShaKeyFor(Base64.getDecoder().decode(keyBytes));
@@ -107,6 +147,17 @@ public class JwtService {
         return tokenIssuer.equals(jwtConfig.getIssuer());
     }
 
+    public boolean isRefreshTokenValid(String token) {
+        try {
+            RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(token).orElseThrow(()
+                    -> new RuntimeException("Refresh token not found"));
+            LocalDateTime expirationLocalDateTime = refreshToken.getExpiryDate();
+            Date expirationDate = Date.from(expirationLocalDateTime.atZone(ZoneId.systemDefault()).toInstant());
+            return expirationDate.after(new Date());
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     public Claims getAllClaimsFromToken(String token) {
         try {

@@ -1,14 +1,11 @@
 package com.swp391.school_medical_management.helpers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swp391.school_medical_management.modules.users.services.impl.UserService;
-import com.swp391.school_medical_management.service.JwtService;
-import jakarta.annotation.Nonnull;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +18,15 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swp391.school_medical_management.service.JwtService;
+
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -37,7 +41,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/active") || path.startsWith("/api/auth/blacklisted_tokens")) {
+        if (path.startsWith("/api/auth/login")
+                || path.startsWith("/api/auth/active")
+                || path.startsWith("/api/auth/blacklisted_tokens")
+                || path.startsWith("/api/auth/refresh")
+                || path.startsWith("/api/auth/phone-login")
+                || path.startsWith("/api/auth/google-login")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -46,9 +55,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String jwt;
         final String userId;
         final String role;
-        final String email;
-
-        logger.info("authHeader: " + authHeader);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             sendErrorResponse(response,
@@ -108,9 +114,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+
+
         userId = jwtService.getUserIdFromJwt(jwt);
         role = jwtService.getRoleFromJwt(jwt);
-        email = jwtService.getEmailFromToken(jwt);
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             List<GrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
