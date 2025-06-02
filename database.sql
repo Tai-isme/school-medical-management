@@ -132,10 +132,10 @@ CREATE TABLE medical_record (
     allergies VARCHAR(255),
     chronic_disease VARCHAR(255),
     treatment_history VARCHAR(255),
-    version VARCHAR(50),
+    vision VARCHAR(50),
     hearing VARCHAR(50),
     weight FLOAT,
-    height FLOAT,
+    high FLOAT,
     last_update DATE,
     note VARCHAR(255),
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE
