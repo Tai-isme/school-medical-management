@@ -169,9 +169,12 @@ CREATE TABLE vaccine_result (
     vaccine_form_id INT,
     result_note VARCHAR(255),
     reaction VARCHAR(255),
-    created_at DATETIME 
-    FOREIGN KEY (vaccine_form_id) REFERENCES vaccine_form(vaccine_form_id) ON DELETE CASCADE
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    nurse_id INT,
+    FOREIGN KEY (vaccine_form_id) REFERENCES vaccine_form(vaccine_form_id) ON DELETE CASCADE,
+    FOREIGN KEY (nurse_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
 
 
 CREATE TABLE vaccine_history (
