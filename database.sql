@@ -8,11 +8,12 @@ CREATE TABLE class (
     quantity INT
 );
 
+
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NULL,
     phone VARCHAR(20),
     address VARCHAR(200),
     role VARCHAR(50) DEFAULT 'parent',
@@ -213,3 +214,20 @@ CREATE TABLE refresh_token (
         ON DELETE CASCADE
         ON UPDATE RESTRICT
 );
+
+INSERT INTO class (teacher_name, class_name, quantity) VALUES
+('Nguyen Van A', '1A', 30),
+('Tran Thi B', '2B', 28),
+('Le Van C', '3C', 35);
+
+INSERT INTO users (full_name, email, password, phone, address, role) VALUES
+('Pham Thi Hoa', 'hoa@example.com', 'hashed_password1', '0123456789', '123 ABC Street', 'parent'),
+('Nguyen Van Binh', 'binh@example.com', 'hashed_password2', '0987654321', '456 DEF Street', 'parent'),
+('Le Thi Lan', 'lan@example.com', 'hashed_password3', '0345678912', '789 GHI Street', 'parent');
+
+INSERT INTO student (student_name, dob, gender, relationship, class_id, parent_id) VALUES
+('Nguyen Thi Mai', '2015-09-01', 'Female', 'Mother', 1, 1),
+('Tran Van Khoa', '2014-08-20', 'Male', 'Father', 2, 2),
+('Le Thi Thu', '2013-05-15', 'Female', 'Mother', 3, 3);
+
+
