@@ -195,6 +195,7 @@ CREATE TABLE survey (
     vaccine_form_id INT,
     health_check_form_id INT,
 	event_id INT,
+	status VARCHAR(20),
     CHECK (satisfaction IN ('satisfied', 'unsatisfied')),
     FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (vaccine_form_id) REFERENCES vaccine_form(vaccine_form_id) ON DELETE CASCADE,
