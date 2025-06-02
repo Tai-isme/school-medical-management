@@ -194,10 +194,12 @@ CREATE TABLE survey (
     parent_id INT,
     vaccine_form_id INT,
     health_check_form_id INT,
+	event_id INT,
     CHECK (satisfaction IN ('satisfied', 'unsatisfied')),
     FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (vaccine_form_id) REFERENCES vaccine_form(vaccine_form_id) ON DELETE CASCADE,
     FOREIGN KEY (health_check_form_id) REFERENCES health_check_form(health_check_form_id) ON DELETE CASCADE
+	FOREIGN KEY (event_id) REFERENCES medical_event(event_id) ON DELETE CASCADE
 );
 
 CREATE TABLE blacklisted_tokens (
