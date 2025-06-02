@@ -164,6 +164,16 @@ CREATE TABLE vaccine_form (
     FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+CREATE TABLE vaccine_result (
+    result_id INT AUTO_INCREMENT PRIMARY KEY,
+    vaccine_form_id INT,
+    result_note VARCHAR(255),
+    reaction VARCHAR(255),
+    created_at DATETIME 
+    FOREIGN KEY (vaccine_form_id) REFERENCES vaccine_form(vaccine_form_id) ON DELETE CASCADE
+);
+
+
 CREATE TABLE vaccine_history (
     vaccine_history_id INT AUTO_INCREMENT PRIMARY KEY,
     vaccine_name VARCHAR(100),
