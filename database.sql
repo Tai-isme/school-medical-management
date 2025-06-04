@@ -146,12 +146,14 @@ CREATE TABLE vaccine_form (
     vaccine_id INT,
     student_id INT,
     parent_id INT,
+    nurse_id INT,
     form_date DATE,
     note VARCHAR(255),
     commit BOOLEAN,
     FOREIGN KEY (vaccine_id) REFERENCES vaccine_program(vaccine_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
-    FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE
+    FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (nurse_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE vaccine_result (
