@@ -1,4 +1,4 @@
-CREATE DATABASE healthcare_project;
+﻿CREATE DATABASE healthcare_project;
 USE healthcare_project;
 
 CREATE TABLE class (
@@ -16,8 +16,8 @@ CREATE TABLE users (
     password VARCHAR(255) NULL,
     phone VARCHAR(20),
     address VARCHAR(200),
-    role VARCHAR(50) DEFAULT 'parent',
-    CHECK (role IN ('parent', 'admin', 'nurse'))
+    role VARCHAR(50) DEFAULT 'PARENT',
+    CHECK (role IN ('PARENT', 'NURSE', 'ADMIN'))
 );
 
 CREATE TABLE student (
@@ -36,16 +36,13 @@ CREATE TABLE medical_request (
     request_id INT AUTO_INCREMENT PRIMARY KEY,
     request_name VARCHAR(100),
     date DATE,
-    note VARCHAR(255),
-    status VARCHAR(50),
-    commit BOOLEAN,
-    student_id INT,
+    note VARCHAR(255),   
+	status VARCHAR(50) DEFAULT 'PROCESSING',
+    CHECK (status IN ('PROCESSING', 'ACCEPT')),
+	student_id INT,
     parent_id INT,
-    class_id INT,
-    CHECK (status IN ('pending', 'approved', 'rejected')),
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
-    FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (class_id) REFERENCES class(class_id) ON DELETE CASCADE
+    FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE medical_request_detail (
@@ -54,6 +51,8 @@ CREATE TABLE medical_request_detail (
     quantity INT,
     instruction VARCHAR(255),
     time DATETIME,
+	status VARCHAR(50),
+	CHECK (status IN ('NOT_TAKEN', 'TAKEN')),
     request_id INT,
     FOREIGN KEY (request_id) REFERENCES medical_request(request_id) ON DELETE CASCADE
 );
@@ -69,24 +68,6 @@ CREATE TABLE medical_event (
     FOREIGN KEY (nurse_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE medical_supply (
-    supply_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100),
-    quantity INT,
-    unit VARCHAR(50),
-    expiry_date DATE,
-    note VARCHAR(255)
-);
-
-CREATE TABLE medical_event_supply (
-    event_id INT,
-    supply_id INT,
-    quantity INT,
-    note VARCHAR(255),
-    PRIMARY KEY (event_id, supply_id),
-    FOREIGN KEY (event_id) REFERENCES medical_event(event_id) ON DELETE CASCADE,
-    FOREIGN KEY (supply_id) REFERENCES medical_supply(supply_id) ON DELETE CASCADE
-);
 
 CREATE TABLE health_check_program (
     health_check_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -94,11 +75,11 @@ CREATE TABLE health_check_program (
     description VARCHAR(255),
     start_date DATE,
     end_date DATE,
-    status VARCHAR(50),
+    status VARCHAR(50) DEFAULT 'NOT_STARTED',		
     note VARCHAR(255),
-    nurse_id INT,
-    CHECK (status IN ('ongoing', 'completed', 'not started')),
-    FOREIGN KEY (nurse_id) REFERENCES users(user_id) ON DELETE CASCADE
+    admin_id INT,
+    CHECK (status IN ('ON_GOING', 'COMPLETED', 'NOT_STARTED')),
+    FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE health_check_form (
@@ -106,23 +87,24 @@ CREATE TABLE health_check_form (
     health_check_id INT,
     student_id INT,
     parent_id INT,
+    nurse_id INT,
     form_date DATE,
     notes VARCHAR(255),
     commit BOOLEAN,
     FOREIGN KEY (health_check_id) REFERENCES health_check_program(health_check_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
-    FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE
+    FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (nurse_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+
 CREATE TABLE health_check_result (
-    result_id INT AUTO_INCREMENT PRIMARY KEY,
+    health_result_id INT AUTO_INCREMENT PRIMARY KEY,
     diagnosis VARCHAR(255),
     level VARCHAR(50),
     note VARCHAR(255),
-    nurse_id INT,
     health_check_form_id INT,
-    CHECK (level IN ('good', 'fair', 'average', 'poor')),
-    FOREIGN KEY (nurse_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CHECK (level IN ('GOOD', 'FAIR', 'AVERAGE', 'POOR')),
     FOREIGN KEY (health_check_form_id) REFERENCES health_check_form(health_check_form_id) ON DELETE CASCADE
 );
 
@@ -141,14 +123,22 @@ CREATE TABLE medical_record (
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE
 );
 
+CREATE TABLE vaccine_history (
+    vaccine_history_id INT AUTO_INCREMENT PRIMARY KEY,
+    vaccine_name VARCHAR(100),
+    note VARCHAR(255),
+    record_id INT,
+    FOREIGN KEY (record_id) REFERENCES medical_record(record_id) ON DELETE CASCADE
+);
+
 CREATE TABLE vaccine_program (
     vaccine_id INT AUTO_INCREMENT PRIMARY KEY,
     vaccine_name VARCHAR(100),
     description VARCHAR(255),
     vaccine_date DATE,
     note VARCHAR(255),
-    nurse_id INT,
-    FOREIGN KEY (nurse_id) REFERENCES users(user_id) ON DELETE CASCADE
+    admin_id INT,
+    FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE vaccine_form (
@@ -165,42 +155,34 @@ CREATE TABLE vaccine_form (
 );
 
 CREATE TABLE vaccine_result (
-    result_id INT AUTO_INCREMENT PRIMARY KEY,
-    vaccine_form_id INT,
+    vaccine_result_id INT AUTO_INCREMENT PRIMARY KEY,
+    status_health VARCHAR(255),
     result_note VARCHAR(255),
     reaction VARCHAR(255),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    nurse_id INT,
-    FOREIGN KEY (vaccine_form_id) REFERENCES vaccine_form(vaccine_form_id) ON DELETE CASCADE,
-    FOREIGN KEY (nurse_id) REFERENCES users(user_id) ON DELETE CASCADE
+	vaccine_form_id INT,
+    FOREIGN KEY (vaccine_form_id) REFERENCES vaccine_form(vaccine_form_id) ON DELETE CASCADE
 );
 
 
-
-CREATE TABLE vaccine_history (
-    vaccine_history_id INT AUTO_INCREMENT PRIMARY KEY,
-    vaccine_name VARCHAR(100),
-    note VARCHAR(255),
-    record_id INT,
-    FOREIGN KEY (record_id) REFERENCES medical_record(record_id) ON DELETE CASCADE
-);
-
-CREATE TABLE survey (
-    survey_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE feedback (
+    feedback_id INT AUTO_INCREMENT PRIMARY KEY,
     satisfaction VARCHAR(20),
-    reaction VARCHAR(255),
+    CHECK (satisfaction IN ('SATISFIED', 'UNSATISFIED')),
     comment VARCHAR(255),
     created_at DATETIME,
     parent_id INT,
-    vaccine_form_id INT,
-    health_check_form_id INT,
-	event_id INT,
-	status VARCHAR(20),
-    CHECK (satisfaction IN ('satisfied', 'unsatisfied')),
+    nurse_id INT,
+    vaccine_result_id INT,
+    health_result_id INT,
+    response_nurse TEXT,  
+    status VARCHAR(20) DEFAULT 'NOT_REPLIED',
+    CHECK (status IN ('NOT_REPLIED', 'REPLIED')),
+
     FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (vaccine_form_id) REFERENCES vaccine_form(vaccine_form_id) ON DELETE CASCADE,
-    FOREIGN KEY (health_check_form_id) REFERENCES health_check_form(health_check_form_id) ON DELETE CASCADE,
-	FOREIGN KEY (event_id) REFERENCES medical_event(event_id) ON DELETE CASCADE
+    FOREIGN KEY (nurse_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (vaccine_result_id) REFERENCES vaccine_result(vaccine_result_id) ON DELETE CASCADE,
+    FOREIGN KEY (health_result_id) REFERENCES health_check_result(health_result_id) ON DELETE CASCADE
 );
 
 CREATE TABLE blacklisted_tokens (
