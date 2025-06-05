@@ -39,6 +39,7 @@ CREATE TABLE medical_request (
     note VARCHAR(255),   
 	status VARCHAR(50) DEFAULT 'PROCESSING',
     CHECK (status IN ('PROCESSING', 'ACCEPT')),
+	commit BOOLEAN,
 	student_id INT,
     parent_id INT,
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
@@ -51,8 +52,6 @@ CREATE TABLE medical_request_detail (
     quantity INT,
     instruction VARCHAR(255),
     time DATETIME,
-	status VARCHAR(50),
-	CHECK (status IN ('NOT_TAKEN', 'TAKEN')),
     request_id INT,
     FOREIGN KEY (request_id) REFERENCES medical_request(request_id) ON DELETE CASCADE
 );
