@@ -39,14 +39,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
         String path = request.getRequestURI();
         if (path.startsWith("/api/auth/login")
                 || path.startsWith("/api/auth/active")
-                || path.startsWith("/api/auth/blacklisted_tokens")
+                || path.startsWith("/api/auth/blacklisted")
                 || path.startsWith("/api/auth/refresh")
-                || path.startsWith("/api/auth/phone-login")
-                || path.startsWith("/api/auth/google-login")) {
+                || path.startsWith("/api/auth/phone")
+                || path.startsWith("/api/auth/google")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-ui")
+                || path.equals("/swagger-ui.html")
+                || path.startsWith("/api/test") // Example endpoint for testing
+        ) {
             filterChain.doFilter(request, response);
             return;
         }

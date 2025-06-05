@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +18,7 @@ import lombok.AllArgsConstructor;
 
 @Configuration
 @AllArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -39,8 +41,12 @@ public class SecurityConfig {
                                 "/api/auth/active",
                                 "/api/auth/blacklisted_tokens",
                                 "/api/auth/refresh",
-                                "/api/auth/phone-login",
-                                "/api/auth/google-login"
+                                "/api/auth/phone",
+                                "/api/auth/google",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/api/test" // Example endpoint for testing
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

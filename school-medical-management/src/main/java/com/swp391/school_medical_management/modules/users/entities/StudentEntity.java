@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import jakarta.persistence.ManyToOne;
 import java.time.LocalDate;
 
 @Entity
@@ -12,19 +12,20 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "student")
-public class Student {
+public class StudentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "student_id")
     private long id;
-    @Column(name = "full_name")
+    @Column(name = "student_name")
     private String fullName;
     private LocalDate dob;
     private String gender;
     private String relationship;
-    @Column(name = "class_id")
-    private long classID;
-
     @ManyToOne
+    @JoinColumn(name = "class_id", referencedColumnName = "class_id")
+    private ClassEntity classEntity;
+    @ManyToOne 
     @JoinColumn(name = "parent_id")
-    private User parent;
+    private UserEntity parent;
 }

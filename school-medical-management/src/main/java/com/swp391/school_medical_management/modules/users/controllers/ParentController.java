@@ -1,5 +1,104 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
+import com.swp391.school_medical_management.modules.users.services.impl.ParentService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+
+
+@Validated
+@RestController
+@RequestMapping("api/parent")
+@PreAuthorize("hasRole('ROLE_PARENT')")
 public class ParentController {
+    private static final Logger logger = LoggerFactory.getLogger(ParentController.class);
     
+    @Autowired
+    private ParentService parentService;
+
+    @PostMapping("/medical-records")
+    public ResponseEntity<MedicalRecordDTO> createMedicalRecords(@RequestBody MedicalRecordsRequest medicalRecordsRequest) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MedicalRecordDTO medicalRecordDTO = parentService.createMedicalRecord(Long.parseLong(parentId), medicalRecordsRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(medicalRecordDTO);
+    }
+
+    @PutMapping("/medical-records/{studentId}")
+    public ResponseEntity<MedicalRecordDTO> updateMedicalRecords(@RequestBody MedicalRecordsRequest medicalRecordsRequest) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MedicalRecordDTO medicalRecordDTO = parentService.updateMedicalRecord(Long.parseLong(parentId), medicalRecordsRequest);
+        return ResponseEntity.ok(medicalRecordDTO);
+    }
+
+    @GetMapping("/medical-records")
+    public ResponseEntity<List<MedicalRecordDTO>> getAllMedicalRecords() {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<MedicalRecordDTO> medicalRecordDTOList= parentService.getAllMedicalRecordByParentId(Long.parseLong(parentId));
+        if(medicalRecordDTOList.isEmpty()) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(medicalRecordDTOList);
+    }
+
+    @GetMapping("/medical-records/{studentId}")
+    public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable long studentId) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MedicalRecordDTO medicalRecordDTO = parentService.getMedicalRecordByStudentId(Long.parseLong(parentId), studentId);
+        if (medicalRecordDTO == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(medicalRecordDTO);
+    }
+    
+    @DeleteMapping("/medical-records/{studentId}")
+    public ResponseEntity<Void> deleteMedicalRecords(@PathVariable long studentId) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        parentService.deleteMedicalRecord(Long.parseLong(parentId), studentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/medical-request")
+    public ResponseEntity<MedicalRequestDTO> createMedicalRequest(@RequestBody MedicalRequest request) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MedicalRequestDTO medicalRequestDTO = parentService.createMedicalRequest(Long.parseLong(parentId), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(medicalRequestDTO);
+    }
+
+    @GetMapping("/medical-request/by-request/{requestId}")
+    public ResponseEntity<MedicalRequestDTO> getMedicalRequestByRequestId(@PathVariable int requestId) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MedicalRequestDTO medicalRequestDTO = parentService.getMedicalRequestByRequestId(Long.parseLong(parentId) ,requestId);
+        return ResponseEntity.ok(medicalRequestDTO);
+    }
+
+    @GetMapping("/medical-request/by-student/{studentId}")
+    public ResponseEntity<List<MedicalRequestDTO>> getMedicalRequestByStudent(@PathVariable Long studentId) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<MedicalRequestDTO> medicalRequestDtoList = parentService.getMedicalRequestByStudent(Long.parseLong(parentId) ,studentId);
+        return ResponseEntity.ok(medicalRequestDtoList);
+    }
+
+    @PutMapping("/medical-request/{requestId}")
+    public ResponseEntity<MedicalRequestDTO> updateMedicalRequest(@RequestBody MedicalRequest request, @PathVariable int requestId) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MedicalRequestDTO medicalRequestDTO = parentService.updateMedicalRequest(Long.parseLong(parentId), request, requestId);
+        return ResponseEntity.ok(medicalRequestDTO);
+    }
+    
+    @DeleteMapping("/medical-request/{requestId}")
+    public ResponseEntity<Void> deleteMedicalRequest(@PathVariable int requestId) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        parentService.deleteMedicalRequest(Long.parseLong(parentId), requestId);
+        return ResponseEntity.noContent().build();
+    }
 }
