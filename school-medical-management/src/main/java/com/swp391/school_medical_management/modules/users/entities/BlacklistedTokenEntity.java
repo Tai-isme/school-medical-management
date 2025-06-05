@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Table(name = "blacklisted_tokens")
-public class BlacklistedToken {
+public class BlacklistedTokenEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

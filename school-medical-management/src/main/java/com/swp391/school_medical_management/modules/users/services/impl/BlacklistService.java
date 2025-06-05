@@ -1,7 +1,7 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
-import com.swp391.school_medical_management.modules.users.entities.BlacklistedToken;
+import com.swp391.school_medical_management.modules.users.entities.BlacklistedTokenEntity;
 import com.swp391.school_medical_management.modules.users.repositories.BlacklistedTokenRepository;
 import com.swp391.school_medical_management.service.JwtService;
 import io.jsonwebtoken.Claims;
@@ -15,7 +15,7 @@ import java.util.Date;
 
 @Service
 public class BlacklistService {
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     @Autowired
     private BlacklistedTokenRepository blacklistedTokenRepository;
@@ -30,7 +30,7 @@ public class BlacklistService {
             Claims claims = jwtService.getAllClaimsFromToken(request.getToken());
             String userId = jwtService.getUserIdFromJwt(request.getToken());
             Date expiryDate = claims.getExpiration();
-            BlacklistedToken blacklistedToken = new BlacklistedToken();
+            BlacklistedTokenEntity blacklistedToken = new BlacklistedTokenEntity();
             blacklistedToken.setToken(request.getToken());
             blacklistedToken.setUserId(Long.parseLong(userId));
             blacklistedToken.setExpiryDate(expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());

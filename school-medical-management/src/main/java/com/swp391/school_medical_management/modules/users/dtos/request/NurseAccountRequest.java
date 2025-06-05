@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class ActiveRequest {
+public class NurseAccountRequest {
     @Email(message = "Email not valid!")
     @NotBlank(message = "Email cannot blank!")
     private String email;
+    private String name;
+    private String password;
 }

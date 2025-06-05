@@ -19,11 +19,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "users")
-public class User {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "fullName")
+    @Column(name = "user_id")
+    private Long userId;
+    @Column(name = "full_name")
     private String fullName;
     private String email;
     private String password;
@@ -32,5 +33,5 @@ public class User {
     private String role;
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
-    private List<Student> students;
+    private List<StudentEntity> students;
 }

@@ -1,7 +1,5 @@
 package com.swp391.school_medical_management.helpers;
 
-
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -10,52 +8,38 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @ControllerAdvice
-public class GlobalExceptionHandler{
+public class GlobalExceptionHandler {
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity handle(MethodArgumentNotValidException exception) {
-        Map<String ,String> errors = new HashMap<>();
-        exception.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        StringBuilder sb = new StringBuilder("Validation failed: ");
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String field = ((FieldError) error).getField();
+            String message = error.getDefaultMessage();
+            sb.append(field).append(": ").append(message).append("; ");
         });
-        return ResponseEntity.ok(new ApiResponse<>(false, "Data problem", null));
+        return new ResponseEntity<>(new ErrorResponse(sb.toString()), HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<?>> handleRuntime(RuntimeException ex) {
-        return new ResponseEntity<>(
-                new ApiResponse<>(false, ex.getMessage(), null),
-                HttpStatus.BAD_REQUEST
-        );
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
+        return new ResponseEntity<>(new ErrorResponse(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ApiResponse<?>> handleBadRequest(Exception ex) {
-        return new ResponseEntity<>(
-                new ApiResponse<>(false, "Invalid request parameter", null),
-                HttpStatus.BAD_REQUEST
-        );
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<?>> handleInternal(Exception ex) {
-        return new ResponseEntity<>(
-                new ApiResponse<>(false, "Internal server error", null),
-                HttpStatus.INTERNAL_SERVER_ERROR
-        );
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return new ResponseEntity<>(new ErrorResponse("Invalid request parameter"), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiResponse<?>> handleIllegalState(IllegalStateException ex) {
-        return new ResponseEntity<>(
-                new ApiResponse<>(false, ex.getMessage(), null),
-                HttpStatus.CONFLICT
-        );
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex) {
+        return new ResponseEntity<>(new ErrorResponse(ex.getMessage()), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        return new ResponseEntity<>(new ErrorResponse("An unexpected error occurred"),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
-
-

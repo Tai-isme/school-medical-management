@@ -1,8 +1,8 @@
 package com.swp391.school_medical_management.service;
 
 import com.swp391.school_medical_management.config.JwtConfig;
-import com.swp391.school_medical_management.modules.users.entities.RefreshToken;
-import com.swp391.school_medical_management.modules.users.entities.User;
+import com.swp391.school_medical_management.modules.users.entities.RefreshTokenEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.repositories.BlacklistedTokenRepository;
 import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
@@ -73,16 +73,16 @@ public class JwtService {
 
         LocalDateTime localExpiryDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-        User user = userRepository.findById(userId).orElseThrow(() ->
+        UserEntity user = userRepository.findUserByUserId(userId).orElseThrow(() ->
                 new RuntimeException("User not found"));
-        Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository.findByUserId(userId);
+        Optional<RefreshTokenEntity> optionalRefreshToken = refreshTokenRepository.findByUser(user);
         if (optionalRefreshToken.isPresent()) {
-            RefreshToken dBRefreshToken = optionalRefreshToken.get();
+            RefreshTokenEntity dBRefreshToken = optionalRefreshToken.get();
             dBRefreshToken.setRefreshToken(refreshToken);
             dBRefreshToken.setExpiryDate(localExpiryDate);
             refreshTokenRepository.save(dBRefreshToken);
         } else {
-            RefreshToken insertToken = new RefreshToken();
+            RefreshTokenEntity insertToken = new RefreshTokenEntity();
             insertToken.setRefreshToken(refreshToken);
             insertToken.setExpiryDate(expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
             insertToken.setUser(user);
@@ -149,7 +149,7 @@ public class JwtService {
 
     public boolean isRefreshTokenValid(String token) {
         try {
-            RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(token).orElseThrow(()
+            RefreshTokenEntity refreshToken = refreshTokenRepository.findByRefreshToken(token).orElseThrow(()
                     -> new RuntimeException("Refresh token not found"));
             LocalDateTime expirationLocalDateTime = refreshToken.getExpiryDate();
             Date expirationDate = Date.from(expirationLocalDateTime.atZone(ZoneId.systemDefault()).toInstant());
