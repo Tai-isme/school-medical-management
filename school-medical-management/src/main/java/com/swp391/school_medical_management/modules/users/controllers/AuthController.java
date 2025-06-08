@@ -5,8 +5,6 @@ import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.services.impl.AuthService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +29,6 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
-
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private AuthService authService;

@@ -4,9 +4,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.Blacklist
 import com.swp391.school_medical_management.modules.users.entities.BlacklistedTokenEntity;
 import com.swp391.school_medical_management.modules.users.repositories.BlacklistedTokenRepository;
 import com.swp391.school_medical_management.service.JwtService;
-import io.jsonwebtoken.Claims;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.jsonwebtoken.Claims; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +13,6 @@ import java.util.Date;
 
 @Service
 public class BlacklistService {
-    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     @Autowired
     private BlacklistedTokenRepository blacklistedTokenRepository;

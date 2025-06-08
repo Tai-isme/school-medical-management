@@ -1,25 +1,19 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import com.google.rpc.context.AttributeContext.Response;
 import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
 import com.swp391.school_medical_management.modules.users.services.impl.ParentService;
 
 import jakarta.validation.Valid;
 
-import org.checkerframework.checker.units.qual.C;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +31,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RequestMapping("api/parent")
 @PreAuthorize("hasRole('ROLE_PARENT')")
 public class ParentController {
-    private static final Logger logger = LoggerFactory.getLogger(ParentController.class);
     
     @Autowired
     private ParentService parentService;
