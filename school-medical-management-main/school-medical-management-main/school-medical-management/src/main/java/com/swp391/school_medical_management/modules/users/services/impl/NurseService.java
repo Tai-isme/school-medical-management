@@ -3,12 +3,14 @@ package com.swp391.school_medical_management.modules.users.services.impl;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckForm;
+import com.swp391.school_medical_management.modules.users.entities.MedicalEvent;
 import com.swp391.school_medical_management.modules.users.entities.VaccineForm;
 import com.swp391.school_medical_management.modules.users.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NurseService {
@@ -19,6 +21,9 @@ public class NurseService {
     @Autowired private VaccineProgramRepository vaccineRepo;
     @Autowired private StudentRepository studentRepo;
     @Autowired private UserRepository userRepo;
+    @Autowired private MedicalEventRepository medicalEventRepo;
+    @Autowired
+    private MedicalEventRepository medicalEventRepository;
 
     public HealthCheckForm createHealthForm(HealthCheckFormDTO dto) {
         HealthCheckForm form = new HealthCheckForm();
@@ -98,6 +103,24 @@ public class NurseService {
         return vaccineFormRepo.findByStudent_StudentNameContainingIgnoreCaseOrParent_FullNameContainingIgnoreCase(keyword, keyword);
     }
 
+    public MedicalEvent createEvent(MedicalEvent event) {
+        return medicalEventRepository.save(event);
+    }
 
+    public MedicalEvent updateEvent(MedicalEvent event) {
+        return medicalEventRepository.save(event);
+    }
+
+    public void deleteEvent(Long id) {
+        medicalEventRepository.deleteById(id);
+    }
+
+    public List<MedicalEvent> getAllEvents() {
+        return medicalEventRepository.findAll();
+    }
+
+    public Optional<MedicalEvent> getEventById(Long id) {
+        return medicalEventRepository.findById(id);
+    }
 
 }

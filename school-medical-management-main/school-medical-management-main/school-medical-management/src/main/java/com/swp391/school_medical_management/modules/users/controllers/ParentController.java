@@ -30,6 +30,9 @@ public class ParentController {
     @Autowired
     private ParentService parentService;
 
+    @Autowired
+    private StudentRepository studentRepository;
+
     @GetMapping("/data")
     public ResponseEntity<?> getUserInfo() {
         String id = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -59,6 +62,29 @@ public class ParentController {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         parentService.updateMedicalRecord(id, dto, parentId);
         return ResponseEntity.ok("Cập nhật hồ sơ thành công.");
+    }
+
+    @GetMapping("/students/{studentId}/medical-events")
+    public List<MedicalEventDTO> getEventsByStudent(@PathVariable Long studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        return parentService.getEventsByStudent(student).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private MedicalEventDTO mapToDTO(MedicalEvent event) {
+        return MedicalEventDTO.builder()
+                .eventId(event.getEventId())
+                .typeEvent(event.getTypeEvent())
+                .date(event.getDate())
+                .description(event.getDescription())
+                .studentId(event.getStudent().getId())
+                .studentName(event.getStudent().getStudentName())
+                .nurseId(event.getNurse().getId())
+                .nurseName(event.getNurse().getFullName())
+                .build();
     }
 }
 

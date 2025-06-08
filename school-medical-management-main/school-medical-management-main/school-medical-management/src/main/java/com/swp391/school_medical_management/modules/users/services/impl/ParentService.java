@@ -3,6 +3,7 @@ package com.swp391.school_medical_management.modules.users.services.impl;
 
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import com.swp391.school_medical_management.modules.users.entities.*;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordRepository;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
@@ -29,6 +30,9 @@ public class ParentService {
 
     @Autowired
     private MedicalRecordRepository medicalRecordRepository;
+
+    @Autowired
+    private MedicalEventRepository medicalEventRepository;
 
     public UserDTO getUserInfo(String userId) {
         User user = userRepository.findById(Long.valueOf(userId))
@@ -162,6 +166,11 @@ public class ParentService {
         }
 
         medicalRecordRepository.save(record);
+    }
+
+
+    public List<MedicalEvent> getEventsByStudent(Student student) {
+        return medicalEventRepository.findByStudent(student);
     }
 }
 
