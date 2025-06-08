@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import com.swp391.school_medical_management.helpers.ApiResponse;
 import com.swp391.school_medical_management.modules.users.dtos.request.IdTokenRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.LoginRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.LoginResponse;
@@ -64,8 +64,10 @@ public class AuthService {
     private RefreshTokenRepository refreshTokenRepository;
 
     public LoginResponse authenticate(LoginRequest request) {
-        UserEntity user = userRepository.findUserByEmail(request.getEmail())
-                .orElseThrow(() -> new BadCredentialsException("Incorrect email or password!"));
+        Optional<UserEntity> userOpt = userRepository.findUserByEmail(request.getEmail());
+        if(userOpt.isEmpty())
+            throw new BadCredentialsException("Incorrect email or password!");
+        UserEntity user = userOpt.get();
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
             throw new BadCredentialsException("Incorrect email or password!");
         UserDTO userDTO = modelMapper.map(user, UserDTO.class);
@@ -111,8 +113,10 @@ public class AuthService {
             String phoneNumberINTL = (String) decodedToken.getClaims().get("phone_number");
             if (phoneNumberINTL.startsWith("+84"))
                 phoneNumberINTL = "0" + phoneNumberINTL.substring(3);
-            UserEntity user = userRepository.findUserByPhone(phoneNumberINTL)
-                    .orElseThrow(() -> new BadCredentialsException("Not found user with phone number !"));
+            Optional<UserEntity> userOpt = userRepository.findUserByPhone(phoneNumberINTL);
+            if(userOpt.isEmpty())
+                throw new BadCredentialsException("Not found user with phone number: " + phoneNumberINTL);
+            UserEntity user = userOpt.get();
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
             List<StudentEntity> studentList = studentRepository.findStudentByParent_UserId(userDTO.getId());
             String token = jwtService.generateToken(user.getUserId(), user.getEmail(), user.getPhone(), user.getRole());
@@ -129,8 +133,10 @@ public class AuthService {
         try {
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(request.getIdToken());
             String email = decodedToken.getEmail();
-            UserEntity user = userRepository.findUserByEmail(email)
-                    .orElseThrow(() -> new BadCredentialsException("Not found user with email !"));
+            Optional<UserEntity> userOpt = userRepository.findUserByEmail(email);
+            if(userOpt.isEmpty())
+                throw new BadCredentialsException("Not found user with email: " + email);
+            UserEntity user = userOpt.get();
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
             List<StudentEntity> studentList = studentRepository.findStudentByParent_UserId(userDTO.getId());
             String token = jwtService.generateToken(user.getUserId(), user.getEmail(), user.getPhone(), user.getRole());

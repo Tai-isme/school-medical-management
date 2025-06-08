@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.classfile.ClassFile.Option;
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -149,8 +150,11 @@ public class JwtService {
 
     public boolean isRefreshTokenValid(String token) {
         try {
-            RefreshTokenEntity refreshToken = refreshTokenRepository.findByRefreshToken(token).orElseThrow(()
-                    -> new RuntimeException("Refresh token not found"));
+            Optional<RefreshTokenEntity> refreshTokenOpt = refreshTokenRepository.findByRefreshToken(token);
+            if (refreshTokenOpt.isEmpty()) {
+                throw new RuntimeException("Refresh token not found");
+            }
+            RefreshTokenEntity refreshToken = refreshTokenOpt.get();
             LocalDateTime expirationLocalDateTime = refreshToken.getExpiryDate();
             Date expirationDate = Date.from(expirationLocalDateTime.atZone(ZoneId.systemDefault()).toInstant());
             return expirationDate.after(new Date());

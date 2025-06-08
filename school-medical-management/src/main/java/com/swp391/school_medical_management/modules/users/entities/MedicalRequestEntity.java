@@ -54,10 +54,6 @@ public class MedicalRequestEntity {
     @JoinColumn(name = "parent_id", referencedColumnName = "user_id")
     private UserEntity parent;
 
-    @ManyToOne
-    @JoinColumn(name = "class_id", referencedColumnName = "class_id")
-    private ClassEntity classEntity;
-
     @OneToMany(mappedBy = "medicalRequest", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MedicalRequestDetailEntity> medicalRequestDetails;
+    private List<MedicalRequestDetailEntity> medicalRequestDetailEntities;
 }

@@ -19,6 +19,5 @@ public class MedicalRequestDTO {
     private boolean commit;
     private long studentId;
     private long parentId;
-    private String teacherName;
     private List<MedicalRequestDetailDTO> medicalRequestDetailDTO;
 }

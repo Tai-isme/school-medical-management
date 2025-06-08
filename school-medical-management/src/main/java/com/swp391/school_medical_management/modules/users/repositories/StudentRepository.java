@@ -1,6 +1,4 @@
 package com.swp391.school_medical_management.modules.users.repositories;
-
-import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 

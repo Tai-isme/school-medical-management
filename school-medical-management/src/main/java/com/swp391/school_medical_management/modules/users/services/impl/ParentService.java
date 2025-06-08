@@ -1,23 +1,33 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
+import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequestDetails;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequestDetailRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineHistoryRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -31,33 +41,36 @@ import java.util.stream.Collectors;
 
 @Service
 public class ParentService {
-    @Autowired
-    private StudentRepository studentRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private static final Logger logger = LoggerFactory.getLogger(ParentService.class);
 
-    @Autowired
-    private MedicalRecordsRepository medicalRecordsRepository;
+    @Autowired private StudentRepository studentRepository;
 
-    @Autowired
-    private ModelMapper modelMapper;
+    @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private MedicalRequestRepository medicalRequestRepository;
+    @Autowired private MedicalRecordsRepository medicalRecordsRepository;
 
-    @Autowired
-    private ClassRepository classRepository;
+    @Autowired private ModelMapper modelMapper;
+
+    @Autowired private MedicalRequestRepository medicalRequestRepository;
+
+    @Autowired private HealthCheckFormRepository healthCHeckFormRepository;
+
+    @Autowired private VaccineFormRepository vaccineFormRepository;
+
 
     public MedicalRecordDTO createMedicalRecord(Long parentId, MedicalRecordsRequest request) {
-        StudentEntity student = studentRepository.findStudentById(request.getStudentId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+        if(studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        StudentEntity student = studentOpt.get();
         if (!student.getParent().getUserId().equals(parentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
         if (medicalRecordsRepository.findMedicalRecordByStudent_Id(request.getStudentId()).isPresent()) {
             throw new RuntimeException("Medical record already exist");
         }
+
         MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
         medicalRecord.setStudent(student);
         medicalRecord.setAllergies(request.getAllergies());
@@ -68,8 +81,26 @@ public class ParentService {
         medicalRecord.setWeight(request.getWeight());
         medicalRecord.setHeight(request.getHeight());
         medicalRecord.setNote(request.getNote());
+        medicalRecord.setLastUpdate(LocalDateTime.now());
+
+        medicalRecord.setVaccineHistories(new ArrayList<>());
+        
+        for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
+                VaccineHistoryEntity vaccineHistory = new VaccineHistoryEntity();
+                vaccineHistory.setVaccineName(vaccineHistoryRequest.getVaccineName());
+                vaccineHistory.setNote(vaccineHistoryRequest.getNote());
+                vaccineHistory.setMedicalRecord(medicalRecord);
+                medicalRecord.getVaccineHistories().add(vaccineHistory);
+        }
         medicalRecordsRepository.save(medicalRecord);
-        return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+        MedicalRecordDTO medicalRecordDTO = modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+        List<VaccineHistoryDTO> vaccineHistoryDTOList = medicalRecord.getVaccineHistories()
+                .stream()
+                .map(vaccineHistory -> modelMapper.map(vaccineHistory, VaccineHistoryDTO.class))
+                .collect(Collectors.toList());
+        medicalRecordDTO.setVaccineHistories(vaccineHistoryDTOList);
+
+        return medicalRecordDTO;
     }
 
     public MedicalRecordDTO updateMedicalRecord(Long parentId, MedicalRecordsRequest request) {
@@ -90,6 +121,17 @@ public class ParentService {
         medicalRecord.setWeight(request.getWeight());
         medicalRecord.setHeight(request.getHeight());
         medicalRecord.setNote(request.getNote());
+
+        medicalRecord.getVaccineHistories().clear();
+
+            for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
+                VaccineHistoryEntity vaccineHistoryEntity = new VaccineHistoryEntity();
+                vaccineHistoryEntity.setVaccineName(vaccineHistoryRequest.getVaccineName());
+                vaccineHistoryEntity.setNote(vaccineHistoryRequest.getNote());
+                vaccineHistoryEntity.setMedicalRecord(medicalRecord);                
+                medicalRecord.getVaccineHistories().add(vaccineHistoryEntity);
+            }
+
         medicalRecordsRepository.save(medicalRecord);
         return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
     }
@@ -123,34 +165,46 @@ public class ParentService {
         medicalRecordsRepository.delete(medicalRecord);
     }
 
+
     public MedicalRequestDTO createMedicalRequest(long parentId, MedicalRequest request) {
-        StudentEntity student = studentRepository.findStudentById(request.getStudentId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+        logger.info("Student ID: {}", request.getStudentId());
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+        if(studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        StudentEntity student = studentOpt.get();
         UserEntity parent = userRepository.findById(parentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found"));
         if (!student.getParent().getUserId().equals(parentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
+        
         boolean isMedicalRequestExist = medicalRequestRepository
-                .existsByStudentAndStatus(student, "pending");
+                .existsByStudentAndStatus(student, "PROCESSING");
         if (isMedicalRequestExist) 
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Medical request already exists");
-        if(request.getMedicalRequestDetails() == null || request.getMedicalRequestDetails().isEmpty()) {
+
+        // boolean isMedicalRequestExist = medicalRequestRepository
+        // .existsByStudentAndStatus(student, "PROCESSING");
+
+        // if (isMedicalRequestExist && !"test".equals(environment)) {
+        //     throw new ResponseStatusException(HttpStatus.CONFLICT, "Medical request already exists");
+        // }
+
+        if(request.getMedicalRequestDetailRequests() == null || request.getMedicalRequestDetailRequests().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical request details cannot be empty");
         }
         MedicalRequestEntity medicalRequestEntity = new MedicalRequestEntity();
         medicalRequestEntity.setRequestName(request.getRequestName());
         medicalRequestEntity.setNote(request.getNote());
-        medicalRequestEntity.setStatus("pending");
+        medicalRequestEntity.setStatus("PROCESSING");
         medicalRequestEntity.setCommit(false);
         medicalRequestEntity.setStudent(student);
         medicalRequestEntity.setParent(parent);
-        medicalRequestEntity.setClassEntity(student.getClassEntity());
         medicalRequestEntity.setDate(LocalDateTime.now());
 
-        medicalRequestEntity.setMedicalRequestDetails(new ArrayList<>());
+        medicalRequestEntity.setMedicalRequestDetailEntities(new ArrayList<>());
 
-        for (MedicalRequestDetails details : request.getMedicalRequestDetails()) {
+        for (MedicalRequestDetailRequest details : request.getMedicalRequestDetailRequests()) {
             MedicalRequestDetailEntity medicalRequestDetailEntity = new MedicalRequestDetailEntity();
             medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
             medicalRequestDetailEntity.setInstruction(details.getInstructions());
@@ -159,41 +213,49 @@ public class ParentService {
 
             medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
 
-            medicalRequestEntity.getMedicalRequestDetails().add(medicalRequestDetailEntity);
+            medicalRequestEntity.getMedicalRequestDetailEntities().add(medicalRequestDetailEntity);
         }
         
         medicalRequestRepository.save(medicalRequestEntity);
-        return modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+        MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+        List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestEntity.getMedicalRequestDetailEntities()
+                .stream()
+                .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity, MedicalRequestDetailDTO.class))
+                .collect(Collectors.toList());
+        medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+        return medicalRequestDTO;
     }
 
     public MedicalRequestDTO getMedicalRequestByRequestId(Long parentId, Integer requestId) {
-        MedicalRequestEntity medicalRequest = medicalRequestRepository.findMedicalRequestEntityByRequestId(requestId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found"));
-        List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequest.getMedicalRequestDetails();
+        Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository.findMedicalRequestEntityByRequestId(requestId);
+        if (medicalRequestOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found");
+        MedicalRequestEntity medicalRequest = medicalRequestOpt.get();
+        List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequest.getMedicalRequestDetailEntities();
         if (!medicalRequest.getParent().getUserId().equals(parentId))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");   
         List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
                     .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity, MedicalRequestDetailDTO.class)).collect(Collectors.toList());
         MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequest, MedicalRequestDTO.class);
-        medicalRequestDTO.setTeacherName(medicalRequest.getStudent().getClassEntity().getTeacherName());
         medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
         return medicalRequestDTO;
     }
 
     public List<MedicalRequestDTO> getMedicalRequestByStudent(Long parentId, Long studentId) {
-        StudentEntity student = studentRepository.findStudentById(studentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(studentId);
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        StudentEntity student = studentOpt.get();
         if (!student.getParent().getUserId().equals(parentId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findMedicalRequestEntityByStudent(student);
         List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
         for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
-            List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity.getMedicalRequestDetails();
+            List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity.getMedicalRequestDetailEntities();
             List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
                     .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity, MedicalRequestDetailDTO.class))
                     .collect(Collectors.toList());
             MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
-            medicalRequestDTO.setTeacherName(medicalRequestEntity.getStudent().getClassEntity().getTeacherName());
             medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
             medicalRequestDTOList.add(medicalRequestDTO);
         }
@@ -201,29 +263,31 @@ public class ParentService {
     }
 
     public MedicalRequestDTO updateMedicalRequest(Long parentId, MedicalRequest request, Integer requestId) {
-        MedicalRequestEntity medicalRequestEntity = medicalRequestRepository.findMedicalRequestEntityByRequestId(requestId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found"));
+        Optional<MedicalRequestEntity> medicalRequestEntityOpt = medicalRequestRepository.findMedicalRequestEntityByRequestId(requestId);
+        if(medicalRequestEntityOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found");
+        MedicalRequestEntity medicalRequestEntity = medicalRequestEntityOpt.get();
         if (!medicalRequestEntity.getParent().getUserId().equals(parentId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        if(medicalRequestEntity.getStatus().equals("approved") || medicalRequestEntity.getStatus().equals("rejected")) {
+        if(!medicalRequestEntity.getStatus().equals("PROCESSING")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot update a request that has already been processed");
         }
-        if(request.getMedicalRequestDetails() == null || request.getMedicalRequestDetails().isEmpty()) {
+        if(request.getMedicalRequestDetailRequests() == null || request.getMedicalRequestDetailRequests().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical request details cannot be empty");
         }
         medicalRequestEntity.setRequestName(request.getRequestName());
         medicalRequestEntity.setNote(request.getNote());
     
-        medicalRequestEntity.getMedicalRequestDetails().clear();
+        medicalRequestEntity.getMedicalRequestDetailEntities().clear();
 
-            for (MedicalRequestDetails details : request.getMedicalRequestDetails()) {
+            for (MedicalRequestDetailRequest details : request.getMedicalRequestDetailRequests()) {
                 MedicalRequestDetailEntity medicalRequestDetailEntity = new MedicalRequestDetailEntity();
                 medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
                 medicalRequestDetailEntity.setInstruction(details.getInstructions());
                 medicalRequestDetailEntity.setQuantity(details.getQuantity());
                 medicalRequestDetailEntity.setTime(details.getTime());
                 medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
-                medicalRequestEntity.getMedicalRequestDetails().add(medicalRequestDetailEntity);
+                medicalRequestEntity.getMedicalRequestDetailEntities().add(medicalRequestDetailEntity);
             }
 
         medicalRequestRepository.save(medicalRequestEntity);
@@ -231,13 +295,47 @@ public class ParentService {
     }
 
     public void deleteMedicalRequest(Long parentId, int requestId) {
-        MedicalRequestEntity medicalRequestEntity = medicalRequestRepository.findMedicalRequestEntityByRequestId(requestId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found"));
+        Optional<MedicalRequestEntity> medicalRequestEntityOpt = medicalRequestRepository.findMedicalRequestEntityByRequestId(requestId);
+        if(medicalRequestEntityOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found");
+        MedicalRequestEntity medicalRequestEntity = medicalRequestEntityOpt.get();
         if (!medicalRequestEntity.getParent().getUserId().equals(parentId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        if(medicalRequestEntity.getStatus().equals("approved") || medicalRequestEntity.getStatus().equals("rejected")) {
+        if(!medicalRequestEntity.getStatus().equals("PROCESSING")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete a request that has already been processed");
         }
         medicalRequestRepository.delete(medicalRequestEntity);
+    }
+
+    public void commitHealthCheckForm(Long parentId, Long healCheckFormId, CommitHealthCheckFormRequest request) {
+        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCHeckFormRepository.findHealCheckFormEntityById(healCheckFormId);
+        if(healthCheckFormOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
+        HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
+        if(healthCheckFormEntity.getParent() == null || !healthCheckFormEntity.getParent().getUserId().equals(parentId))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You not allowed to commit this health check form");
+
+        if(healthCheckFormEntity.getCommit() != null && healthCheckFormEntity.getCommit()) 
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check form already committed");
+
+        healthCheckFormEntity.setCommit(request.isCommit());
+        healthCheckFormEntity.setNotes(request.getNote());
+        healthCHeckFormRepository.save(healthCheckFormEntity);
+    }
+
+    public void commitVaccineForm(Long parentId, Long vaccineFormId, CommitVaccineFormRequest request) {
+        Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findVaccineFormEntityByvaccineFormId(vaccineFormId);
+        if(vaccineFormOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
+        VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
+        if(vaccineFormEntity.getParent() == null || !vaccineFormEntity.getParent().getUserId().equals(parentId))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You not allowed to commit this vaccine form");
+
+        if(vaccineFormEntity.getCommit() != null && vaccineFormEntity.getCommit()) 
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine form already committed");
+
+        vaccineFormEntity.setCommit(request.isCommit());
+        vaccineFormEntity.setNote(request.getNote());
+        vaccineFormRepository.save(vaccineFormEntity);
     }
 }

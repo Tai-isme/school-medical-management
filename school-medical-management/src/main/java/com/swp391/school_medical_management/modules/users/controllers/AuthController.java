@@ -57,7 +57,6 @@ public class AuthController {
             return ResponseEntity.ok(response);
     }
 
-
     @PostMapping("/blacklisted")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> addTokenToBlacklist(@Valid @RequestBody BlacklistTokenRequest request) {
@@ -81,16 +80,17 @@ public class AuthController {
     }
 
     @PostMapping("/phone")
-    public ResponseEntity<LoginResponse> loginWithPhone(@RequestBody IdTokenRequest request) {
+    public ResponseEntity<LoginResponse> loginWithPhone(@Valid @RequestBody IdTokenRequest request) {
         LoginResponse response = authService.phoneLogin(request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/google")
-    public ResponseEntity<LoginResponse> loginWithGoogle(@RequestBody IdTokenRequest request) {
+    public ResponseEntity<LoginResponse> loginWithGoogle(@Valid @RequestBody IdTokenRequest request) {
         LoginResponse response = authService.googleLogin(request);
         return ResponseEntity.ok(response);
     }
+    
     @GetMapping("/me")
     public ResponseEntity<?> me() {
         String id = SecurityContextHolder.getContext().getAuthentication().getName();

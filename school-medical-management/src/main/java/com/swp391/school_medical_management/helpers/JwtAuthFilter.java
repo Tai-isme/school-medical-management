@@ -118,8 +118,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-
-
         userId = jwtService.getUserIdFromJwt(jwt);
         role = jwtService.getRoleFromJwt(jwt);
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
