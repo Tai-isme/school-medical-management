@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<title>Medical Request Form</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 30px auto;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #ccc;
+  }
+  h2 {
+    text-align: center;
+    color: #2c3e50;
+  }
+  form label {
+    display: block;
+    margin: 12px 0 6px;
+    font-weight: bold;
+    color: #34495e;
+  }
+  input[type="text"],
+  input[type="number"],
+  input[type="datetime-local"] {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  #medicine-details {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  .medicine-detail {
+    background: #fff;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+  }
+  .medicine-detail h4 {
+    margin-top: 0;
+    color: #2980b9;
+  }
+  .medicine-detail label {
+    font-weight: normal;
+    margin-top: 8px;
+  }
+  .medicine-detail button {
+    margin-top: 10px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .medicine-detail button:hover {
+    background-color: #c0392b;
+  }
+  button[type="button"] {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button[type="button"]:hover {
+    background-color: #1e8449;
+  }
+  button[type="submit"] {
+    width: 100%;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  button[type="submit"]:hover {
+    background-color: #21618c;
+  }
+</style>
+<script>
+function addMedicineDetail() {
+    const container = document.getElementById('medicine-details');
+    const index = container.children.length;
+
+    const div = document.createElement('div');
+    div.className = 'medicine-detail';
+    div.innerHTML = `
+      <h4>Thuốc ${index + 1}</h4>
+      <label>Medicine Name: <input name="medicineName" type="text" required></label>
+      <label>Quantity: <input name="quantity" type="number" min="1" required></label>
+      <label>Instructions: <input name="instructions" type="text"></label>
+      <label>Time: <input name="time" type="datetime-local" required></label>
+      <button type="button" onclick="this.parentElement.remove()">Xóa thuốc</button>
+    `;
+    container.appendChild(div);
+}
+
+function gatherData() {
+    const requestName = document.getElementById('requestName').value;
+    const note = document.getElementById('note').value;
+    const studentId = Number(document.getElementById('studentId').value);
+
+    const medicineDetails = [];
+    const details = document.querySelectorAll('.medicine-detail');
+    details.forEach(div => {
+        medicineDetails.push({
+            medicineName: div.querySelector('input[name="medicineName"]').value,
+            quantity: Number(div.querySelector('input[name="quantity"]').value),
+            instructions: div.querySelector('input[name="instructions"]').value,
+            time: div.querySelector('input[name="time"]').value
+        });
+    });
+
+    const data = {
+        requestName,
+        note,
+        studentId,
+        medicalRequestDetailRequests: medicineDetails
+    };
+
+    console.log('Dữ liệu gửi:', data);
+    alert('Xem console để kiểm tra dữ liệu!');
+    // Gọi API ở đây nếu cần
+}
+</script>
+</head>
+<body>
+  <h2>Form Medical Request</h2>
+  <form onsubmit="event.preventDefault(); gatherData();">
+    <label>Request Name: <input id="requestName" type="text" required></label>
+    <label>Note: <input id="note" type="text"></label>
+    <label>Student ID: <input id="studentId" type="number" required></label>
+
+    <div id="medicine-details">
+      <!-- Thuốc sẽ được thêm vào đây -->
+    </div>
+    <button type="button" onclick="addMedicineDetail()">Thêm thuốc</button><br/><br/>
+
+    <button type="submit">Gửi yêu cầu</button>
+  </form>
+</body>
+</html>

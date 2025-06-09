@@ -1,0 +1,192 @@
+/* General container styling */
+.medical-incident-container {
+  font-family: 'Arial', sans-serif;
+  max-width: 1500px; /* Adjust as needed */
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f0f8ff; /* Light blue background for the whole form */
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #a7d9ff; /* Border matching the image */
+  text-align: center;
+}
+
+.main-title {
+  color: #333;
+  font-size: 28px;
+  margin-bottom: 25px;
+  font-weight: bold;
+}
+
+/* Main content area (flex container for left and right panels) */
+.incident-content {
+  display: flex;
+  background-color: #fff; /* White background for the inner content area */
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Left Panel - Student Overview (reused styling from previous components) */
+.left-panel {
+  flex: 1;
+  background-color: #e0f2ff; /* Lighter blue for left section */
+  border-right: 1px solid #cceeff;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.left-panel h2 {
+  color: #0056b3;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.student-profile-container .student-selector {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  font-size: 18px;
+  width: 80%; /* Adjust width as in image */
+}
+
+.incident-student-selector {
+  background-color: #e3f1ff;
+  color: #222;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  width: 80%;
+  font-weight: bold;
+  font-size: 18px;
+  /* Thêm các style riêng nếu muốn */
+}
+
+.avatar-section {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-color: #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  margin-bottom: 15px;
+  border: 3px solid #007bff; /* Blue border for avatar */
+}
+
+.student-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.student-id-display,
+.student-class-display {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.student-id-display .svg-inline--fa { /* Styling for Font Awesome icon */
+  margin-right: 8px;
+  color: #007bff;
+}
+
+/* Right Panel - Incident Details Table */
+.right-panel-incident {
+  flex: 4;
+  background-color: #f8fcff;
+  padding: 25px;
+  text-align: left;
+}
+
+.right-panel-incident h2 {
+  color: #0056b3;
+  font-size: 22px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.incident-table-wrapper {
+  overflow-x: auto; /* Enable horizontal scrolling if table is too wide */
+  border: 1px solid #a7d9ff; /* Border around the table */
+  border-radius: 8px;
+}
+
+.incident-table-wrapper table {
+  width: 100%;
+  border-collapse: collapse; /* Collapse borders between cells */
+  background-color: #e0f2ff; /* Background color for the table similar to image */
+  min-width: 600px; /* Minimum width for table to prevent squishing */
+}
+
+.incident-table-wrapper th,
+.incident-table-wrapper td {
+  border: 1px solid #a7d9ff; /* Cell borders */
+  padding: 12px 15px;
+  text-align: left;
+  color: #333;
+}
+
+.incident-table-wrapper thead th {
+  background-color: #007bff; /* Header background color */
+  color: white;
+  font-weight: bold;
+  text-align: center; /* Center align header text */
+  white-space: nowrap; /* Prevent header text from wrapping */
+}
+
+.incident-table-wrapper tbody tr {
+  background-color: #f0f8ff; /* Alternate row color */
+}
+
+.incident-table-wrapper tbody tr:nth-child(even) {
+  background-color: #e6f7ff; /* Slightly different color for even rows */
+}
+
+/* === Thêm hoặc chỉnh sửa phần này cho cột 'Sự cố' === */
+.incident-table-wrapper td:nth-child(1) { /* Áp dụng cho cột đầu tiên (Sự cố) */
+  width: 150px; /* Chiều rộng mặc định 50px */
+  min-width: 50px; /* Đảm bảo chiều rộng tối thiểu là 50px */
+  white-space: normal; /* Cho phép text xuống dòng */
+  word-break: break-word; /* Nếu từ quá dài, sẽ tự động ngắt từ */
+  box-sizing: border-box; /* Đảm bảo padding và border được tính vào chiều rộng */
+}
+
+.incident-table-wrapper td {
+  text-align: center;
+}
+
+/* Style for the last column (Mô tả chi tiết) to wrap text */
+.incident-table-wrapper td:last-child {
+  white-space: normal; /* Allow text to wrap naturally */
+  word-break: break-word; /* Break long words if necessary */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .incident-content {
+    flex-direction: column; /* Stack panels on smaller screens */
+  }
+
+  .left-panel {
+    border-right: none;
+    border-bottom: 1px solid #cceeff;
+    padding-bottom: 20px;
+  }
+
+  .incident-table-wrapper {
+    overflow-x: scroll; /* Force scroll for table on small screens */
+  }
+
+  .incident-table-wrapper table {
+    min-width: 600px; /* Maintain minimum width for table */
+  }
+}

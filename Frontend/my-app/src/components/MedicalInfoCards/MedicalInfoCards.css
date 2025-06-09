@@ -1,0 +1,114 @@
+/* General container for the whole section */
+.medical-info-container {
+  font-family: 'Arial', sans-serif;
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #fff; /* Light background for the whole page */
+  min-height: 100vh; /* Ensure it takes full height */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Main Title */
+.main-title {
+  color: #333;
+  font-size: 36px;
+  margin-bottom: 50px;
+  font-weight: bold;
+}
+
+/* Grid for the cards */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive grid */
+  gap: 30px; /* Space between cards */
+  max-width: 1200px; /* Max width for the grid */
+  width: 100%;
+}
+
+/* Individual Card Styling */
+.info-card {
+  background-color: #8bbdfc; /* Blue background for cards, similar to image */
+  color: white;
+  padding: 25px;
+  border-radius: 20px; /* More rounded corners */
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-8px); /* Slight lift on hover */
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Icon Wrapper Styling */
+.card-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white background for icon */
+  border-radius: 50%; /* Circular background */
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.card-icon {
+  font-size: 40px; /* Size of the icon */
+  color: white; /* Color of the icon */
+}
+
+/* Card Title */
+.card-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: white; /* Ensure title is white */
+}
+
+/* Card Description */
+.card-description {
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9); /* Slightly transparent white for description */
+  margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cards-grid {
+    grid-template-columns: 1fr; /* Stack cards on smaller screens */
+  }
+
+  .main-title {
+    font-size: 30px;
+    margin-bottom: 30px;
+  }
+
+  .info-card {
+    padding: 20px;
+  }
+
+  .card-icon-wrapper {
+    width: 70px;
+    height: 70px;
+  }
+
+  .card-icon {
+    font-size: 35px;
+  }
+
+  .card-title {
+    font-size: 22px;
+  }
+
+  .card-description {
+    font-size: 14px;
+  }
+}
