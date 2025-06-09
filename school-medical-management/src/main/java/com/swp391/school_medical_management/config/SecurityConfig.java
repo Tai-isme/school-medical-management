@@ -46,7 +46,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/api/test" // Example endpoint for testing
+                                "/api/test"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

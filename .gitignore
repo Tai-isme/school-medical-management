@@ -1,0 +1,50 @@
+# Build
+/target/
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+/.idea/
+/*.iml
+*.classpath
+*.project
+*.settings/
+
+# Maven
+/logs/
+*.mvn/
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+/target/
+
+# Gradle
+.gradle/
+build/
+!gradle-wrapper.jar
+
+# Environment & config
+.env
+*.properties
+application.yml
+application.properties
+
+# Bỏ qua thư mục cấu hình IDE
+.idea/
+.vscode/
+
+# Bỏ qua các thư mục project con không muốn đẩy lên
+FE/
+my-app/
+school-medical-management-main/
+
+# Bỏ qua các file không cần push
+README.md
+database.sql

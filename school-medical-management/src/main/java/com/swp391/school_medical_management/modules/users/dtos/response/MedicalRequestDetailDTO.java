@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 public class MedicalRequestDetailDTO {
     private int detailId;
     private String medicineName;
-    private int quantity;
+    private String dosage;
     private String instruction;
-    private Time time;
+    private String time;
     private int requestId;
 }

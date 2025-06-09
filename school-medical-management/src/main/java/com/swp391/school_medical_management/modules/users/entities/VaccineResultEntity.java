@@ -1,6 +1,6 @@
 package com.swp391.school_medical_management.modules.users.entities;
 
-import java.sql.Time;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,19 +18,27 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "medical_request_detail")
-public class MedicalRequestDetailEntity {
+@Table(name = "vaccine_result")
+public class VaccineResultEntity {
+
     @Id
-    @Column(name = "detail_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int detailId;   
-    @Column(name = "medicine_name")
-    private String medicineName;
-    private String dosage;
-    private String instruction;
-    private String time;
+    @Column(name = "vaccine_result_id")
+    private Integer vaccineResultId;
+
+    @Column(name = "status_health")
+    private String statusHealth;
+
+    @Column(name = "result_note")
+    private String resultNote;
+
+    @Column(name = "reaction")
+    private String reaction;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "request_id", referencedColumnName = "request_id")
-    private MedicalRequestEntity medicalRequest;
+    @JoinColumn(name = "vaccine_form_id", referencedColumnName = "vaccine_form_id")
+    private VaccineFormEntity vaccineFormEntity;
 }

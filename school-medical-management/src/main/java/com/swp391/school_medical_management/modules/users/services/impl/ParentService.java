@@ -167,7 +167,6 @@ public class ParentService {
 
 
     public MedicalRequestDTO createMedicalRequest(long parentId, MedicalRequest request) {
-        logger.info("Student ID: {}", request.getStudentId());
         Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
         if(studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
@@ -193,14 +192,18 @@ public class ParentService {
         if(request.getMedicalRequestDetailRequests() == null || request.getMedicalRequestDetailRequests().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical request details cannot be empty");
         }
+
+        if (request.getDate() == null || request.getDate().isBefore(java.time.LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request date must be today or in the future");
+        }
+
         MedicalRequestEntity medicalRequestEntity = new MedicalRequestEntity();
         medicalRequestEntity.setRequestName(request.getRequestName());
         medicalRequestEntity.setNote(request.getNote());
         medicalRequestEntity.setStatus("PROCESSING");
-        medicalRequestEntity.setCommit(false);
         medicalRequestEntity.setStudent(student);
         medicalRequestEntity.setParent(parent);
-        medicalRequestEntity.setDate(LocalDateTime.now());
+        medicalRequestEntity.setDate(request.getDate());
 
         medicalRequestEntity.setMedicalRequestDetailEntities(new ArrayList<>());
 
@@ -208,7 +211,7 @@ public class ParentService {
             MedicalRequestDetailEntity medicalRequestDetailEntity = new MedicalRequestDetailEntity();
             medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
             medicalRequestDetailEntity.setInstruction(details.getInstructions());
-            medicalRequestDetailEntity.setQuantity(details.getQuantity());
+            medicalRequestDetailEntity.setDosage(details.getDosage());
             medicalRequestDetailEntity.setTime(details.getTime());
 
             medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
@@ -277,6 +280,7 @@ public class ParentService {
         }
         medicalRequestEntity.setRequestName(request.getRequestName());
         medicalRequestEntity.setNote(request.getNote());
+        medicalRequestEntity.setDate(request.getDate());
     
         medicalRequestEntity.getMedicalRequestDetailEntities().clear();
 
@@ -284,7 +288,7 @@ public class ParentService {
                 MedicalRequestDetailEntity medicalRequestDetailEntity = new MedicalRequestDetailEntity();
                 medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
                 medicalRequestDetailEntity.setInstruction(details.getInstructions());
-                medicalRequestDetailEntity.setQuantity(details.getQuantity());
+                medicalRequestDetailEntity.setDosage(details.getDosage());
                 medicalRequestDetailEntity.setTime(details.getTime());
                 medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
                 medicalRequestEntity.getMedicalRequestDetailEntities().add(medicalRequestDetailEntity);
