@@ -13,7 +13,6 @@ public class MedicalRequestDetailDTO {
     private int detailId;
     private String medicineName;
     private String dosage;
-    private String instruction;
     private String time;
     private int requestId;
 }

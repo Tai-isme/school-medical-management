@@ -13,10 +13,6 @@ public class MedicalRequestDetailRequest {
 
     @NotBlank(message = "Dosage cannot be blank")
     private String dosage;
-    
-    @NotBlank(message = "Instructions are required")
-    @Size(max = 500, message = "Instructions must be at most 500 characters")
-    private String instructions;
 
     @NotBlank(message = "Time cannot be blank")
     private String time;

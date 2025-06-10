@@ -210,7 +210,6 @@ public class ParentService {
         for (MedicalRequestDetailRequest details : request.getMedicalRequestDetailRequests()) {
             MedicalRequestDetailEntity medicalRequestDetailEntity = new MedicalRequestDetailEntity();
             medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
-            medicalRequestDetailEntity.setInstruction(details.getInstructions());
             medicalRequestDetailEntity.setDosage(details.getDosage());
             medicalRequestDetailEntity.setTime(details.getTime());
 
@@ -287,7 +286,6 @@ public class ParentService {
             for (MedicalRequestDetailRequest details : request.getMedicalRequestDetailRequests()) {
                 MedicalRequestDetailEntity medicalRequestDetailEntity = new MedicalRequestDetailEntity();
                 medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
-                medicalRequestDetailEntity.setInstruction(details.getInstructions());
                 medicalRequestDetailEntity.setDosage(details.getDosage());
                 medicalRequestDetailEntity.setTime(details.getTime());
                 medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);

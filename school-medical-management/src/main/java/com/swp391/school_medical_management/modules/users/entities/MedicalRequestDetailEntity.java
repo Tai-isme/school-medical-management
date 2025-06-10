@@ -27,7 +27,6 @@ public class MedicalRequestDetailEntity {
     @Column(name = "medicine_name")
     private String medicineName;
     private String dosage;
-    private String instruction;
     private String time;
 
     @ManyToOne
