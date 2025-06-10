@@ -1,9 +1,7 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
 import com.swp391.school_medical_management.modules.users.services.impl.ParentService;
@@ -131,5 +129,16 @@ public class ParentController {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         parentService.commitVaccineForm(Long.parseLong(parentId), vaccineFormId, request);        
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/feedback/submit")
+    public ResponseEntity<String> submitFeedback(@RequestBody FeedbackRequest request) {
+        parentService.submitFeedback(request);
+        return ResponseEntity.ok("SUCCESSFULLY SUBMITTED");
+    }
+
+    @GetMapping("/getfeedback/{parentId}")
+    public ResponseEntity<List<FeedbackDTO>> getParentFeedbacks(@PathVariable Long parentId) {
+        return ResponseEntity.ok(parentService.getFeedbacksByParent(parentId));
     }
 }

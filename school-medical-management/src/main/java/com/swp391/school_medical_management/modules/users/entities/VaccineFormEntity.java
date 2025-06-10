@@ -14,7 +14,7 @@ public class VaccineFormEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "vaccine_form_id")
-    private Integer vaccineFormId;
+    private Long vaccineFormId;
 
     @ManyToOne
     @JoinColumn(name = "vaccine_id", referencedColumnName = "vaccine_id")

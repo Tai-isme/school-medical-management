@@ -1,29 +1,9 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequestDetailRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineHistoryRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
-import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
-import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
-import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.entities.*;
+import com.swp391.school_medical_management.modules.users.repositories.*;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -35,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -57,6 +38,12 @@ public class ParentService {
     @Autowired private HealthCheckFormRepository healthCHeckFormRepository;
 
     @Autowired private VaccineFormRepository vaccineFormRepository;
+
+    @Autowired private FeedbackRepository feedbackRepository;
+
+    @Autowired private VaccineResultRepository vaccineResultRepository;
+
+    @Autowired private HealthCheckResultRepository healthCheckResultRepository;
 
 
     public MedicalRecordDTO createMedicalRecord(Long parentId, MedicalRecordsRequest request) {
@@ -167,7 +154,6 @@ public class ParentService {
 
 
     public MedicalRequestDTO createMedicalRequest(long parentId, MedicalRequest request) {
-        logger.info("Student ID: {}", request.getStudentId());
         Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
         if(studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
@@ -193,14 +179,18 @@ public class ParentService {
         if(request.getMedicalRequestDetailRequests() == null || request.getMedicalRequestDetailRequests().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical request details cannot be empty");
         }
+
+        if (request.getDate() == null || request.getDate().isBefore(java.time.LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request date must be today or in the future");
+        }
+
         MedicalRequestEntity medicalRequestEntity = new MedicalRequestEntity();
         medicalRequestEntity.setRequestName(request.getRequestName());
         medicalRequestEntity.setNote(request.getNote());
         medicalRequestEntity.setStatus("PROCESSING");
-        medicalRequestEntity.setCommit(false);
         medicalRequestEntity.setStudent(student);
         medicalRequestEntity.setParent(parent);
-        medicalRequestEntity.setDate(LocalDateTime.now());
+        medicalRequestEntity.setDate(request.getDate());
 
         medicalRequestEntity.setMedicalRequestDetailEntities(new ArrayList<>());
 
@@ -208,7 +198,7 @@ public class ParentService {
             MedicalRequestDetailEntity medicalRequestDetailEntity = new MedicalRequestDetailEntity();
             medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
             medicalRequestDetailEntity.setInstruction(details.getInstructions());
-            medicalRequestDetailEntity.setQuantity(details.getQuantity());
+            medicalRequestDetailEntity.setDosage(details.getDosage());
             medicalRequestDetailEntity.setTime(details.getTime());
 
             medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
@@ -277,6 +267,7 @@ public class ParentService {
         }
         medicalRequestEntity.setRequestName(request.getRequestName());
         medicalRequestEntity.setNote(request.getNote());
+        medicalRequestEntity.setDate(request.getDate());
     
         medicalRequestEntity.getMedicalRequestDetailEntities().clear();
 
@@ -284,7 +275,7 @@ public class ParentService {
                 MedicalRequestDetailEntity medicalRequestDetailEntity = new MedicalRequestDetailEntity();
                 medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
                 medicalRequestDetailEntity.setInstruction(details.getInstructions());
-                medicalRequestDetailEntity.setQuantity(details.getQuantity());
+                medicalRequestDetailEntity.setDosage(details.getDosage());
                 medicalRequestDetailEntity.setTime(details.getTime());
                 medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
                 medicalRequestEntity.getMedicalRequestDetailEntities().add(medicalRequestDetailEntity);
@@ -338,4 +329,50 @@ public class ParentService {
         vaccineFormEntity.setNote(request.getNote());
         vaccineFormRepository.save(vaccineFormEntity);
     }
+
+    public void submitFeedback(FeedbackRequest request) {
+        UserEntity parent = userRepository.findById(request.getParentId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DON'T FIND TO PARENT"));
+
+        FeedbackEntity feedback = FeedbackEntity.builder()
+                .satisfaction(request.getSatisfaction())
+                .comment(request.getComment())
+                .createdAt(LocalDateTime.now())
+                .status("NOT_REPLIED")
+                .parent(parent)
+                .build();
+        if (request.getVaccineResultId() != null) {
+            VaccineResultEntity vr = vaccineResultRepository.findById(request.getVaccineResultId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DON'T FIND TO VACCINE RESULT"));
+            feedback.setVaccineResult(vr);
+        }
+        if (request.getHealthResultId() != null) {
+            HealthCheckResultEntity hr = healthCheckResultRepository.findById(request.getHealthResultId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DON'T FIND TO HEALTH CHECK RESULT"));
+            feedback.setHealthResult(hr);
+        }
+        feedbackRepository.save(feedback);
+    }
+
+
+    public List<FeedbackDTO> getFeedbacksByParent(Long parentId) {
+        UserEntity parent = userRepository.findById(parentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DON'T FIND TO PARENT"));
+        List<FeedbackEntity> feedbackList = feedbackRepository.findByParent(parent);
+        if (feedbackList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return feedbackList.stream()
+                .map(fb -> new FeedbackDTO(
+                        fb.getFeedbackId(),
+                        fb.getSatisfaction(),
+                        fb.getComment(),
+                        fb.getStatus(),
+                        fb.getParent().getUserId(),
+                        fb.getVaccineResult() != null ? fb.getVaccineResult().getVaccineResultId() : null,
+                        fb.getHealthResult() != null ? fb.getHealthResult().getHealthResultId() : null
+                ))
+                .collect(Collectors.toList());
+    }
+
 }

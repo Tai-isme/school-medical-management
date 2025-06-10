@@ -1,6 +1,6 @@
 package com.swp391.school_medical_management.modules.users.entities;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -35,16 +35,13 @@ public class MedicalRequestEntity {
     private String requestName;
 
     @Column(name = "date")
-    private LocalDateTime date;
+    private LocalDate date;
 
     @Column(name = "note", length = 255)
     private String note;
 
     @Column(name = "status", length = 50)
     private String status;
-
-    @Column(name = "commit")
-    private Boolean commit;
 
     @ManyToOne
     @JoinColumn(name = "student_id", referencedColumnName = "student_id")

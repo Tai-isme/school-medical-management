@@ -13,6 +13,9 @@ import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.lang.classfile.ClassFile.Option;
@@ -21,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -178,5 +182,16 @@ public class JwtService {
     public boolean isBlackListedToken(String token) {
         return blacklistedTokenRepository.existsByToken(token);
     }
+
+
+    public Authentication getAuthentication(String token) {
+    String userId = getUserIdFromJwt(token);  // Hàm bạn đã có để lấy userId
+    String role = getRoleFromJwt(token);      // Hàm bạn đã có để lấy role
+    if (userId == null) return null;
+
+    List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+
+    return new UsernamePasswordAuthenticationToken(userId, null, authorities);
+}
 
 }

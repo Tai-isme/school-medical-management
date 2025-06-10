@@ -1,5 +1,6 @@
 package com.swp391.school_medical_management.modules.users.dtos.request;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.validation.Valid;
@@ -17,6 +18,8 @@ public class MedicalRequest {
 
     @Size(max = 500, message = "Note must be at most 500 characters")
     private String note;
+
+    private LocalDate date;
 
     @Positive(message = "Student ID must be a positive number")
     private long studentId;
