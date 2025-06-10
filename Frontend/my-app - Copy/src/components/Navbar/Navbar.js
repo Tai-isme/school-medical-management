@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
 import '../Navbar/Navbar.css';
 import Login from '../../pages/Login/Login'; // Đảm bảo đường dẫn đúng đến component Login
 
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Lấy user từ localStorage khi component mount hoặc khi login
@@ -32,18 +30,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('users');
     localStorage.removeItem('token');
-    localStorage.removeItem('students');
     setUser(null);
-  };
-
-  // Hàm xử lý đăng nhập
-  const handleLogin = async (loginData) => {
-    // ...gọi API đăng nhập...
-    // Giả sử kết quả trả về có role
-    const user = { role: "admin" }; // hoặc "nurse", "parent"
-    localStorage.setItem("user", JSON.stringify(user));
-
-
   };
 
   return (

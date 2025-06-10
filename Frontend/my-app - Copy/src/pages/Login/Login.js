@@ -2,7 +2,6 @@ import '../Login/Login.css';
 import { useState, useEffect } from 'react';
 import { auth, googleProvider } from '../../../src/config/firebase.js';
 import { signInWithPopup } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
 
 function Login({onClose}){
     // Khai báo các biến để nhận giá trị
@@ -14,7 +13,6 @@ function Login({onClose}){
     const [selectedRole, setSelectedRole] = useState('parent'); // Giá trị mặc định là 'parent'
     const [error, setError] = useState('');
     const [data, setData] = useState('');
-    const navigate = useNavigate();
 
     useEffect(() => {
         setUsername(''); // Reset username và password khi chuyển sang parent
@@ -75,16 +73,6 @@ const handleGoogleLogin = async () => {
       localStorage.setItem('users', JSON.stringify(data.users));
       localStorage.setItem('students', JSON.stringify(data.students));
       onClose();
-      // Giả sử kết quả trả về có role
-    const user = { role: "admin" }; // hoặc "nurse", "parent"
-    localStorage.setItem("user", JSON.stringify(user));
-
-    // Chuyển hướng theo role
-    if (user.role === "admin" || user.role === "nurse") {
-      navigate("/dashboard");
-    } else if (user.role === "parent") {
-      navigate("/");
-    }
     }else {
       setError("Tài khoản không tồn tại!");
 
@@ -161,6 +149,8 @@ const handleGoogleLogin = async () => {
               <button onClick={handleLoginUsernamePassword} type="submit" className="login-submit">Đăng nhập</button>
                 </>
             )}
+              
+            
 
             <button className="google-login" onClick={handleGoogleLogin}>Đăng nhập bằng tài khoản Google</button>
             <button className='btn-close-login-form' onClick={Close}>X</button>

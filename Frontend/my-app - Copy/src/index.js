@@ -11,7 +11,7 @@ import { faHouseMedicalCircleExclamation } from '@fortawesome/free-solid-svg-ico
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 
 
-
+import "./pages/adminHome1.css"
 
 // Import các icon từ FontAwesome
 library.add(faNotesMedical,faSuitcaseMedical,faHouseMedical,faHouseMedicalCircleExclamation,faCaretDown); // === Thêm faNotesMedical vào đây ===

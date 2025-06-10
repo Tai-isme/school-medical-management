@@ -1,0 +1,280 @@
+/* General container styling */
+.instruction-form-container {
+  font-family: 'Arial', sans-serif;
+  max-width: 1500px; /* Adjust as needed */
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f0f8ff; /* Light blue background for the whole form */
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #a7d9ff; /* Border matching the image */
+  text-align: center;
+}
+
+.instruction-form-container h1 {
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 24px;
+}
+
+.form-content {
+  display: flex;
+  background-color: #fff; /* White background for the inner content area */
+  border-radius: 10px;
+  overflow: hidden; /* Ensures no content overflows rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.student-info-section,
+.prescription-details-section {
+  padding: 25px;
+}
+
+/* Student Info Section */
+.student-info-section {
+  flex: 1; /* Takes up 1 part of the flex container */
+  background-color: #e0f2ff; /* Lighter blue for student section */
+  border-right: 1px solid #cceeff;
+  display: flex;
+  flex-direction: column;
+  
+}
+
+.student-info-section h2 {
+  color: #0056b3;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.student-profile {
+  text-align: center;
+}
+
+.student-profile .student-name {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.avatar-placeholder {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background-color: #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  margin: 0 auto 15px;
+  border: 2px solid #a7d9ff;
+}
+
+.avatar-img {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #a7d9ff;
+  background: #fff;
+  display: block;
+  margin: 0 auto;
+}
+
+.student-id,
+.student-class {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+/* Add some margin to the icon to separate from text */
+.student-id i {
+  margin-right: 8px;
+  color: #007bff;
+}
+
+
+/* Prescription Details Section */
+.prescription-details-section {
+  flex: 2; /* Takes up 2 parts of the flex container */
+  background-color: #f8fcff; /* Slightly different background for distinction */
+  text-align: left; /* Align text left within this section */
+}
+
+.prescription-details-section h2 {
+  color: #0056b3;
+  margin-bottom: 20px;
+  font-size: 20px;
+  text-align: center; /* Center the title */
+}
+
+.medicine-list {
+  margin-bottom: 20px;
+}
+
+.medicine-item {
+  background-color: #e0f2ff; /* Background for each medicine input group */
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.input-group label {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.input-group .input,
+.input-group input,
+.input-group select {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #bcd;
+  font-size: 16px;
+  background: #f8fbff;
+}
+
+.input-group input,
+.note-section textarea {
+  width: calc(100% - 0px); /* Adjust for padding */
+  padding: 10px;
+  border: 1px solid #a7d9ff; /* Light blue border for inputs */
+  border-radius: 5px;
+  font-size: 15px;
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  background-color: #f8fcff; /* Light background for input fields */
+}
+
+.input-group input.purpose-input{
+  width: calc(100% - 0px);
+}
+
+.input-group input:focus,
+.note-section textarea:focus {
+  outline: none;
+  border-color: #007bff; /* Highlight border on focus */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.add-medicine-btn {
+  background-color: transparent; /* No background */
+  color: #007bff; /* Blue text */
+  border: none; /* No border */
+  padding: 8px 0;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: left; /* Align to the left as in the image */
+  width: auto; /* Take natural width */
+  margin-left: 15px; /* Indent like the image */
+}
+
+.add-medicine-btn:hover {
+  text-decoration: underline;
+}
+
+.note-section {
+  margin-top: 25px;
+  background-color: #e0f2ff; /* Background for note section */
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.note-section label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 14px;
+}
+
+.note-section textarea {
+  width: 100%;
+  min-height: 80px; /* Minimum height for textarea */
+  resize: vertical; /* Allow vertical resizing */
+}
+
+.submit-btn {
+  background-color: #007bff; /* Blue background for submit button */
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 25px;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #0056b3;
+}
+
+.usage-time-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.usage-time-options label {
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.usage-time-options input[type="checkbox"] {
+  accent-color: #007bff; /* Màu xanh đẹp cho checkbox */
+  width: 18px;
+  height: 18px;
+}
+
+.student-profile select {
+  width: 50%;
+  padding: 10px 14px;
+  border: 1.5px solid #a7d9ff;
+  border-radius: 6px;
+  background: #f8fcff;
+  font-size: 16px;
+  color: #222;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  appearance: none; /* Ẩn mũi tên mặc định */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+}
+
+.student-profile select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px #b3e0ff;
+}
+
+.student-profile option {
+  background: #fff;
+  color: #222;
+  font-size: 16px;
+}
+
+.select-wrapper select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 32px; /* Để icon không đè lên text */
+}

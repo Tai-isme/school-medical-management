@@ -1,0 +1,487 @@
+/* General container styling */
+.student-profile-container {
+  font-family: 'Arial', sans-serif;
+  max-width: 1500px; /* Adjust as needed */
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f0f8ff; /* Light blue background for the whole form */
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #a7d9ff; /* Border matching the image */
+  text-align: center;
+}
+
+.main-title {
+  color: #333;
+  font-size: 28px;
+  margin-bottom: 25px;
+  font-weight: bold;
+}
+
+/* Tabs styling */
+.tabs {
+  display: flex;
+  justify-content: flex-start; /* Align tabs to the left */
+  margin-bottom: 20px;
+  background-color: #e0f2ff; /* Background for tabs area */
+  border-bottom: 2px solid #a7d9ff;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  padding: 5px 0;
+}
+
+.tab-button {
+  background-color: transparent;
+  border: none;
+  padding: 12px 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  color: #007bff;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  color: #0056b3;
+  border-bottom-color: #0056b3;
+  background-color: #cceeff; /* Slightly darker background for active tab */
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.tab-button:hover:not(.active) {
+  background-color: #eaf6ff;
+}
+
+/* Main content area */
+.profile-content {
+  display: flex;
+  background-color: #fff; /* White background for the inner content area */
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Left Panel - Student Overview */
+.left-panel {
+  flex: 1;
+  background-color: #e0f2ff; /* Lighter blue for left section */
+  border-right: 1px solid #cceeff;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.left-panel h2 {
+  color: #0056b3;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.profile-content .left-panel .student-selector {
+  background-color: #e3f1ff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  font-size: 18px;
+  width: 80%; /* Adjust width as in image */
+}
+
+.profile-content .avatar-section {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background-color: #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  margin-bottom: 15px;
+  border: 3px solid #007bff; /* Blue border for avatar */
+}
+
+.student-avatar {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #a7d9ff;
+  background: #fff;
+  display: block;
+}
+
+.student-id-display,
+.student-class-display {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.student-id-display .svg-inline--fa { /* Styling for Font Awesome icon */
+  margin-right: 8px;
+  color: #007bff;
+}
+
+/* Right Panel - Student Details */
+.right-panel {
+  flex: 2;
+  background-color: #f8fcff;
+  padding: 25px;
+  text-align: left;
+}
+
+.right-panel h2 {
+  color: #0056b3;
+  font-size: 22px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.info-grid {
+  display: contents;
+  grid-template-columns: repeat(2, 1fr); /* Two columns for pairs of label/input */
+  gap: 15px 25px; /* Row and column gap */
+  margin-bottom: 30px;
+}
+
+.info-row {
+  display: flex; /* Use flexbox for label and input */
+  align-items: center; /* Vertically align them */
+  margin-bottom: 10px; /* Space between rows */
+}
+
+.info-row.full-width {
+  grid-column: 1 / -1; /* Make the note field span full width */
+}
+
+.info-row label {
+  flex-basis: 120px; /* Fixed width for labels */
+  min-width: 10px; /* Ensure labels don't shrink */
+  font-weight: bold;
+  color: #333;
+  font-size: 15px;
+  margin-right: 15px; /* Space between label and input */
+  text-align: left; /* Align label text to the right, as in your image */
+}
+
+.info-row input,
+.info-row textarea {
+  flex-grow: 1; /* Input/textarea takes remaining space */
+  padding: 10px;
+  border: 1px solid #a7d9ff;
+  border-radius: 5px;
+  font-size: 15px;
+  background-color: #f8fcff;
+  box-sizing: border-box; /* Include padding and border in element's total width */
+  height: 38px; /* Fixed height for inputs to make them consistent */
+}
+
+.info-row textarea {
+  min-height: 80px; /* Adjust as needed for the textarea */
+  resize: vertical; /* Allow vertical resizing for textarea */
+}
+
+.info-row input:focus,
+.info-row textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Styling for non-editable inputs */
+.info-row input:read-only,
+.info-row textarea:read-only {
+  background-color: #e9ecef; /* Lighter background for read-only fields */
+  color: #495057;
+  cursor: default;
+}
+
+/* Styling for editable inputs */
+.info-row input.editable,
+.info-row textarea.editable {
+  background-color: #fff;
+  border-color: #007bff;
+}
+
+.buttons-container {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.action-button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 10px;
+  transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+  background-color: #0056b3;
+}
+
+.edit-button {
+  background-color: #007bff;
+}
+
+.save-button {
+  background-color: #28a745; /* Green for save button */
+}
+
+.save-button:hover {
+  background-color: #218838;
+}
+
+/* === NEW STYLES FOR VACCINE HISTORY TABLE === */
+.vaccine-history-section {
+  padding: 0; /* Remove padding from this section as table has its own padding */
+  /* border: 1px dashed #ccc; Removed border as per new design */
+  border-radius: 8px;
+  color: #666;
+  text-align: center;
+  min-height: 200px; /* Ensure section has some height */
+  display: flex;
+  flex-direction: column; /* Stack table and button vertically */
+  align-items: center; /* Center horizontally */
+  justify-content: flex-start; /* Align content to top */
+}
+
+.vaccine-table-wrapper {
+  overflow-x: auto; /* Enable horizontal scrolling if table is too wide */
+  border: 1px solid #000; /* Black border around the table matching image */
+  border-radius: 0; /* Remove border-radius for sharp corners */
+  width: 100%; /* Take full width of its parent */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Optional subtle shadow */
+}
+
+.vaccine-table-wrapper table {
+  width: 100%;
+  border-collapse: collapse; /* Collapse borders between cells */
+  background-color: #f0f8ff; /* Background color for the table body */
+  min-width: 400px; /* Minimum width for table to prevent squishing */
+  table-layout: fixed; /* Fix column widths based on content or explicit width */
+}
+
+.vaccine-table-wrapper th,
+.vaccine-table-wrapper td {
+  border: 1px solid #000; /* Black cell borders */
+  padding: 12px 15px;
+  text-align: left;
+  color: #333;
+}
+
+.vaccine-table-wrapper thead th {
+  background-color: #007bff; /* Header background color matching blue in image */
+  color: white;
+  font-weight: bold;
+  text-align: center; /* Center align header text */
+  white-space: nowrap; /* Prevent header text from wrapping */
+  height: 40px; /* Fixed height for header cells */
+  padding: 0 15px; /* Adjust padding for header */
+}
+
+.vaccine-table-wrapper tbody tr {
+  background-color: #e0f2ff; /* Light blue background for table rows, matching image */
+}
+
+/* Styling for input fields within vaccine table cells */
+.vaccine-table-wrapper td input[type="text"] {
+  width: 100%; /* Fill the entire cell width */
+  padding: 8px 10px;
+  border: none; /* No border for input inside table cell */
+  background-color: transparent; /* Transparent background */
+  font-size: 15px;
+  box-sizing: border-box;
+  text-align: left; /* Align text left */
+}
+
+.vaccine-table-wrapper td input[type="text"]:focus {
+  outline: none;
+  background-color: #fff; /* White background when editing */
+  border: 1px solid #007bff; /* Blue border when editing */
+  border-radius: 4px;
+}
+
+.vaccine-table-wrapper td input[type="text"]:read-only {
+  background-color: transparent; /* No background for read-only */
+  color: #333;
+  cursor: default;
+}
+
+.vaccine-table-wrapper td input[type="text"].editable {
+  background-color: #fff; /* White background for editable fields */
+}
+
+/* Adjust column widths if needed, based on content */
+.vaccine-table-wrapper th:nth-child(1),
+.vaccine-table-wrapper td:nth-child(1) {
+  width: 15%; /* Tên Vaccin */
+  white-space: normal; /* Allow text to wrap */
+  word-break: break-word;
+}
+
+
+.vaccine-table-wrapper th:nth-child(2),
+.vaccine-table-wrapper td:nth-child(2) {
+  width: 65%; /* Mô tả */
+  white-space: normal; /* Allow text to wrap */
+  word-break: break-word;
+}
+
+
+/* Add Row Button */
+.add-row-button {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 15px; /* Space above the button */
+  transition: background-color 0.3s ease;
+}
+
+.add-row-button:hover {
+  background-color: #0056b3;
+}
+
+.add-row-button.table-bottom-left {
+  margin-top: 12px;
+  margin-left: 0;
+  display: block;
+  float: left;
+}
+
+.note-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #a7d9ff;
+  border-radius: 5px;
+  font-size: 15px;
+  box-sizing: border-box;
+  background-color: #f8fcff;
+  resize: vertical;
+}
+/* Ghi chú bên thông tin chung (textarea trong info-row) */
+.note-textarea textarea {
+  min-height: 60px; /* Adjust as needed for the textarea */
+  resize: vertical; /* Allow vertical resizing for textarea */
+  flex-grow: 1; /* Input/textarea takes remaining space */
+  padding: 10px;
+  border: 1px solid #a7d9ff;
+  border-radius: 5px;
+  font-size: 15px;
+  background-color: #f8fcff;
+  box-sizing: border-box;
+}
+
+.note-textarea textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Styling for non-editable textarea */
+.note-textarea textarea:read-only {
+  background-color: #e3f3ff; /* Lighter background for read-only fields */
+  color: #495057;
+  cursor: default;
+  border: none;
+}
+
+/* Styling for editable textarea */
+.note-textarea textarea.editable {
+  background-color: #fff;
+  border-color: #007bff;
+
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-content {
+    flex-direction: column; /* Stack panels on smaller screens */
+  }
+
+  .left-panel {
+    border-right: none;
+    border-bottom: 1px solid #cceeff;
+    padding-bottom: 20px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr; /* Single column for info fields */
+  }
+
+  /* Keep label and input on the same line for smaller screens, but let label wrap if needed */
+  .info-row {
+    flex-direction: row; /* Keep them in a row */
+    align-items: center;
+    justify-content: space-between; /* Space out label and input */
+  }
+
+  .info-row label {
+    text-align: left; /* Align label text to left */
+    margin-right: 10px; /* Small margin */
+    margin-bottom: 0; /* Remove bottom margin */
+    flex-basis: 100px; /* Adjust width as needed for smaller screens */
+    min-width: 100px;
+  }
+
+  .info-row input,
+  .info-row textarea {
+    width: auto; /* Allow input to adjust width */
+    flex-grow: 1; /* Allow input to grow */
+  }
+
+  /* Vaccine table adjustments for smaller screens */
+  .vaccine-table-wrapper {
+    overflow-x: scroll; /* Force scroll for table on small screens */
+  }
+
+  .vaccine-table-wrapper table {
+    min-width: 400px; /* Ensure table doesn't get too squished */
+  }
+}
+
+/* Student select styling */
+.student-select {
+  width: 50%;
+  padding: 10px 14px;
+  border: 1.5px solid #a7d9ff;
+  border-radius: 6px;
+  background: #f8fcff;
+  font-size: 16px;
+  color: #222;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+}
+
+.student-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px #b3e0ff;
+}
+
+.student-select option {
+  background: #fff;
+  color: #222;
+  font-size: 16px;
+}
+

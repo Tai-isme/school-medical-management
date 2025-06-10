@@ -6,19 +6,26 @@ import StudentProfilePage from './pages/StudentProfilePage';
 import MedicalIncidentPage from './pages/MedicalIncidentPage';
 import NotificationPage from './pages/NotificationPage';
 // import các page khác nếu có
+import AdminHome from './pages/AdminHome'; // Giả sử bạn có một trang AdminHome
+import Navbar from './components/Navbar/Navbar';
+import ProtectedRoute from './routes/ProtectedRoute'; // hoặc './components/common/ProtectedRoute'
 
 function App() {
   return (
+    <>
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home />} /> 
         <Route path="/instruction-form" element={<InstructionFormPage />} />
         <Route path="/student-profile" element={<StudentProfilePage />} />
         <Route path="/medical-incident" element={<MedicalIncidentPage />} />
         <Route path="/notification" element={<NotificationPage />} />
-        {/* Thêm các route khác ở đây nếu cần */}
+        <Route path="/dashboard" element={<ProtectedRoute />} />
       </Routes>
     </Router>
+    </>
+
+
   );
 }
 

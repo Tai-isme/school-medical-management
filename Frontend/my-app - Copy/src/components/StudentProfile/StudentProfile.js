@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import './StudentProfile.css';
 import axios from 'axios';
-
+import './StudentProfile.css'; // Import CSS cho component này
+import { fetchMedicalRecords } from '../../api/studentApi';
 
 const StudentProfile = () => {
   const [activeTab, setActiveTab] = useState('general');
@@ -22,11 +22,18 @@ const StudentProfile = () => {
   });
   const [vaccineHistory, setVaccineHistory] = useState([]);
 
-  // Lấy students từ localStorage
   useEffect(() => {
-    const studentsData = JSON.parse(localStorage.getItem('students')) || [];
-    setStudents(studentsData);
-    if (studentsData.length > 0) setSelectedStudentId(studentsData[0].studentId);
+    const getRecords = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetchMedicalRecords(token);
+        setStudents(res.data);
+        if (res.data.length > 0) setSelectedStudentId(res.data[0].studentId);
+      } catch (err) {
+        alert('Không lấy được hồ sơ học sinh!');
+      }
+    };
+    getRecords();
   }, []);
 
   useEffect(() => {
@@ -39,7 +46,7 @@ const StudentProfile = () => {
         weight: selected.weight || '',
         height: selected.height || '',
         allergies: selected.allergies || '',
-        chronicDiseases: selected.chronicDisease || '',
+        chronicDiseases: selected.chronicDisease || '', // đúng tên trường backend trả về
         medicalHistory: selected.treatmentHistory || '',
         lastUpdated: selected.lastUpdate || '', // lấy đúng trường backend trả về
         note: selected.note || '',

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="064d91a6-4302-419b-9ffd-c3f266438c65" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Spring Repository" />
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/main/java/com/swp391/school_medical_management/modules/users/controllers/ParentController.java" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2xhxPPA9fd2X0mZPUdSqrZR8Z5g" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.school-medical-management [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.school-medical-management [install].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.SchoolMedicalManagementApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;newFrontend&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;F:/Ky_5_FPT/SWP/Project/Backend/school-medical-management/school-medical-management&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propCompiler&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Ky 5\SWP391\school-medical-management\school-medical-management\src\main\java\com\swp391\school_medical_management\modules\users\entities" />
+      <recent name="D:\Ky 5\SWP391\school-medical-management\school-medical-management\src\main\resources" />
+      <recent name="D:\Ky 5\SWP391\school-medical-management\school-medical-management\src\main\resources\static" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="SchoolMedicalManagementApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.swp391.school_medical_management.SchoolMedicalManagementApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.25410.129" />
+        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-IU-251.25410.129" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="064d91a6-4302-419b-9ffd-c3f266438c65" name="Changes" comment="" />
+      <created>1748404081729</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1748404081729</updated>
+      <workItem from="1748404082895" duration="3153000" />
+      <workItem from="1748407418657" duration="576000" />
+      <workItem from="1748408007563" duration="3239000" />
+      <workItem from="1748412879189" duration="1484000" />
+      <workItem from="1748414380028" duration="290000" />
+      <workItem from="1748414683831" duration="27000" />
+      <workItem from="1748414725215" duration="7000" />
+      <workItem from="1748414782891" duration="14000" />
+      <workItem from="1748414808004" duration="2818000" />
+      <workItem from="1748417642836" duration="844000" />
+      <workItem from="1748418600461" duration="14000" />
+      <workItem from="1748418623607" duration="4000" />
+      <workItem from="1748418659601" duration="1047000" />
+      <workItem from="1748419753950" duration="186000" />
+      <workItem from="1748419948494" duration="350000" />
+      <workItem from="1748420505401" duration="1067000" />
+      <workItem from="1748421609911" duration="739000" />
+      <workItem from="1748422381997" duration="112000" />
+      <workItem from="1748422515800" duration="903000" />
+      <workItem from="1748423444913" duration="82000" />
+      <workItem from="1748423574279" duration="1533000" />
+      <workItem from="1748425670684" duration="18000" />
+      <workItem from="1748425700613" duration="89000" />
+      <workItem from="1748425799177" duration="7000" />
+      <workItem from="1748425817073" duration="45000" />
+      <workItem from="1748425888521" duration="55000" />
+      <workItem from="1748425951432" duration="192000" />
+      <workItem from="1748426165021" duration="1548000" />
+      <workItem from="1748428102054" duration="481000" />
+      <workItem from="1748428604000" duration="48000" />
+      <workItem from="1748428657842" duration="421000" />
+      <workItem from="1748429115176" duration="141000" />
+      <workItem from="1748429266598" duration="589000" />
+      <workItem from="1748429875421" duration="231000" />
+      <workItem from="1748430123659" duration="1025000" />
+      <workItem from="1748432169521" duration="668000" />
+      <workItem from="1748441644934" duration="263000" />
+      <workItem from="1748441929175" duration="61000" />
+      <workItem from="1748442003822" duration="39000" />
+      <workItem from="1748442053947" duration="506000" />
+      <workItem from="1748442614545" duration="15000" />
+      <workItem from="1748442649316" duration="57000" />
+      <workItem from="1748478696548" duration="4260000" />
+      <workItem from="1748483384207" duration="1256000" />
+      <workItem from="1748486412537" duration="52000" />
+      <workItem from="1748486487501" duration="1038000" />
+      <workItem from="1748505318307" duration="2666000" />
+      <workItem from="1748514014910" duration="5519000" />
+      <workItem from="1748519565754" duration="7459000" />
+      <workItem from="1748534329316" duration="609000" />
+      <workItem from="1748534959503" duration="55000" />
+      <workItem from="1748535032674" duration="138000" />
+      <workItem from="1748535186702" duration="68000" />
+      <workItem from="1748535643257" duration="1639000" />
+      <workItem from="1748537320013" duration="910000" />
+      <workItem from="1748539818393" duration="246000" />
+      <workItem from="1748569316885" duration="804000" />
+      <workItem from="1748572917727" duration="1299000" />
+      <workItem from="1748674560194" duration="590000" />
+      <workItem from="1748675292067" duration="116000" />
+      <workItem from="1748675454703" duration="767000" />
+      <workItem from="1748676350100" duration="9000" />
+      <workItem from="1748676621690" duration="97000" />
+      <workItem from="1748676751679" duration="570000" />
+      <workItem from="1748677336038" duration="155000" />
+      <workItem from="1748677505338" duration="521000" />
+      <workItem from="1748678036103" duration="492000" />
+      <workItem from="1748679134997" duration="425000" />
+      <workItem from="1748679658248" duration="6694000" />
+      <workItem from="1748689586749" duration="7464000" />
+      <workItem from="1748753672107" duration="43000" />
+      <workItem from="1748753868521" duration="2002000" />
+      <workItem from="1748819415374" duration="658000" />
+      <workItem from="1748821099649" duration="1912000" />
+      <workItem from="1748823924986" duration="1210000" />
+      <workItem from="1748774756984" duration="657000" />
+      <workItem from="1748788308958" duration="5476000" />
+      <workItem from="1748823958663" duration="3893000" />
+      <workItem from="1748828140587" duration="1301000" />
+      <workItem from="1748862387259" duration="2700000" />
+      <workItem from="1748880743652" duration="3150000" />
+      <workItem from="1748886606558" duration="642000" />
+      <workItem from="1749051807469" duration="47000" />
+      <workItem from="1749052153747" duration="3684000" />
+      <workItem from="1749124421653" duration="811000" />
+      <workItem from="1749482705333" duration="62000" />
+      <workItem from="1749482832434" duration="70000" />
+      <workItem from="1749482917632" duration="127000" />
+      <workItem from="1749483067251" duration="21000" />
+      <workItem from="1749483100167" duration="1598000" />
+      <workItem from="1749540830142" duration="966000" />
+      <workItem from="1749558594441" duration="1266000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="org.springframework.boot.web.server.WebServerException" package="org.springframework.boot.web.server" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
