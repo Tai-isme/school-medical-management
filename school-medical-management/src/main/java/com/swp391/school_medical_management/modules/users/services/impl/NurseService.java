@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.entities.*;
+import com.swp391.school_medical_management.modules.users.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,34 +26,6 @@ import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEv
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineFormCreateRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineFormUpdateRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
-import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
-import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
-import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
 
 @Service
 public class NurseService {
@@ -76,6 +51,8 @@ public class NurseService {
     @Autowired private HealthCheckResultRepository healthCheckResultRepository;
 
     @Autowired private VaccineResultRepository vaccineResultRepository;
+
+    @Autowired private FeedbackRepository feedbackRepository;
 
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
         String status = "PROCESSING";
@@ -744,5 +721,34 @@ public class NurseService {
         VaccineResultEntity vaccineResultEntity = vaccineResultOpt.get();
         vaccineResultRepository.delete(vaccineResultEntity);
     }
+
+    public void replyToFeedback(Integer feedbackId, String response) {
+        FeedbackEntity feedback = feedbackRepository.findById(feedbackId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DON'T FIND TO RESPONSE."));
+        if ("REPLIED".equalsIgnoreCase(feedback.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "RESPONSE WAS REPLIED");
+        }
+        feedback.setResponseNurse(response);
+        feedback.setStatus("REPLIED");
+        feedbackRepository.save(feedback);
+    }
+
+    public List<FeedbackDTO> getFeedbacksForNurse(Integer nurseId) {
+        UserEntity nurse = userRepository.findById(nurseId.longValue())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NURSE NOT FOUND."));
+        List<FeedbackEntity> feedbackList = feedbackRepository.findByNurse(nurse);
+        return feedbackList.stream()
+                .map(fb -> new FeedbackDTO(
+                        fb.getFeedbackId(),
+                        fb.getSatisfaction(),
+                        fb.getComment(),
+                        fb.getStatus(),
+                        fb.getParent() != null ? fb.getParent().getUserId() : null,
+                        fb.getVaccineResult() != null ? fb.getVaccineResult().getVaccineResultId() : null,
+                        fb.getHealthResult() != null ? fb.getHealthResult().getHealthResultId() : null
+                ))
+                .collect(Collectors.toList());
+    }
+
 }
 

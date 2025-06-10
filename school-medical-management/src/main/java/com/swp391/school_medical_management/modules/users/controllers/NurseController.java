@@ -3,6 +3,7 @@ package com.swp391.school_medical_management.modules.users.controllers;
 import java.util.List;
 import java.util.Map;
 
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +24,6 @@ import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEv
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineFormCreateRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineFormUpdateRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
 import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
 
 import jakarta.validation.Valid;
@@ -230,4 +225,19 @@ public class NurseController {
         nurseService.deleteVaccineResult(vaccineResultId);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/replyfeeback")
+    public ResponseEntity<String> replyToFeedback(
+            @PathVariable("id") Integer feedbackId,
+            @RequestBody Map<String, String> request
+    ) {
+        nurseService.replyToFeedback(feedbackId, request.get("response"));
+        return ResponseEntity.ok("Replied to feedback.");
+    }
+
+    @GetMapping("/getfeedback/{nurseId}")
+    public ResponseEntity<List<FeedbackDTO>> getFeedbacksForNurse(@PathVariable Integer nurseId) {
+        return ResponseEntity.ok(nurseService.getFeedbacksForNurse(nurseId));
+    }
+
 }

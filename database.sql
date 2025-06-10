@@ -39,7 +39,7 @@ CREATE TABLE medical_request (
     note VARCHAR(255),   
 	status VARCHAR(50) DEFAULT 'PROCESSING',
     CHECK (status IN ('PROCESSING', 'ACCEPT')),
-	commit BOOLEAN,
+	commit BOOLEAN DEFAULT FALSE,
 	student_id INT,
     parent_id INT,
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
@@ -81,6 +81,19 @@ CREATE TABLE health_check_program (
     FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+CREATE TABLE vaccine_program (
+    vaccine_id INT AUTO_INCREMENT PRIMARY KEY,
+    vaccine_name VARCHAR(100),
+    description VARCHAR(255),
+    start_date DATE,
+    end_date DATE,
+    status VARCHAR(50) DEFAULT 'NOT_STARTED',
+    note VARCHAR(255),
+    admin_id INT,
+	CHECK (status IN ('ON_GOING', 'COMPLETED', 'NOT_STARTED')),
+    FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
 CREATE TABLE health_check_form (
     health_check_form_id INT AUTO_INCREMENT PRIMARY KEY,
     health_check_id INT,
@@ -89,7 +102,7 @@ CREATE TABLE health_check_form (
     nurse_id INT,
     form_date DATE,
     notes VARCHAR(255),
-    commit BOOLEAN,
+    commit BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (health_check_id) REFERENCES health_check_program(health_check_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
     FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -127,18 +140,11 @@ CREATE TABLE vaccine_history (
     vaccine_name VARCHAR(100),
     note VARCHAR(255),
     record_id INT,
-    FOREIGN KEY (record_id) REFERENCES medical_record(record_id) ON DELETE CASCADE
+	vaccine_id INT,
+    FOREIGN KEY (record_id) REFERENCES medical_record(record_id) ON DELETE CASCADE,
+	FOREIGN KEY (vaccine_id) REFERENCES vaccine_program(vaccine_id) ON DELETE CASCADE
 );
 
-CREATE TABLE vaccine_program (
-    vaccine_id INT AUTO_INCREMENT PRIMARY KEY,
-    vaccine_name VARCHAR(100),
-    description VARCHAR(255),
-    vaccine_date DATE,
-    note VARCHAR(255),
-    admin_id INT,
-    FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
 
 CREATE TABLE vaccine_form (
     vaccine_form_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -148,7 +154,7 @@ CREATE TABLE vaccine_form (
     nurse_id INT,
     form_date DATE,
     note VARCHAR(255),
-    commit BOOLEAN,
+    commit BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (vaccine_id) REFERENCES vaccine_program(vaccine_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
     FOREIGN KEY (parent_id) REFERENCES users(user_id) ON DELETE CASCADE,
