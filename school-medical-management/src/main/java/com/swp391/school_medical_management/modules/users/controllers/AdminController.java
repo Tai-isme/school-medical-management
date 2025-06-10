@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.services.impl.AdminService;
 
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -106,4 +110,18 @@ public class AdminController {
         adminService.deleteVaccineProgram(vaccineProgramId);
         return ResponseEntity.noContent().build();
     }
+
+     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
+     @GetMapping("/class")
+     public ResponseEntity<List<ClassDTO>> getAllClass() {
+         List<ClassDTO> classList = adminService.getAllClass();
+         return ResponseEntity.ok(classList);
+     }
+     
+     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
+     @GetMapping("/students/{classId}")
+     public ResponseEntity<List<StudentDTO>> getAllStudentInClass(@PathVariable long classId) {
+         List<StudentDTO> studentList = adminService.getAllStudentInClass(classId);
+         return ResponseEntity.ok(studentList);
+     }
 }

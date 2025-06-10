@@ -1,7 +1,10 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
+import java.lang.classfile.ClassFile.Option;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +14,18 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
+import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
 
@@ -30,6 +39,10 @@ public class AdminService {
     @Autowired private ModelMapper modelMapper;
 
     @Autowired private UserRepository userRepository;
+
+    @Autowired private ClassRepository classRepository;
+
+    @Autowired private StudentRepository studentRepository;
     
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, long adminId) {
         UserEntity admin = userRepository.findUserByUserId(adminId)
@@ -211,5 +224,31 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
         VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
         vaccineProgramRepository.delete(vaccineProgramEntity);
+    }
+
+    public List<ClassDTO> getAllClass(){
+        List<ClassEntity> classEntityList = classRepository.findAll();
+        if(classEntityList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found");
+        List<ClassDTO> classDTOList = classEntityList.stream()
+                    .map(classEntity -> modelMapper.map(classEntity, ClassDTO.class))
+                    .collect(Collectors.toList());
+        return classDTOList;
+    }
+
+    public List<StudentDTO> getAllStudentInClass(Long classId){
+        Optional<ClassEntity> classOpt = classRepository.findByClassId(classId);
+        if(classOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found");
+        ClassEntity classEntity = classOpt.get();
+
+        List<StudentEntity> studentEntitieList = studentRepository.findByClassEntity(classEntity);
+        if(studentEntitieList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class is empty");
+
+        List<StudentDTO> studentDTOList = studentEntitieList.stream()
+                    .map(studentEntitie -> modelMapper.map(studentEntitie, StudentDTO.class))
+                    .collect(Collectors.toList());
+        return studentDTOList;
     }
 }
