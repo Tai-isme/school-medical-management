@@ -25,14 +25,13 @@ DROP TABLE IF EXISTS `medical_request_detail`;
 CREATE TABLE `medical_request_detail` (
   `detail_id` int NOT NULL AUTO_INCREMENT,
   `medicine_name` varchar(100) DEFAULT NULL,
-  `quantity` int DEFAULT NULL,
-  `instruction` varchar(255) DEFAULT NULL,
-  `time` time DEFAULT NULL,
+  `dosage` varchar(100) DEFAULT NULL,
+  `time` varchar(200) DEFAULT NULL,
   `request_id` int DEFAULT NULL,
   PRIMARY KEY (`detail_id`),
   KEY `request_id` (`request_id`),
   CONSTRAINT `medical_request_detail_ibfk_1` FOREIGN KEY (`request_id`) REFERENCES `medical_request` (`request_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=122626 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=122628 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,6 +40,7 @@ CREATE TABLE `medical_request_detail` (
 
 LOCK TABLES `medical_request_detail` WRITE;
 /*!40000 ALTER TABLE `medical_request_detail` DISABLE KEYS */;
+INSERT INTO `medical_request_detail` VALUES (122626,'string','string','string',122626),(122627,'string','lkjsadlfjalwfiojaslkdfj;oawinlaksdfj;oaiwfjasd','asdfasdfasdfklasdjflasdjfkl;asjdklfjasdl;fjl;sdfl;kasjdf',122627);
 /*!40000 ALTER TABLE `medical_request_detail` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-09  8:03:42
+-- Dump completed on 2025-06-10 19:53:11

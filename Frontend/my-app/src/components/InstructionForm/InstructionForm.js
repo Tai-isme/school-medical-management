@@ -24,6 +24,7 @@ const InstructionForm = () => {
   const [note, setNote] = useState('');
   const [purpose, setPurpose] = useState(''); // Thêm state cho mục đích sử dụng thuốc
   const [usageTime, setUsageTime] = useState(''); // Thêm state cho thời gian sử dụng thuốc
+  const [activeTab, setActiveTab] = useState('create'); // 'create' hoặc 'history'
   const usageTimeOptions = [
   "Sau ăn sáng từ 9h-9h30",
   "Trước ăn trưa: 10h30-11h",
@@ -57,170 +58,241 @@ const handleAddMedicine = () => {
     const payload = {
       requestName: purpose,
       note: note,
-      date: usageTime, // usageTime là ngày dùng, dạng yyyy-mm-dd
+      date: usageTime,
       studentId: selectedStudent.id,
       medicalRequestDetailRequests: medicines.map(med => ({
         medicineName: med.name,
-        dosage: med.quantity, // đổi quantity thành dosage
-        instructions: med.usage,
-        time: usageTime // hoặc để rỗng nếu không cần
+        dosage: med.quantity,
+        time: med.usage
       }))
     };
+
     try {
-      await createMedicalRequest(payload);
+      const token = localStorage.getItem("token"); // nếu cần token
+      const response = await fetch("http://localhost:8080/api/parent/medical-request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` // nếu API cần xác thực
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error("Gửi thất bại!");
+
+      // Sau khi gửi thành công:
+      const history = JSON.parse(localStorage.getItem('medicalRequests') || '[]');
+      localStorage.setItem('medicalRequests', JSON.stringify([...history, payload]));
+
       alert('Đơn hướng dẫn đã được gửi!');
     } catch (error) {
       alert('Gửi thất bại!');
     }
   };
 
+  // Giả sử bạn lưu lịch sử gửi đơn thuốc ở localStorage
+  const history = JSON.parse(localStorage.getItem('medicalRequests') || '[]');
+
   return (
     <div className="instruction-form-container">
-      <h1>Tạo đơn hướng dẫn nhân viên y tế sử dụng cho học sinh</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="form-content">
-          {/* Phần thông tin Học sinh */}
-          <div className="student-info-section">
-            <h2>Chọn học sinh</h2>
-            <div className="student-profile">
-              <div className="select-wrapper" style={{ position: 'relative', width: '100%' }}>
-                <select
-                  value={selectedStudentId}
-                  onChange={e => setSelectedStudentId(e.target.value)}
-                  style={{
-                    marginBottom: 8,
-                    padding: 6,
-                    borderRadius: 6,
-                    width: '50%',
-                    textAlign: 'center'
-                  }}
-                >
-                  {students.map(student => (
-                    <option key={student.id} value={student.id}>
-                      {student.fullName}
-                    </option>
-                  ))}
-                </select>
+      {/* Tabs */}
+      <div style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: 24 }}>
+        <button
+          onClick={() => setActiveTab('create')}
+          style={{
+            padding: '12px 32px',
+            border: 'none',
+            borderBottom: activeTab === 'create' ? '3px solid #1976d2' : 'none',
+            background: 'none',
+            fontWeight: activeTab === 'create' ? 'bold' : 'normal',
+            color: activeTab === 'create' ? '#1976d2' : '#333',
+            cursor: 'pointer',
+            fontSize: 18
+          }}
+        >
+          Tạo đơn thuốc
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          style={{
+            padding: '12px 32px',
+            border: 'none',
+            borderBottom: activeTab === 'history' ? '3px solid #1976d2' : 'none',
+            background: 'none',
+            fontWeight: activeTab === 'history' ? 'bold' : 'normal',
+            color: activeTab === 'history' ? '#1976d2' : '#333',
+            cursor: 'pointer',
+            fontSize: 18
+          }}
+        >
+          Lịch sử gửi đơn thuốc
+        </button>
+      </div>
+
+      {/* Nội dung từng tab */}
+      {activeTab === 'create' && (
+        <form onSubmit={handleSubmit}>
+          <div className="form-content">
+            {/* Phần thông tin Học sinh */}
+            <div className="student-info-section">
+              <h2>Chọn học sinh</h2>
+              <div className="student-profile">
+                <div className="select-wrapper" style={{ position: 'relative', width: '100%' }}>
+                  <select
+                    value={selectedStudentId}
+                    onChange={e => setSelectedStudentId(e.target.value)}
+                    style={{
+                      marginBottom: 8,
+                      padding: 6,
+                      borderRadius: 6,
+                      width: '50%',
+                      textAlign: 'center'
+                    }}
+                  >
+                    {students.map(student => (
+                      <option key={student.id} value={student.id}>
+                        {student.id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="avatar-placeholder">
+                  <img src={selectedStudent.avatar} alt="Avatar" className="avatar-img" />
+                </div>
+                <p className="student-id">
+                  <i className="fas fa-id-card"></i> {selectedStudent.id}
+                </p>
+                <p className="student-class">Lớp: {selectedStudent.classID}</p>
               </div>
-              <div className="avatar-placeholder">
-                <img src={selectedStudent.avatar} alt="Avatar" className="avatar-img" />
-              </div>
-              <p className="student-id">
-                <i className="fas fa-id-card"></i> {selectedStudent.id}
-              </p>
-              <p className="student-class">Lớp: {selectedStudent.classID}</p>
             </div>
-          </div>
 
-          
+            
 
-          {/* Phần Chi tiết đơn thuốc */}
-          <div className="prescription-details-section">
-            {/* Thêm input cho mục đích sử dụng thuốc */}
-          <div className="input-group">
-            <label style={{fontSize: '20px'}}>Đơn thuốc:</label>
-            <input
-              className="purpose-input"
-              width= "calc(100% - 20px)"
-              type="text"
-              value={purpose}
-              onChange={(e) => setPurpose(e.target.value)}
-              placeholder="Vd: Thuốc trị ho, thuốc hạ sốt..."
-              required
-            />
-          </div>
-          {/* Input thời gian sử dụng thuốc */}
+            {/* Phần Chi tiết đơn thuốc */}
+            <div className="prescription-details-section">
+              {/* Thêm input cho mục đích sử dụng thuốc */}
             <div className="input-group">
-              <label style={{fontSize: '20px'}}>Ngày dùng:</label>
+              <label style={{fontSize: '20px'}}>Đơn thuốc:</label>
               <input
-                type="date"
-                value={usageTime}
-                onChange={e => setUsageTime(e.target.value)}
+                className="purpose-input"
+                width= "calc(100% - 20px)"
+                type="text"
+                value={purpose}
+                onChange={(e) => setPurpose(e.target.value)}
+                placeholder="Vd: Thuốc trị ho, thuốc hạ sốt..."
                 required
-                style={{fontSize: '16px', padding: '6px', borderRadius: '6px'}}
               />
             </div>
-            <h2 style={{marginTop: '0px'}}>Chi tiết đơn thuốc</h2>
-            <div className="medicine-list">
-              {medicines.map((medicine, index) => (
-                <div key={index} className="medicine-item" style={{position: 'relative'}}>
-                  {/* Nút X xoá */}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveMedicine(index)}
-                    style={{
-                      position: 'absolute',
-                      top: '-10px',
-                      right: '-10px',
-                      background: 'transparent',
-                      border: 'none',
-                      fontSize: '18px',
-                      color: '#d00',
-                      cursor: 'pointer',
-                      fontWeight: 'bold'
-                    }}
-                    aria-label="Xoá thuốc"
-                  >
-                    <FontAwesomeIcon icon={faXmark} />
-                  </button>
-                  <div className="input-group">
-                    <label>Tên thuốc:</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={medicine.name}
-                      onChange={(e) => handleMedicineChange(index, e)}
-                      placeholder="Paracetamol, Aspirin..."
-                      required
-                    />
-                  </div>
-                  <div className="input-group">
-                    <label>Liều lượng:</label>
-                    <input
-                      type="text" // Đổi từ number sang text
-                      name="quantity"
-                      value={medicine.quantity}
-                      onChange={(e) => handleMedicineChange(index, e)}
-                      placeholder="Uống 1 viên, Uống 1 muỗng..."
-                      required
-                    />
-                  </div>
-                  <div className="input-group" style={{ marginBottom: '0px' }}>
-                    <label>Thời gian:</label>
-                    <select
-                      name="usage"
-                      value={medicine.usage}
-                      onChange={(e) => handleMedicineChange(index, e)}
-                      required
+            {/* Input thời gian sử dụng thuốc */}
+              <div className="input-group">
+                <label style={{fontSize: '20px'}}>Ngày dùng:</label>
+                <input
+                  type="date"
+                  value={usageTime}
+                  onChange={e => setUsageTime(e.target.value)}
+                  required
+                  style={{fontSize: '16px', padding: '6px', borderRadius: '6px'}}
+                />
+              </div>
+              <h2 style={{marginTop: '0px'}}>Chi tiết đơn thuốc</h2>
+              <div className="medicine-list">
+                {medicines.map((medicine, index) => (
+                  <div key={index} className="medicine-item" style={{position: 'relative'}}>
+                    {/* Nút X xoá */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMedicine(index)}
+                      style={{
+                        position: 'absolute',
+                        top: '-10px',
+                        right: '-10px',
+                        background: 'transparent',
+                        border: 'none',
+                        fontSize: '18px',
+                        color: '#d00',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                      aria-label="Xoá thuốc"
                     >
-                      <option value="">-- Chọn thời gian --</option>
-                      <option value="Sau ăn sáng từ 9h-9h30">Sau ăn sáng từ 9h-9h30</option>
-                      <option value="Trước ăn trưa: 10h30-11h">Trước ăn trưa: 10h30-11h</option>
-                      <option value="Sau ăn trưa: từ 11h30-12h">Sau ăn trưa: từ 11h30-12h</option>
-                    </select>
+                      <FontAwesomeIcon icon={faXmark} />
+                    </button>
+                    <div className="input-group">
+                      <label>Tên thuốc:</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={medicine.name}
+                        onChange={(e) => handleMedicineChange(index, e)}
+                        placeholder="Paracetamol, Aspirin..."
+                        required
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Liều lượng:</label>
+                      <input
+                        type="text" // Đổi từ number sang text
+                        name="quantity"
+                        value={medicine.quantity}
+                        onChange={(e) => handleMedicineChange(index, e)}
+                        placeholder="Uống 1 viên, Uống 1 muỗng..."
+                        required
+                      />
+                    </div>
+                    <div className="input-group" style={{ marginBottom: '0px' }}>
+                      <label>Thời gian:</label>
+                      <select
+                        name="usage"
+                        value={medicine.usage}
+                        onChange={(e) => handleMedicineChange(index, e)}
+                        required
+                      >
+                        <option value="">-- Chọn thời gian --</option>
+                        <option value="Sau ăn sáng từ 9h-9h30">Sau ăn sáng từ 9h-9h30</option>
+                        <option value="Trước ăn trưa: 10h30-11h">Trước ăn trưa: 10h30-11h</option>
+                        <option value="Sau ăn trưa: từ 11h30-12h">Sau ăn trưa: từ 11h30-12h</option>
+                      </select>
+                    </div>
                   </div>
-                </div>
-              ))}
-              <button type="button" onClick={handleAddMedicine} className="add-medicine-btn">
-                + Thêm
-              </button>
-            </div>
+                ))}
+                <button type="button" onClick={handleAddMedicine} className="add-medicine-btn">
+                  + Thêm
+                </button>
+              </div>
 
-            <div className="note-section">
-              <label>Ghi chú:</label>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Bổ sung thêm thông tin .........."
-                rows="3"
-              ></textarea>
+              <div className="note-section">
+                <label>Ghi chú:</label>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Bổ sung thêm thông tin .........."
+                  rows="3"
+                ></textarea>
+              </div>
             </div>
           </div>
+          <button type="submit" className="submit-btn">
+            Xác nhận gửi
+          </button>
+        </form>
+      )}
+
+      {activeTab === 'history' && (
+        <div>
+          <h2>Lịch sử gửi đơn thuốc</h2>
+          {history.length === 0 ? (
+            <p>Chưa có đơn thuốc nào được gửi.</p>
+          ) : (
+            <ul>
+              {history.map((req, idx) => (
+                <li key={idx}>
+                  <b>{req.requestName}</b> - {req.date} - {req.note}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        <button type="submit" className="submit-btn">
-          Xác nhận gửi
-        </button>
-      </form>
+      )}
     </div>
   );
 };

@@ -34,7 +34,7 @@ CREATE TABLE `medical_event` (
   KEY `nurse_id` (`nurse_id`),
   CONSTRAINT `medical_event_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
   CONSTRAINT `medical_event_ibfk_2` FOREIGN KEY (`nurse_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,6 +43,7 @@ CREATE TABLE `medical_event` (
 
 LOCK TABLES `medical_event` WRITE;
 /*!40000 ALTER TABLE `medical_event` DISABLE KEYS */;
+INSERT INTO `medical_event` VALUES (5,'Te ngsa','2025-06-09','Te sml',111,11);
 /*!40000 ALTER TABLE `medical_event` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-09  8:03:43
+-- Dump completed on 2025-06-10 19:53:10

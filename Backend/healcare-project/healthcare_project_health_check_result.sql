@@ -32,7 +32,7 @@ CREATE TABLE `health_check_result` (
   KEY `health_check_form_id` (`health_check_form_id`),
   CONSTRAINT `health_check_result_ibfk_1` FOREIGN KEY (`health_check_form_id`) REFERENCES `health_check_form` (`health_check_form_id`) ON DELETE CASCADE,
   CONSTRAINT `health_check_result_chk_1` CHECK ((`level` in (_utf8mb4'GOOD',_utf8mb4'FAIR',_utf8mb4'AVERAGE',_utf8mb4'POOR')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,6 +41,7 @@ CREATE TABLE `health_check_result` (
 
 LOCK TABLES `health_check_result` WRITE;
 /*!40000 ALTER TABLE `health_check_result` DISABLE KEYS */;
+INSERT INTO `health_check_result` VALUES (9,'string','GOOD','string',223),(10,'string','GOOD','string',224);
 /*!40000 ALTER TABLE `health_check_result` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-09  8:03:44
+-- Dump completed on 2025-06-10 19:53:12

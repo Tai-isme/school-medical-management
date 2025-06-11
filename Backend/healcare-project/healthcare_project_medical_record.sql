@@ -37,7 +37,7 @@ CREATE TABLE `medical_record` (
   PRIMARY KEY (`record_id`),
   KEY `student_id` (`student_id`),
   CONSTRAINT `medical_record_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,7 +46,7 @@ CREATE TABLE `medical_record` (
 
 LOCK TABLES `medical_record` WRITE;
 /*!40000 ALTER TABLE `medical_record` DISABLE KEYS */;
-INSERT INTO `medical_record` VALUES (7,205,'Pollen','Asthma','Used inhaler for 3 years','Normal','Normal',45.5,150,'2025-06-08 16:18:24','Student is in good condition'),(8,225,'string','string','string','Unknown','',1,30,'2025-06-08 16:18:57','string');
+INSERT INTO `medical_record` VALUES (7,205,'Pollen','Asthma','Used inhaler for 3 years','Normal','Normal',45.5,150,'2025-06-08 16:18:24','Student is in good condition'),(8,225,'string','string','string','Unknown','',1,30,'2025-06-08 16:18:57','string'),(9,111,'1','1','1','1','1',1,1,'2025-06-08 16:18:57','111'),(10,213,'2','2','2','2','2',2,2,'2025-06-08 16:18:57','2');
 /*!40000 ALTER TABLE `medical_record` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -59,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-09  8:03:42
+-- Dump completed on 2025-06-10 19:53:10

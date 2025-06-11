@@ -41,7 +41,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Parent 1','','','0707333797','HCM','parent'),(2,'Parent 2','','','0797687276','HCM','parent'),(3,'Parent 3','','','0389617970','HCM','parent'),(4,'Parent 4','','','0767988879','HCM','parent'),(5,'Parent 5','','','0938824674','HCM','parent'),(6,'Parent 6','','','0913538249','HCM','parent'),(7,'Parent 7','','','0898158174','HCM','parent'),(8,'Parent 8','','','','HCM','parent'),(9,'Parent 9','tainhhse182011@fpt.edu.vn','','','HCM','parent'),(10,'Parent 10','nguyenhonghieutai10cba6@gmail.com','','','HCM','admin'),(11,'nurse 1','nguyenhonghieutai7a9@gmail.com',NULL,NULL,NULL,'nurse');
+INSERT INTO `users` VALUES (1,'Parent 1','','','0707333797','HCM','parent'),(2,'Parent 2','','','0797687276','HCM','parent'),(3,'Parent 3','','','0389617970','HCM','parent'),(4,'Parent 4','','','0767988879','HCM','parent'),(5,'Parent 5','','','0938824674','HCM','parent'),(6,'Parent 6','','','0913538249','HCM','parent'),(7,'Parent 7','','','0898158174','HCM','parent'),(8,'Parent 8','','','','HCM','parent'),(9,'Parent 9','tainhhse182011@fpt.edu.vn','','','HCM','parent'),(10,'Parent 10','nguyenhonghieutai10cba6@gmail.com','','','HCM','parent'),(11,'nurse 1','nguyenhonghieutai7a9@gmail.com',NULL,NULL,NULL,'nurse');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-09  8:03:44
+-- Dump completed on 2025-06-10 19:53:11

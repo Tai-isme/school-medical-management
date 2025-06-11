@@ -28,7 +28,6 @@ CREATE TABLE `medical_request` (
   `date` datetime DEFAULT NULL,
   `note` varchar(255) DEFAULT NULL,
   `status` varchar(50) DEFAULT 'PROCESSING',
-  `commit` tinyint(1) DEFAULT NULL,
   `student_id` int DEFAULT NULL,
   `parent_id` int DEFAULT NULL,
   PRIMARY KEY (`request_id`),
@@ -36,8 +35,8 @@ CREATE TABLE `medical_request` (
   KEY `parent_id` (`parent_id`),
   CONSTRAINT `medical_request_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
   CONSTRAINT `medical_request_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `medical_request_chk_1` CHECK ((`status` in (_utf8mb4'PROCESSING',_utf8mb4'ACCEPT')))
-) ENGINE=InnoDB AUTO_INCREMENT=122626 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `chk_status` CHECK ((`status` in (_utf8mb4'SUBMITTED',_utf8mb4'COMPLETED',_utf8mb4'PROCESSING',_utf8mb4'CANCELLED')))
+) ENGINE=InnoDB AUTO_INCREMENT=122628 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,6 +45,7 @@ CREATE TABLE `medical_request` (
 
 LOCK TABLES `medical_request` WRITE;
 /*!40000 ALTER TABLE `medical_request` DISABLE KEYS */;
+INSERT INTO `medical_request` VALUES (122626,'string','2025-06-09 00:00:00','string','PROCESSING',111,10),(122627,'string','2025-06-10 00:00:00','string','PROCESSING',213,10);
 /*!40000 ALTER TABLE `medical_request` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -58,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-09  8:03:42
+-- Dump completed on 2025-06-10 19:53:10

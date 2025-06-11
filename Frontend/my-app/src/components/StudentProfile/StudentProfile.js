@@ -26,25 +26,50 @@ const StudentProfile = () => {
   useEffect(() => {
     const studentsData = JSON.parse(localStorage.getItem('students')) || [];
     setStudents(studentsData);
-    if (studentsData.length > 0) setSelectedStudentId(studentsData[0].studentId);
+    if (studentsData.length > 0) setSelectedStudentId(studentsData[0].id);
   }, []);
 
   useEffect(() => {
     if (!selectedStudentId) return;
-    const selected = students.find(s => s.studentId === selectedStudentId);
-    if (selected) {
-      setStudentInfo({
-        eyes: selected.vision || '',
-        ears: selected.hearing || '',
-        weight: selected.weight || '',
-        height: selected.height || '',
-        allergies: selected.allergies || '',
-        chronicDiseases: selected.chronicDisease || '',
-        medicalHistory: selected.treatmentHistory || '',
-        lastUpdated: selected.lastUpdate || '', // lấy đúng trường backend trả về
-        note: selected.note || '',
-      });
-    }
+
+    const fetchStudentDetail = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(
+          `http://localhost:8080/api/parent/medical-records/${selectedStudentId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const data = res.data;
+        setStudentInfo({
+          eyes: data.vision || '',
+          ears: data.hearing || '',
+          weight: data.weight || '',
+          height: data.height || '',
+          allergies: data.allergies || '',
+          chronicDiseases: data.chronicDisease || '',
+          medicalHistory: data.treatmentHistory || '',
+          lastUpdated: data.lastUpdate || '',
+          note: data.note || '',
+        });
+        setVaccineHistory(data.vaccineHistories || []);
+      } catch (err) {
+        // alert('Không lấy được thông tin học sinh!');
+        setStudentInfo({
+          eyes: '',
+          ears: '',
+          weight: '',
+          height: '',
+          allergies: '',
+          chronicDiseases: '',
+          medicalHistory: '',
+          lastUpdated: '',
+          note: '',
+        });
+        setVaccineHistory([]);
+      }
+    };
+
+    fetchStudentDetail();
   }, [selectedStudentId, students]);
 
   const handleInputChange = (e) => {
@@ -134,7 +159,7 @@ const StudentProfile = () => {
             >
               {students.map(student => (
                 <option key={student.studentId} value={student.studentId}>
-                  {student.studentId}
+                  {student.id}
                 </option>
               ))}
             </select>
