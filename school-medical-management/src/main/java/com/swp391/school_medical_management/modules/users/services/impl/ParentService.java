@@ -45,6 +45,8 @@ public class ParentService {
 
     @Autowired private HealthCheckResultRepository healthCheckResultRepository;
 
+    @Autowired private MedicalEventRepository medicalEventRepository;
+
 
     public MedicalRecordDTO createMedicalRecord(Long parentId, MedicalRecordsRequest request) {
         Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
@@ -372,5 +374,31 @@ public class ParentService {
                 ))
                 .collect(Collectors.toList());
     }
+
+
+    public List<MedicalEventDTO> getMedicalEventsByStudent(Long studentId) {
+        StudentEntity student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        return medicalEventRepository.findAll().stream()
+                .filter(event -> event.getStudent().getId() == studentId)
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+
+
+    private MedicalEventDTO convertToDTO(MedicalEventEntity entity) {
+        MedicalEventDTO dto = new MedicalEventDTO();
+        dto.setEventId(entity.getEventId());
+        dto.setTypeEvent(entity.getTypeEvent());
+        dto.setDate(entity.getDate());
+        dto.setDescription(entity.getDescription());
+        dto.setStudentId(entity.getStudent().getId());
+        dto.setStudentName(entity.getStudent().getFullName()); // Giả sử có trường fullName
+        dto.setNurseId(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
+        return dto;
+    }
+
 
 }

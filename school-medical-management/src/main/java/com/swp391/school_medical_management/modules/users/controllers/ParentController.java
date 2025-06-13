@@ -2,6 +2,7 @@ package com.swp391.school_medical_management.modules.users.controllers;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
 import com.swp391.school_medical_management.modules.users.services.impl.ParentService;
@@ -141,4 +142,12 @@ public class ParentController {
     public ResponseEntity<List<FeedbackDTO>> getParentFeedbacks(@PathVariable Long parentId) {
         return ResponseEntity.ok(parentService.getFeedbacksByParent(parentId));
     }
+
+
+    @GetMapping("/medical-events/{studentId}")
+    public ResponseEntity<List<MedicalEventDTO>> getMedicalEventsByStudent(@PathVariable Long studentId) {
+        List<MedicalEventDTO> events = parentService.getMedicalEventsByStudent(studentId);
+        return ResponseEntity.ok(events);
+    }
+
 }
