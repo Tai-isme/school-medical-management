@@ -9,6 +9,7 @@ import NotificationPage from './pages/NotificationPage';
 import AdminHome from './pages/AdminHome'; // Giả sử bạn có một trang AdminHome
 import Navbar from './components/Navbar/Navbar';
 import ProtectedRoute from './routes/ProtectedRoute'; // hoặc './components/common/ProtectedRoute'
+import MedicalRecordDetail from "./components/Admin/MedicalRecordDetail";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/medical-incident" element={<MedicalIncidentPage />} />
         <Route path="/notification" element={<NotificationPage />} />
         <Route path="/dashboard" element={<ProtectedRoute />} />
+        <Route path="/medical-record/:studentId" element={<MedicalRecordDetail />} />
       </Routes>
     </Router>
     </>

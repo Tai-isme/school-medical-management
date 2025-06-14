@@ -4,9 +4,11 @@ export default function Sidebar({ activeTab, onChangeTab }) {
   const tabs = [
     { key: "hoso", label: "📁 Hồ sơ sức khỏe" },
     { key: "kham", label: "📋 Khám sức khỏe định kỳ" },
+    { key: "yeucauguithuoc", label: "💊 Yêu cầu gửi thuốc" },
     { key: "sucoyte", label: "⚕️ Sự cố y tế" },
     { key: "vaccine", label: "💉 Vaccine" },
     { key: "danhmuc", label: "📚 Danh mục" },
+    
   ];
 
   return (
