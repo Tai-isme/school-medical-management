@@ -11,6 +11,7 @@ import Navbar from './components/Navbar/Navbar';
 import ProtectedRoute from './routes/ProtectedRoute'; // hoặc './components/common/ProtectedRoute'
 import MedicalRecordDetail from "./components/Admin/MedicalRecordDetail";
 
+
 function App() {
   return (
     <>
@@ -25,8 +26,9 @@ function App() {
         <Route path="/medical-record/:studentId" element={<MedicalRecordDetail />} />
       </Routes>
     </Router>
-    </>
 
+    {/* <AdminHome /> */}
+    </>
 
   );
 }

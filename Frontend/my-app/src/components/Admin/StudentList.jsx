@@ -86,6 +86,7 @@ export default function StudentList({ classId, onSelect, selectedStudent }) {
           <p style={{ fontSize: 12 }}>Không tìm thấy học sinh.</p>
         )}
       </div>
+
     </div>
   );
 }
