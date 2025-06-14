@@ -3,8 +3,9 @@ import './InstructionForm.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { createMedicalRequest } from '../../api/medicalRequestApi';
+import MedicalRequestDetail from "./MedicalRequestDetail";
 
-const InstructionForm = () => {
+export default function InstructionForm({ onShowHistory }) {
   // Lấy students từ localStorage
   const storedStudents = JSON.parse(localStorage.getItem('students') || '[]');
   const students = (storedStudents.length > 0
@@ -96,9 +97,10 @@ const handleAddMedicine = () => {
   return (
     <div className="instruction-form-container">
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: 24 }}>
+      <div className="tabs" style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: 24 }}>
         <button
           onClick={() => setActiveTab('create')}
+          className={activeTab === 'create' ? 'active' : ''}
           style={{
             padding: '12px 32px',
             border: 'none',
@@ -114,6 +116,7 @@ const handleAddMedicine = () => {
         </button>
         <button
           onClick={() => setActiveTab('history')}
+          className={activeTab === 'history' ? 'active' : ''}
           style={{
             padding: '12px 32px',
             border: 'none',
@@ -278,23 +281,8 @@ const handleAddMedicine = () => {
       )}
 
       {activeTab === 'history' && (
-        <div>
-          <h2>Lịch sử gửi đơn thuốc</h2>
-          {history.length === 0 ? (
-            <p>Chưa có đơn thuốc nào được gửi.</p>
-          ) : (
-            <ul>
-              {history.map((req, idx) => (
-                <li key={idx}>
-                  <b>{req.requestName}</b> - {req.date} - {req.note}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <MedicalRequestDetail history={history} />
       )}
     </div>
   );
 };
-
-export default InstructionForm;

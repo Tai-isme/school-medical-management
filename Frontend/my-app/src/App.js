@@ -9,6 +9,8 @@ import NotificationPage from './pages/NotificationPage';
 import AdminHome from './pages/AdminHome'; // Giả sử bạn có một trang AdminHome
 import Navbar from './components/Navbar/Navbar';
 import ProtectedRoute from './routes/ProtectedRoute'; // hoặc './components/common/ProtectedRoute'
+import adminHome1 from '../src/components/Admin/adminHome1.css'; // Giả sử bạn có một trang AdminHome1
+
 
 function App() {
   return (
@@ -23,8 +25,9 @@ function App() {
         <Route path="/dashboard" element={<ProtectedRoute />} />
       </Routes>
     </Router>
-    </>
 
+    {/* <AdminHome /> */}
+    </>
 
   );
 }

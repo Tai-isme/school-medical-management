@@ -40,7 +40,7 @@ export default function StudentList({ classId, onSelect, selectedStudent }) {
       {filteredStudents.map((student) => (
         <div
           key={student.student_id}
-          onClick={() => onSelect(student)}
+          // onClick={() => onSelect(student)}
           style={{
             padding: "6px 4px",
             cursor: "pointer",
