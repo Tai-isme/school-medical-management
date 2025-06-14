@@ -13,6 +13,9 @@ import java.util.stream.Collectors;
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import com.swp391.school_medical_management.modules.users.entities.*;
 import com.swp391.school_medical_management.modules.users.repositories.*;
+import com.swp391.school_medical_management.service.NotificationService;
+
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -53,6 +56,8 @@ public class NurseService {
     @Autowired private VaccineResultRepository vaccineResultRepository;
 
     @Autowired private FeedbackRepository feedbackRepository;
+
+    @Autowired private NotificationService notificationService;
 
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
         String status = "PROCESSING";
@@ -121,12 +126,15 @@ public class NurseService {
             if(parent == null)
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found for student with ID: " + studentId);
 
-            Optional<HealthCheckFormEntity> existingFormOpt = healthCheckFormRepository.findHealthCheckFormEntityByHealthCheckProgramAndStudent(healthCheckProgramEntity, student);
-            
-            if(existingFormOpt.isPresent()) {
-                if(existingFormOpt.get().getCommit() != null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check form already committed by parent for student with ID: " + studentId);
-                }
+            List<HealthCheckFormEntity> existingFormList =
+                healthCheckFormRepository.findHealthCheckFormEntityByHealthCheckProgramAndStudent(healthCheckProgramEntity, student);
+
+            boolean hasUncommittedForm = existingFormList.stream()
+                .anyMatch(form -> form.getCommit() == null);
+
+            if (hasUncommittedForm) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A health check form has already been submitted but not yet committed by parent for student with ID: " + studentId);
             }
 
             HealthCheckFormEntity healthCheckFormEntity = new HealthCheckFormEntity();
@@ -138,6 +146,9 @@ public class NurseService {
             healthCheckFormEntity.setNotes(null);
             healthCheckFormEntity.setCommit(null);
             healthCheckFormEntity.setHealthCheckProgram(healthCheckProgramEntity);
+
+
+
             healthCheckFormRepository.save(healthCheckFormEntity);
 
             result.add(modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class));
@@ -737,18 +748,59 @@ public class NurseService {
         UserEntity nurse = userRepository.findById(nurseId.longValue())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NURSE NOT FOUND."));
         List<FeedbackEntity> feedbackList = feedbackRepository.findByNurse(nurse);
-        return feedbackList.stream()
-                .map(fb -> new FeedbackDTO(
-                        fb.getFeedbackId(),
-                        fb.getSatisfaction(),
-                        fb.getComment(),
-                        fb.getStatus(),
-                        fb.getParent() != null ? fb.getParent().getUserId() : null,
-                        fb.getVaccineResult() != null ? fb.getVaccineResult().getVaccineResultId() : null,
-                        fb.getHealthResult() != null ? fb.getHealthResult().getHealthResultId() : null
-                ))
-                .collect(Collectors.toList());
+
+        List<FeedbackDTO> feedbackDTOList = feedbackList.stream().map(feedback -> modelMapper.map(feedback, FeedbackDTO.class)).collect(Collectors.toList());
+        
+        return feedbackDTOList;
     }
 
+    public void healthCheckFormNotify(List<Long> formIds) {
+        List<String> parentIds = new ArrayList<>();
+        NotificationMessage message = new NotificationMessage(
+            "Thông báo khám sức khỏe định kỳ",
+            "Bạn có phiếu khám sức khỏe mới cần xác nhận.",
+            LocalDateTime.now().toString()
+        );
+
+        for (Long formId : formIds) {
+            Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(formId);
+            if(healthCheckFormOpt.isEmpty())
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Form not found: " + formId);
+            
+            HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
+
+            UserEntity parent = healthCheckFormEntity.getParent();
+            if (parent == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found for form ID: " + formId);
+
+            parentIds.add(parent.getUserId().toString());
+        }
+
+        notificationService.sendToParents(parentIds, message);
+    }
+
+    public void vaccineFormNotify(List<Long> formIds) {
+        List<String> parentIds = new ArrayList<>();
+        NotificationMessage message = new NotificationMessage(
+            "Thông báo chương trình tiêm vaccine",
+            "Bạn có phiếu tiêm chủng vaccine mới cần xác nhận.",
+            LocalDateTime.now().toString()
+        );
+
+        for (Long formId : formIds) {
+            Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(formId);
+            if(vaccineFormOpt.isEmpty())
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Form not found: " + formId);
+            
+            VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
+
+            UserEntity parent = vaccineFormEntity.getParent();
+            if (parent == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found for form ID: " + formId);
+
+            parentIds.add(parent.getUserId().toString());
+        }
+        notificationService.sendToParents(parentIds, message);
+    }
 }
 

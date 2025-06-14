@@ -9,6 +9,7 @@ import com.swp391.school_medical_management.modules.users.repositories.UserRepos
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import java.lang.classfile.ClassFile.Option;
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
@@ -43,8 +43,7 @@ public class JwtService {
     @Autowired
     private JwtConfig jwtConfig;
 
-    private Key key;
-    private Key refreshKey;
+    private SecretKey key;
 
     @Autowired
     private UserRepository userRepository;
@@ -52,10 +51,9 @@ public class JwtService {
     public JwtService(JwtConfig jwtConfig, BlacklistedTokenRepository blacklistedTokenRepository) {
         this.jwtConfig = jwtConfig;
         this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtConfig.getSecretKey()));
-        this.refreshKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtConfig.getSecretKey()));
     }
 
-    public String generateToken(Long userId,String email , String phone, String role) {
+    public String generateToken(Long userId, String email, String phone, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationTime());
         return Jwts.builder()
@@ -97,18 +95,45 @@ public class JwtService {
     }
 
     public String getUserIdFromJwt(String token) {
-        Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return claims.getSubject();
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.getSubject();
+        } catch (Exception e) {
+            logger.error("Failed to extract user ID from JWT: {}", e.getMessage());
+            return null;
+        }
     }
 
     public String getEmailFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return claims.get("email", String.class);
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.get("email", String.class);
+        } catch (Exception e) {
+            logger.error("Failed to extract email from JWT: {}", e.getMessage());
+            return null;
+        }
     }
 
     public String getRoleFromJwt(String token) {
-        Claims claims = Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody();
-        return claims.get("role", String.class);
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.get("role", String.class);
+        } catch (Exception e) {
+            logger.error("Failed to extract role from JWT: {}", e.getMessage());
+            return null;
+        }
     }
 
     public boolean isTokenFormatValid(String token) {
@@ -123,18 +148,19 @@ public class JwtService {
     public boolean isSignatureValid(String token) {
         try {
             Jwts.parser()
-                    .setSigningKey(getSigningKey())
+                    .verifyWith(key)
                     .build()
-                    .parseClaimsJws(token); // Nếu không throw là hợp lệ
+                    .parseSignedClaims(token);
             return true;
-        } catch (Exception e) {
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.error("JWT signature validation failed: {}", e.getMessage());
             return false;
         }
     }
 
-    public Key getSigningKey() {
-        byte[] keyBytes = jwtConfig.getSecretKey().getBytes();
-        return Keys.hmacShaKeyFor(Base64.getDecoder().decode(keyBytes));
+    public SecretKey getSigningKey() {
+        byte[] keyBytes = Base64.getDecoder().decode(jwtConfig.getSecretKey());
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public boolean isTokenExpired(String token) {
@@ -142,14 +168,19 @@ public class JwtService {
             Date expiration = getClaimFromToken(token, Claims::getExpiration);
             return expiration.before(new Date());
         } catch (Exception e) {
+            logger.error("JWT expiration check failed: {}", e.getMessage());
             return true;
         }
-
     }
 
     public boolean isIssuerToken(String token) {
-        String tokenIssuer = getClaimFromToken(token, Claims::getIssuer);
-        return tokenIssuer.equals(jwtConfig.getIssuer());
+        try {
+            String tokenIssuer = getClaimFromToken(token, Claims::getIssuer);
+            return tokenIssuer != null && tokenIssuer.equals(jwtConfig.getIssuer());
+        } catch (Exception e) {
+            logger.error("JWT issuer check failed: {}", e.getMessage());
+            return false;
+        }
     }
 
     public boolean isRefreshTokenValid(String token) {
@@ -163,35 +194,48 @@ public class JwtService {
             Date expirationDate = Date.from(expirationLocalDateTime.atZone(ZoneId.systemDefault()).toInstant());
             return expirationDate.after(new Date());
         } catch (Exception e) {
+            logger.error("Refresh token validation failed: {}", e.getMessage());
             return false;
         }
     }
 
     public Claims getAllClaimsFromToken(String token) {
         try {
-            return Jwts.parser().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
+            return Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
         } catch (ExpiredJwtException e) {
+            logger.error("JWT token expired: {}", e.getMessage());
+            return null;
+        } catch (Exception e) {
+            logger.error("Failed to parse JWT claims: {}", e.getMessage());
             return null;
         }
     }
 
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = getAllClaimsFromToken(token);
+        if (claims == null) {
+            return null;
+        }
         return claimsResolver.apply(claims);
     }
+
     public boolean isBlackListedToken(String token) {
         return blacklistedTokenRepository.existsByToken(token);
     }
 
-
     public Authentication getAuthentication(String token) {
-    String userId = getUserIdFromJwt(token);  // Hàm bạn đã có để lấy userId
-    String role = getRoleFromJwt(token);      // Hàm bạn đã có để lấy role
-    if (userId == null) return null;
+        String userId = getUserIdFromJwt(token);
+        String role = getRoleFromJwt(token);
+        
+        if (userId == null || role == null) {
+            return null;
+        }
 
-    List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
-
-    return new UsernamePasswordAuthenticationToken(userId, null, authorities);
-}
-
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+        return new UsernamePasswordAuthenticationToken(userId, null, authorities);
+    }
 }

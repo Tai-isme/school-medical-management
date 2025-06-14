@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 
 
 public interface MedicalRequestRepository extends JpaRepository<MedicalRequestEntity, Integer> {
@@ -14,4 +15,5 @@ public interface MedicalRequestRepository extends JpaRepository<MedicalRequestEn
     Optional<MedicalRequestEntity> findMedicalRequestEntityByRequestId(int requestId);
     boolean existsByStudentAndStatus(StudentEntity student, String status);
     List<MedicalRequestEntity> findMedicalRequestEntitiesByStatusIgnoreCase(String status);
+    List<MedicalRequestEntity> findByParent(UserEntity parent);
 }

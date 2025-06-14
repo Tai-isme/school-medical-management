@@ -104,6 +104,13 @@ public class ParentController {
         return ResponseEntity.ok(medicalRequestDtoList);
     }
 
+    @GetMapping("/medical-requet")
+    public ResponseEntity<List<MedicalRequestDTO>> getMedicalRequestByParent(@PathVariable Long userId){
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<MedicalRequestDTO> medicalRequestDtoList = parentService.getMedicalRequestByParent(Long.parseLong(parentId));
+        return ResponseEntity.ok(medicalRequestDtoList);
+    }
+
     @PutMapping("/medical-request/{requestId}")
     public ResponseEntity<MedicalRequestDTO> updateMedicalRequest(@Valid @RequestBody MedicalRequest request, @PathVariable int requestId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();

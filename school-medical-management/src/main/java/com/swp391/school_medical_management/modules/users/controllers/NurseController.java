@@ -240,4 +240,15 @@ public class NurseController {
         return ResponseEntity.ok(nurseService.getFeedbacksForNurse(nurseId));
     }
 
+    @PostMapping("/notify/healthCheckForm")
+    public ResponseEntity<Void> healthCheckFormNotifyToParent(@RequestBody List<Long> formIds) {
+        nurseService.healthCheckFormNotify(formIds);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/notify/vaccineForm")
+    public ResponseEntity<Void> vaccineFormNotifyToParent(@RequestBody List<Long> formIds) {
+        nurseService.vaccineFormNotify(formIds);
+        return ResponseEntity.ok().build();
+    }
 }

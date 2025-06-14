@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -217,6 +218,18 @@ public class ParentService {
         return medicalRequestDTO;
     }
 
+    public List<MedicalRequestDTO> getMedicalRequestByParent(Long parentId){
+        Optional<UserEntity> parentOpt = userRepository.findById(parentId);
+        if(parentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found");
+        UserEntity parent = parentOpt.get();
+        List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findByParent(parent);
+        if(medicalRequestEntityList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found medical request");
+        List<MedicalRequestDTO> medicalRequestDTOList = medicalRequestEntityList.stream().map(medicalRequestEntity -> modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class)).collect(Collectors.toList());
+        return medicalRequestDTOList;
+    }
+
     public MedicalRequestDTO getMedicalRequestByRequestId(Long parentId, Integer requestId) {
         Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository.findMedicalRequestEntityByRequestId(requestId);
         if (medicalRequestOpt.isEmpty())
@@ -362,43 +375,28 @@ public class ParentService {
         if (feedbackList.isEmpty()) {
             return Collections.emptyList();
         }
-        return feedbackList.stream()
-                .map(fb -> new FeedbackDTO(
-                        fb.getFeedbackId(),
-                        fb.getSatisfaction(),
-                        fb.getComment(),
-                        fb.getStatus(),
-                        fb.getParent().getUserId(),
-                        fb.getVaccineResult() != null ? fb.getVaccineResult().getVaccineResultId() : null,
-                        fb.getHealthResult() != null ? fb.getHealthResult().getHealthResultId() : null
-                ))
-                .collect(Collectors.toList());
+
+        List<FeedbackDTO> feedbackDTOList = feedbackList.stream().map(feedback -> modelMapper.map(feedback, FeedbackDTO.class)).collect(Collectors.toList());
+
+        return feedbackDTOList;
     }
 
 
     public List<MedicalEventDTO> getMedicalEventsByStudent(Long studentId) {
-        StudentEntity student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(studentId);
+        if(studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+                
+        List<MedicalEventEntity> medicalEventEntitieList = medicalEventRepository.findAll();
+        if(medicalEventEntitieList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found any medical event");
 
-        return medicalEventRepository.findAll().stream()
-                .filter(event -> event.getStudent().getId() == studentId)
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<MedicalEventDTO> medicalEventDTOList = medicalEventEntitieList
+                                                    .stream()
+                                                    .map(medicalEventEntitie -> modelMapper
+                                                    .map(medicalEventEntitie, MedicalEventDTO.class))
+                                                    .collect(Collectors
+                                                    .toList());
+        return medicalEventDTOList;
     }
-
-
-
-    private MedicalEventDTO convertToDTO(MedicalEventEntity entity) {
-        MedicalEventDTO dto = new MedicalEventDTO();
-        dto.setEventId(entity.getEventId());
-        dto.setTypeEvent(entity.getTypeEvent());
-        dto.setDate(entity.getDate());
-        dto.setDescription(entity.getDescription());
-        dto.setStudentId(entity.getStudent().getId());
-        dto.setStudentName(entity.getStudent().getFullName()); // Giả sử có trường fullName
-        dto.setNurseId(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
-        return dto;
-    }
-
-
 }
