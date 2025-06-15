@@ -1,9 +1,9 @@
 package com.swp391.school_medical_management.modules.users.dtos.request;
 
+import java.util.List;
 import lombok.Data;
 
 @Data
-public class NotificationRequest {
-    private Long parentId;
-    private String message;
+public class NotifyToParentRequest {
+   private List<Long> studentIds; 
 }

@@ -753,54 +753,5 @@ public class NurseService {
         
         return feedbackDTOList;
     }
-
-    public void healthCheckFormNotify(List<Long> formIds) {
-        List<String> parentIds = new ArrayList<>();
-        NotificationMessage message = new NotificationMessage(
-            "Thông báo khám sức khỏe định kỳ",
-            "Bạn có phiếu khám sức khỏe mới cần xác nhận.",
-            LocalDateTime.now().toString()
-        );
-
-        for (Long formId : formIds) {
-            Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(formId);
-            if(healthCheckFormOpt.isEmpty())
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Form not found: " + formId);
-            
-            HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
-
-            UserEntity parent = healthCheckFormEntity.getParent();
-            if (parent == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found for form ID: " + formId);
-
-            parentIds.add(parent.getUserId().toString());
-        }
-
-        notificationService.sendToParents(parentIds, message);
-    }
-
-    public void vaccineFormNotify(List<Long> formIds) {
-        List<String> parentIds = new ArrayList<>();
-        NotificationMessage message = new NotificationMessage(
-            "Thông báo chương trình tiêm vaccine",
-            "Bạn có phiếu tiêm chủng vaccine mới cần xác nhận.",
-            LocalDateTime.now().toString()
-        );
-
-        for (Long formId : formIds) {
-            Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(formId);
-            if(vaccineFormOpt.isEmpty())
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Form not found: " + formId);
-            
-            VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
-
-            UserEntity parent = vaccineFormEntity.getParent();
-            if (parent == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found for form ID: " + formId);
-
-            parentIds.add(parent.getUserId().toString());
-        }
-        notificationService.sendToParents(parentIds, message);
-    }
 }
 
