@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar/Navbar';
 import MedicalInfoCards from '../components/MedicalInfoCards/MedicalInfoCards';
 import Login from './Login/Login'; // import Login
-import Footer from '../components/Footer/Footer';
 
 function Home() {
   const navigate = useNavigate();
@@ -26,7 +25,6 @@ function Home() {
       <Navbar />
       <MedicalInfoCards onCardClick={handleCardClick} />
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
-      <Footer />
     </div>
     
   );

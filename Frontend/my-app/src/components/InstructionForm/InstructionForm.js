@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { createMedicalRequest } from '../../api/medicalRequestApi';
 import MedicalRequestDetail from "./MedicalRequestDetail";
+import StudentInfoCard from '../../common/StudentInfoCard';
 
 export default function InstructionForm({ onShowHistory }) {
   // Lấy students từ localStorage
@@ -138,39 +139,9 @@ const handleAddMedicine = () => {
           <div className="form-content">
             {/* Phần thông tin Học sinh */}
             <div className="student-info-section">
-              <h2>Chọn học sinh</h2>
-              <div className="student-profile">
-                <div className="select-wrapper" style={{ position: 'relative', width: '100%' }}>
-                  <select
-                    value={selectedStudentId}
-                    onChange={e => setSelectedStudentId(e.target.value)}
-                    style={{
-                      marginBottom: 8,
-                      padding: 6,
-                      borderRadius: 6,
-                      width: '50%',
-                      textAlign: 'center'
-                    }}
-                  >
-                    {students.map(student => (
-                      <option key={student.id} value={student.id}>
-                        {student.id}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="avatar-placeholder">
-                  <img src={selectedStudent.avatar} alt="Avatar" className="avatar-img" />
-                </div>
-                <p className="student-id">
-                  <i className="fas fa-id-card"></i> {selectedStudent.id}
-                </p>
-                <p className="student-class">Lớp: {selectedStudent.classID}</p>
-              </div>
+              <StudentInfoCard onChange={setSelectedStudentId} />
             </div>
-
             
-
             {/* Phần Chi tiết đơn thuốc */}
             <div className="prescription-details-section">
               {/* Thêm input cho mục đích sử dụng thuốc */}

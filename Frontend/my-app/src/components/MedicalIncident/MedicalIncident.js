@@ -1,48 +1,87 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './MedicalIncident.css';
+import axios from 'axios';
+import { Table, Tag, Select, Typography, Avatar } from 'antd';
+import StudentInfoCard from '../../common/StudentInfoCard';
+const { Title, Text } = Typography;
 
-const students = [
-  { id: 'SE181818', name: 'Nguyễn Văn A', class: '5A', avatar: './logo512.png' },
-  { id: 'SE181819', name: 'Trần Thị B', class: '4B', avatar: './logo512.png' },
-  // Thêm học sinh khác nếu cần
+
+
+const columns = [
+  {
+    title: 'Loại sự kiện', // Tên cột hiển thị
+    dataIndex: 'typeEvent',   // Key tương ứng trong object dữ liệu
+    key: 'typeEvent',         // Key duy nhất cho cột này
+    // Bạn có thể tùy chỉnh render cho cột này nếu muốn
+    // render: (text) => <Tag color="blue">{text.toUpperCase()}</Tag>,
+  },
+  {
+    title: 'Ngày diễn ra',
+    dataIndex: 'date',
+    key: 'date',
+    // Sắp xếp theo ngày
+    sorter: (a, b) => new Date(a.date) - new Date(b.date),
+    render: (text) => new Date(text).toLocaleDateString('vi-VN'), // Định dạng ngày tháng VN
+  },
+  {
+    title: 'ID Y tá',
+    dataIndex: 'nurseId',
+    key: 'nurseId',
+    render: (text) => text.toString(), // Đảm bảo ID lớn được hiển thị đúng dạng chuỗi
+
+    
+  },
+  {
+    title: 'Mô tả',
+    dataIndex: 'description',
+    key: 'description',
+  },
 ];
 
-const incidentsByStudent = {
-  SE181818: [
-    {
-      id: 1,
-      type: 'Học sinh bị té ngã',
-      date: '11-11-1111',
-      responsible: 'Nguyễn Văn A',
-      description: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-    },
-    {
-      id: 2,
-      type: 'Học sinh bị té ngã 2',
-      date: '11-11-11112',
-      responsible: 'Nguyễn Văn 2',
-      description: '2222222222',
-    },
-  ],
-  SE181819: [
-    {
-      id: 2,
-      type: 'Học sinh sốt cao',
-      date: '22-22-2222',
-      responsible: 'Nguyễn Văn B',
-      description: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-    },
-  ],
-  // Thêm các học sinh khác nếu cần
-};
+// Dữ liệu mẫu (trong ứng dụng thực tế, dữ liệu này sẽ đến từ API hoặc state)
+const sampleData = [
+  {
+    key: '1', // Ant Design Table cần một 'key' duy nhất cho mỗi dòng
+    typeEvent: "Khám định kỳ",
+    date: "2025-06-15",
+    description: "Kiểm tra sức khỏe tổng quát cho bệnh nhân A.",
+    nurseId: 9007199254740991, // Số này bằng Number.MAX_SAFE_INTEGER
+  },
+  {
+    key: '2',
+    typeEvent: "Tiêm chủng",
+    date: "2025-07-01",
+    description: "Tiêm vắc-xin phòng cúm mùa cho bệnh nhân B.",
+    nurseId: 9007199254740992, // Số này lớn hơn Number.MAX_SAFE_INTEGER, nên là chuỗi
+  },
+  {
+    key: '3',
+    typeEvent: "Tư vấn dinh dưỡng",
+    date: "2025-05-20",
+    description: "Hướng dẫn chế độ ăn uống lành mạnh.",
+    nurseId: 1234567890123456,
+  },
+];
+
+// Chuyển đổi nurseId thành chuỗi nếu nó là số lớn để tránh mất độ chính xác
+const processedData = sampleData.map(item => ({
+  ...item,
+  nurseId: item.nurseId.toString(), // Quan trọng cho các ID số lớn
+}));
 
 const MedicalIncident = () => {
-  const [selectedStudentId, setSelectedStudentId] = useState(students[0].id);
-  const student = students.find(s => s.id === selectedStudentId);
+  // Lấy danh sách học sinh từ localStorage
+  const [students, setStudents] = useState([]);
+  const [selectedStudentId, setSelectedStudentId] = useState();
 
-  // Lấy sự kiện y tế của học sinh đang chọn
-  const incidents = incidentsByStudent[selectedStudentId] || [];
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("students") || "[]");
+    setStudents(stored);
+    if (stored.length > 0) setSelectedStudentId(stored[0].id);
+  }, []);
+
+  const selectedStudent = students.find(s => s.id === selectedStudentId);
 
   return (
     <div className="medical-incident-container">
@@ -50,72 +89,24 @@ const MedicalIncident = () => {
       <div className="incident-content">
         {/* Left Section: Student Overview */}
         <div className="left-panel">
-          <h2>Học sinh</h2>
-          <div className="incident-student-selector">
-            <select
-              value={selectedStudentId}
-              onChange={e => setSelectedStudentId(e.target.value)}
-              style={{
-                padding: '6px 20px',
-                borderRadius: 8,
-                border: '1.5px solid #a7d9ff',
-                fontSize: 18,
-                width: '100%',
-                marginBottom: 12,
-                textAlign: 'center',
-              }}
-            >
-              {students.map(student => (
-                <option key={student.id} value={student.id}>
-                  {student.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="avatar-section">
-            <div className="avatar-placeholder">
-              <img src={student.avatar} alt="Avatar" className="avatar-img" />
-            </div>
-          </div>
-          <p className="student-id-display">
-            <FontAwesomeIcon icon="id-card" /> {student.id}
-          </p>
-          <p className="student-class-display">Lớp: {student.class}</p>
+          <StudentInfoCard
+            onChange={setSelectedStudentId} // Cập nhật ID học sinh khi thay đổi
+            style={{ minWidth: 300 }} // Đặt chiều rộng tối thiểu cho StudentInfoCard       
+            />
         </div>
 
         {/* Right Section: Incident Details Table */}
         <div className="right-panel-incident">
           <h2>Các sự kiện</h2>
-          <div className="incident-table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Sự cố</th>
-                  <th>Ngày xảy ra</th>
-                  <th>Nhân viên phụ trách</th>
-                  <th>Mô tả chi tiết</th>
-                </tr>
-              </thead>
-              <tbody>
-                {incidents.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} style={{ textAlign: 'center', color: '#888' }}>
-                      Không có sự kiện y tế nào cho học sinh này.
-                    </td>
-                  </tr>
-                ) : (
-                  incidents.map((incident) => (
-                    <tr key={incident.id}>
-                      <td>{incident.type}</td>
-                      <td>{incident.date}</td>
-                      <td>{incident.responsible}</td>
-                      <td>{incident.description}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+
+
+          <Table 
+        dataSource={sampleData} // Sử dụng dữ liệu đã xử lý
+        columns={columns} 
+        bordered // Thêm viền cho bảng
+        pagination={{ pageSize: 5 }} // Cấu hình phân trang, 5 mục mỗi trang
+        scroll={{ x: 800 }} // Cho phép cuộn ngang nếu nội dung quá rộng
+      />
         </div>
       </div>
     </div>

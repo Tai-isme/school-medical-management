@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './StudentProfile.css';
 import axios from 'axios';
+import StudentInfoCard from '../../common/StudentInfoCard';
 
 
 const StudentProfile = () => {
@@ -149,32 +150,8 @@ const StudentProfile = () => {
 
       <div className="profile-content">
         {/* Left Section: Student Overview */}
-        <div className="left-panel">
-          <h2>Học sinh</h2>
-          <div className="student-selector">
-            <select
-              value={selectedStudentId}
-              onChange={e => setSelectedStudentId(Number(e.target.value))}
-              style={{border: '1.5px solid #a7d9ff',  marginBottom: 8, padding: 6, borderRadius: 6, width: '50%', appearance: 'none', textAlign: 'center',fontSize: '16px' }}
-            >
-              {students.map(student => (
-                <option key={student.studentId} value={student.studentId}>
-                  {student.id}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="avatar-section">
-            {selectedStudentId && (
-              <img src="./logo512.png" alt="Student Avatar" className="student-avatar" />
-            )}
-          </div>
-          <p className="student-id-display">
-            <FontAwesomeIcon icon="id-card" /> {selectedStudentId}
-          </p>
-          <p className="student-class-display">
-            Lớp: {selectedStudentId}
-          </p>
+        <div className="left-panel" >
+          <StudentInfoCard onChange={setSelectedStudentId} />
         </div>
 
         {/* Right Section: Student Details / Vaccine History */}
