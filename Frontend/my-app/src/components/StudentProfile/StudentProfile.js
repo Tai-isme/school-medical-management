@@ -3,13 +3,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './StudentProfile.css';
 import axios from 'axios';
 import StudentInfoCard from '../../common/StudentInfoCard';
+import { Button, Modal, Input, Form } from 'antd'; // Import Button and Modal from antd
+import MedicalRecordModal from './MedicalRecordModal'; // Import MedicalRecordModal component
 
 
 const StudentProfile = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [isEditing, setIsEditing] = useState(false);
   const [students, setStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [selectedStudentId, setSelectedStudentId] = useState();
   const [studentInfo, setStudentInfo] = useState({
     eyes: '',
     ears: '',
@@ -20,14 +22,20 @@ const StudentProfile = () => {
     medicalHistory: '',
     lastUpdated: '',
     note: '',
-  });
+  }); 
   const [vaccineHistory, setVaccineHistory] = useState([]);
+  const [openMedicalForm, setOpenMedicalForm] = useState(false);
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
   // Lấy students từ localStorage
   useEffect(() => {
     const studentsData = JSON.parse(localStorage.getItem('students')) || [];
     setStudents(studentsData);
-    if (studentsData.length > 0) setSelectedStudentId(studentsData[0].id);
+
+    if (studentsData.length > 0) {
+      setSelectedStudentId(studentsData[0].id);
+    }
   }, []);
 
   useEffect(() => {
@@ -40,6 +48,7 @@ const StudentProfile = () => {
           `http://localhost:8080/api/parent/medical-records/${selectedStudentId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        console.log(`http://localhost:8080/api/parent/medical-records/${selectedStudentId}`);
         const data = res.data;
         setStudentInfo({
           eyes: data.vision || '',
@@ -71,7 +80,7 @@ const StudentProfile = () => {
     };
 
     fetchStudentDetail();
-  }, [selectedStudentId, students]);
+  }, [selectedStudentId]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -129,6 +138,25 @@ const StudentProfile = () => {
     ]);
   };
 
+  const handleEdit = (record) => {
+    // Logic to handle edit action
+    console.log('Edit:', record);
+  };
+
+  const handleDelete = (record) => {
+    // Logic to handle delete action
+    console.log('Delete:', record);
+  };
+
+  const handleOpenStudentProfileForm = () => {
+    // Mở modal hoặc chuyển trang khai báo hồ sơ học sinh
+    // Ví dụ: setShowProfileForm(true);
+  };
+
+  const selectedStudent = students.find(s => s.id === selectedStudentId);
+
+  
+
   return (
     <div className="student-profile-container">
       <h1 className="main-title">Hồ sơ học sinh</h1>
@@ -156,131 +184,165 @@ const StudentProfile = () => {
 
         {/* Right Section: Student Details / Vaccine History */}
         <div className="right-panel">
-          {activeTab === 'general' && (
+          {(!studentInfo || Object.values(studentInfo).every(val => !val)) ? (
+  <div
+    style={{
+      background: "#fffbe6",
+      border: "1px solid #ffe58f",
+      borderRadius: 8,
+      padding: 32,
+      textAlign: "center",
+      marginTop: 24,
+    }}
+  >
+    <div style={{ fontSize: 18, marginBottom: 16 }}>
+      Thông tin của học sinh <b>{selectedStudent?.fullName || selectedStudent?.name}</b> chưa được khai báo.<br />
+      Vui lòng nhấn vào nút bên dưới để khai báo hồ sơ học sinh.
+    </div>
+    <button
+      style={{
+        background: "#1976d2",
+        color: "#fff",
+        border: "none",
+        borderRadius: 6,
+        padding: "10px 24px",
+        fontWeight: "bold",
+        fontSize: 16,
+        cursor: "pointer",
+      }}
+      onClick={() => setOpenMedicalForm(true)} // Viết hàm này để mở form khai báo
+    >
+      Khai báo hồ sơ cho học sinh
+    </button>
+  </div>
+) : (
             <>
-              <h2>Thông tin học sinh</h2>
-              <div className="info-grid">
-                <div className="info-row">
-                  <label>Mắt</label>
-                  <input
-                    type="text"
-                    name="eyes"
-                    value={studentInfo.eyes}
-                    onChange={handleInputChange}
-                    readOnly={!isEditing}
-                    className={isEditing ? 'editable' : ''}
-                  />
-                </div>
-                <div className="info-row">
-                  <label>Tai</label>
-                  <input
-                    type="text"
-                    name="ears"
-                    value={studentInfo.ears}
-                    onChange={handleInputChange}
-                    readOnly={!isEditing}
-                    className={isEditing ? 'editable' : ''}
-                  />
-                </div>
-                <div className="info-row">
-                  <label>Cân nặng</label>
-                  <input
-                    type="text"
-                    name="weight"
-                    value={studentInfo.weight}
-                    onChange={handleInputChange}
-                    readOnly={!isEditing}
-                    className={isEditing ? 'editable' : ''}
-                  />
-                </div>
-                <div className="info-row">
-                  <label>Chiều cao</label>
-                  <input
-                    type="text"
-                    name="height"
-                    value={studentInfo.height}
-                    onChange={handleInputChange}
-                    readOnly={!isEditing}
-                    className={isEditing ? 'editable' : ''}
-                  />
-                </div>
-                <div className="info-row">
-                  <label>Dị ứng</label>
-                  <input
-                    type="text"
-                    name="allergies"
-                    value={studentInfo.allergies}
-                    onChange={handleInputChange}
-                    readOnly={!isEditing}
-                    className={isEditing ? 'editable' : ''}
-                  />
-                </div>
-                <div className="info-row">
-                  <label>Bệnh mãn tính</label>
-                  <input
-                    type="text"
-                    name="chronicDiseases"
-                    value={studentInfo.chronicDiseases} // phải là chronicDiseases
-                    onChange={handleInputChange}
-                    readOnly={!isEditing}
-                    className={isEditing ? 'editable' : ''}
-                  />
-                </div>
-                <div className="info-row">
-                  <label>Lịch sử điều trị</label>
-                  <input
-                    type="text"
-                    name="medicalHistory"
-                    value={studentInfo.medicalHistory}
-                    onChange={handleInputChange}
-                    readOnly={!isEditing}
-                    className={isEditing ? 'editable' : ''}
-                  />
-                </div>
-                <div className="info-row">
-                  <label>Lần cập nhật gần đây</label>
-                  <input
-                    type="text"
-                    name="lastUpdated"
-                    value={studentInfo.lastUpdated}
-                    onChange={handleInputChange}
-                    readOnly
-                    className="read-only"
-                  />
-                </div>
-                <div className="info-row full-width">
-                  <label>Ghi chú</label>
-                  <textarea
-                    name="note"
-                    value={studentInfo.note}
-                    onChange={handleInputChange}
-                    readOnly={!isEditing}
-                    className={isEditing ? 'editable' : ''}
-                    rows="3"
-                  ></textarea>
-                </div>
-              </div>
-            </>
-          )}
+              {activeTab === 'general' && (
+                <>
+                  <h2>Thông tin học sinh</h2>
+                  <div className="info-grid">
+                    <div className="info-row">
+                      <label>Mắt</label>
+                      <input
+                        type="text"
+                        name="eyes"
+                        value={studentInfo.eyes}
+                        onChange={handleInputChange}
+                        readOnly={!isEditing}
+                        className={isEditing ? 'editable' : ''}
+                      />
+                    </div>
+                    <div className="info-row">
+                      <label>Tai</label>
+                      <input
+                        type="text"
+                        name="ears"
+                        value={studentInfo.ears}
+                        onChange={handleInputChange}
+                        readOnly={!isEditing}
+                        className={isEditing ? 'editable' : ''}
+                      />
+                    </div>
+                    <div className="info-row">
+                      <label>Cân nặng</label>
+                      <input
+                        type="text"
+                        name="weight"
+                        value={studentInfo.weight}
+                        onChange={handleInputChange}
+                        readOnly={!isEditing}
+                        className={isEditing ? 'editable' : ''}
+                      />
+                    </div>
+                    <div className="info-row">
+                      <label>Chiều cao</label>
+                      <input
+                        type="text"
+                        name="height"
+                        value={studentInfo.height}
+                        onChange={handleInputChange}
+                        readOnly={!isEditing}
+                        className={isEditing ? 'editable' : ''}
+                      />
+                    </div>
+                    <div className="info-row">
+                      <label>Dị ứng</label>
+                      <input
+                        type="text"
+                        name="allergies"
+                        value={studentInfo.allergies}
+                        onChange={handleInputChange}
+                        readOnly={!isEditing}
+                        className={isEditing ? 'editable' : ''}
+                      />
+                    </div>
+                    <div className="info-row">
+                      <label>Bệnh mãn tính</label>
+                      <input
+                        type="text"
+                        name="chronicDiseases"
+                        value={studentInfo.chronicDiseases} // phải là chronicDiseases
+                        onChange={handleInputChange}
+                        readOnly={!isEditing}
+                        className={isEditing ? 'editable' : ''}
+                      />
+                    </div>
+                    <div className="info-row">
+                      <label>Lịch sử điều trị</label>
+                      <input
+                        type="text"
+                        name="medicalHistory"
+                        value={studentInfo.medicalHistory}
+                        onChange={handleInputChange}
+                        readOnly={!isEditing}
+                        className={isEditing ? 'editable' : ''}
+                      />
+                    </div>
+                    <div className="info-row">
+                      <label>Lần cập nhật gần đây</label>
+                      <input
+                        type="text"
+                        name="lastUpdated"
+                        value={studentInfo.lastUpdated}
+                        onChange={handleInputChange}
+                        readOnly
+                        className="read-only"
+                      />
+                    </div>
+                    <div className="info-row full-width">
+                      <label>Ghi chú</label>
+                      <textarea
+                        name="note"
+                        value={studentInfo.note}
+                        onChange={handleInputChange}
+                        readOnly={!isEditing}
+                        className={isEditing ? 'editable' : ''}
+                        rows="3"
+                      ></textarea>
+                    </div>
+                  </div>
+                </>
+              )}
 
-          {activeTab === 'vaccine' && (
-            <div className="vaccine-history-section">
-              <h2>Các loại vaccin đã tiêm</h2>
-              <div className="vaccine-table-wrapper">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Tên Vaccin</th>
-                      <th>Mô tả</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {vaccineHistory.map(vaccine => (
+              {activeTab === 'vaccine' && (
+                <div className="vaccine-history-section">
+                  <h2>Các loại vaccin đã tiêm</h2>
+                  <div className="vaccine-table-wrapper">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Tên Vaccin</th>
+                          <th>Mô tả</th>
+                          <th>Action</th> {/* Thêm cột Action */}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {vaccineHistory.map(vaccine => (
     <tr key={vaccine.id}>
       <td>
         <input
           type="text"
-          value={vaccine.name}
+          value={vaccine.vaccineName}
           onChange={e => {
             const value = e.target.value;
             setVaccineHistory(prev =>
@@ -294,27 +356,33 @@ const StudentProfile = () => {
       <td>
         <input
           type="text"
-          value={vaccine.description}
+          value={vaccine.note}
           onChange={e => {
             const value = e.target.value;
             setVaccineHistory(prev =>
               prev.map(item =>
-                item.id === vaccine.id ? { ...item, description: value } : item
+                item.id === vaccine.id ? { ...item, note: value } : item
               )
             );
           }}
         />
       </td>
+      <td>
+        <Button onClick={() => handleEdit(vaccine)}>Chỉnh sửa</Button>
+        <Button onClick={() => handleDelete(vaccine)}>Xoá</Button>
+      </td>
     </tr>
   ))}
-                  </tbody>
-                </table>
-              </div>
-              {/* Đặt nút bên ngoài table wrapper và căn trái */}
-              <button onClick={handleAddVaccineRow} className="add-row-button table-bottom-left">
-                + Thêm dòng
-              </button>
-            </div>
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Đặt nút bên ngoài table wrapper và căn trái */}
+                  <button onClick={handleAddVaccineRow} className="add-row-button table-bottom-left">
+                    + Thêm dòng
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
           <div className="buttons-container">
@@ -330,6 +398,25 @@ const StudentProfile = () => {
           </div>
         </div>
       </div>
+
+      <MedicalRecordModal
+        open={openMedicalForm}
+        onCancel={() => setOpenMedicalForm(false)}
+        loading={loading}
+        studentId = {selectedStudentId}
+        setSelectedStudentId={setSelectedStudentId}
+        initialValues={{
+          allergies: "",
+          chronicDisease: "",
+          treatmentHistory: "",
+          vision: "",
+          hearing: "",
+          weight: "",
+          height: "",
+          note: "",
+          vaccineHistories: [{ vaccineName: "", note: "" }]
+        }}
+      />
     </div>
   );
 };
