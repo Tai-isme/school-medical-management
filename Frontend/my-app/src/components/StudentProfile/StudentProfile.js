@@ -33,54 +33,54 @@ const StudentProfile = () => {
     const studentsData = JSON.parse(localStorage.getItem('students')) || [];
     setStudents(studentsData);
 
-    if (studentsData.length > 0) {
-      setSelectedStudentId(studentsData[0].id);
+    const studentIdAlready = localStorage.getItem('studentIdAlready');
+    if (studentIdAlready && studentIdAlready !== "null") {
+      setSelectedStudentId(Number.studentIdAlready);
     }
   }, []);
 
   useEffect(() => {
-    if (!selectedStudentId) return;
-
-    const fetchStudentDetail = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get(
-          `http://localhost:8080/api/parent/medical-records/${selectedStudentId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        console.log(`http://localhost:8080/api/parent/medical-records/${selectedStudentId}`);
-        const data = res.data;
-        setStudentInfo({
-          eyes: data.vision || '',
-          ears: data.hearing || '',
-          weight: data.weight || '',
-          height: data.height || '',
-          allergies: data.allergies || '',
-          chronicDiseases: data.chronicDisease || '',
-          medicalHistory: data.treatmentHistory || '',
-          lastUpdated: data.lastUpdate || '',
-          note: data.note || '',
-        });
-        setVaccineHistory(data.vaccineHistories || []);
-      } catch (err) {
-        // alert('Không lấy được thông tin học sinh!');
-        setStudentInfo({
-          eyes: '',
-          ears: '',
-          weight: '',
-          height: '',
-          allergies: '',
-          chronicDiseases: '',
-          medicalHistory: '',
-          lastUpdated: '',
-          note: '',
-        });
-        setVaccineHistory([]);
-      }
-    };
-
-    fetchStudentDetail();
+    if (selectedStudentId) {
+      fetchStudentInfo(selectedStudentId); // Gọi API lấy thông tin học sinh
+    }
   }, [selectedStudentId]);
+
+  const fetchStudentInfo = async (studentId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(
+        `http://localhost:8080/api/parent/medical-records/${studentId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = res.data;
+      setStudentInfo({
+        eyes: data.vision || '',
+        ears: data.hearing || '',
+        weight: data.weight || '',
+        height: data.height || '',
+        allergies: data.allergies || '',
+        chronicDiseases: data.chronicDisease || '',
+        medicalHistory: data.treatmentHistory || '',
+        lastUpdated: data.lastUpdate || '',
+        note: data.note || '',
+      });
+      setVaccineHistory(data.vaccineHistories || []);
+    } catch (err) {
+      // alert('Không lấy được thông tin học sinh!');
+      setStudentInfo({
+        eyes: '',
+        ears: '',
+        weight: '',
+        height: '',
+        allergies: '',
+        chronicDiseases: '',
+        medicalHistory: '',
+        lastUpdated: '',
+        note: '',
+      });
+      setVaccineHistory([]);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -148,15 +148,8 @@ const StudentProfile = () => {
     console.log('Delete:', record);
   };
 
-  const handleOpenStudentProfileForm = () => {
-    // Mở modal hoặc chuyển trang khai báo hồ sơ học sinh
-    // Ví dụ: setShowProfileForm(true);
-  };
 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
-
-  
-
   return (
     <div className="student-profile-container">
       <h1 className="main-title">Hồ sơ học sinh</h1>
@@ -333,68 +326,35 @@ const StudentProfile = () => {
                         <tr>
                           <th>Tên Vaccin</th>
                           <th>Mô tả</th>
-                          <th>Action</th> {/* Thêm cột Action */}
                         </tr>
                       </thead>
                       <tbody>
                         {vaccineHistory.map(vaccine => (
-    <tr key={vaccine.id}>
-      <td>
-        <input
-          type="text"
-          value={vaccine.vaccineName}
-          onChange={e => {
-            const value = e.target.value;
-            setVaccineHistory(prev =>
-              prev.map(item =>
-                item.id === vaccine.id ? { ...item, name: value } : item
-              )
-            );
-          }}
-        />
-      </td>
-      <td>
-        <input
-          type="text"
-          value={vaccine.note}
-          onChange={e => {
-            const value = e.target.value;
-            setVaccineHistory(prev =>
-              prev.map(item =>
-                item.id === vaccine.id ? { ...item, note: value } : item
-              )
-            );
-          }}
-        />
-      </td>
-      <td>
-        <Button onClick={() => handleEdit(vaccine)}>Chỉnh sửa</Button>
-        <Button onClick={() => handleDelete(vaccine)}>Xoá</Button>
-      </td>
-    </tr>
-  ))}
+                      <tr key={vaccine.id}>
+                        <td>
+                          <h4>
+                            {vaccine.vaccineName}
+                          </h4>
+                          
+                        </td>
+                        <td>
+                          <h4>
+                            {vaccine.note}
+                          </h4>
+                        </td>
+                      </tr>
+                    ))}
                       </tbody>
                     </table>
                   </div>
-                  {/* Đặt nút bên ngoài table wrapper và căn trái */}
-                  <button onClick={handleAddVaccineRow} className="add-row-button table-bottom-left">
-                    + Thêm dòng
-                  </button>
+                  
                 </div>
               )}
             </>
           )}
 
           <div className="buttons-container">
-            {!isEditing ? (
-              <button onClick={handleEditClick} className="action-button edit-button">
-                Chỉnh sửa
-              </button>
-            ) : (
-              <button onClick={handleSaveClick} className="action-button save-button">
-                Lưu
-              </button>
-            )}
+            
           </div>
         </div>
       </div>
@@ -404,7 +364,8 @@ const StudentProfile = () => {
         onCancel={() => setOpenMedicalForm(false)}
         loading={loading}
         studentId = {selectedStudentId}
-        setSelectedStudentId={setSelectedStudentId}
+        onChange={setSelectedStudentId}
+        fetchStudentInfo = {fetchStudentInfo}
         initialValues={{
           allergies: "",
           chronicDisease: "",
