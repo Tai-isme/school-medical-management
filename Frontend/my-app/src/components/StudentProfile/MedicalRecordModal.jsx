@@ -11,7 +11,7 @@ const customLocale = {
   },
 };
 
-export default function MedicalRecordModal({ open, onCancel, onSubmit, initialValues, loading, studentId,setSelectedStudentId }) {
+export default function MedicalRecordModal({ open, onCancel, onSubmit, initialValues, loading, studentId, onChange, fetchStudentInfo }) {
   const [form] = Form.useForm();
   const [vaccineHistories, setVaccineHistories] = useState(
     () => (initialValues?.vaccineHistories || []).map(v => ({ ...v }))
@@ -20,7 +20,6 @@ export default function MedicalRecordModal({ open, onCancel, onSubmit, initialVa
   const handleAddVaccine = () => {
     setVaccineHistories(prev => [...prev, { vaccineName: "", note: "", key: Date.now() }]);
   };
-
   const handleVaccineChange = (value, index, field) => {
     setVaccineHistories(prevVaccines => {
       const newList = [...prevVaccines];
@@ -30,7 +29,6 @@ export default function MedicalRecordModal({ open, onCancel, onSubmit, initialVa
   };
 
   const handleFinish = async (values) => {
-    
     const payload = {
       studentId,
       allergies: values.allergies || "",
@@ -56,9 +54,8 @@ export default function MedicalRecordModal({ open, onCancel, onSubmit, initialVa
       );
       message.success(`Khai báo hồ sơ cho học sinh ${studentId} thành công`);
       localStorage.setItem("studentIdAlready", studentId);
+      fetchStudentInfo(studentId); // Cập nhật thông tin học sinh sau khi khai báo
       onCancel(); // Đóng modal
-      setSelectedStudentId(studentId)
-      window.location.reload()
     } catch (error) {
       message.error("Có lỗi xảy ra, vui lòng thử lại!");
     }
