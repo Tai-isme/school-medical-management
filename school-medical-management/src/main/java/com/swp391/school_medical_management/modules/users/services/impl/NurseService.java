@@ -57,8 +57,6 @@ public class NurseService {
 
     @Autowired private FeedbackRepository feedbackRepository;
 
-    @Autowired private NotificationService notificationService;
-
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
         String status = "PROCESSING";
         List<MedicalRequestEntity> pendingMedicalRequestList = medicalRequestRepository.findMedicalRequestEntitiesByStatusIgnoreCase(status);
@@ -78,13 +76,47 @@ public class NurseService {
        return medicalRequestDTOList;
     }
 
+    public List<MedicalRequestDTO> getAllMedicalRequest() {
+        List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findAll();
+        if(medicalRequestEntityList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical requests found");
+        }
+        List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
+        for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
+            StudentEntity studentEntity = medicalRequestEntity.getStudent();
+            StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+            List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity.getMedicalRequestDetailEntities();
+            List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
+                    .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity, MedicalRequestDetailDTO.class))
+                    .collect(Collectors.toList());
+            MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+            medicalRequestDTO.setStudentDTO(studentDTO);
+            medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+            medicalRequestDTOList.add(medicalRequestDTO);
+        }
+       return medicalRequestDTOList;
+    }
+
+    public List<MedicalRequestDetailDTO> getMedicalRequestDetail(int requestId) {
+        Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository.findMedicalRequestEntityByRequestId(requestId);
+        if(medicalRequestOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found");
+        MedicalRequestEntity medicalRequest = medicalRequestOpt.get();
+        List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequest.getMedicalRequestDetailEntities();
+        if(medicalRequestDetailEntityList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical request details found for this request");
+        return medicalRequestDetailEntityList.stream()
+                .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity, MedicalRequestDetailDTO.class))
+                .collect(Collectors.toList());
+    } 
+
     public MedicalRequestDTO updateMedicalRequestStatus(int requestId, String status) {
         Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository.findMedicalRequestEntityByRequestId(requestId);
         if(medicalRequestOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found");
         MedicalRequestEntity medicalRequest = medicalRequestOpt.get();
-        if(status == null || !status.toUpperCase().equals("SUBMITTED") 
-                        || !status.toUpperCase().equals("COMPLETED") 
+        if(status == null || !status.toUpperCase().equals("SUBMITTED")
+                        || !status.toUpperCase().equals("COMPLETED")
                         || !status.toUpperCase().equals("CANCELLED"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
         medicalRequest.setStatus(status.toUpperCase());

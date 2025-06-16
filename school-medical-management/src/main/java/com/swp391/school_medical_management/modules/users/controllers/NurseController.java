@@ -46,6 +46,18 @@ public class NurseController {
         return ResponseEntity.ok(medicalrequestDTOList);
     }
 
+    @GetMapping("/medical-request")
+    public ResponseEntity<List<MedicalRequestDTO>> getAllMedicalRequest() {
+        List<MedicalRequestDTO> medicalrequestDTOList = nurseService.getAllMedicalRequest();
+        return ResponseEntity.ok(medicalrequestDTOList);
+    }
+
+    @GetMapping("/medical-request-detail/{requestId}")
+    public ResponseEntity<List<MedicalRequestDetailDTO>> getMedicalRequestDetail(@PathVariable int requestId) {
+        List<MedicalRequestDetailDTO> medicalRequestDetailDTO = nurseService.getMedicalRequestDetail(requestId);
+       return ResponseEntity.ok(medicalRequestDetailDTO);
+    }
+
     @PutMapping("/medical-request/{requestId}/status")
     public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId,@Valid @RequestParam String status) {
     MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, status);

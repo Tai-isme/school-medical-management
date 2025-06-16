@@ -72,7 +72,7 @@ public class NotifyController {
             
             notificationService.sendNotificationToParent(
                 parent.getUserId(),
-                "Thông báo chương trình tiêm vaccine",
+                "Thông báo chương trình tiêm vaccine cho học sinh " + student.getFullName(),
                 "Bạn có phiếu thông báo tiêm chủng vaccine mới cần xác nhận."
             );
         }
