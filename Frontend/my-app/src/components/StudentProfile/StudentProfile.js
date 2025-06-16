@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './StudentProfile.css';
 import axios from 'axios';
 import StudentInfoCard from '../../common/StudentInfoCard';
+import { Button } from 'antd'; // Import Button from antd
 
 
 const StudentProfile = () => {
@@ -40,6 +41,7 @@ const StudentProfile = () => {
           `http://localhost:8080/api/parent/medical-records/${selectedStudentId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        console.log(`http://localhost:8080/api/parent/medical-records/${selectedStudentId}`);
         const data = res.data;
         setStudentInfo({
           eyes: data.vision || '',
@@ -127,6 +129,16 @@ const StudentProfile = () => {
       ...prev,
       { id: Date.now(), name: '', description: '' }
     ]);
+  };
+
+  const handleEdit = (record) => {
+    // Logic to handle edit action
+    console.log('Edit:', record);
+  };
+
+  const handleDelete = (record) => {
+    // Logic to handle delete action
+    console.log('Delete:', record);
   };
 
   return (
@@ -272,6 +284,7 @@ const StudentProfile = () => {
                     <tr>
                       <th>Tên Vaccin</th>
                       <th>Mô tả</th>
+                      <th>Action</th> {/* Thêm cột Action */}
                     </tr>
                   </thead>
                   <tbody>
@@ -304,6 +317,10 @@ const StudentProfile = () => {
             );
           }}
         />
+      </td>
+      <td>
+        <Button onClick={() => handleEdit(vaccine)}>Chỉnh sửa</Button>
+        <Button onClick={() => handleDelete(vaccine)}>Xoá</Button>
       </td>
     </tr>
   ))}

@@ -14,7 +14,7 @@ const RequestTable = () => {
     const fetchRequests = async () => {
       try {
         const token = localStorage.getItem('token'); // nếu cần token
-        const res = await axios.get('http://localhost:8080/api/parent/medical-requet', {
+        const res = await axios.get('http://localhost:8080/api/parent/medical-request', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setData(res.data);
