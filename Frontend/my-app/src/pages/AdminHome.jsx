@@ -3,6 +3,8 @@ import Sidebar from "../components/Admin/Sidebar";
 import ClassList from "../components/Admin/ClassList";
 import StudentList from "../components/Admin/StudentList";
 import MedicalRecordDetail from "../components/Admin/MedicalRecordDetail";
+import MedicineRequestList from "../components/Admin/MedicineRequestList";
+import PeriodicHealthCheck from "../components/Admin/PeriodicHealthCheck"; // ✅ Thêm dòng này
 import "../pages/AdminHome.css";
 
 export default function AdminHome() {
@@ -16,9 +18,17 @@ export default function AdminHome() {
     <div className="app-container" style={{ display: "flex", height: "100vh" }}>
       <Sidebar activeTab={activeTab} onChangeTab={setActiveTab} />
 
+      {/* Nếu là tab Yêu cầu gửi thuốc */}
+      {activeTab === "yeucauguithuoc" && (
+        <div style={{ flex: 1, overflowY: "auto" }}>
+          <MedicineRequestList />
+        </div>
+      )}
+
+      {/* Nếu là các tab cần hiện danh sách lớp và học sinh */}
       {showClassTabs.includes(activeTab) && (
         <div style={{ display: "flex", flex: 1 }}>
-          {/* Cột giữa: Class + Student chung 1 khối */}
+          {/* Sidebar lớp và học sinh */}
           <div
             style={{
               display: "flex",
@@ -47,9 +57,11 @@ export default function AdminHome() {
             )}
           </div>
 
-          {/* Cột phải: Thông tin chi tiết */}
+          {/* Nội dung hiển thị bên phải */}
           <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
-            <MedicalRecordDetail student={selectedStudent} />
+            {activeTab === "hoso" && <MedicalRecordDetail student={selectedStudent} />}
+            {activeTab === "kham" && <PeriodicHealthCheck student={selectedStudent} />}
+            {/* Bạn có thể thêm các tab khác tại đây nếu cần */}
           </div>
         </div>
       )}

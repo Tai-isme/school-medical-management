@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 export default function MedicalRecordDetail({ student }) {
   const [medicalRecord, setMedicalRecord] = useState(null);
-  const [activeSubTab, setActiveSubTab] = useState("info");
+  const [activeSubTab, setActiveSubTab] = useState("info_chronic");
 
   useEffect(() => {
     if (!student) return;
@@ -23,18 +23,13 @@ export default function MedicalRecordDetail({ student }) {
     <div className="student-detail">
       <h2>Chi tiết hồ sơ y tế của học sinh {medicalRecord.fullName}</h2>
       <div style={{ marginBottom: "16px" }}>
-        <button onClick={() => setActiveSubTab("info")}>Thông tin</button>
-        <button onClick={() => setActiveSubTab("chronic")}>Bệnh mãn tính</button>
+        <button onClick={() => setActiveSubTab("info_chronic")}>Thông tin & Bệnh mãn tính</button>
         <button onClick={() => setActiveSubTab("incident")}>Sự cố</button>
         <button onClick={() => setActiveSubTab("emergency")}>Liên hệ</button>
       </div>
-      {activeSubTab === "info" && (
+      {activeSubTab === "info_chronic" && (
         <div className="section">
           {/* Thông tin sức khỏe tổng quát */}
-        </div>
-      )}
-      {activeSubTab === "chronic" && (
-        <div className="section">
           {/* Bệnh mãn tính */}
         </div>
       )}
@@ -49,6 +44,5 @@ export default function MedicalRecordDetail({ student }) {
         </div>
       )}
     </div>
-
   );
 }
