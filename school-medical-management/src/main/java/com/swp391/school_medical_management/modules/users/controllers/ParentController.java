@@ -59,7 +59,6 @@ public class ParentController {
         return ResponseEntity.ok(medicalRecordDTOList);
     }
     
-    @PreAuthorize("hasAnyRole('ROLE_PARENT', 'ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/medical-records/{studentId}")
     public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable long studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();

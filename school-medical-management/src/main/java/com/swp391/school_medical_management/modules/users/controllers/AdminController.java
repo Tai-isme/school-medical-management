@@ -15,6 +15,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.HealthChe
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.services.impl.AdminService;
@@ -124,4 +125,13 @@ public class AdminController {
          List<StudentDTO> studentList = adminService.getAllStudentInClass(classId);
          return ResponseEntity.ok(studentList);
      }
+
+     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
+    @GetMapping("/medical-records/{studentId}")
+    public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable long studentId) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MedicalRecordDTO medicalRecordDTO = adminService.getMedicalRecordByStudentId(Long.parseLong(parentId), studentId);
+        if (medicalRecordDTO == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(medicalRecordDTO);
+    }
 }

@@ -16,15 +16,18 @@ import com.swp391.school_medical_management.modules.users.dtos.request.HealthChe
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
@@ -43,6 +46,8 @@ public class AdminService {
     @Autowired private ClassRepository classRepository;
 
     @Autowired private StudentRepository studentRepository;
+
+    @Autowired private MedicalRecordsRepository medicalRecordsRepository;
     
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, long adminId) {
         UserEntity admin = userRepository.findUserByUserId(adminId)
@@ -250,5 +255,14 @@ public class AdminService {
                     .map(studentEntitie -> modelMapper.map(studentEntitie, StudentDTO.class))
                     .collect(Collectors.toList());
         return studentDTOList;
+    }
+
+    public MedicalRecordDTO getMedicalRecordByStudentId(Long parentId, Long studentId) {
+        Optional<MedicalRecordEntity> optMedicalRecord = medicalRecordsRepository
+                .findMedicalRecordByStudent_Id(studentId);
+        if (optMedicalRecord.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical record not found");
+        MedicalRecordEntity medicalRecord = optMedicalRecord.get();
+        return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
     }
 }
