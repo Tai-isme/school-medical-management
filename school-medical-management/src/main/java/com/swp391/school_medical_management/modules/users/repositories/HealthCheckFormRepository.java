@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface HealthCheckFormRepository extends JpaRepository<HealthCheckFormEntity, Long>{
     List<HealthCheckFormEntity> findHealthCheckFormEntityByHealthCheckProgramAndStudent(HealthCheckProgramEntity healthCheckProgramEntity, StudentEntity student);
-    Optional<HealthCheckFormEntity> findHealCheckFormEntityById(Long id);
+    Optional<HealthCheckFormEntity> findById(Long id);
     List<HealthCheckFormEntity> findAll();
     List<HealthCheckFormEntity> findByStudent(StudentEntity student);
     List<HealthCheckFormEntity> findByCommitTrue();

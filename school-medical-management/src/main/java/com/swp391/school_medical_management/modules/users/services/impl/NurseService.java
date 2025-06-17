@@ -205,7 +205,7 @@ public class NurseService {
 
         for(Long healthCheckFormId : request.getHealthCheckFormIds()) {
             try{
-            Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findHealCheckFormEntityById(healthCheckFormId);
+            Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(healthCheckFormId);
             if(healthCheckFormOpt.isEmpty()) 
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found with ID: " + healthCheckFormId);
             
@@ -260,7 +260,7 @@ public class NurseService {
         if (nurseOpt.isEmpty()) 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
         
-        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findHealCheckFormEntityById(healthCheckFormId);
+        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(healthCheckFormId);
         if (healthCheckFormOpt.isEmpty()) 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         
@@ -290,7 +290,7 @@ public class NurseService {
     }
 
     public void deleteHealthCheckForm(Long healthCheckFormId) {
-        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findHealCheckFormEntityById(healthCheckFormId);
+        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(healthCheckFormId);
         if (healthCheckFormOpt.isEmpty()) 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         // if(healthCheckFormOpt.get().getCommit() != null) 
@@ -544,7 +544,7 @@ public class NurseService {
 
     public HealthCheckResultDTO createHealthCheckResult(HealthCheckResultRequest request) {
 
-        Optional<HealthCheckFormEntity> healCheckFormOpt = healthCheckFormRepository.findHealCheckFormEntityById(request.getHealthCheckFormId());
+        Optional<HealthCheckFormEntity> healCheckFormOpt = healthCheckFormRepository.findById(request.getHealthCheckFormId());
         if (healCheckFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         HealthCheckFormEntity healthCheckFormEntity = healCheckFormOpt.get();
@@ -581,7 +581,7 @@ public class NurseService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check result not found");
         }
 
-        Optional<HealthCheckFormEntity> healCheckFormOpt = healthCheckFormRepository.findHealCheckFormEntityById(request.getHealthCheckFormId());
+        Optional<HealthCheckFormEntity> healCheckFormOpt = healthCheckFormRepository.findById(request.getHealthCheckFormId());
         if (healCheckFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
             
@@ -627,20 +627,6 @@ public class NurseService {
         List<HealthCheckResultEntity> healthCheckResultEntityList = healthCheckResultRepository.findAll();
         if(healthCheckResultEntityList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check result found");
-
-        /*
-        List<HealthCheckResultDTO> healthCheckResultDTOList = new ArrayList<>();
-            for (HealthCheckResultEntity healthCheckResultEnity : healthCheckResultEntityList) {
-                HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEnity, HealthCheckResultDTO.class);
-
-                HealthCheckFormEntity healthCheckFormEntity = healthCheckResultEnity.getHealthCheckFormEntity();
-                HealthCheckFormDTO healthCheckFormDTO = modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
-
-                healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
-                healthCheckResultDTO.setStudentId(healthCheckFormDTO.getStudentId());
-                healthCheckResultDTOList.add(healthCheckResultDTO);
-            }
-         */
         List<HealthCheckResultDTO> healthCheckResultDTOList = healthCheckResultEntityList
             .stream()
             .map(healthCheckResultEntity -> {

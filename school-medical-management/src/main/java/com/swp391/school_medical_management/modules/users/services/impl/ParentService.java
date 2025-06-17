@@ -335,7 +335,7 @@ public class ParentService {
         medicalRequestRepository.delete(medicalRequestEntity);
     }
 
-    public List<HealthCheckFormDTO> getHealthCheckForm(Long parentId, Long studentId){
+    public List<HealthCheckFormDTO> getAllHealthCheckForm(Long parentId, Long studentId){
         Optional<StudentEntity> studentOpt = studentRepository.findById(studentId);
         if(studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
@@ -356,7 +356,7 @@ public class ParentService {
         return healthCheckFormDTOs;
     }
 
-    public List<VaccineFormDTO> getVaccineForm(Long parentId, Long studentId){
+    public List<VaccineFormDTO> getAllVaccineForm(Long parentId, Long studentId){
         Optional<StudentEntity> studentOpt = studentRepository.findById(studentId);
         if(studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
@@ -377,9 +377,35 @@ public class ParentService {
         return vaccineFormDTOs;
     }
 
-    public void commitHealthCheckForm(Long parentId, Long healCheckFormId, CommitHealthCheckFormRequest request) {
+    public HealthCheckFormDTO getHealthCheckForm(Long parentId, Long healthCheckFormId){
         Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCHeckFormRepository
-                .findHealCheckFormEntityById(healCheckFormId);
+                .findById(healthCheckFormId);
+        if (healthCheckFormOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
+        HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
+        if (healthCheckFormEntity.getParent() == null
+                || !healthCheckFormEntity.getParent().getUserId().equals(parentId))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        HealthCheckFormDTO healthCheckFormDTO = modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
+        return healthCheckFormDTO;
+    }
+
+    public VaccineFormDTO getVaccineForm(Long parentId, Long vaccineFormId){
+        Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository
+                .findById(vaccineFormId);
+        if (vaccineFormOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
+        VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
+        if (vaccineFormEntity.getParent() == null
+                || !vaccineFormEntity.getParent().getUserId().equals(parentId))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        VaccineFormDTO vaccineFormDTO = modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
+        return vaccineFormDTO;
+    }
+
+    public void commitHealthCheckForm(Long parentId, Long healthCheckFormId, CommitHealthCheckFormRequest request) {
+        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCHeckFormRepository
+                .findById(healthCheckFormId);
         if (healthCheckFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
