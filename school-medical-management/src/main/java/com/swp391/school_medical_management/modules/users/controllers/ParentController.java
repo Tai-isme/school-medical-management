@@ -2,9 +2,11 @@ package com.swp391.school_medical_management.modules.users.controllers;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
 import com.swp391.school_medical_management.modules.users.services.impl.ParentService;
 
 import jakarta.validation.Valid;
@@ -18,6 +20,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -122,7 +127,22 @@ public class ParentController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/heal-check-forms/{healCheckFormId}/commit")
+    @GetMapping("/health-check-forms/{studentId}")
+    public ResponseEntity<List<HealthCheckFormDTO>> getHealthCheckForm(@PathVariable Long studentId) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<HealthCheckFormDTO> healthCheckFormDTOList = parentService.getHealthCheckForm(Long.parseLong(parentId), studentId);
+        return ResponseEntity.ok(healthCheckFormDTOList);
+    }
+
+    @GetMapping("/vaccine-forms/{studentId}")
+    public ResponseEntity<List<VaccineFormDTO>> getVaccineForm(@PathVariable Long studentId) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<VaccineFormDTO> vaccineFormDTOList = parentService.getVaccineForm(Long.parseLong(parentId), studentId);
+        return ResponseEntity.ok(vaccineFormDTOList);
+    }
+    
+
+    @PatchMapping("/health-check-forms/{healCheckFormId}/commit")
     public ResponseEntity<Void> commitHealthCheckForm(@RequestBody CommitHealthCheckFormRequest request, @PathVariable Long healCheckFormId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         parentService.commitHealthCheckForm(Long.parseLong(parentId), healCheckFormId, request);        
@@ -150,7 +170,8 @@ public class ParentController {
 
     @GetMapping("/medical-events/{studentId}")
     public ResponseEntity<List<MedicalEventDTO>> getMedicalEventsByStudent(@PathVariable Long studentId) {
-        List<MedicalEventDTO> events = parentService.getMedicalEventsByStudent(studentId);
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<MedicalEventDTO> events = parentService.getMedicalEventsByStudent(Long.parseLong(parentId) ,studentId);
         return ResponseEntity.ok(events);
     }
 
