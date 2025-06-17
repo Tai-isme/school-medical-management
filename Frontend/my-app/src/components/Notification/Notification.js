@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './Notifications.css';
+import StudentInfoCard from '../../common/StudentInfoCard';
 
 const students = [
   { id: 'SE181818', name: 'Nguyễn Văn A', class: '5A', avatar: './logo512.png' },
@@ -37,6 +38,8 @@ const Notifications = () => {
     },
   ]);
 
+  
+
   const handleNotificationClick = (notification) => {
     if (notification.status === 'Chưa xem') {
       setNotifications(prev =>
@@ -62,35 +65,7 @@ const Notifications = () => {
       <div className="notifications-content">
         {/* Left Section: Student Overview */}
         <div className="left-panel">
-          <h2>Học sinh</h2>
-          <div className="student-selector">
-            <select
-              value={selectedStudentId}
-              onChange={e => setSelectedStudentId(e.target.value)}
-              style={{
-                padding: '6px 20px',
-                borderRadius: 8,
-                border: '1.5px solid #a7d9ff',
-                fontSize: 18,
-                width: '100%',
-                marginBottom: 12,
-                textAlign: 'center',
-              }}
-            >
-              {students.map(student => (
-                <option key={student.id} value={student.id}>
-                  {student.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="avatar-section">
-            <img src={selectedStudent.avatar} alt="Student Avatar" className="student-avatar" />
-          </div>
-          <p className="student-id-display">
-            <FontAwesomeIcon icon="id-card" /> {selectedStudent.id}
-          </p>
-          <p className="student-class-display">Lớp: {selectedStudent.class}</p>
+          <StudentInfoCard onChange={setSelectedStudentId} />
         </div>
 
         {/* Right Section: Notifications List */}
