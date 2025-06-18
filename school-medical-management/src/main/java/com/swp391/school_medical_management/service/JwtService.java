@@ -3,6 +3,7 @@ package com.swp391.school_medical_management.service;
 import com.swp391.school_medical_management.config.JwtConfig;
 import com.swp391.school_medical_management.modules.users.entities.RefreshTokenEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.BlacklistedTokenRepository;
 import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
@@ -53,7 +54,7 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtConfig.getSecretKey()));
     }
 
-    public String generateToken(Long userId, String email, String phone, String role) {
+    public String generateToken(Long userId, String email, String phone, UserRole role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationTime());
         return Jwts.builder()
@@ -122,14 +123,14 @@ public class JwtService {
         }
     }
 
-    public String getRoleFromJwt(String token) {
+    public UserRole getRoleFromJwt(String token) {
         try {
             Claims claims = Jwts.parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            return claims.get("role", String.class);
+            return UserRole.valueOf(claims.get("role", String.class));
         } catch (Exception e) {
             logger.error("Failed to extract role from JWT: {}", e.getMessage());
             return null;
@@ -229,13 +230,13 @@ public class JwtService {
 
     public Authentication getAuthentication(String token) {
         String userId = getUserIdFromJwt(token);
-        String role = getRoleFromJwt(token);
+        UserRole role = getRoleFromJwt(token);
         
         if (userId == null || role == null) {
             return null;
         }
 
-        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
         return new UsernamePasswordAuthenticationToken(userId, null, authorities);
     }
 }

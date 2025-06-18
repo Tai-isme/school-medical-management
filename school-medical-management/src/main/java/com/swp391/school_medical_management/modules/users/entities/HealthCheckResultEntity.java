@@ -22,7 +22,13 @@ public class HealthCheckResultEntity {
     private String diagnosis;
 
     @Column(name = "level", length = 50)
-    private String level; // Giá trị: GOOD, FAIR, AVERAGE, POOR
+    @Enumerated(EnumType.STRING)
+    private Level level;
+
+    public enum Level{
+        GOOD, FAIR, AVERAGE, POOR
+    }
+        
 
     @Column(name = "note", length = 255)
     private String note;

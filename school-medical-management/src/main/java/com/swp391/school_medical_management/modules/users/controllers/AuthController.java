@@ -3,6 +3,7 @@ package com.swp391.school_medical_management.modules.users.controllers;
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.services.impl.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +92,7 @@ public class AuthController {
     public ResponseEntity<?> me() {
         String id = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = (UserEntity) userRepository.findUserByUserId(Long.parseLong(id)).orElseThrow(() -> new RuntimeException("User khong ton tai"));
+
         UserDTO userDTO = UserDTO.builder()
                 .id(user.getUserId())
                 .email(user.getEmail())

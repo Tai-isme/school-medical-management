@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,9 +13,9 @@ import java.util.Optional;
 
 public interface HealthCheckFormRepository extends JpaRepository<HealthCheckFormEntity, Long>{
     List<HealthCheckFormEntity> findHealthCheckFormEntityByHealthCheckProgramAndStudent(HealthCheckProgramEntity healthCheckProgramEntity, StudentEntity student);
-    Optional<HealthCheckFormEntity> findById(Long id);
+    Optional<HealthCheckFormEntity> findByIdAndStatus(Long id, HealthCheckFormStatus status);
     List<HealthCheckFormEntity> findAll();
-    List<HealthCheckFormEntity> findByStudent(StudentEntity student);
+    List<HealthCheckFormEntity> findAllByStudentAndStatus(StudentEntity student, HealthCheckFormStatus status);
     List<HealthCheckFormEntity> findByCommitTrue();
-    
+    Optional<HealthCheckFormEntity> findByStudentAndStatus(StudentEntity student, HealthCheckFormStatus status);
 }

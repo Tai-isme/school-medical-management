@@ -3,6 +3,10 @@ package com.swp391.school_medical_management.modules.users.services.impl;
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import com.swp391.school_medical_management.modules.users.entities.*;
+import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 import com.swp391.school_medical_management.modules.users.repositories.*;
 
 import org.modelmapper.ModelMapper;
@@ -176,17 +180,9 @@ public class ParentService {
         }
 
         boolean isMedicalRequestExist = medicalRequestRepository
-                .existsByStudentAndStatus(student, "PROCESSING");
+                .existsByStudentAndStatus(student, MedicalRequestStatus.PROCESSING);
         if (isMedicalRequestExist)
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Medical request already exists");
-
-        // boolean isMedicalRequestExist = medicalRequestRepository
-        // .existsByStudentAndStatus(student, "PROCESSING");
-
-        // if (isMedicalRequestExist && !"test".equals(environment)) {
-        // throw new ResponseStatusException(HttpStatus.CONFLICT, "Medical request
-        // already exists");
-        // }
 
         if (request.getMedicalRequestDetailRequests() == null || request.getMedicalRequestDetailRequests().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical request details cannot be empty");
@@ -199,7 +195,7 @@ public class ParentService {
         MedicalRequestEntity medicalRequestEntity = new MedicalRequestEntity();
         medicalRequestEntity.setRequestName(request.getRequestName());
         medicalRequestEntity.setNote(request.getNote());
-        medicalRequestEntity.setStatus("PROCESSING");
+        medicalRequestEntity.setStatus(MedicalRequestStatus.PROCESSING);
         medicalRequestEntity.setStudent(student);
         medicalRequestEntity.setParent(parent);
         medicalRequestEntity.setDate(request.getDate());
@@ -294,7 +290,7 @@ public class ParentService {
         MedicalRequestEntity medicalRequestEntity = medicalRequestEntityOpt.get();
         if (!medicalRequestEntity.getParent().getUserId().equals(parentId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        if (!medicalRequestEntity.getStatus().equals("PROCESSING")) {
+        if (!medicalRequestEntity.getStatus().equals(MedicalRequestStatus.PROCESSING)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Cannot update a request that has already been processed");
         }
@@ -328,7 +324,7 @@ public class ParentService {
         MedicalRequestEntity medicalRequestEntity = medicalRequestEntityOpt.get();
         if (!medicalRequestEntity.getParent().getUserId().equals(parentId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        if (!medicalRequestEntity.getStatus().equals("PROCESSING")) {
+        if (!medicalRequestEntity.getStatus().equals(MedicalRequestStatus.PROCESSING)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Cannot delete a request that has already been processed");
         }
@@ -340,7 +336,7 @@ public class ParentService {
         if(studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
         StudentEntity studentEntity = studentOpt.get();
-        List<HealthCheckFormEntity> healthCheckFormEntities = healthCHeckFormRepository.findByStudent(studentEntity);
+        List<HealthCheckFormEntity> healthCheckFormEntities = healthCHeckFormRepository.findAllByStudentAndStatus(studentEntity, HealthCheckFormStatus.SENT);
         if(healthCheckFormEntities.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         for (HealthCheckFormEntity healthCheckFormEntity : healthCheckFormEntities) {
@@ -361,7 +357,7 @@ public class ParentService {
         if(studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
         StudentEntity studentEntity = studentOpt.get();
-        List<VaccineFormEntity> vaccineFormEntities = vaccineFormRepository.findByStudent(studentEntity);
+        List<VaccineFormEntity> vaccineFormEntities = vaccineFormRepository.findAllByStudentAndStatus(studentEntity, VaccineFormStatus.SENT);
         if(vaccineFormEntities.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
         for (VaccineFormEntity vaccineFormEntity : vaccineFormEntities) {
@@ -379,10 +375,11 @@ public class ParentService {
 
     public HealthCheckFormDTO getHealthCheckForm(Long parentId, Long healthCheckFormId){
         Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCHeckFormRepository
-                .findById(healthCheckFormId);
+                .findByIdAndStatus(healthCheckFormId, HealthCheckFormStatus.SENT);
         if (healthCheckFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
+        
         if (healthCheckFormEntity.getParent() == null
                 || !healthCheckFormEntity.getParent().getUserId().equals(parentId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
@@ -392,7 +389,7 @@ public class ParentService {
 
     public VaccineFormDTO getVaccineForm(Long parentId, Long vaccineFormId){
         Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository
-                .findById(vaccineFormId);
+                .findByIdAndStatus(vaccineFormId, VaccineFormStatus.SENT);
         if (vaccineFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
@@ -423,7 +420,7 @@ public class ParentService {
 
     public void commitVaccineForm(Long parentId, Long vaccineFormId, CommitVaccineFormRequest request) {
         Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository
-                .findVaccineFormEntityByvaccineFormId(vaccineFormId);
+                .findById(vaccineFormId);
         if (vaccineFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
         VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
@@ -443,10 +440,10 @@ public class ParentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DON'T FIND TO PARENT"));
 
         FeedbackEntity feedback = FeedbackEntity.builder()
-                .satisfaction(request.getSatisfaction())
+                .satisfaction(FeedbackEntity.Satisfaction.valueOf(request.getSatisfaction().toUpperCase()))
                 .comment(request.getComment())
                 .createdAt(LocalDateTime.now())
-                .status("NOT_REPLIED")
+                .status(FeedbackStatus.NOT_REPLIED)
                 .parent(parent)
                 .build();
         if (request.getVaccineResultId() != null) {

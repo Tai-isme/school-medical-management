@@ -19,7 +19,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.service.JwtService;
 
 @Component
@@ -69,14 +69,14 @@ public Message<?> preSend(Message<?> message, MessageChannel channel) {
             }
 
             String userId = jwtService.getUserIdFromJwt(token);
-            String role = jwtService.getRoleFromJwt(token);
+            UserRole role = jwtService.getRoleFromJwt(token);
 
             if (userId == null || role == null) {
                 logger.warn("Invalid user information in JWT");
                 return message;
             }
 
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
             Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
             accessor.setUser(auth);
 

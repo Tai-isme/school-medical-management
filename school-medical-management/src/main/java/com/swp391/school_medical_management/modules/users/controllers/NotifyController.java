@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,13 +15,18 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.NotifyToParentRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.NotificationMessageDTO;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 import com.swp391.school_medical_management.service.NotificationService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 
@@ -31,6 +37,10 @@ public class NotifyController {
     @Autowired NotificationService notificationService;
 
     @Autowired StudentRepository studentRepository;
+
+    @Autowired HealthCheckFormRepository healthCheckFormRepository;
+
+    @Autowired VaccineFormRepository vaccineFormRepository;
 
     @PostMapping("/notify-health-check")
     public ResponseEntity<?> notifyHealthCheckToParents(@RequestBody NotifyToParentRequest request ) {
@@ -50,6 +60,12 @@ public class NotifyController {
                 "Thông báo chương trình khám sức khỏe định kỳ",
                 "Bạn có phiếu thông báo khám sức khỏe định kỳ mới cần xác nhận."
             );
+            Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findByStudentAndStatus(student, HealthCheckFormStatus.DRAFT);
+            if(healthCheckFormOpt.isEmpty())
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This form already send");
+            HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
+            healthCheckFormEntity.setStatus(HealthCheckFormStatus.SENT);
+            healthCheckFormRepository.save(healthCheckFormEntity);
         }
         return ResponseEntity.ok("Đã gửi thông báo");
     }
@@ -75,6 +91,12 @@ public class NotifyController {
                 "Thông báo chương trình tiêm vaccine cho học sinh " + student.getFullName(),
                 "Bạn có phiếu thông báo tiêm chủng vaccine mới cần xác nhận."
             );
+            Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findByStudentAndStatus(student, VaccineFormStatus.DRAFT);
+            if(vaccineFormOpt.isEmpty())
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This form already send");
+            VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
+            vaccineFormEntity.setStatus(VaccineFormStatus.SENT);
+            vaccineFormRepository.save(vaccineFormEntity);
         }
         return ResponseEntity.ok("Đã gửi thông báo");
     }

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.service.JwtService;
 
 import jakarta.annotation.Nonnull;
@@ -59,7 +60,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userId;
-        final String role;
+        final UserRole role;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             sendErrorResponse(response,
@@ -122,7 +123,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         userId = jwtService.getUserIdFromJwt(jwt);
         role = jwtService.getRoleFromJwt(jwt);
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            List<GrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userId,
                     null,

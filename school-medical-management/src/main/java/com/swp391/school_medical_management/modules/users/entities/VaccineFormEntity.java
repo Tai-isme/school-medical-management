@@ -14,7 +14,7 @@ public class VaccineFormEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "vaccine_form_id")
-    private Long vaccineFormId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "vaccine_id", referencedColumnName = "vaccine_id")
@@ -40,4 +40,12 @@ public class VaccineFormEntity {
 
     @Column(name = "commit")
     private Boolean commit;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private VaccineFormStatus status;
+
+    public enum VaccineFormStatus {
+        DRAFT, SENT
+    }
 }

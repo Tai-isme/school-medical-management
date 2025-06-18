@@ -17,5 +17,6 @@ public class HealthCheckFormDTO {
     private LocalDate formDate;
     private String notes;
     private Boolean commit;
+    private String status;
     private HealthCheckProgramDTO healthCheckProgram;
 }

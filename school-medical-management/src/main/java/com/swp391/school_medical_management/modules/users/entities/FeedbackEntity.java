@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -21,7 +23,12 @@ public class FeedbackEntity {
     private Integer feedbackId;
 
     @Column(name = "satisfaction")
-    private String satisfaction;
+    @Enumerated(EnumType.STRING)
+    private Satisfaction satisfaction;
+
+    public enum Satisfaction {
+        SATISFIED, UNSATISFIED
+    }
 
     @Column(name = "comment")
     private String comment;
@@ -34,7 +41,12 @@ public class FeedbackEntity {
     private String responseNurse;
 
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private FeedbackStatus status;
+
+    public enum FeedbackStatus {
+        NOT_REPLIED, REPLIED
+    }
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
