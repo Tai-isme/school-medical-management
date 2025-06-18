@@ -5,5 +5,5 @@ import lombok.Data;
 
 @Data
 public class NotifyToParentRequest {
-   private List<Long> studentIds; 
+   private List<Long> formIds; 
 }

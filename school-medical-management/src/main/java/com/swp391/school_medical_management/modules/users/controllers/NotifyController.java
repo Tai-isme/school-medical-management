@@ -44,26 +44,34 @@ public class NotifyController {
 
     @PostMapping("/notify-health-check")
     public ResponseEntity<?> notifyHealthCheckToParents(@RequestBody NotifyToParentRequest request ) {
-        List<Long> studentIdList = request.getStudentIds();
-        for (Long studentId : studentIdList) {
+        List<Long> formIds = request.getFormIds();
+        for (Long formId : formIds) {
 
-            StudentEntity student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found with ID: " + studentId));
+            Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(formId);
+            if(healthCheckFormOpt.isEmpty())
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found health check form with id: " + formId);
 
-            UserEntity parent = student.getParent();
+            HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
+            
+            StudentEntity studentEntity = healthCheckFormEntity.getStudent();
+            if(studentEntity == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found in form");
 
-            if(parent == null)
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found for student ID: " + studentId);
+            UserEntity parentEntity = studentEntity.getParent();
+
+            if(parentEntity == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found with student ID: " + studentEntity.getId());
+
+            if(healthCheckFormEntity.getStatus() == HealthCheckFormStatus.SENT)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This form already sent");
 
             notificationService.sendNotificationToParent(
-                parent.getUserId(),
+                parentEntity.getUserId(),
                 "Thông báo chương trình khám sức khỏe định kỳ",
-                "Bạn có phiếu thông báo khám sức khỏe định kỳ mới cần xác nhận."
+                "Bạn có phiếu thông báo khám sức khỏe định kỳ mới cần xác nhận.",
+                formId
             );
-            Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findByStudentAndStatus(student, HealthCheckFormStatus.DRAFT);
-            if(healthCheckFormOpt.isEmpty())
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This form already send");
-            HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
+           
             healthCheckFormEntity.setStatus(HealthCheckFormStatus.SENT);
             healthCheckFormRepository.save(healthCheckFormEntity);
         }
@@ -72,29 +80,34 @@ public class NotifyController {
 
     @PostMapping("/notify-vaccine")
     public ResponseEntity<?> notifyVaccineToParents(@RequestBody NotifyToParentRequest request ) {
-        List<Long> studentIdList = request.getStudentIds();
-        if (studentIdList == null || studentIdList.isEmpty()) 
-        return ResponseEntity.badRequest().body("Danh sách studentId không được trống");
+        List<Long> formIds = request.getFormIds();
+        for (Long formId : formIds) {
 
-        for (Long studentId : studentIdList) {
-
-            StudentEntity student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found with ID: " + studentId));
-
-            UserEntity parent = student.getParent();
-
-            if(parent == null)
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found for student ID: " + studentId);
-            
-            notificationService.sendNotificationToParent(
-                parent.getUserId(),
-                "Thông báo chương trình tiêm vaccine cho học sinh " + student.getFullName(),
-                "Bạn có phiếu thông báo tiêm chủng vaccine mới cần xác nhận."
-            );
-            Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findByStudentAndStatus(student, VaccineFormStatus.DRAFT);
+            Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(formId);
             if(vaccineFormOpt.isEmpty())
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This form already send");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found vaccine form with id: " + formId);
+
             VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
+            
+            StudentEntity studentEntity = vaccineFormEntity.getStudent();
+            if(studentEntity == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found in form");
+
+            UserEntity parentEntity = studentEntity.getParent();
+
+            if(parentEntity == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found with student ID: " + studentEntity.getId());
+            
+            if(vaccineFormEntity.getStatus() == VaccineFormStatus.SENT)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This form already sent");
+
+            notificationService.sendNotificationToParent(
+                parentEntity.getUserId(),
+                "Thông báo chương trình tiêm vaccine cho học sinh " + parentEntity.getFullName(),
+                "Bạn có phiếu thông báo tiêm chủng vaccine mới cần xác nhận.",
+                formId
+            );
+
             vaccineFormEntity.setStatus(VaccineFormStatus.SENT);
             vaccineFormRepository.save(vaccineFormEntity);
         }
