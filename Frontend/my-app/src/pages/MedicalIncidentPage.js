@@ -5,7 +5,6 @@ import MedicalIncident from '../components/MedicalIncident/MedicalIncident';
 function MedicalIncidentPage() {
   return (
     <div>
-      <Navbar />
       <MedicalIncident />
     </div>
   );

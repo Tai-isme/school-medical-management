@@ -263,7 +263,8 @@ export default function MedicalRecordModal({ open, onCancel, onSubmit, initialVa
                 dataSource={vaccineHistories}
                 pagination={false}
                 rowKey={(record) => record.key || record.vaccineName + record.note}
-                columns={vaccineTableColumns} // Sử dụng biến columns đã định nghĩa
+                columns={vaccineTableColumns}
+                style={{ width: 600 }}
               />
               <Button type="primary" style={{ marginTop: 16 }} onClick={handleAddVaccine}>
                 + Thêm mới vaccin

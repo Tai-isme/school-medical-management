@@ -5,7 +5,6 @@ import StudentProfile from '../components/StudentProfile/StudentProfile.js';
 function StudentProfilePage() {
   return (
     <div>
-      <Navbar />
       <StudentProfile />
     </div>
   );

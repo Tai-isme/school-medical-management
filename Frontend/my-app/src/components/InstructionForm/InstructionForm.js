@@ -26,6 +26,7 @@ export default function InstructionForm({ onShowHistory }) {
   const [note, setNote] = useState('');
   const [purpose, setPurpose] = useState(''); // Thêm state cho mục đích sử dụng thuốc
   const [usageTime, setUsageTime] = useState(''); // Thêm state cho thời gian sử dụng thuốc
+  const [dateError, setDateError] = useState('');
   const [activeTab, setActiveTab] = useState('create'); // 'create' hoặc 'history'
   const usageTimeOptions = [
   "Sau ăn sáng từ 9h-9h30",
@@ -57,6 +58,19 @@ const handleAddMedicine = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(usageTime);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      setDateError('Ngày dùng phải là hôm nay hoặc sau hôm nay!');
+      return;
+    } else {
+      setDateError('');
+    }
+
     const payload = {
       requestName: purpose,
       note: note,
@@ -80,25 +94,25 @@ const handleAddMedicine = () => {
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) throw new Error("Gửi thất bại!");
+      if (!response.ok) throw new Error("Bạn chỉ có thể gửi đơn thuốc cho học sinh của mình khi đơn thuốc trước đã hoàn thành!");
 
-      // Sau khi gửi thành công:
-      const history = JSON.parse(localStorage.getItem('medicalRequests') || '[]');
-      localStorage.setItem('medicalRequests', JSON.stringify([...history, payload]));
-
+      setActiveTab('history'); // Chuyển sang tab lịch sử gửi đơn thuốc
+setPurpose('');
+  setNote('');
+  setUsageTime('');
+  setMedicines([{ name: '', quantity: '', usage: '' }]);
       alert('Đơn hướng dẫn đã được gửi!');
     } catch (error) {
-      alert('Gửi thất bại!');
+      // Không reset state, chỉ hiện thông báo lỗi
+      alert(error.message);
     }
   };
 
-  // Giả sử bạn lưu lịch sử gửi đơn thuốc ở localStorage
-  const history = JSON.parse(localStorage.getItem('medicalRequests') || '[]');
 
   return (
     <div className="instruction-form-container">
       {/* Tabs */}
-      <div className="tabs" style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: 24 }}>
+      <div className="tabs" style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: 0 }}>
         <button
           onClick={() => setActiveTab('create')}
           className={activeTab === 'create' ? 'active' : ''}
@@ -146,7 +160,7 @@ const handleAddMedicine = () => {
             <div className="prescription-details-section">
               {/* Thêm input cho mục đích sử dụng thuốc */}
             <div className="input-group">
-              <label style={{fontSize: '20px'}}>Đơn thuốc:</label>
+              <label style={{fontSize: '20px'}}>Mục đích gửi thuốc:</label>
               <input
                 className="purpose-input"
                 width= "calc(100% - 20px)"
@@ -163,11 +177,17 @@ const handleAddMedicine = () => {
                 <input
                   type="date"
                   value={usageTime}
-                  onChange={e => setUsageTime(e.target.value)}
+                  onChange={e => {
+                    setUsageTime(e.target.value);
+                    setDateError(''); // Xóa lỗi khi người dùng thay đổi ngày
+                  }}
                   required
                   style={{fontSize: '16px', padding: '6px', borderRadius: '6px'}}
                 />
               </div>
+              {dateError && (
+                <span style={{ color: 'red', fontSize: '0.9em' }}>{dateError}</span>
+              )}
               <h2 style={{marginTop: '0px'}}>Chi tiết đơn thuốc</h2>
               <div className="medicine-list">
                 {medicines.map((medicine, index) => (
@@ -252,7 +272,7 @@ const handleAddMedicine = () => {
       )}
 
       {activeTab === 'history' && (
-        <MedicalRequestDetail history={history} />
+        <MedicalRequestDetail/>
       )}
     </div>
   );

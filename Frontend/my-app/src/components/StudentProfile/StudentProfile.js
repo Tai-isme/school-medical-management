@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './StudentProfile.css';
 import axios from 'axios';
 import StudentInfoCard from '../../common/StudentInfoCard';
-import { Button, Modal, Input, Form } from 'antd'; // Import Button and Modal from antd
+import { Button, Modal, Input, Form, Table } from 'antd'; // Import Button and Modal from antd
 import MedicalRecordModal from './MedicalRecordModal'; // Import MedicalRecordModal component
 
 
@@ -148,6 +148,23 @@ const StudentProfile = () => {
     console.log('Delete:', record);
   };
 
+  const vaccineColumns = [
+    {
+      title: 'Loại Vaccin đã tiêm',
+      dataIndex: 'vaccineName',
+      key: 'vaccineName',
+      align: 'center',
+      minWidth: 250,
+      render: (text) => <span style={{ fontWeight: 500 }}>{text}</span>,
+    },
+    {
+      title: 'Mô tả',
+      dataIndex: 'note',
+      key: 'note',
+      align: 'center',
+      minWidth: 650,
+    },
+  ];
 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
   return (
@@ -165,7 +182,7 @@ const StudentProfile = () => {
           className={`tab-button ${activeTab === 'vaccine' ? 'active' : ''}`}
           onClick={() => setActiveTab('vaccine')}
         >
-          Lịch sử tiêm vaccin
+          Lịch sử tiêm vaccine
         </button>
       </div>
 
@@ -212,10 +229,10 @@ const StudentProfile = () => {
             <>
               {activeTab === 'general' && (
                 <>
-                  <h2>Thông tin học sinh</h2>
+                  <h2>Hồ sơ sức khỏe</h2>
                   <div className="info-grid">
                     <div className="info-row">
-                      <label>Mắt</label>
+                      <label>Thị giác</label>
                       <input
                         type="text"
                         name="eyes"
@@ -226,7 +243,7 @@ const StudentProfile = () => {
                       />
                     </div>
                     <div className="info-row">
-                      <label>Tai</label>
+                      <label>Thính giác</label>
                       <input
                         type="text"
                         name="ears"
@@ -237,7 +254,7 @@ const StudentProfile = () => {
                       />
                     </div>
                     <div className="info-row">
-                      <label>Cân nặng</label>
+                      <label>Cân nặng (kg)</label>
                       <input
                         type="text"
                         name="weight"
@@ -248,7 +265,7 @@ const StudentProfile = () => {
                       />
                     </div>
                     <div className="info-row">
-                      <label>Chiều cao</label>
+                      <label>Chiều cao (cm) </label>
                       <input
                         type="text"
                         name="height"
@@ -259,7 +276,7 @@ const StudentProfile = () => {
                       />
                     </div>
                     <div className="info-row">
-                      <label>Dị ứng</label>
+                      <label>Dị ứng với</label>
                       <input
                         type="text"
                         name="allergies"
@@ -319,42 +336,33 @@ const StudentProfile = () => {
 
               {activeTab === 'vaccine' && (
                 <div className="vaccine-history-section">
-                  <h2>Các loại vaccin đã tiêm</h2>
-                  <div className="vaccine-table-wrapper">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Tên Vaccin</th>
-                          <th>Mô tả</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {vaccineHistory.map(vaccine => (
-                      <tr key={vaccine.id}>
-                        <td>
-                          <h4>
-                            {vaccine.vaccineName}
-                          </h4>
-                          
-                        </td>
-                        <td>
-                          <h4>
-                            {vaccine.note}
-                          </h4>
-                        </td>
-                      </tr>
-                    ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  
+                  <h2 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: 24 }}>Các loại vaccin đã tiêm</h2>
+                  <Table
+                    columns={vaccineColumns}
+                    dataSource={vaccineHistory.map((item, idx) => ({ ...item, key: idx }))}
+                    pagination={{ pageSize: 5 }}
+                    bordered
+                    style={{ background: '#fff', borderRadius: 8 }}
+                  />
                 </div>
               )}
             </>
           )}
 
           <div className="buttons-container">
-            
+            {activeTab === 'general' && (
+              <>
+                {!isEditing ? (
+                  <Button type="primary" onClick={handleEditClick}>
+                    <FontAwesomeIcon icon="fa-solid fa-pen-to-square" /> Chỉnh sửa
+                  </Button>
+                ) : (
+                  <Button type="primary" onClick={handleSaveClick}>
+                    <FontAwesomeIcon icon="fa-solid fa-floppy-disk" /> Lưu
+                  </Button>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

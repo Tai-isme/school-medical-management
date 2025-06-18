@@ -22,7 +22,7 @@
 .tabs {
   display: flex;
   justify-content: flex-start; /* Align tabs to the left */
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   background-color: #e0f2ff; /* Background for tabs area */
   border-bottom: 2px solid #a7d9ff;
   border-top-left-radius: 10px;

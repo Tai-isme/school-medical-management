@@ -74,15 +74,15 @@ const handleGoogleLogin = async () => {
       localStorage.setItem('token', data.token);  
       localStorage.setItem('users', JSON.stringify(data.users));
       localStorage.setItem('students', JSON.stringify(data.students));
+      localStorage.setItem('role', JSON.stringify(data.users.role));
       onClose();
       // Giả sử kết quả trả về có role
-    const user = { role: "admin" }; // hoặc "nurse", "parent"
-    localStorage.setItem("user", JSON.stringify(user));
+    const role = data.users.role; // hoặc "nurse", "parent"
 
     // Chuyển hướng theo role
-    if (user.role === "admin" || user.role === "nurse") {
+    if (role === "admin" || role === "nurse") {
       navigate("/dashboard");
-    } else if (user.role === "parent") {
+    } else if (role === "parent") {
       navigate("/");
     }
     }else {
@@ -95,11 +95,7 @@ const handleGoogleLogin = async () => {
     setError("Đăng nhập Google thất bại!");
     console.log("1"+error)
   }
-
-  
-
 };
-
 
     return (
     <div className="modal-overlay">
