@@ -251,4 +251,14 @@ public class NurseController {
     public ResponseEntity<List<FeedbackDTO>> getFeedbacksForNurse(@PathVariable Integer nurseId) {
         return ResponseEntity.ok(nurseService.getFeedbacksForNurse(nurseId));
     }
+
+    //Lọc ra nhưng học sinh chưa từng tiêm loại vaccine name history đó hoặc chưa từng tham gia chương trình vaccine
+    @GetMapping("/students/not-vaccinated")
+    public ResponseEntity<List<StudentDTO>> getStudentsNotVaccinated(
+            @RequestParam(required = false) Long vaccineProgramId,
+            @RequestParam(required = false) String vaccineName) {
+        List<StudentDTO> result = nurseService.getStudentsNotVaccinated(vaccineProgramId, vaccineName);
+        return ResponseEntity.ok(result);
+    }
+
 }
