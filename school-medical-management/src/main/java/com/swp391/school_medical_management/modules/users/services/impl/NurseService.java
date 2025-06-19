@@ -782,5 +782,17 @@ public class NurseService {
         
         return feedbackDTOList;
     }
+
+
+    public List<StudentDTO> getStudentsNotVaccinated(Long vaccineProgramId, String vaccineName) {
+        if (vaccineName != null && vaccineName.trim().isEmpty()) vaccineName = null;
+
+        List<StudentEntity> students = studentRepository
+                .findStudentsNeverVaccinatedByProgramOrName(vaccineProgramId, vaccineName);
+
+        return students.stream()
+                .map(s -> modelMapper.map(s, StudentDTO.class))
+                .collect(Collectors.toList());
+    }
 }
 
