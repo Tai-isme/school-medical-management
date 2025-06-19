@@ -2,15 +2,7 @@ package com.swp391.school_medical_management.modules.users.entities;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
@@ -32,6 +24,15 @@ public class NotificationEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "form_type", length = 50)
+    private String formType; // "HEALTH_CHECK" hoặc "VACCINE"
+
+    @Column(name = "form_id")
+    private Long formId;
+
     @Column(name = "created_at", columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead = false; // Mặc định là chưa đọc
 }

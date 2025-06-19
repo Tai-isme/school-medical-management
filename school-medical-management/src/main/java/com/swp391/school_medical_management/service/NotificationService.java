@@ -28,7 +28,7 @@ public class NotificationService {
 
     @Autowired private ModelMapper modelMapper;
 
-    public void sendNotificationToParent(Long parentId, String title, String content, long formId) {
+    public void sendNotificationToParent(Long parentId, String title, String content, String formType, long formId, boolean isRead) {
         UserEntity user = userRepository.findById(parentId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -36,6 +36,9 @@ public class NotificationService {
         notificationEntity.setUser(user);
         notificationEntity.setTitle(title);
         notificationEntity.setContent(content);
+        notificationEntity.setFormType(formType);
+        notificationEntity.setFormId(formId);
+        notificationEntity.setRead(isRead); 
         notificationEntity.setCreatedAt(LocalDateTime.now());
         notificationRepository.save(notificationEntity);
 
@@ -43,7 +46,9 @@ public class NotificationService {
             title,
             content,
             notificationEntity.getCreatedAt().toString(),
-            formId
+            formType,
+            formId,
+            isRead
         );
         messagingTemplate.convertAndSend("/topic/parent/" + parentId, message);
     }

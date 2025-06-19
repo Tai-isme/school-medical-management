@@ -17,6 +17,7 @@ import com.swp391.school_medical_management.modules.users.entities.HealthCheckFo
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 import com.swp391.school_medical_management.modules.users.repositories.*;
 
 import ch.qos.logback.classic.Level;
@@ -325,7 +326,7 @@ public class NurseService {
 
         VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
 
-        if(vaccineProgramEntity.getStatus().equals("ON_GOING") || vaccineProgramEntity.getStatus().equals("COMPLETED")){
+        if(vaccineProgramEntity.getStatus() == VaccineProgramStatus.ON_GOING || vaccineProgramEntity.getStatus() == VaccineProgramStatus.COMPLETED){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine program already started or completed");
         }
 
@@ -375,7 +376,7 @@ public class NurseService {
 
         VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
 
-        if(vaccineProgramEntity.getStatus().equals("ON_GOING") || vaccineProgramEntity.getStatus().equals("COMPLETED"))
+        if(vaccineProgramEntity.getStatus() == VaccineProgramStatus.ON_GOING || vaccineProgramEntity.getStatus() == VaccineProgramStatus.COMPLETED)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine program already started or completed");
 
         List<VaccineFormDTO> successList = new ArrayList<>();

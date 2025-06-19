@@ -1,5 +1,6 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +46,7 @@ public class NotifyController {
     @PostMapping("/notify-health-check")
     public ResponseEntity<?> notifyHealthCheckToParents(@RequestBody NotifyToParentRequest request ) {
         List<Long> formIds = request.getFormIds();
+        List<Long> skippedForms = new ArrayList<>();
         for (Long formId : formIds) {
 
             Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(formId);
@@ -62,25 +64,30 @@ public class NotifyController {
             if(parentEntity == null)
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found with student ID: " + studentEntity.getId());
 
-            if(healthCheckFormEntity.getStatus() == HealthCheckFormStatus.SENT)
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This form already sent");
+            if(healthCheckFormEntity.getStatus() == HealthCheckFormStatus.SENT){
+                skippedForms.add(formId);
+                continue;
+            }
 
             notificationService.sendNotificationToParent(
                 parentEntity.getUserId(),
                 "Thông báo chương trình khám sức khỏe định kỳ",
                 "Bạn có phiếu thông báo khám sức khỏe định kỳ mới cần xác nhận.",
-                formId
+                "HEALTH_CHECK",
+                formId,
+                false
             );
            
             healthCheckFormEntity.setStatus(HealthCheckFormStatus.SENT);
             healthCheckFormRepository.save(healthCheckFormEntity);
         }
-        return ResponseEntity.ok("Đã gửi thông báo");
+        return ResponseEntity.ok("Đã gửi thông báo. Các form đã skip: " + skippedForms);
     }
 
     @PostMapping("/notify-vaccine")
     public ResponseEntity<?> notifyVaccineToParents(@RequestBody NotifyToParentRequest request ) {
         List<Long> formIds = request.getFormIds();
+        List<Long> skippedForms = new ArrayList<>();
         for (Long formId : formIds) {
 
             Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(formId);
@@ -98,20 +105,24 @@ public class NotifyController {
             if(parentEntity == null)
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found with student ID: " + studentEntity.getId());
             
-            if(vaccineFormEntity.getStatus() == VaccineFormStatus.SENT)
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This form already sent");
+            if(vaccineFormEntity.getStatus() == VaccineFormStatus.SENT){
+                skippedForms.add(formId);
+                continue;
+            }
 
             notificationService.sendNotificationToParent(
                 parentEntity.getUserId(),
                 "Thông báo chương trình tiêm vaccine cho học sinh " + parentEntity.getFullName(),
                 "Bạn có phiếu thông báo tiêm chủng vaccine mới cần xác nhận.",
-                formId
+                "VACCINE",
+                formId,
+                false
             );
 
             vaccineFormEntity.setStatus(VaccineFormStatus.SENT);
             vaccineFormRepository.save(vaccineFormEntity);
         }
-        return ResponseEntity.ok("Đã gửi thông báo");
+        return ResponseEntity.ok("Đã gửi thông báo. Các form đã skip: " + skippedForms);
     }
 
     @GetMapping("/notify/{studentId}")
