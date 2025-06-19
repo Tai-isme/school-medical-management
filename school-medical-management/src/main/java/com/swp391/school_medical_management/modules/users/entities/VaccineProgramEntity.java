@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,7 +39,12 @@ public class VaccineProgramEntity {
     private LocalDate vaccineDate;
 
     @Column(name = "status")
-    private String status; // VALID: NOT_STARTED, ON_GOING, COMPLETED
+    @Enumerated(EnumType.STRING)
+    private VaccineProgramStatus status;
+
+    public enum VaccineProgramStatus{
+        ON_GOING, COMPLETED, NOT_STARTED
+    }
 
     @Column(name = "note")
     private String note;

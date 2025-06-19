@@ -11,4 +11,5 @@ public class NotificationMessageDTO {
     private String title;
     private String content;
     private String createdAt;
+    private Long formId;
 }

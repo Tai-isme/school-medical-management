@@ -25,6 +25,8 @@ import com.swp391.school_medical_management.modules.users.entities.MedicalRecord
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
@@ -54,7 +56,7 @@ public class AdminService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
                 
         Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository
-                .findHealthCheckProgramEntityByHealthCheckNameAndStatus(request.getHealthCheckName(), "NOT_STARTED");
+                .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
                 
         if (existingProgramOpt.isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check program with name '" + request.getHealthCheckName() + "' already exists and not started.");
@@ -70,7 +72,7 @@ public class AdminService {
         healthCheckProgramEntity.setEndDate(request.getEndDate());
         healthCheckProgramEntity.setNote(request.getNote());
         healthCheckProgramEntity.setAdmin(admin);
-        healthCheckProgramEntity.setStatus("NOT_STARTED");
+        healthCheckProgramEntity.setStatus(HealthCheckProgramStatus.NOT_STARTED);
         healthCheckProgramRepository.save(healthCheckProgramEntity);
         return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
     }
@@ -79,7 +81,7 @@ public class AdminService {
         UserEntity admin = userRepository.findUserByUserId(adminId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
 
-        Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository.findHealthCheckProgramEntityById(id);
+        Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository.findById(id);
 
         if(existingProgramOpt.isEmpty())
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
@@ -90,17 +92,16 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to update this program");
         }
 
-        if (existingProgram.getStatus().equals("COMPLETED") || existingProgram.getStatus().equals("ON_GOING")) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+        if(existingProgram.getStatus() == HealthCheckProgramStatus.COMPLETED || existingProgram.getStatus() == HealthCheckProgramStatus.ON_GOING)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
                 "Cannot update 'COMPLETED' or 'ON_GOING' program");
-        }
 
         if (request.getStartDate().isAfter(request.getEndDate())) 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date must be before end date");
 
         if (!existingProgram.getHealthCheckName().equals(request.getHealthCheckName())) {
         Optional<HealthCheckProgramEntity> duplicateProgramOpt = healthCheckProgramRepository
-                .findHealthCheckProgramEntityByHealthCheckNameAndStatus(request.getHealthCheckName(), "NOT_STARTED");
+                .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
                 if(duplicateProgramOpt.isPresent()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
                         "Health check program with name '" + request.getHealthCheckName() + "' already exists and not started.");
@@ -118,8 +119,6 @@ public class AdminService {
     }
 
     public List<HealthCheckProgramDTO> getAllHealthCheckProgram(long adminId) {
-        // UserEntity admin = userRepository.findUserByUserId(adminId)
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
         List<HealthCheckProgramEntity> healthCheckProgramEntityList = healthCheckProgramRepository.findAll();
         if (healthCheckProgramEntityList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check programs found");
@@ -130,7 +129,7 @@ public class AdminService {
     }
 
     public HealthCheckProgramDTO getHealthCheckProgramById(long adminId, Long id) {
-        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findHealthCheckProgramEntityById(id);
+        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
         if(healthCheckProgramOpt.isEmpty()) 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
         HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
@@ -140,7 +139,7 @@ public class AdminService {
     public void deleteHealthCheckProgram(Long id, long adminId) {
         UserEntity admin = userRepository.findUserByUserId(adminId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
-        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findHealthCheckProgramEntityById(id);
+        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
         if(healthCheckProgramOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
 
@@ -150,7 +149,7 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to delete this program");
         }
 
-        if (healthCheckProgramEntity.getStatus().equals("COMPLETED") || healthCheckProgramEntity.getStatus().equals("ON_GOING")) {
+        if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete 'COMPLETED' or 'ON_GOING' program");
         }
 
@@ -162,7 +161,7 @@ public class AdminService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
        
         Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository
-                .findVaccineProgramByVaccineNameAndStatus(request.getVaccineName(), "NOT_STARTED");
+                .findByVaccineNameAndStatus(request.getVaccineName(), VaccineProgramStatus.NOT_STARTED);
                 
         if (existingProgramOpt.isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine program with name '" + request.getVaccineName() + "' already exists and not started.");
@@ -173,7 +172,7 @@ public class AdminService {
         vaccineProgramEntity.setDescription(request.getDescription());
         vaccineProgramEntity.setVaccineDate(request.getVaccineDate());
         vaccineProgramEntity.setNote(request.getNote());
-        vaccineProgramEntity.setStatus("NOT_STARTED");
+        vaccineProgramEntity.setStatus(VaccineProgramStatus.NOT_STARTED);
         vaccineProgramEntity.setAdmin(admin);
         vaccineProgramRepository.save(vaccineProgramEntity);
         return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
@@ -191,7 +190,7 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to update this program");
         }
 
-        if (existingProgram.getStatus().equals("COMPLETED") || existingProgram.getStatus().equals("ON_GOING")) {
+        if (existingProgram.getStatus() == VaccineProgramStatus.COMPLETED || existingProgram.getStatus() == VaccineProgramStatus.ON_GOING) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
                 "Cannot update 'COMPLETED' or 'ON_GOING' program");
         }

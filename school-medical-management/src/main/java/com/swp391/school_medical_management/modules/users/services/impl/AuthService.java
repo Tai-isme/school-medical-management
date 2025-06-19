@@ -25,6 +25,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.StudentD
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.service.EmailService;
@@ -68,7 +69,7 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
             throw new BadCredentialsException("Incorrect email or password!");
         UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-        String token = jwtService.generateToken(user.getUserId(), user.getEmail(), user.getPhone(), user.getRole());
+        String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(), userDTO.getRole());
         String refreshToken = jwtService.generateRefreshToken(user.getUserId());
         return new LoginResponse(token, refreshToken, userDTO, null);
     }
@@ -83,7 +84,7 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setFullName(request.getName());
         user.setPassword(encodedPassword);
-        user.setRole("NURSE");
+        user.setRole(UserRole.NURSE);
         userRepository.save(user);
         emailService.sendEmail(request.getEmail(), "Account: ",
                 "\nEmail: " + request.getEmail()
@@ -116,8 +117,8 @@ public class AuthService {
             UserEntity user = userOpt.get();
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
             List<StudentEntity> studentList = studentRepository.findStudentByParent_UserId(userDTO.getId());
-            String token = jwtService.generateToken(user.getUserId(), user.getEmail(), user.getPhone(), user.getRole());
-            String refreshToken = jwtService.generateRefreshToken(user.getUserId());
+            String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(), userDTO.getRole());
+            String refreshToken = jwtService.generateRefreshToken(userDTO.getId());
             List<StudentDTO> studentDTOList = studentList.stream()
                     .map(student -> modelMapper.map(student, StudentDTO.class)).collect(Collectors.toList());
             return new LoginResponse(token, refreshToken, userDTO, studentDTOList);
@@ -136,8 +137,8 @@ public class AuthService {
             UserEntity user = userOpt.get();
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
             List<StudentEntity> studentList = studentRepository.findStudentByParent_UserId(userDTO.getId());
-            String token = jwtService.generateToken(user.getUserId(), user.getEmail(), user.getPhone(), user.getRole());
-            String refreshToken = jwtService.generateRefreshToken(user.getUserId());
+            String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(), userDTO.getRole());
+            String refreshToken = jwtService.generateRefreshToken(userDTO.getId());
             List<StudentDTO> studentDTOList = studentList.stream()
                     .map(student -> modelMapper.map(student, StudentDTO.class)).collect(Collectors.toList());
             return new LoginResponse(token, refreshToken, userDTO, studentDTOList);

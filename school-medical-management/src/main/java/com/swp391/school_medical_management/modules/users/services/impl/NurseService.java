@@ -12,9 +12,14 @@ import java.util.stream.Collectors;
 
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import com.swp391.school_medical_management.modules.users.entities.*;
+import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 import com.swp391.school_medical_management.modules.users.repositories.*;
-import com.swp391.school_medical_management.service.NotificationService;
 
+import ch.qos.logback.classic.Level;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,8 +63,7 @@ public class NurseService {
     @Autowired private FeedbackRepository feedbackRepository;
 
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
-        String status = "PROCESSING";
-        List<MedicalRequestEntity> pendingMedicalRequestList = medicalRequestRepository.findMedicalRequestEntitiesByStatusIgnoreCase(status);
+        List<MedicalRequestEntity> pendingMedicalRequestList = medicalRequestRepository.findByStatus(MedicalRequestStatus.PROCESSING);
         if(pendingMedicalRequestList.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No processing medical requests found");
         }
@@ -115,11 +119,14 @@ public class NurseService {
         if(medicalRequestOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found");
         MedicalRequestEntity medicalRequest = medicalRequestOpt.get();
-        if(status == null || !status.toUpperCase().equals("SUBMITTED")
-                        || !status.toUpperCase().equals("COMPLETED")
-                        || !status.toUpperCase().equals("CANCELLED"))
+
+        MedicalRequestEntity.MedicalRequestStatus statusEnum = MedicalRequestEntity.MedicalRequestStatus.valueOf(status.toUpperCase());
+
+        if(statusEnum == null || !(statusEnum == MedicalRequestStatus.SUBMITTED)
+                        || !(statusEnum == MedicalRequestStatus.COMPLETED)
+                        || !(statusEnum == MedicalRequestStatus.CANCELLED))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
-        medicalRequest.setStatus(status.toUpperCase());
+        medicalRequest.setStatus(statusEnum);
         medicalRequestRepository.save(medicalRequest);
         return modelMapper.map(medicalRequest, MedicalRequestDTO.class);
     }
@@ -134,7 +141,7 @@ public class NurseService {
 
 
         Optional<HealthCheckProgramEntity> healthCheckProgramOpt = 
-        healthCheckProgramRepository.findHealthCheckProgramEntityById(request.getHealthCheckProgramId());
+        healthCheckProgramRepository.findById(request.getHealthCheckProgramId());
 
         if(healthCheckProgramOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
@@ -142,7 +149,7 @@ public class NurseService {
 
         HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
 
-        if(healthCheckProgramEntity.getStatus().equals("ON_GOING") || healthCheckProgramEntity.getStatus().equals("COMPLETED")){
+        if(healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check program already started or completed");
         }
 
@@ -177,6 +184,7 @@ public class NurseService {
             healthCheckFormEntity.setFormDate(LocalDate.now());
             healthCheckFormEntity.setNotes(null);
             healthCheckFormEntity.setCommit(null);
+            healthCheckFormEntity.setStatus(HealthCheckFormStatus.DRAFT);
             healthCheckFormEntity.setHealthCheckProgram(healthCheckProgramEntity);
 
 
@@ -190,14 +198,14 @@ public class NurseService {
 
     public Map<String, Object> updateHealthCheckForm(Long nurseId, HealthCheckFormUpdateRequest request) {
 
-        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findHealthCheckProgramEntityById(request.getHealthCheckProgramId());
+        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(request.getHealthCheckProgramId());
 
         if(healthCheckProgramOpt.isEmpty()) 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
 
         HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
 
-        if(healthCheckProgramEntity.getStatus().equals("ON_GOING") || healthCheckProgramEntity.getStatus().equals("COMPLETED"))
+        if(healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check program already started or completed");
 
         List<HealthCheckFormDTO> successList = new ArrayList<>();
@@ -205,7 +213,7 @@ public class NurseService {
 
         for(Long healthCheckFormId : request.getHealthCheckFormIds()) {
             try{
-            Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findHealCheckFormEntityById(healthCheckFormId);
+            Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(healthCheckFormId);
             if(healthCheckFormOpt.isEmpty()) 
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found with ID: " + healthCheckFormId);
             
@@ -260,7 +268,7 @@ public class NurseService {
         if (nurseOpt.isEmpty()) 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
         
-        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findHealCheckFormEntityById(healthCheckFormId);
+        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(healthCheckFormId);
         if (healthCheckFormOpt.isEmpty()) 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         
@@ -290,7 +298,7 @@ public class NurseService {
     }
 
     public void deleteHealthCheckForm(Long healthCheckFormId) {
-        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findHealCheckFormEntityById(healthCheckFormId);
+        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(healthCheckFormId);
         if (healthCheckFormOpt.isEmpty()) 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         // if(healthCheckFormOpt.get().getCommit() != null) 
@@ -350,6 +358,7 @@ public class NurseService {
             vaccineFormEntity.setNurse(nurse);
             vaccineFormEntity.setFormDate(LocalDate.now());
             vaccineFormEntity.setParent(parent);
+            vaccineFormEntity.setStatus(VaccineFormStatus.DRAFT);
             vaccineFormEntity.setVaccineProgram(vaccineProgramEntity);
             vaccineFormRepository.save(vaccineFormEntity);
 
@@ -374,7 +383,7 @@ public class NurseService {
 
         for(Long vaccineFormId : request.getVaccineFormIds()) {
             try{
-            Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findVaccineFormEntityByvaccineFormId(vaccineFormId);
+            Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(vaccineFormId);
             if(vaccineFormOpt.isEmpty()) 
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found with ID: " + vaccineFormId);
             
@@ -424,7 +433,7 @@ public class NurseService {
         Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
         if (nurseOpt.isEmpty()) 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
-        Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findVaccineFormEntityByvaccineFormId(vaccineFormId);
+        Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(vaccineFormId);
         if(vaccineFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
         VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
@@ -448,7 +457,7 @@ public class NurseService {
     }
 
     public void deleteVaccineForm(long vaccineFormId){
-        Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findVaccineFormEntityByvaccineFormId(vaccineFormId);
+        Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(vaccineFormId);
         if(vaccineFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
             
@@ -544,7 +553,7 @@ public class NurseService {
 
     public HealthCheckResultDTO createHealthCheckResult(HealthCheckResultRequest request) {
 
-        Optional<HealthCheckFormEntity> healCheckFormOpt = healthCheckFormRepository.findHealCheckFormEntityById(request.getHealthCheckFormId());
+        Optional<HealthCheckFormEntity> healCheckFormOpt = healthCheckFormRepository.findById(request.getHealthCheckFormId());
         if (healCheckFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         HealthCheckFormEntity healthCheckFormEntity = healCheckFormOpt.get();
@@ -562,7 +571,7 @@ public class NurseService {
 
         HealthCheckResultEntity healthCheckResultEntity = new HealthCheckResultEntity();
         healthCheckResultEntity.setDiagnosis(request.getDiagnosis());
-        healthCheckResultEntity.setLevel(request.getLevel());
+        healthCheckResultEntity.setLevel(HealthCheckResultEntity.Level.valueOf(request.getLevel().toUpperCase()));
         healthCheckResultEntity.setNote(request.getNote());
         healthCheckResultEntity.setHealthCheckFormEntity(healthCheckFormEntity);
         healthCheckResultRepository.save(healthCheckResultEntity);
@@ -581,7 +590,7 @@ public class NurseService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check result not found");
         }
 
-        Optional<HealthCheckFormEntity> healCheckFormOpt = healthCheckFormRepository.findHealCheckFormEntityById(request.getHealthCheckFormId());
+        Optional<HealthCheckFormEntity> healCheckFormOpt = healthCheckFormRepository.findById(request.getHealthCheckFormId());
         if (healCheckFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
             
@@ -595,7 +604,7 @@ public class NurseService {
         HealthCheckResultEntity healthCheckResultEntity = existingResultOpt.get();
 
         healthCheckResultEntity.setDiagnosis(request.getDiagnosis());
-        healthCheckResultEntity.setLevel(request.getLevel());
+        healthCheckResultEntity.setLevel(HealthCheckResultEntity.Level.valueOf(request.getLevel().toUpperCase()));
         healthCheckResultEntity.setNote(request.getNote());
         healthCheckResultRepository.save(healthCheckResultEntity);
 
@@ -627,20 +636,6 @@ public class NurseService {
         List<HealthCheckResultEntity> healthCheckResultEntityList = healthCheckResultRepository.findAll();
         if(healthCheckResultEntityList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check result found");
-
-        /*
-        List<HealthCheckResultDTO> healthCheckResultDTOList = new ArrayList<>();
-            for (HealthCheckResultEntity healthCheckResultEnity : healthCheckResultEntityList) {
-                HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEnity, HealthCheckResultDTO.class);
-
-                HealthCheckFormEntity healthCheckFormEntity = healthCheckResultEnity.getHealthCheckFormEntity();
-                HealthCheckFormDTO healthCheckFormDTO = modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
-
-                healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
-                healthCheckResultDTO.setStudentId(healthCheckFormDTO.getStudentId());
-                healthCheckResultDTOList.add(healthCheckResultDTO);
-            }
-         */
         List<HealthCheckResultDTO> healthCheckResultDTOList = healthCheckResultEntityList
             .stream()
             .map(healthCheckResultEntity -> {
@@ -698,7 +693,7 @@ public class NurseService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not found");
         }
 
-        Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findVaccineFormEntityByvaccineFormId(request.getVaccineFormId());
+        Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(request.getVaccineFormId());
         if (vaccineFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
             
@@ -750,7 +745,7 @@ public class NurseService {
             .map(vaccineResultEntity -> {
                 VaccineResultDTO dto = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
                 dto.setStudentId(vaccineResultEntity.getVaccineFormEntity().getStudent().getId());
-                dto.setVaccineFormId(vaccineResultEntity.getVaccineFormEntity().getVaccineFormId());
+                dto.setVaccineFormId(vaccineResultEntity.getVaccineFormEntity().getId());
                 return dto;
             }).collect(Collectors.toList());
         
@@ -768,11 +763,12 @@ public class NurseService {
     public void replyToFeedback(Integer feedbackId, String response) {
         FeedbackEntity feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DON'T FIND TO RESPONSE."));
-        if ("REPLIED".equalsIgnoreCase(feedback.getStatus())) {
+        
+        if (feedback.getStatus() == FeedbackStatus.REPLIED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "RESPONSE WAS REPLIED");
         }
         feedback.setResponseNurse(response);
-        feedback.setStatus("REPLIED");
+        feedback.setStatus(FeedbackStatus.REPLIED);
         feedbackRepository.save(feedback);
     }
 

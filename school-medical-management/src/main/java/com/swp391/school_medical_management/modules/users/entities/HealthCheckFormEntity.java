@@ -1,18 +1,8 @@
 package com.swp391.school_medical_management.modules.users.entities;
 
 import java.time.LocalDate;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @AllArgsConstructor
@@ -20,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Table(name = "health_check_form")
 public class HealthCheckFormEntity {
-        @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "health_check_form_id")
     private Long id;
@@ -49,4 +39,12 @@ public class HealthCheckFormEntity {
 
     @Column(name = "commit")
     private Boolean commit;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private HealthCheckFormStatus status;
+
+    public enum HealthCheckFormStatus {
+        DRAFT, SENT
+    }
 }

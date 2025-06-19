@@ -6,6 +6,8 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,7 +43,12 @@ public class MedicalRequestEntity {
     private String note;
 
     @Column(name = "status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private MedicalRequestStatus status;
+
+    public enum MedicalRequestStatus{
+        SUBMITTED, COMPLETED, PROCESSING, CANCELLED
+    }
 
     @ManyToOne
     @JoinColumn(name = "student_id", referencedColumnName = "student_id")

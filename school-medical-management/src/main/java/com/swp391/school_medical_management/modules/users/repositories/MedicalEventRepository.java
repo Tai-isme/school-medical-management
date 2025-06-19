@@ -13,5 +13,5 @@ import com.swp391.school_medical_management.modules.users.entities.StudentEntity
 public interface MedicalEventRepository extends JpaRepository<MedicalEventEntity, Integer>{
     Optional<MedicalEventEntity> findByStudentAndTypeEventAndDescription(StudentEntity student, String typeEvent, String description);
     Optional<MedicalEventEntity> findByEventId(Long eventId);
-    List<MedicalEventEntity> findAll();
+    List<MedicalEventEntity> findByStudent(StudentEntity student);
 }
