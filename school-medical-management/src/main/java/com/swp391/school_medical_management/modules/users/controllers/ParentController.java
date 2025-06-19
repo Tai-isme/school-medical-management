@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
@@ -20,8 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -188,4 +188,12 @@ public class ParentController {
         List<MedicalEventDTO> events = parentService.getMedicalEventsByStudent(Long.parseLong(parentId) ,studentId);
         return ResponseEntity.ok(events);
     }
+
+    @GetMapping("/all-forms/{studentId}")
+    public ResponseEntity<AllFormsByStudentDTO> getAllFormByStudent(@PathVariable Long studentId) {
+        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        AllFormsByStudentDTO allFormsByStudentDTOList = parentService.getAllFormByStudent(Long.parseLong(parentId), studentId);
+        return ResponseEntity.ok(allFormsByStudentDTOList);
+    }
+    
 }

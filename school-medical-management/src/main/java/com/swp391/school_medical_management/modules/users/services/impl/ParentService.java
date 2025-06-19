@@ -498,4 +498,24 @@ public class ParentService {
                         .toList());
         return medicalEventDTOList;
     }
+    
+    public AllFormsByStudentDTO getAllFormByStudent(Long parentId, Long studentId) {
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(studentId);
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        StudentEntity student = studentOpt.get();
+        if (!student.getParent().getUserId().equals(parentId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
+        
+        
+        List<HealthCheckFormDTO> healthCheckForms = getAllHealthCheckForm(parentId, studentId);
+        List<VaccineFormDTO> vaccineForms = getAllVaccineForm(parentId, studentId);
+        
+        AllFormsByStudentDTO allFormsByStudentDTO = new AllFormsByStudentDTO();
+        allFormsByStudentDTO.setHealthCheckForms(healthCheckForms);
+        allFormsByStudentDTO.setVaccineForms(vaccineForms);
+
+        return allFormsByStudentDTO;
+    }
 }
