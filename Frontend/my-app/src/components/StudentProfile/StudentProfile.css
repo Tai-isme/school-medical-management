@@ -159,6 +159,12 @@
   grid-column: 1 / -1; /* Make the note field span full width */
 }
 
+.info-row.double {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
 .info-row label {
   flex-basis: 120px; /* Fixed width for labels */
   min-width: 10px; /* Ensure labels don't shrink */

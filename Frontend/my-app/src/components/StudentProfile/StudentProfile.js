@@ -25,6 +25,7 @@ const StudentProfile = () => {
   }); 
   const [vaccineHistory, setVaccineHistory] = useState([]);
   const [openMedicalForm, setOpenMedicalForm] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
@@ -91,7 +92,13 @@ const StudentProfile = () => {
   };
 
   const handleEditClick = () => {
-    setIsEditing(true);
+    setEditMode(true);
+    setOpenMedicalForm(true);
+  };
+
+  const handleCloseMedicalForm = () => {
+    setOpenMedicalForm(false);
+    setEditMode(false);
   };
 
   const handleSaveClick = async () => {
@@ -131,22 +138,7 @@ const StudentProfile = () => {
     }
   };
 
-  const handleAddVaccineRow = () => {
-    setVaccineHistory(prev => [
-      ...prev,
-      { id: Date.now(), name: '', description: '' }
-    ]);
-  };
-
-  const handleEdit = (record) => {
-    // Logic to handle edit action
-    console.log('Edit:', record);
-  };
-
-  const handleDelete = (record) => {
-    // Logic to handle delete action
-    console.log('Delete:', record);
-  };
+  
 
   const vaccineColumns = [
     {
@@ -352,14 +344,17 @@ const StudentProfile = () => {
           <div className="buttons-container">
             {activeTab === 'general' && (
               <>
-                {!isEditing ? (
-                  <Button type="primary" onClick={handleEditClick}>
-                    <FontAwesomeIcon icon="fa-solid fa-pen-to-square" /> Chỉnh sửa
-                  </Button>
-                ) : (
-                  <Button type="primary" onClick={handleSaveClick}>
-                    <FontAwesomeIcon icon="fa-solid fa-floppy-disk" /> Lưu
-                  </Button>
+                {/* Chỉ hiện nút nếu đã có hồ sơ */}
+                {studentInfo && Object.values(studentInfo).some(val => val) && (
+                  !isEditing ? (
+                    <Button type="primary" onClick={handleEditClick}>
+                      <FontAwesomeIcon icon="fa-solid fa-pen-to-square" /> Chỉnh sửa
+                    </Button>
+                  ) : (
+                    <Button type="primary" onClick={handleSaveClick}>
+                      <FontAwesomeIcon icon="fa-solid fa-floppy-disk" /> Lưu
+                    </Button>
+                  )
                 )}
               </>
             )}
@@ -369,22 +364,22 @@ const StudentProfile = () => {
 
       <MedicalRecordModal
         open={openMedicalForm}
-        onCancel={() => setOpenMedicalForm(false)}
+        onCancel={handleCloseMedicalForm}
         loading={loading}
-        studentId = {selectedStudentId}
-        onChange={setSelectedStudentId}
-        fetchStudentInfo = {fetchStudentInfo}
+        studentId={selectedStudentId}
+        fetchStudentInfo={fetchStudentInfo}
         initialValues={{
-          allergies: "",
-          chronicDisease: "",
-          treatmentHistory: "",
-          vision: "",
-          hearing: "",
-          weight: "",
-          height: "",
-          note: "",
-          vaccineHistories: [{ vaccineName: "", note: "" }]
+          allergies: studentInfo.allergies,
+          chronicDisease: studentInfo.chronicDiseases,
+          treatmentHistory: studentInfo.medicalHistory,
+          vision: studentInfo.eyes,
+          hearing: studentInfo.ears,
+          weight: studentInfo.weight,
+          height: studentInfo.height,
+          note: studentInfo.note,
+          vaccineHistories: vaccineHistory.length > 0 ? vaccineHistory : [{ vaccineName: "", note: "" }]
         }}
+        editMode={editMode}
       />
     </div>
   );
