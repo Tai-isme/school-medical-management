@@ -1,38 +1,49 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
-
-import java.lang.classfile.ClassFile.Option;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collector;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.checkerframework.checker.units.qual.A;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventStatDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
 
 @Service
 public class AdminService {
@@ -50,6 +61,12 @@ public class AdminService {
     @Autowired private StudentRepository studentRepository;
 
     @Autowired private MedicalRecordsRepository medicalRecordsRepository;
+
+    @Autowired private HealthCheckFormRepository healthCheckFormRepository;
+    
+    @Autowired private VaccineFormRepository vaccineFormRepository;
+
+    @Autowired private MedicalEventRepository medicalEventRepository;
     
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, long adminId) {
         UserEntity admin = userRepository.findUserByUserId(adminId)
@@ -77,20 +94,13 @@ public class AdminService {
         return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
     }
 
-    public HealthCheckProgramDTO updateHealthCheckProgram(Long id, HealthCheckProgramRequest request, long adminId) {
-        UserEntity admin = userRepository.findUserByUserId(adminId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
-
+    public HealthCheckProgramDTO updateHealthCheckProgram(Long id, HealthCheckProgramRequest request) {
         Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository.findById(id);
 
         if(existingProgramOpt.isEmpty())
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
 
         HealthCheckProgramEntity existingProgram = existingProgramOpt.get();
-
-        if (!existingProgram.getAdmin().getUserId().equals(admin.getUserId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to update this program");
-        }
 
         if(existingProgram.getStatus() == HealthCheckProgramStatus.COMPLETED || existingProgram.getStatus() == HealthCheckProgramStatus.ON_GOING)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
@@ -118,6 +128,67 @@ public class AdminService {
         return modelMapper.map(existingProgram, HealthCheckProgramDTO.class);
     }
 
+    public HealthCheckProgramDTO updateHealthCheckProgramStatus(Long id, String status) {
+        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
+        if(healthCheckProgramOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
+        HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
+
+        HealthCheckProgramStatus newStatus;
+        try {
+            newStatus = HealthCheckProgramStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + status);
+        }
+
+        if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already COMPLETED and cannot be updated");
+        }
+
+        if(healthCheckProgramEntity.getStatus() == (newStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already in status: " + newStatus);
+        }
+
+        if (newStatus == HealthCheckProgramStatus.COMPLETED && healthCheckProgramEntity.getStatus() != HealthCheckProgramStatus.ON_GOING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot mark as COMPLETED unless the program is ON_GOING");
+        }
+
+        healthCheckProgramEntity.setStatus(newStatus);
+        healthCheckProgramRepository.save(healthCheckProgramEntity);
+
+        if(newStatus == HealthCheckProgramStatus.ON_GOING) {
+            createHealthCheckForm(healthCheckProgramEntity);
+        }
+
+        return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
+    }
+
+    public void createHealthCheckForm(HealthCheckProgramEntity programEntity) {
+        
+        List<StudentEntity> students = studentRepository.findAll();
+
+        for (StudentEntity studentEntity : students) {
+            UserEntity parent = studentEntity.getParent();
+            if (parent == null) 
+                continue;
+            
+            List<HealthCheckFormEntity> existingForms = healthCheckFormRepository.findHealthCheckFormEntityByHealthCheckProgramAndStudent(programEntity, studentEntity);
+            boolean hasUncommittedForm = existingForms.stream()
+                .anyMatch(form -> form.getCommit() == null);
+            if (hasUncommittedForm) continue;
+
+            HealthCheckFormEntity healthCheckFormEntity = new HealthCheckFormEntity();
+            healthCheckFormEntity.setStudent(studentEntity);
+            healthCheckFormEntity.setParent(parent);
+            healthCheckFormEntity.setNotes(null);
+            healthCheckFormEntity.setCommit(null);
+            healthCheckFormEntity.setFormDate(programEntity.getStartDate().minusDays(3));
+            healthCheckFormEntity.setStatus(HealthCheckFormStatus.DRAFT);
+            healthCheckFormEntity.setHealthCheckProgram(programEntity);
+            healthCheckFormRepository.save(healthCheckFormEntity);
+        }
+    }
+ 
     public List<HealthCheckProgramDTO> getAllHealthCheckProgram(long adminId) {
         List<HealthCheckProgramEntity> healthCheckProgramEntityList = healthCheckProgramRepository.findAll();
         if (healthCheckProgramEntityList.isEmpty())
@@ -202,6 +273,71 @@ public class AdminService {
         return modelMapper.map(existingProgram, VaccineProgramDTO.class);
     }
 
+    public VaccineProgramDTO updateVaccineProgramStatus(Long id, String status) {
+        Optional<VaccineProgramEntity> vaccineProgramOpt = vaccineProgramRepository.findById(id);
+        if(vaccineProgramOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
+        VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
+
+        VaccineProgramStatus newStatus;
+        try {
+            newStatus = VaccineProgramStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + status);
+        }
+
+        if (vaccineProgramEntity.getStatus() == VaccineProgramStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already COMPLETED and cannot be updated");
+        }
+
+        if(vaccineProgramEntity.getStatus() == (newStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already in status: " + newStatus);
+        }
+
+        if (newStatus == VaccineProgramStatus.COMPLETED && vaccineProgramEntity.getStatus() != VaccineProgramStatus.ON_GOING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot mark as COMPLETED unless the program is ON_GOING");
+        }
+
+        vaccineProgramEntity.setStatus(newStatus);
+        vaccineProgramRepository.save(vaccineProgramEntity);
+
+        if(newStatus == VaccineProgramStatus.ON_GOING) {
+            createVaccineForm(vaccineProgramEntity);
+        }
+
+        return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
+    }
+
+    public void createVaccineForm(VaccineProgramEntity programEntity) {
+        
+        String vaccineName = programEntity.getVaccineName();
+        Long programId = programEntity.getVaccineId();
+
+        List<StudentEntity> students = studentRepository.findStudentsNeverVaccinatedByProgramOrName(programId, vaccineName);
+
+        for (StudentEntity studentEntity : students) {
+            UserEntity parent = studentEntity.getParent();
+            if (parent == null) 
+                continue;
+            
+            List<VaccineFormEntity> existingForms = vaccineFormRepository.findVaccineFormEntityByVaccineProgramAndStudent(programEntity, studentEntity);
+
+            boolean hasUncommittedForm = existingForms.stream()
+                .anyMatch(form -> form.getCommit() == null);
+            if (hasUncommittedForm) continue;
+
+            VaccineFormEntity vaccineFormEntity = new VaccineFormEntity();
+            vaccineFormEntity.setStudent(studentEntity);
+            vaccineFormEntity.setParent(parent);
+            vaccineFormEntity.setNote(null);
+            vaccineFormEntity.setCommit(null);
+            vaccineFormEntity.setFormDate(programEntity.getVaccineDate().minusDays(3));
+            vaccineFormEntity.setStatus(VaccineFormStatus.DRAFT);
+            vaccineFormEntity.setVaccineProgram(programEntity);
+            vaccineFormRepository.save(vaccineFormEntity);
+        }
+    }
+
     public List<VaccineProgramDTO> getAllVaccineProgram(long adminId) {
         // UserEntity admin = userRepository.findUserByUserId(adminId)
         //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
@@ -264,4 +400,27 @@ public class AdminService {
         MedicalRecordEntity medicalRecord = optMedicalRecord.get();
         return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
     }
+
+    public List<Map<String, Object>> getEventStats() {
+        List<EventStatRaw> rawList = medicalEventRepository.getEventStatsRaw();
+        Map<LocalDate, Map<String, Object>> grouped = new TreeMap<>();
+
+        for (EventStatRaw raw : rawList) {
+            LocalDate date = raw.getDate();
+            String type = raw.getTypeEvent();
+            int count = raw.getCount().intValue();
+
+            Map<String, Object> row = grouped.computeIfAbsent(date, k -> {
+                Map<String, Object> newRow = new HashMap<>();
+                newRow.put("date", date.toString());
+                return newRow;
+            });
+
+            row.put(type, count);
+        }
+
+        return new ArrayList<>(grouped.values());
+    }
+
+
 }

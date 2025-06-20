@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.HealthChe
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventStatDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -53,8 +56,13 @@ public class AdminController {
 
     @PutMapping("/health-check-program/{id}")
     public ResponseEntity<HealthCheckProgramDTO> updateHealthCheckProgram(@Valid @RequestBody HealthCheckProgramRequest request, @PathVariable Long id) {
-        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        HealthCheckProgramDTO healthCheckProgramDTO = adminService.updateHealthCheckProgram(id, request, Long.parseLong(adminId));
+        HealthCheckProgramDTO healthCheckProgramDTO = adminService.updateHealthCheckProgram(id, request);
+        return ResponseEntity.ok(healthCheckProgramDTO);
+    }
+
+    @PatchMapping("/health-check-program/{id}")
+    public ResponseEntity<HealthCheckProgramDTO> updateHealthCheckProgramStatus(@PathVariable Long id, @RequestParam("status") String status) {
+        HealthCheckProgramDTO healthCheckProgramDTO = adminService.updateHealthCheckProgramStatus(id, status);
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 
@@ -126,12 +134,17 @@ public class AdminController {
          return ResponseEntity.ok(studentList);
      }
 
-     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/medical-records/{studentId}")
     public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable long studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         MedicalRecordDTO medicalRecordDTO = adminService.getMedicalRecordByStudentId(Long.parseLong(parentId), studentId);
         if (medicalRecordDTO == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(medicalRecordDTO);
+    }
+
+    @GetMapping("/event-stats")
+    public ResponseEntity<List<Map<String, Object>>> getMedicalEventStats() {
+        return ResponseEntity.ok(adminService.getEventStats());
     }
 }

@@ -11,7 +11,7 @@ import com.swp391.school_medical_management.modules.users.entities.VaccineProgra
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 
 public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Long> {
-    Optional<VaccineFormEntity> findVaccineFormEntityByVaccineProgramAndStudent(VaccineProgramEntity vaccineProgramEntity, StudentEntity student);
+    List<VaccineFormEntity> findVaccineFormEntityByVaccineProgramAndStudent(VaccineProgramEntity vaccineProgramEntity, StudentEntity student);
     Optional<VaccineFormEntity> findByIdAndStatus(Long id, VaccineFormStatus status);
     List<VaccineFormEntity> findAll();
     List<VaccineFormEntity> findAllByStudentAndStatus(StudentEntity student, VaccineFormStatus status);

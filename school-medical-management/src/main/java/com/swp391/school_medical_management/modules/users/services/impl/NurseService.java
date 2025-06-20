@@ -3,41 +3,29 @@ package com.swp391.school_medical_management.modules.users.services.impl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import com.swp391.school_medical_management.modules.users.entities.*;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
-import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 import com.swp391.school_medical_management.modules.users.repositories.*;
-
-import ch.qos.logback.classic.Level;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckFormCreateRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckFormUpdateRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineFormCreateRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineFormUpdateRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 
 @Service
 public class NurseService {
+
+    public static final String DEFAULT_VACCINE_HS_NOTE = "Chương trình vaccine tại trường!";
 
     @Autowired private MedicalRequestRepository medicalRequestRepository;
 
@@ -47,11 +35,7 @@ public class NurseService {
 
     @Autowired private StudentRepository studentRepository;
 
-    @Autowired private HealthCheckProgramRepository healthCheckProgramRepository;
-
     @Autowired private HealthCheckFormRepository healthCheckFormRepository;
-
-    @Autowired private VaccineProgramRepository vaccineProgramRepository;
 
     @Autowired private VaccineFormRepository vaccineFormRepository;
 
@@ -62,6 +46,10 @@ public class NurseService {
     @Autowired private VaccineResultRepository vaccineResultRepository;
 
     @Autowired private FeedbackRepository feedbackRepository;
+
+    @Autowired private MedicalRecordsRepository medicalRecordsRepository;
+
+    @Autowired private VaccineHistoryRepository vaccineHistoryRepository;
 
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
         List<MedicalRequestEntity> pendingMedicalRequestList = medicalRequestRepository.findByStatus(MedicalRequestStatus.PROCESSING);
@@ -132,138 +120,6 @@ public class NurseService {
         return modelMapper.map(medicalRequest, MedicalRequestDTO.class);
     }
 
-    public List<HealthCheckFormDTO> createHealthCheckForm(Long nurseId, HealthCheckFormCreateRequest request) {
-        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        if (nurseOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
-        }
-
-        UserEntity nurse = nurseOpt.get();
-
-
-        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = 
-        healthCheckProgramRepository.findById(request.getHealthCheckProgramId());
-
-        if(healthCheckProgramOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
-        }
-
-        HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
-
-        if(healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check program already started or completed");
-        }
-
-        List<HealthCheckFormDTO> result = new ArrayList<>();
-
-        for(Long studentId : request.getStudentIds()){
-            Optional<StudentEntity> studentOpt = studentRepository.findStudentById(studentId);
-            if(studentOpt.isEmpty())
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found" + studentId);
-            StudentEntity student = studentOpt.get();
-            
-            UserEntity parent = student.getParent();
-            if(parent == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found for student with ID: " + studentId);
-
-            List<HealthCheckFormEntity> existingFormList =
-                healthCheckFormRepository.findHealthCheckFormEntityByHealthCheckProgramAndStudent(healthCheckProgramEntity, student);
-
-            boolean hasUncommittedForm = existingFormList.stream()
-                .anyMatch(form -> form.getCommit() == null);
-
-            if (hasUncommittedForm) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "A health check form has already been submitted but not yet committed by parent for student with ID: " + studentId);
-            }
-
-            HealthCheckFormEntity healthCheckFormEntity = new HealthCheckFormEntity();
-            healthCheckFormEntity.setStudent(student);
-            healthCheckFormEntity.setParent(parent);
-            healthCheckFormEntity.setNurse(nurse);
-            // healthCheckFormEntity.setFormDate(request.getFormDate());
-            healthCheckFormEntity.setFormDate(LocalDate.now());
-            healthCheckFormEntity.setNotes(null);
-            healthCheckFormEntity.setCommit(null);
-            healthCheckFormEntity.setStatus(HealthCheckFormStatus.DRAFT);
-            healthCheckFormEntity.setHealthCheckProgram(healthCheckProgramEntity);
-
-
-
-            healthCheckFormRepository.save(healthCheckFormEntity);
-
-            result.add(modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class));
-        }
-        return result;
-    }
-
-    public Map<String, Object> updateHealthCheckForm(Long nurseId, HealthCheckFormUpdateRequest request) {
-
-        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(request.getHealthCheckProgramId());
-
-        if(healthCheckProgramOpt.isEmpty()) 
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
-
-        HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
-
-        if(healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check program already started or completed");
-
-        List<HealthCheckFormDTO> successList = new ArrayList<>();
-        List<Map<String, Object>> errorList = new ArrayList<>();
-
-        for(Long healthCheckFormId : request.getHealthCheckFormIds()) {
-            try{
-            Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(healthCheckFormId);
-            if(healthCheckFormOpt.isEmpty()) 
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found with ID: " + healthCheckFormId);
-            
-            HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
-
-            if(!healthCheckFormEntity.getNurse().getUserId().equals(nurseId)) 
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied for health check form with ID: " + healthCheckFormId);
-
-            if(healthCheckFormEntity.getCommit() != null)
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check form already committed by parent");
-
-            healthCheckFormEntity.setHealthCheckProgram(healthCheckProgramEntity);
-            healthCheckFormEntity.setFormDate(LocalDate.now());
-            healthCheckFormRepository.save(healthCheckFormEntity);
-
-            successList.add(modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class));
-
-            } catch (ResponseStatusException e) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("formId", healthCheckFormId);
-                error.put("error", e.getReason());
-                errorList.add(error);
-            }
-            
-        }
-        Map<String, Object> result = new LinkedHashMap();
-        result.put("errors", errorList);
-        result.put("success", successList);
-        return result;
-    }
-
-    public List<HealthCheckFormDTO> getAllHealthCheckForms(Long nurseId) {
-        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        if (nurseOpt.isEmpty()) 
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
-        
-        List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository.findAll();
-
-        if (healthCheckFormEntitieList.isEmpty()) 
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check forms found");
-        
-        List<HealthCheckFormDTO> healthCheckFormDTOList = healthCheckFormEntitieList
-                .stream()
-                .map(healthCheckFormEntity -> modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class))
-                .collect(Collectors.toList());
-
-        return healthCheckFormDTOList;
-    }
-
     public HealthCheckFormDTO getHealthCheckFormById(Long nurseId, Long healthCheckFormId) {
         Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
         if (nurseOpt.isEmpty()) 
@@ -274,8 +130,6 @@ public class NurseService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
         
         HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
-        if (!healthCheckFormEntity.getNurse().getUserId().equals(nurseId)) 
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied for health check form ");
         
         return modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
     }
@@ -298,138 +152,6 @@ public class NurseService {
         return healthCheckFormDTOList;
     }
 
-    public void deleteHealthCheckForm(Long healthCheckFormId) {
-        Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(healthCheckFormId);
-        if (healthCheckFormOpt.isEmpty()) 
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
-        // if(healthCheckFormOpt.get().getCommit() != null) 
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check form already committed by parent");
-        HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
-        healthCheckFormRepository.delete(healthCheckFormEntity);
-    }
-
-    public List<VaccineFormDTO> createVaccineForm(Long nurseId, VaccineFormCreateRequest request){
-        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        if (nurseOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
-        }
-
-        UserEntity nurse = nurseOpt.get();
-
-
-        Optional<VaccineProgramEntity> vaccineProgramOpt = 
-        vaccineProgramRepository.findVaccineProgramByVaccineId(request.getVaccineProgramId());
-
-        if(vaccineProgramOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
-        }
-
-        VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
-
-        if(vaccineProgramEntity.getStatus() == VaccineProgramStatus.ON_GOING || vaccineProgramEntity.getStatus() == VaccineProgramStatus.COMPLETED){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine program already started or completed");
-        }
-
-        List<VaccineFormDTO> result = new ArrayList<>();
-
-        for(Long studentId : request.getStudentIds()){
-            Optional<StudentEntity> studentOpt = studentRepository.findStudentById(studentId);
-            if(studentOpt.isEmpty())
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found" + studentId);
-
-            StudentEntity student = studentOpt.get();
-            
-            UserEntity parent = student.getParent();
-            if(parent == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found for student with ID: " + studentId);
-
-            Optional<VaccineFormEntity> existingFormOpt = vaccineFormRepository.findVaccineFormEntityByVaccineProgramAndStudent(vaccineProgramEntity, student);
-            
-            if(existingFormOpt.isPresent()) {
-                if(existingFormOpt.get().getCommit() != null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine form already committed by parent for student with ID: " + studentId);
-                }
-            }
-
-            VaccineFormEntity vaccineFormEntity = new VaccineFormEntity();
-
-            vaccineFormEntity.setStudent(student);
-            vaccineFormEntity.setNote(null);
-            vaccineFormEntity.setCommit(null);
-            vaccineFormEntity.setNurse(nurse);
-            vaccineFormEntity.setFormDate(LocalDate.now());
-            vaccineFormEntity.setParent(parent);
-            vaccineFormEntity.setStatus(VaccineFormStatus.DRAFT);
-            vaccineFormEntity.setVaccineProgram(vaccineProgramEntity);
-            vaccineFormRepository.save(vaccineFormEntity);
-
-            result.add(modelMapper.map(vaccineFormEntity, VaccineFormDTO.class));
-        }
-        return result;
-    }
-
-    public Map<String, Object> updateVaccineForm(Long nurseId, VaccineFormUpdateRequest request){
-         Optional<VaccineProgramEntity> vaccineProgramOpt = vaccineProgramRepository.findVaccineProgramByVaccineId(request.getVaccineProgramId());
-
-        if(vaccineProgramOpt.isEmpty()) 
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
-
-        VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
-
-        if(vaccineProgramEntity.getStatus() == VaccineProgramStatus.ON_GOING || vaccineProgramEntity.getStatus() == VaccineProgramStatus.COMPLETED)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine program already started or completed");
-
-        List<VaccineFormDTO> successList = new ArrayList<>();
-        List<Map<String, Object>> errorList = new ArrayList<>();
-
-        for(Long vaccineFormId : request.getVaccineFormIds()) {
-            try{
-            Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(vaccineFormId);
-            if(vaccineFormOpt.isEmpty()) 
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found with ID: " + vaccineFormId);
-            
-            VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
-
-            if(!vaccineFormEntity.getNurse().getUserId().equals(nurseId)) 
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied for vaccine form with ID: " + vaccineFormId);
-
-            if(vaccineFormEntity.getCommit() != null)
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine form already committed by parent");
-
-            vaccineFormEntity.setVaccineProgram(vaccineProgramEntity);
-            vaccineFormEntity.setFormDate(LocalDate.now());
-            vaccineFormRepository.save(vaccineFormEntity);
-
-            successList.add(modelMapper.map(vaccineFormEntity, VaccineFormDTO.class));
-
-            } catch (ResponseStatusException e) {
-                Map<String, Object> error = new HashMap<>();
-                error.put("formId", vaccineFormId);
-                error.put("error", e.getReason());
-                errorList.add(error);
-            }
-            
-        }
-        Map<String, Object> result = new LinkedHashMap();
-        result.put("errors", errorList);
-        result.put("success", successList);
-        return result;
-    }
-
-    public List<VaccineFormDTO> getAllVaccinForm(Long nurseId){
-        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        if (nurseOpt.isEmpty()) 
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
-        List<VaccineFormEntity> vaccineFormEntitieList = vaccineFormRepository.findAll();
-        if(vaccineFormEntitieList.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine forms found");
-        List<VaccineFormDTO> vaccineFormDTOList = vaccineFormEntitieList
-                .stream()
-                .map(vaccineFormEntity -> modelMapper.map(vaccineFormEntity, VaccineFormDTO.class))
-                .collect(Collectors.toList());
-        return vaccineFormDTOList;
-    }
-
     public VaccineFormDTO getVaccinFormById(Long nurseId, Long vaccineFormId){
         Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
         if (nurseOpt.isEmpty()) 
@@ -438,8 +160,6 @@ public class NurseService {
         if(vaccineFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
         VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
-        if(!vaccineFormEntity.getNurse().getUserId().equals(nurseId))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied for vaccine form");
         return modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
     }
 
@@ -455,15 +175,6 @@ public class NurseService {
                 .map(vaccineFormEntity -> modelMapper.map(vaccineFormEntity, VaccineFormDTO.class))
                 .collect(Collectors.toList());
         return vaccineFormDTOList;
-    }
-
-    public void deleteVaccineForm(long vaccineFormId){
-        Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(vaccineFormId);
-        if(vaccineFormOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
-            
-        VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
-        vaccineFormRepository.delete(vaccineFormEntity);
     }
 
     public MedicalEventDTO createMedicalEvent(Long nurseId, MedicalEventRequest request) {
@@ -674,6 +385,11 @@ public class NurseService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine result already exists for this student: " + vaccineFormEntity.getStudent().getId());
         }
 
+        Optional<MedicalRecordEntity> medicalRecordOpt = medicalRecordsRepository.findMedicalRecordByStudent_Id(vaccineFormDTO.getStudentId());
+        if(medicalRecordOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found medical record by student");
+        MedicalRecordEntity medicalRecordEntity = medicalRecordOpt.get();
+
         VaccineResultEntity vaccineResultEntity = new VaccineResultEntity();
         vaccineResultEntity.setStatusHealth(request.getStatusHealth());
         vaccineResultEntity.setResultNote(request.getResultNote());
@@ -681,6 +397,15 @@ public class NurseService {
         vaccineResultEntity.setCreatedAt(LocalDateTime.now());
         vaccineResultEntity.setVaccineFormEntity(vaccineFormEntity);
         vaccineResultRepository.save(vaccineResultEntity);
+
+        VaccineProgramEntity program = vaccineFormEntity.getVaccineProgram();
+
+        VaccineHistoryEntity history = new VaccineHistoryEntity();
+        history.setVaccineName(program.getVaccineName());
+        history.setNote(DEFAULT_VACCINE_HS_NOTE);
+        history.setMedicalRecord(medicalRecordEntity);
+        history.setVaccineProgram(program);
+        vaccineHistoryRepository.save(history);
 
         VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
         vaccineResultDTO.setVaccineFormId(vaccineFormDTO.getId());
@@ -783,7 +508,6 @@ public class NurseService {
         return feedbackDTOList;
     }
 
-
     public List<StudentDTO> getStudentsNotVaccinated(Long vaccineProgramId, String vaccineName) {
         if (vaccineName != null && vaccineName.trim().isEmpty()) vaccineName = null;
 
@@ -794,5 +518,6 @@ public class NurseService {
                 .map(s -> modelMapper.map(s, StudentDTO.class))
                 .collect(Collectors.toList());
     }
+
 }
 

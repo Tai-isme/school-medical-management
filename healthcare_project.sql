@@ -68,7 +68,6 @@ CREATE TABLE `health_check_form` (
   `health_check_id` int DEFAULT NULL,
   `student_id` int DEFAULT NULL,
   `parent_id` int DEFAULT NULL,
-  `nurse_id` int DEFAULT NULL,
   `form_date` date DEFAULT NULL,
   `notes` varchar(255) DEFAULT NULL,
   `commit` tinyint(1) DEFAULT NULL,
@@ -77,17 +76,12 @@ CREATE TABLE `health_check_form` (
   KEY `health_check_id` (`health_check_id`),
   KEY `student_id` (`student_id`),
   KEY `parent_id` (`parent_id`),
-  KEY `nurse_id` (`nurse_id`),
   CONSTRAINT `health_check_form_ibfk_1` FOREIGN KEY (`health_check_id`) REFERENCES `health_check_program` (`health_check_id`) ON DELETE CASCADE,
   CONSTRAINT `health_check_form_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
   CONSTRAINT `health_check_form_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `health_check_form_ibfk_4` FOREIGN KEY (`nurse_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `health_check_form_chk_1` CHECK ((`status` in (_utf8mb4'DRAFT',_utf8mb4'SENT')))
-) ENGINE=InnoDB AUTO_INCREMENT=388 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=588 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO `health_check_form` (`health_check_form_id`, `health_check_id`, `student_id`, `parent_id`, `nurse_id`, `form_date`, `notes`, `commit`, `status`) VALUES
-(386,	7,	209,	10,	9,	'2025-06-18',	NULL,	NULL,	'SENT'),
-(387,	7,	216,	1,	9,	'2025-06-18',	NULL,	NULL,	'DRAFT');
 
 DROP TABLE IF EXISTS `health_check_program`;
 CREATE TABLE `health_check_program` (
@@ -106,9 +100,9 @@ CREATE TABLE `health_check_program` (
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `health_check_program` (`health_check_id`, `health_check_name`, `description`, `start_date`, `end_date`, `status`, `note`, `admin_id`) VALUES
-(7,	'Health Check - Semester 1',	'Kiểm tra sức khỏe đầu năm học 2025',	'2025-09-01',	'2025-09-10',	'NOT_STARTED',	'12345',	1),
+(7,	'Health Check - Semester 1',	'Kiểm tra sức khỏe đầu năm học 2025',	'2025-09-01',	'2025-09-10',	'ON_GOING',	'12345',	1),
 (8,	'Health Check - Midterm',	'Kiểm tra sức khỏe giữa học kỳ',	'2025-11-01',	'2025-11-05',	'ON_GOING',	'Tập trung vào mắt và cột sống',	2),
-(9,	'Health Check - Final',	'Kiểm tra sức khỏe cuối năm học',	'2025-12-10',	'2025-12-20',	'COMPLETED',	'Đã hoàn thành kiểm tra toàn trường',	1);
+(9,	'Health Check - Final',	'Kiểm tra sức khỏe cuối năm học',	'2025-12-10',	'2025-12-20',	'NOT_STARTED',	'Đã hoàn thành kiểm tra toàn trường',	1);
 
 DROP TABLE IF EXISTS `health_check_result`;
 CREATE TABLE `health_check_result` (
@@ -137,12 +131,26 @@ CREATE TABLE `medical_event` (
   KEY `nurse_id` (`nurse_id`),
   CONSTRAINT `medical_event_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
   CONSTRAINT `medical_event_ibfk_2` FOREIGN KEY (`nurse_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `medical_event` (`event_id`, `type_event`, `date`, `description`, `student_id`, `nurse_id`) VALUES
 (6,	'Ngất xỉu trong lớp',	'2025-06-17',	'Học sinh ngất xỉu khi đang học môn Thể dục, đã được sơ cứu và chuyển đến phòng y tế.',	209,	9),
 (7,	'Ngất xỉu trong lớp',	'2025-06-17',	'Học sinh ngất xỉu khi đang học môn Thể dục, đã được sơ cứu và chuyển đến phòng y tế.',	216,	9),
-(8,	'Ngất xỉu trong lớp',	'2025-06-17',	'Học sinh ngất xỉu khi đang học môn Thể dục, đã được sơ cứu và chuyển đến phòng y tế.',	226,	9);
+(8,	'Ngất xỉu trong lớp',	'2025-06-17',	'Học sinh ngất xỉu khi đang học môn Thể dục, đã được sơ cứu và chuyển đến phòng y tế.',	226,	9),
+(51,	'Té ngã',	'2025-06-01',	'Ngã ở cầu thang',	204,	9),
+(52,	'Sốt',	'2025-06-01',	'Sốt cao trên 39 độ',	205,	9),
+(53,	'Ngất xỉu trong lớp',	'2025-06-01',	'Mất ý thức tạm thời',	206,	2),
+(54,	'Té ngã',	'2025-06-02',	'Ngã trong sân trường',	207,	9),
+(55,	'Sốt',	'2025-06-02',	'Sốt nhẹ',	204,	9),
+(56,	'Sốt',	'2025-06-02',	'Sốt do thời tiết',	209,	1),
+(57,	'Té ngã',	'2025-06-03',	'Vấp ngã khi chơi thể thao',	300,	9),
+(58,	'Ngất xỉu trong lớp',	'2025-06-03',	'Chóng mặt rồi ngất',	299,	9),
+(59,	'Đau bụng',	'2025-06-03',	'Đau bụng do ăn uống',	250,	9),
+(60,	'Té ngã',	'2025-06-04',	'Ngã xe đạp',	270,	9),
+(61,	'Đau bụng',	'2025-06-04',	'Đau bụng sáng sớm',	278,	9),
+(62,	'Sốt',	'2025-06-05',	'Sốt kèm mệt mỏi',	303,	9),
+(63,	'Ngất xỉu trong lớp',	'2025-06-05',	'Ngất trong giờ học',	301,	9),
+(64,	'Đau bụng',	'2025-06-05',	'Đau bụng nhẹ',	302,	9);
 
 DROP TABLE IF EXISTS `medical_record`;
 CREATE TABLE `medical_record` (
@@ -163,7 +171,7 @@ CREATE TABLE `medical_record` (
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `medical_record` (`record_id`, `student_id`, `allergies`, `chronic_disease`, `treatment_history`, `vision`, `hearing`, `weight`, `height`, `last_update`, `note`) VALUES
-(7,	205,	'Pollen',	'Asthma',	'Used inhaler for 3 years',	'Normal',	'Normal',	45.5,	150,	'2025-06-08 16:18:24',	'Student is in good condition'),
+(7,	209,	'Pollen',	'Asthma',	'Used inhaler for 3 years',	'Normal',	'Normal',	45.5,	150,	'2025-06-08 16:18:24',	'Student is in good condition'),
 (8,	225,	'string',	'string',	'string',	'Unknown',	'',	1,	30,	'2025-06-08 16:18:57',	'string'),
 (10,	213,	'2',	'2',	'2',	'2',	'2',	2,	2,	'2025-06-08 16:18:57',	'2');
 
@@ -209,18 +217,15 @@ CREATE TABLE `notification` (
   `user_id` int NOT NULL,
   `title` varchar(255) NOT NULL,
   `content` text,
+  `form_type` varchar(50) DEFAULT NULL,
+  `form_id` bigint DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `fk_notification_user` (`user_id`),
   CONSTRAINT `fk_notification_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=133 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=149 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO `notification` (`id`, `user_id`, `title`, `content`, `created_at`) VALUES
-(128,	10,	'Thông báo chương trình tiêm vaccine cho học sinh Lâm Thị 20',	'Bạn có phiếu thông báo tiêm chủng vaccine mới cần xác nhận.',	'2025-06-16 08:05:59'),
-(129,	10,	'Thông báo chương trình tiêm vaccine cho học sinh Sử Văn 30',	'Bạn có phiếu thông báo tiêm chủng vaccine mới cần xác nhận.',	'2025-06-16 08:05:59'),
-(130,	10,	'Thông báo chương trình tiêm vaccine cho học sinh Đàm Minh 40',	'Bạn có phiếu thông báo tiêm chủng vaccine mới cần xác nhận.',	'2025-06-16 08:05:59'),
-(131,	1,	'Thông báo chương trình khám sức khỏe định kỳ',	'Bạn có phiếu thông báo khám sức khỏe định kỳ mới cần xác nhận.',	'2025-06-18 16:19:46'),
-(132,	1,	'Thông báo chương trình khám sức khỏe định kỳ',	'Bạn có phiếu thông báo khám sức khỏe định kỳ mới cần xác nhận.',	'2025-06-18 16:20:28');
 
 DROP TABLE IF EXISTS `refresh_token`;
 CREATE TABLE `refresh_token` (
@@ -244,9 +249,9 @@ INSERT INTO `refresh_token` (`id`, `refresh_token`, `expiry_date`, `created_at`,
 (6,	'8161c7e2-0318-4cc1-b2ca-fc0c0e5bb011',	'2025-06-18 03:00:03',	'2025-06-07 21:33:12',	'2025-06-11 03:00:03',	5),
 (7,	'2cc987b5-3514-4432-a81a-60a1d0e57f02',	'2025-06-18 03:00:30',	'2025-06-07 21:33:35',	'2025-06-11 03:00:30',	6),
 (8,	'b73a8475-85d5-454a-98dc-8bf70941b530',	'2025-06-18 03:00:53',	'2025-06-07 21:33:59',	'2025-06-11 03:00:53',	7),
-(9,	'4e2a3984-4586-4a40-9464-64bab3fae516',	'2025-06-19 07:42:43',	'2025-06-07 21:34:25',	'2025-06-12 07:42:43',	8),
+(9,	'2a787ce4-1b08-42ca-9943-5870e714af08',	'2025-06-28 02:19:02',	'2025-06-07 21:34:25',	'2025-06-21 02:19:03',	8),
 (10,	'62046d5f-4c4f-4566-a458-f4652a931302',	'2025-06-25 16:06:04',	'2025-06-07 21:34:51',	'2025-06-18 16:06:04',	9),
-(11,	'09e7d6c9-14d4-4d6e-9e89-289573729a5b',	'2025-06-25 17:40:25',	'2025-06-07 21:35:16',	'2025-06-18 17:40:25',	10);
+(11,	'a555b1fd-5ac5-4c30-bfb2-77c7a1bfc488',	'2025-06-25 19:42:21',	'2025-06-07 21:35:16',	'2025-06-18 19:42:21',	10);
 
 DROP TABLE IF EXISTS `student`;
 CREATE TABLE `student` (
@@ -397,7 +402,6 @@ CREATE TABLE `vaccine_form` (
   `vaccine_id` int DEFAULT NULL,
   `student_id` int DEFAULT NULL,
   `parent_id` int DEFAULT NULL,
-  `nurse_id` int DEFAULT NULL,
   `form_date` date DEFAULT NULL,
   `note` varchar(255) DEFAULT NULL,
   `commit` tinyint(1) DEFAULT NULL,
@@ -406,14 +410,14 @@ CREATE TABLE `vaccine_form` (
   KEY `vaccine_id` (`vaccine_id`),
   KEY `student_id` (`student_id`),
   KEY `parent_id` (`parent_id`),
-  KEY `nurse_id` (`nurse_id`),
   CONSTRAINT `vaccine_form_ibfk_1` FOREIGN KEY (`vaccine_id`) REFERENCES `vaccine_program` (`vaccine_id`) ON DELETE CASCADE,
   CONSTRAINT `vaccine_form_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
   CONSTRAINT `vaccine_form_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `vaccine_form_ibfk_4` FOREIGN KEY (`nurse_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `chk_vaccine_form_status` CHECK ((`status` in (_utf8mb4'DRAFT',_utf8mb4'SENT')))
-) ENGINE=InnoDB AUTO_INCREMENT=301 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=302 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+INSERT INTO `vaccine_form` (`vaccine_form_id`, `vaccine_id`, `student_id`, `parent_id`, `form_date`, `note`, `commit`, `status`) VALUES
+(301,	1,	209,	10,	'2025-06-19',	NULL,	1,	'SENT');
 
 DROP TABLE IF EXISTS `vaccine_history`;
 CREATE TABLE `vaccine_history` (
@@ -427,11 +431,12 @@ CREATE TABLE `vaccine_history` (
   KEY `fk_vaccine_history_vaccine_program` (`vaccine_id`),
   CONSTRAINT `fk_vaccine_history_vaccine_program` FOREIGN KEY (`vaccine_id`) REFERENCES `vaccine_program` (`vaccine_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `vaccine_history_ibfk_1` FOREIGN KEY (`record_id`) REFERENCES `medical_record` (`record_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `vaccine_history` (`vaccine_history_id`, `vaccine_name`, `note`, `record_id`, `vaccine_id`) VALUES
 (13,	'Hepatitis B',	'First dose at 12 months',	7,	NULL),
-(14,	'Hepatitis B',	'Completed 3-dose series',	7,	NULL);
+(14,	'Hepatitis B',	'Completed 3-dose series',	7,	NULL),
+(17,	'Hepatitis B',	'Chương trình vaccine tại trường!',	7,	1);
 
 DROP TABLE IF EXISTS `vaccine_program`;
 CREATE TABLE `vaccine_program` (
@@ -462,7 +467,9 @@ CREATE TABLE `vaccine_result` (
   PRIMARY KEY (`vaccine_result_id`),
   KEY `vaccine_form_id` (`vaccine_form_id`),
   CONSTRAINT `vaccine_result_ibfk_1` FOREIGN KEY (`vaccine_form_id`) REFERENCES `vaccine_form` (`vaccine_form_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+INSERT INTO `vaccine_result` (`vaccine_result_id`, `status_health`, `result_note`, `reaction`, `created_at`, `vaccine_form_id`) VALUES
+(2,	'GOOD',	'Cần theo dõi thêm',	'GOOD',	'2025-06-21 03:39:07',	301);
 
--- 2025-06-18 10:50:41 UTC
+-- 2025-06-20 20:40:39 UTC

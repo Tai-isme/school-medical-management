@@ -27,10 +27,6 @@ public class HealthCheckFormEntity {
     @JoinColumn(name = "parent_id")
     private UserEntity parent;
 
-    @ManyToOne
-    @JoinColumn(name = "nurse_id")
-    private UserEntity nurse;
-
     @Column(name = "form_date")
     private LocalDate formDate;
 

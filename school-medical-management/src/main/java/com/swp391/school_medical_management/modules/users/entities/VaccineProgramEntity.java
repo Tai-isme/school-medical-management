@@ -27,7 +27,7 @@ public class VaccineProgramEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "vaccine_id")
-    private Integer vaccineId;
+    private Long vaccineId;
 
     @Column(name = "vaccine_name")
     private String vaccineName;

@@ -17,12 +17,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckFormCreateRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckFormUpdateRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineFormCreateRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineFormUpdateRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
 
@@ -35,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Validated
 @RestController
 @RequestMapping("api/nurse")
-@PreAuthorize("hasRole('ROLE_NURSE')")
+@PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
 public class NurseController {
     @Autowired
     private NurseService nurseService;
@@ -63,27 +59,6 @@ public class NurseController {
     MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, status);
     return ResponseEntity.ok(medicalRequestDTO);
     }
-
-    @PostMapping("/health-check-forms")
-    public ResponseEntity<List<HealthCheckFormDTO>> createHealthCheckForm(@RequestBody HealthCheckFormCreateRequest request) {
-        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<HealthCheckFormDTO> healCheckFormDTOList = nurseService.createHealthCheckForm(Long.parseLong(nurseId), request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(healCheckFormDTOList);
-    }
-
-    @PutMapping("/health-check-forms/{healthCheckFormId}")
-    public ResponseEntity<Map<String, Object>> updateHealthCheckForm(@RequestBody HealthCheckFormUpdateRequest request) {
-        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        Map<String, Object> healCheckFormDTO = nurseService.updateHealthCheckForm(Long.parseLong(nurseId), request);
-        return ResponseEntity.ok(healCheckFormDTO);
-    }
-
-    @GetMapping("/health-check-forms")
-    public ResponseEntity<List<HealthCheckFormDTO>> getAllHealthCheckForms() {
-        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<HealthCheckFormDTO> healthCheckFormDTOList = nurseService.getAllHealthCheckForms(Long.parseLong(nurseId));
-        return ResponseEntity.ok(healthCheckFormDTOList);
-    }
     
     @GetMapping("/health-check-forms/{healthCheckFormId}")
     public ResponseEntity<HealthCheckFormDTO> getHealthCheckFormById(@PathVariable Long healthCheckFormId) {
@@ -99,33 +74,6 @@ public class NurseController {
         return ResponseEntity.ok(healthCheckFormDTOList);
     }
     
-    @DeleteMapping("/health-check-forms/{healthCheckFormId}")
-    public ResponseEntity<Void> deleteHealthCheckForm(@PathVariable Long healthCheckFormId) {
-        nurseService.deleteHealthCheckForm(healthCheckFormId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/vaccine-forms")
-    public ResponseEntity<List<VaccineFormDTO>> createVaccineForm(@RequestBody VaccineFormCreateRequest request) {
-        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<VaccineFormDTO> vaccineFormDTOList = nurseService.createVaccineForm(Long.parseLong(nurseId), request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(vaccineFormDTOList);
-    }
-
-    @PutMapping("/vaccine-forms/{vaccineFormId}")
-    public ResponseEntity<Map<String, Object>> updateVaccineForm(@RequestBody VaccineFormUpdateRequest request) {
-        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        Map<String, Object> vaccineFormDTO = nurseService.updateVaccineForm(Long.parseLong(nurseId), request);
-        return ResponseEntity.ok(vaccineFormDTO);
-    }
-    
-    @GetMapping("/vaccine-forms")
-    public ResponseEntity<List<VaccineFormDTO>> getAllVaccinForm() {
-        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<VaccineFormDTO> vaccineFormDTOList = nurseService.getAllVaccinForm(Long.parseLong(nurseId));
-        return ResponseEntity.ok(vaccineFormDTOList);
-    }
-    
     @GetMapping("/vaccine-forms/{vaccineFormId}")
     public ResponseEntity<VaccineFormDTO> getVaccineFormById(@PathVariable Long vaccineFormId) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -138,12 +86,6 @@ public class NurseController {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
         List<VaccineFormDTO> vaccineFormDTOList = nurseService.getAllCommitedTrueVaccineForm(Long.parseLong(nurseId));
         return ResponseEntity.ok(vaccineFormDTOList);
-    }
-
-    @DeleteMapping("/vaccine-forms/{vaccineFormId}")
-    public ResponseEntity<Void> deleteVaccineForm(@PathVariable Long vaccineFormId) {
-        nurseService.deleteVaccineForm(vaccineFormId);
-        return ResponseEntity.noContent().build();
     }
     
     @PostMapping("/medical-event")

@@ -28,10 +28,6 @@ public class VaccineFormEntity {
     @JoinColumn(name = "parent_id", referencedColumnName = "user_id")
     private UserEntity parent;
 
-    @ManyToOne
-    @JoinColumn(name = "nurse_id", referencedColumnName = "user_id")
-    private UserEntity nurse;
-
     @Column(name = "form_date")
     private LocalDate formDate;
 
