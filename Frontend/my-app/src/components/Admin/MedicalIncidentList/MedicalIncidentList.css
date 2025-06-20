@@ -1,0 +1,35 @@
+.incident-container {
+  flex: 1;
+  padding: 24px;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.incident-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.incident-header h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1890ff;
+  margin: 0;
+}
+
+.contact-link {
+  color: #1890ff;
+  text-decoration: underline;
+}
+
+.contact-link:hover {
+  color: #40a9ff;
+}
+
+.ant-table-wrapper {
+  width: 100%;
+}

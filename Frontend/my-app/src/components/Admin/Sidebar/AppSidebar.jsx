@@ -1,0 +1,102 @@
+import React from "react";
+import { Menu } from "antd";
+import {
+  HomeOutlined,
+  UserSwitchOutlined,
+  CalendarOutlined,
+  MedicineBoxOutlined,
+  BarChartOutlined,
+  UnorderedListOutlined,
+  AlertOutlined,
+  LogoutOutlined,
+} from "@ant-design/icons";
+import { useNavigate } from "react-router-dom"; // vừa thêm
+import "./AppSidebar.css";
+
+const { SubMenu } = Menu;
+
+const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
+  const navigate = useNavigate(); // vừa thêm
+
+  // Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    // Xoá dữ liệu đăng nhập khỏi localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("users");
+    localStorage.removeItem("students");
+    localStorage.removeItem("role");
+
+    // Điều hướng về trang đăng nhập
+    navigate("/login");
+  }; // vừa thêm
+  return (
+    <div className="sidebar-container">
+      <div className="sidebar-logo">
+        <img src="/logo1.png" alt="Logo Y Tế" />
+      </div>
+      <Menu
+        mode="inline"
+        theme="light"
+        selectedKeys={[selectedMenu]}
+        onClick={({ key }) => onMenuSelect(key)}
+        style={{ flex: 1, borderRight: 0, minHeight: 0 }}
+      >
+        <Menu.Item key="title" disabled className="sidebar-title">
+          Y Tế
+        </Menu.Item>
+        <Menu.Item key="1" icon={<HomeOutlined />}>
+          Dashboard
+        </Menu.Item>
+        <Menu.Item key="2" icon={<UserSwitchOutlined />}>
+          Quản lý tài khoản
+        </Menu.Item>
+        <Menu.Item key="3" icon={<CalendarOutlined />}>
+          Hồ sơ sức khỏe
+        </Menu.Item>
+        <Menu.Item key="4" icon={<MedicineBoxOutlined />}>
+          Yêu cầu gửi thuốc
+        </Menu.Item>
+        <SubMenu key="5" icon={<BarChartOutlined />} title="Các chương trình">
+          <Menu.Item key="5-1">Vaccine</Menu.Item>
+          <Menu.Item key="5-2">Khám định kỳ</Menu.Item>
+        </SubMenu>
+        <Menu.Item key="6" icon={<UnorderedListOutlined />}>
+          Form
+        </Menu.Item>
+        <Menu.Item key="7" icon={<AlertOutlined />}>
+          Sự cố y tế
+        </Menu.Item>
+      </Menu>
+      <div
+        style={{
+          padding: "12px 20px",
+          borderTop: "1px solid #f0f0f0",
+          cursor: "pointer",
+          color: "red",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: 600,
+          minHeight: 56,
+          gap: 8,
+          transition: "background 0.3s",
+          borderRadius: 8,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#ffccc7";
+          e.currentTarget.style.color = "#a8071a";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#fff0f0";
+          e.currentTarget.style.color = "#d9363e";
+        }}
+        onClick={handleLogout}
+      >
+        <LogoutOutlined style={{ marginRight: 8 }} />
+        Đăng xuất
+      </div>
+    </div>
+  );
+};
+
+export default AppSidebar;

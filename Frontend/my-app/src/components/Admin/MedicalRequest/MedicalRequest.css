@@ -1,0 +1,82 @@
+/* Tổng container lấn đầy toàn bộ chiều ngang bên phải */
+.medicine-table-container {
+  padding: 24px;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+  width: 100%; /* chiếm toàn bộ chiều ngang */
+  box-sizing: border-box;
+}
+
+/* Tiêu đề */
+.medicine-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Khung chứa bảng */
+.medicine-table-wrapper {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Căn bảng chiếm toàn bộ */
+.medicine-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  table-layout: auto;
+}
+
+.medicine-table th,
+.medicine-table td {
+  border: 1px solid #eee;
+  padding: 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.medicine-table th {
+  background-color: #fafafa;
+  font-weight: 600;
+}
+
+/* Huy hiệu trạng thái */
+.status-badge {
+  padding: 4px 8px;
+  background: #e6f7ff;
+  color: #1890ff;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+/* Modal detail content */
+.detail-content {
+  display: grid;
+  grid-template-columns: 160px auto;
+  row-gap: 10px;
+  column-gap: 16px;
+  font-size: 14px;
+}
+
+.detail-content p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.detail-content ul {
+  margin: 0;
+  padding-left: 20px;
+  grid-column: span 2;
+}
+
+.detail-content li {
+  margin-bottom: 4px;
+}

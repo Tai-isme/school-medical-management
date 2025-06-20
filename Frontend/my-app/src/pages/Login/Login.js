@@ -74,21 +74,22 @@ const handleGoogleLogin = async () => {
       localStorage.setItem('token', data.token);  
       localStorage.setItem('users', JSON.stringify(data.users));
       localStorage.setItem('students', JSON.stringify(data.students));
+      localStorage.setItem('role', JSON.stringify(data.users.role));
       onClose();
       // Giả sử kết quả trả về có role
-    const user = { role: "admin" }; // hoặc "nurse", "parent"
-    localStorage.setItem("user", JSON.stringify(user));
-
+    const role = JSON.parse(localStorage.getItem('role')); // hoặc "nurse", "parent"
+      console.log("Role:", role);
     // Chuyển hướng theo role
-    if (user.role === "admin" || user.role === "nurse") {
+    if (role === "ADMIN" || role === "NURSE") {
       navigate("/dashboard");
-    } else if (user.role === "parent") {
+    } else if (role === "PARENT") {
       navigate("/");
     }
     }else {
       setError("Tài khoản không tồn tại!");
 
-    }  
+
+    }
 
     
   } catch (error) {

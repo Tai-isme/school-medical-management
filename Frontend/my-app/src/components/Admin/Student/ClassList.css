@@ -1,0 +1,82 @@
+/* Container của sidebar */
+.classlist-container {
+  width: 280px;
+  height: 100vh;
+  background: #fdfdfd;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Tiêu đề */
+.classlist-header {
+  font-weight: 700;
+  font-size: 18px;
+  padding: 20px 0 12px 0;
+  border-bottom: 1px solid #ddd;
+  background: #ffffff;
+  width: 100%;
+  text-align: center;
+  letter-spacing: 0.5px;
+  color: #333;
+}
+
+/* Ô tìm kiếm */
+.classlist-search {
+  padding: 16px 0 10px 0;
+  width: 90%;
+}
+
+/* Khu vực danh sách cuộn */
+.classlist-scroll {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  padding-bottom: 16px;
+}
+
+/* List item mặc định */
+.classlist-item {
+  cursor: pointer;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin: 0 auto 8px auto;
+  transition: all 0.3s ease;
+  width: 88%;
+  background: #ffffff;
+  color: #333;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Hover */
+.classlist-item-hovered {
+  background: #f0faff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+}
+
+/* Khi chọn */
+.classlist-item-selected {
+  background: #1890ff;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(24, 144, 255, 0.3);
+}
+
+/* Responsive scrollbar đẹp hơn */
+.classlist-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.classlist-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.classlist-scroll::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
