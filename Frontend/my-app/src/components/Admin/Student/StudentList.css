@@ -1,0 +1,99 @@
+/* Sidebar container */
+.studentlist-container {
+  width: 280px;
+  height: 100vh;
+  background: #f8f9fa;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.04);
+}
+
+/* Header title */
+.studentlist-header {
+  font-weight: 700;
+  font-size: 18px;
+  padding: 20px 0 12px 0;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+  text-align: center;
+  color: #222;
+  background: #fff;
+}
+
+/* Search input wrapper */
+.studentlist-search {
+  padding: 14px 0 10px 0;
+  width: 90%;
+}
+
+/* Scrollable list */
+.studentlist-scroll {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  padding-bottom: 16px;
+}
+
+/* Student item base */
+.studentlist-item {
+  cursor: pointer;
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin: 0 auto 8px auto;
+  background: #ffffff;
+  transition: all 0.3s ease;
+  width: 88%;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid transparent;
+}
+
+/* Hover effect */
+.studentlist-item:hover {
+  background: #e6f7ff;
+  box-shadow: 0 3px 10px rgba(24, 144, 255, 0.15);
+  border-color: #91d5ff;
+}
+
+/* Selected state (optional - apply class manually) */
+.studentlist-item-selected {
+  background: #1890ff;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.25);
+  border-color: #40a9ff;
+}
+
+/* Student name text */
+.studentlist-name {
+  flex: 1;
+  text-align: left;
+  font-size: 15px;
+  color: #333;
+}
+
+/* Avatar style */
+.studentlist-avatar {
+  background-color: #52c41a !important;
+  margin-right: 12px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Scrollbar modern style */
+.studentlist-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.studentlist-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.studentlist-scroll::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
