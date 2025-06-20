@@ -126,9 +126,18 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
       title: 'Hành động',
       key: 'action',
       render: (_, record, idx) => (
-        <Button danger onClick={() => {
-          setVaccineHistories(prev => prev.filter((_, i) => i !== idx));
-        }}>Xóa</Button>
+        (editMode && record.note === "Đã tiêm ở tại trường")
+          ? null
+          : (
+            <Button
+              danger
+              onClick={() => {
+                setVaccineHistories(prev => prev.filter((_, i) => i !== idx));
+              }}
+            >
+              Xóa
+            </Button>
+          )
       ),
     },
   ];
