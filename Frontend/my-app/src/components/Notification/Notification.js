@@ -1,63 +1,86 @@
-import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import './Notifications.css';
-import StudentInfoCard from '../../common/StudentInfoCard';
-
-const students = [
-  { id: 'SE181818', name: 'Nguyễn Văn A', class: '5A', avatar: './logo512.png' },
-  { id: 'SE181819', name: 'Trần Thị B', class: '4B', avatar: './logo512.png' },
-  // Thêm học sinh khác nếu cần
-];
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import NotificationsList from "./NotificationsList";
+import "./Notifications.css";
+import StudentInfoCard from "../../common/StudentInfoCard";
 
 const Notifications = () => {
+  const students = JSON.parse(localStorage.getItem("students") || "[]");
   const [selectedStudentId, setSelectedStudentId] = useState(students[0].id);
-  const selectedStudent = students.find(s => s.id === selectedStudentId);
+  const selectedStudent = students.find((s) => s.id === selectedStudentId);
 
   const [selectedNotification, setSelectedNotification] = useState(null);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: 'Thông báo đăng ký tiêm phòng vaccin Sởi',
-      date: '19-05-2004',
-      status: 'Chưa xem',
-      statusClass: 'status-unread'
-    },
-    {
-      id: 2,
-      type: 'Đăng ký tham gia khám sức khỏe định kỳ tại trường',
-      date: '19-05-2004',
-      status: 'Hoàn thành',
-      statusClass: 'status-completed'
-    },
-    {
-      id: 3,
-      type: 'Đăng ký tham gia khám sức khỏe định kỳ tại trường ...',
-      date: '19-05-2004',
-      status: 'Hoàn thành',
-      statusClass: 'status-completed'
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
+
+  const fetchNotifications = async () => {
+    if (!selectedStudentId) return;
+    const fetchEvents = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:8080/api/parent/all-forms/${selectedStudentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const { healthCheckForms = [], vaccineForms = [] } = res.data;
+
+        const healthNoti = healthCheckForms.map((item) => ({
+          ...item,
+          type: "healthcheck",
+        }));
+
+        const vaccineNoti = vaccineForms.map((item) => ({
+          ...item,
+          type: "vaccine",
+        }));
+
+        setNotifications([...healthNoti, ...vaccineNoti]);
+        console.log("Fetched notifications:", notifications);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+        setNotifications([]);
+      }
+    };
+    fetchEvents();
+  };
+
+  useEffect(() => {
+    if (!selectedStudentId) return;
+    const fetchEvents = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:8080/api/parent/all-forms/${selectedStudentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const { healthCheckForms = [], vaccineForms = [] } = res.data;
+
+        const healthNoti = healthCheckForms.map((item) => ({
+          ...item,
+          type: "healthcheck",
+        }));
+
+        const vaccineNoti = vaccineForms.map((item) => ({
+          ...item,
+          type: "vaccine",
+        }));
+
+        setNotifications([...healthNoti, ...vaccineNoti]);
+        console.log("Fetched notifications:", notifications);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+        setNotifications([]);
+      }
+    };
+    fetchEvents();
+  }, [selectedStudentId]);
 
   
-
-  const handleNotificationClick = (notification) => {
-    if (notification.status === 'Chưa xem') {
-      setNotifications(prev =>
-        prev.map(n =>
-          n.id === notification.id
-            ? { ...n, status: 'Hoàn thành', statusClass: 'status-completed' }
-            : n
-        )
-      );
-      setSelectedNotification({
-        ...notification,
-        status: 'Hoàn thành',
-        statusClass: 'status-completed'
-      });
-    } else {
-      setSelectedNotification(notification);
-    }
-  };
 
   return (
     <div className="notifications-container">
@@ -70,28 +93,10 @@ const Notifications = () => {
 
         {/* Right Section: Notifications List */}
         <div className="right-panel-notifications">
-          <h2>Khảo sát</h2>
-          <div className="notifications-list">
-            {notifications.map((notification) => (
-              <div key={notification.id} className="notification-item">
-                <div className="notification-title-row">
-                  <p
-                    className="notification-type"
-                    onClick={() => handleNotificationClick(notification)}
-                    style={{ cursor: 'pointer', textDecoration: 'underline', color: '#007bff', marginBottom: 0 }}
-                  >
-                    {notification.type}
-                  </p>
-                </div>
-                <div className="notification-info-row-bottom">
-                  <p className="notification-date">Ngày: {notification.date}</p>
-                  <span className={`notification-status ${notification.statusClass}`}>
-                    {notification.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <NotificationsList
+            notifications={notifications}
+            fetchNotifications={fetchNotifications}
+          />
         </div>
       </div>
 

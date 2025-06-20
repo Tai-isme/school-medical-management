@@ -1,0 +1,15 @@
+.notifications-list {
+  max-height: 410px; /* hoặc chiều cao bạn muốn */
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.notification-item {
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: #e6f7ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.08);
+}

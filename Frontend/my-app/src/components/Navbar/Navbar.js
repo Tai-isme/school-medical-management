@@ -1,6 +1,6 @@
 // Navbar.js
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import '../Navbar/Navbar.css';
 import Login from '../../pages/Login/Login';
 import NotificationSocket from './NotificationSocket';
@@ -11,6 +11,8 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [numberNoti, setNumberNoti] = useState();
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,12 +54,13 @@ const Navbar = () => {
   const handleCloseLogin = () => setIsLoginOpen(false);
 
   const handleLogout = () => {
-    ['users', 'token', 'students'].forEach((key) => localStorage.removeItem(key));
+    ['users', 'token', 'students', 'role'].forEach((key) => localStorage.removeItem(key));
     setUser(null);
   };
 
   const toggleNotificationPanel = () => {
     setIsNotiOpen((prev) => !prev);
+    setNumberNoti("0");
   };
 
   const renderGreeting = () => {
@@ -70,7 +73,7 @@ const Navbar = () => {
       <nav className="navbar">
         <ul className="nav-links">
           <li className="logo"><img src="/logo.png" alt="Logo" /></li>
-          <li><a href="/">Trang chủ</a></li>
+          <li> <a style={{cursor:'pointer'}} onClick={()=> {navigate("/")}}>Trang chủ</a></li>
           <li><a href="/">Tài liệu</a></li>
           <li><a href="/">Blog</a></li>
           <li><a href="/">Giới thiệu</a></li>
@@ -81,7 +84,7 @@ const Navbar = () => {
           {user && (
             <li className="notification-wrapper">
               <button className="notification-button" onClick={toggleNotificationPanel}>
-                Thông báo ({notifications.length})
+                Thông báo ({numberNoti || notifications.length})
               </button>
               {isNotiOpen && (
                 <NotificationPanel
@@ -113,7 +116,7 @@ const Navbar = () => {
         <NotificationSocket
           parentId={user.id}
           onMessage={(message) => {
-            console.log("🔔 Nhận được noti:", message);
+            // console.log("🔔 Nhận được noti:", message);
             setNotifications((prev) => [...prev, message]);
           }}
         />

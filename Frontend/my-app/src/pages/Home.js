@@ -9,7 +9,7 @@ function Home() {
   const [showLogin, setShowLogin] = useState(false);
 
   // Kiểm tra đăng nhập
-  const isLoggedIn = !!localStorage.getItem("user");
+  const isLoggedIn = !!localStorage.getItem("users");
 
   // Hàm xử lý khi click vào thẻ
   const handleCardClick = (page) => {
@@ -22,7 +22,6 @@ function Home() {
 
   return (
     <div>
-      <Navbar />
       <MedicalInfoCards onCardClick={handleCardClick} />
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
     </div>

@@ -5,7 +5,6 @@ import InstructionForm from '../components/InstructionForm/InstructionForm.js';
 function InstructionFormPage() {
   return (
     <div>
-      <Navbar />
       <InstructionForm />
     </div>
   );

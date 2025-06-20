@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Tag, Space, Modal, Spin } from 'antd';
+import { Table, Tag, Space, Modal, Spin, Popconfirm } from 'antd';
 import axios from 'axios';
 import api from '../../config/axios'
+import { max } from 'moment/moment';
 // --- Sample Data ---
 // In a real application, this data would come from an API call
 const RequestTable = () => {
@@ -61,23 +62,28 @@ const RequestTable = () => {
       dataIndex: 'requestId',
       key: 'requestId',
       sorter: (a, b) => a.requestId - b.requestId,
+      align: 'center', // căn giữa
     },
     {
-      title: 'Tên đơn',
+      title: 'Mục đích gửi thuốc',
       dataIndex: 'requestName',
       key: 'requestName',
       sorter: (a, b) => a.requestName.localeCompare(b.requestName),
+      
+      // Không căn giữa
     },
     {
       title: 'Ngày gửi',
       dataIndex: 'date',
       key: 'date',
       sorter: (a, b) => new Date(a.date) - new Date(b.date),
+      align: 'center', // căn giữa
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      align: 'center', // căn giữa
       render: (status) => (
         <span
           style={{
@@ -96,13 +102,10 @@ const RequestTable = () => {
       ),
     },
     {
-      title: 'Ghi chú',
-      dataIndex: 'note',
-      key: 'note',
-    },
-    {
       title: 'Xem chi tiết đơn thuốc',
       key: 'detail',
+      minWidth: 200,
+      align: 'center', // căn giữa
       render: (_, record) => (
         <a
           onClick={() => handleShowDetail(record.requestId)}
@@ -113,12 +116,22 @@ const RequestTable = () => {
       ),
     },
     {
-      title: 'Action',
+      title: 'Xóa đơn thuốc',
       key: 'action',
+      align: 'center', // căn giữa
       render: (_, record) => (
-        <Space size="middle">
-          <a onClick={handleDeleteRequest(record.requestId)}>Delete</a>
-        </Space>
+        <div>
+          {record.status !== "COMPLETED" && (
+            <Popconfirm
+              title="Bạn có chắc chắn muốn xóa đơn thuốc này?"
+              onConfirm={handleDeleteRequest(record.requestId)}
+              okText="Xóa"
+              cancelText="Hủy"
+            >
+              <a style={{ color: 'red', cursor: 'pointer' }}>Xóa</a>
+            </Popconfirm>
+          )}
+        </div>
       ),
     },
   ];
@@ -190,7 +203,7 @@ const RequestTable = () => {
                 padding: 12,
                 marginBottom: 10
               }}>
-                <div><b>Tên thuốc:</b> {item.medicineName}</div>
+                <div><b>Mục đích gửi thuốc:</b> {item.medicineName}</div>
                 <div><b>Liều lượng:</b> {item.dosage}</div>
                 <div><b>Thời gian:</b> {item.time}</div>
               </div>

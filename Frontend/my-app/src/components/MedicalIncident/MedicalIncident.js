@@ -11,6 +11,7 @@ const columns = [
     title: "Loại sự kiện", // Tên cột hiển thị
     dataIndex: "typeEvent", // Key tương ứng trong object dữ liệu
     key: "typeEvent", // Key duy nhất cho cột này
+    minWidth: 200,
     // Bạn có thể tùy chỉnh render cho cột này nếu muốn
     // render: (text) => <Tag color="blue">{text.toUpperCase()}</Tag>,
   },
@@ -18,6 +19,7 @@ const columns = [
     title: "Ngày diễn ra",
     dataIndex: "date",
     key: "date",
+    minWidth: 150,
     // Sắp xếp theo ngày
     sorter: (a, b) => new Date(a.date) - new Date(b.date),
     render: (text) => new Date(text).toLocaleDateString("vi-VN"), // Định dạng ngày tháng VN
@@ -26,6 +28,7 @@ const columns = [
     title: "ID Y tá",
     dataIndex: "nurseId",
     key: "nurseId",
+    minWidth: 150, // Đặt chiều rộng tối thiểu cho cột
     render: (text) => text.toString(), // Đảm bảo ID lớn được hiển thị đúng dạng chuỗi
   },
   {
