@@ -116,7 +116,7 @@ const Navbar = () => {
         <NotificationSocket
           parentId={user.id}
           onMessage={(message) => {
-            console.log("🔔 Nhận được noti:", message);
+            // console.log("🔔 Nhận được noti:", message);
             setNotifications((prev) => [...prev, message]);
           }}
         />
