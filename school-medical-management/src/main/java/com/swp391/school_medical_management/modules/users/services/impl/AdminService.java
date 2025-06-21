@@ -12,15 +12,20 @@ import org.checkerframework.checker.units.qual.A;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventStatDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
@@ -29,6 +34,7 @@ import com.swp391.school_medical_management.modules.users.entities.HealthCheckPr
 import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
@@ -39,11 +45,14 @@ import com.swp391.school_medical_management.modules.users.repositories.HealthChe
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
+import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
 import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
+import com.swp391.school_medical_management.service.EmailService;
+import com.swp391.school_medical_management.service.PasswordService;
 
 @Service
 public class AdminService {
@@ -67,6 +76,16 @@ public class AdminService {
     @Autowired private VaccineFormRepository vaccineFormRepository;
 
     @Autowired private MedicalEventRepository medicalEventRepository;
+
+    @Autowired private PasswordService passwordService;
+
+    @Autowired private EmailService emailService;
+
+    @Autowired private PasswordEncoder passwordEncoder;
+
+    @Autowired private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired private BlacklistService blacklistService;
     
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, long adminId) {
         UserEntity admin = userRepository.findUserByUserId(adminId)
@@ -399,6 +418,58 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical record not found");
         MedicalRecordEntity medicalRecord = optMedicalRecord.get();
         return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+    }
+
+    public UserDTO createAccount(NurseAccountRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists!");
+        }
+        String password = passwordService.generateStrongRandomPassword();
+        String encodedPassword = passwordEncoder.encode(password);
+        UserEntity user = new UserEntity();
+        user.setEmail(request.getEmail());
+        user.setFullName(request.getName());
+        user.setPassword(encodedPassword);
+        user.setRole(UserRole.NURSE);
+        userRepository.save(user);
+        emailService.sendEmail(request.getEmail(), "Account: ",
+                "\nEmail: " + request.getEmail()
+                        + "\nPassword: " + password);
+        return modelMapper.map(user, UserDTO.class);
+    }
+    
+
+    public List<UserDTO> getAllAccounts(){
+        List<UserEntity> userEntities = userRepository.findAll();
+        if (userEntities.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No accounts found");
+        }
+        return userEntities.stream()
+                .map(user -> modelMapper.map(user, UserDTO.class))
+                .collect(Collectors.toList());
+    }
+    
+    public void deleteAccount(Long userId, String token) {
+        Optional<UserEntity> userOpt = userRepository.findUserByUserId(userId);
+        if (userOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        UserEntity user = userOpt.get();
+        if (user.getRole() == UserRole.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể xoá tài khoản ADMIN");
+        }
+
+        if (user.getRole() == UserRole.PARENT) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể xoá tài khoản PHỤ HUYNH");
+        }
+
+        BlacklistTokenRequest blacklistRequest = new BlacklistTokenRequest();
+        blacklistRequest.setToken(token);
+
+        refreshTokenRepository.deleteByUser(user);
+        blacklistService.create(blacklistRequest);
+
+        userRepository.delete(user);
     }
 
     public List<Map<String, Object>> getEventStats() {

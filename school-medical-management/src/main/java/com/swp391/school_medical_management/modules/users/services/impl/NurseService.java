@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
@@ -50,6 +52,8 @@ public class NurseService {
     @Autowired private MedicalRecordsRepository medicalRecordsRepository;
 
     @Autowired private VaccineHistoryRepository vaccineHistoryRepository;
+
+    @Autowired private BlogRepository blogRepository;
 
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
         List<MedicalRequestEntity> pendingMedicalRequestList = medicalRequestRepository.findByStatus(MedicalRequestStatus.PROCESSING);
@@ -517,6 +521,69 @@ public class NurseService {
         return students.stream()
                 .map(s -> modelMapper.map(s, StudentDTO.class))
                 .collect(Collectors.toList());
+    }
+
+     private String toSlug(String title) {
+        return title.toLowerCase()
+                .replaceAll("[^a-z0-9\\s]", "") 
+                .replaceAll("\\s+", "-");       
+    }
+
+    public BlogResponse create(BlogRequest request) {
+        // Lấy thông tin người viết
+        UserEntity author = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        // Tạo bài viết mới
+        BlogEntity post = new BlogEntity();
+        post.setTitle(request.getTitle());
+        post.setSlug(toSlug(request.getTitle()));
+        post.setCategory(request.getCategory());
+        post.setContent(request.getContent());
+        post.setAuthor(author);
+
+        // Lưu vào database
+        BlogEntity saved = blogRepository.save(post);
+
+        return toResponse(saved);
+    }
+
+    public List<BlogResponse> getAll() {
+        List<BlogEntity> posts = blogRepository.findAll();
+        return posts.stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    public BlogResponse getBySlug(String slug) {
+        BlogEntity post = blogRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+        return toResponse(post);
+    }
+
+    public BlogResponse update(Long id, BlogRequest request) {
+        BlogEntity post = blogRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+
+        UserEntity author = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        post.setTitle(request.getTitle());
+        post.setSlug(toSlug(request.getTitle()));
+        post.setCategory(request.getCategory());
+        post.setContent(request.getContent());
+        post.setAuthor(author);
+
+        BlogEntity updated = blogRepository.save(post);
+        return toResponse(updated);
+    }
+
+    public void delete(Long id) {
+        blogRepository.deleteById(id);
+    }
+
+    private BlogResponse toResponse(BlogEntity post) {
+        BlogResponse response = modelMapper.map(post, BlogResponse.class);
+        response.setUserId(post.getAuthor().getUserId());
+        return response;
     }
 
 }

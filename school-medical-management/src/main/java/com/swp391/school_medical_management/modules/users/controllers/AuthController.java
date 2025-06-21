@@ -3,9 +3,10 @@ package com.swp391.school_medical_management.modules.users.controllers;
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.services.impl.AuthService;
+
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +25,7 @@ import com.swp391.school_medical_management.helpers.ApiResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.LoginResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.RefreshTokenDTO;
 import com.swp391.school_medical_management.modules.users.services.impl.BlacklistService;
+import com.swp391.school_medical_management.service.JwtService;
 
 import jakarta.validation.Valid;
 
@@ -31,22 +34,12 @@ import jakarta.validation.Valid;
 @RequestMapping("api/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    @Autowired private AuthService authService;
 
-    @Autowired
-    private BlacklistService blacklistService;
+    @Autowired private BlacklistService blacklistService;
 
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private UserRepository userRepository;
 
-
-    @PostMapping("/nurses")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createNurseAccount(@Valid @RequestBody NurseAccountRequest request) {
-        UserDTO userDTO = authService.createAccount(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
-    }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -54,23 +47,39 @@ public class AuthController {
             return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/change-password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        authService.changePassword(Long.parseLong(userId), request);
+        return ResponseEntity.ok("Password changed successfully");
+    }
+
+    @PutMapping("/update-profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        authService.updateProfile(Long.parseLong(userId), request);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật thông tin cá nhân thành công", null));
+    }
+
     @PostMapping("/blacklisted")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> addTokenToBlacklist(@Valid @RequestBody BlacklistTokenRequest request) {
             blacklistService.create(request);
             return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String bearerToken) {
-            String token = bearerToken.substring(7);
-            BlacklistTokenRequest request = new BlacklistTokenRequest();
-            request.setToken(token);
-            blacklistService.create(request);
-            return ResponseEntity.noContent().build();
+        authService.logout(bearerToken);
+        return ResponseEntity.noContent().build();
     }
 
+
     @PostMapping("/refresh")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<RefreshTokenDTO> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
             RefreshTokenDTO response = authService.refreshToken(request.getRefreshToken());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -89,6 +98,7 @@ public class AuthController {
     }
     
     @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> me() {
         String id = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = (UserEntity) userRepository.findUserByUserId(Long.parseLong(id)).orElseThrow(() -> new RuntimeException("User khong ton tai"));

@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
@@ -201,6 +203,37 @@ public class NurseController {
             @RequestParam(required = false) String vaccineName) {
         List<StudentDTO> result = nurseService.getStudentsNotVaccinated(vaccineProgramId, vaccineName);
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/create-blog")
+    public ResponseEntity<BlogResponse> createPost(@RequestBody BlogRequest request) {
+        BlogResponse response = nurseService.create(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("all-blog")
+    public ResponseEntity<List<BlogResponse>> getAllPosts() {
+        List<BlogResponse> list = nurseService.getAll();
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/{slug}")
+    public ResponseEntity<BlogResponse> getPostBySlug(@PathVariable String slug) {
+        BlogResponse response = nurseService.getBySlug(slug);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BlogResponse> updatePost(@PathVariable Long id,
+                                                       @RequestBody BlogRequest request) {
+        BlogResponse response = nurseService.update(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+        nurseService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

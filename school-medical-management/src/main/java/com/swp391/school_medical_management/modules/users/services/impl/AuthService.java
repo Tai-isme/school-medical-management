@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.RefreshTokenDTO;
 import com.swp391.school_medical_management.modules.users.entities.RefreshTokenEntity;
 import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
@@ -18,48 +17,37 @@ import org.springframework.stereotype.Service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.ChangePasswordRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.IdTokenRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.LoginRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.LoginResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
-import com.swp391.school_medical_management.service.EmailService;
 import com.swp391.school_medical_management.service.JwtService;
-import com.swp391.school_medical_management.service.PasswordService;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
 
+    @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private StudentRepository studentRepository;
 
-    @Autowired
-    private StudentRepository studentRepository;
+    @Autowired private ModelMapper modelMapper;
 
-    @Autowired
-    private ModelMapper modelMapper;
+    @Autowired private JwtService jwtService;
 
-    @Autowired
-    private JwtService jwtService;
+    @Autowired private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Autowired private RefreshTokenRepository refreshTokenRepository;
 
-    @Autowired
-    private PasswordService passwordService;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
+    @Autowired private BlacklistService blacklistService;
 
     public LoginResponse authenticate(LoginRequest request) {
         Optional<UserEntity> userOpt = userRepository.findUserByEmail(request.getEmail());
@@ -74,22 +62,46 @@ public class AuthService {
         return new LoginResponse(token, refreshToken, userDTO, null);
     }
 
-    public UserDTO createAccount(NurseAccountRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists!");
+    public void logout(String bearerToken) {
+        String token = bearerToken.substring(7); // Bỏ "Bearer "
+        
+        // 1. Đưa vào blacklist
+        BlacklistTokenRequest request = new BlacklistTokenRequest();
+        request.setToken(token);
+        blacklistService.create(request);
+
+        // 2. Xoá refresh token theo userId
+        String userId = jwtService.getUserIdFromJwt(token);
+        Optional<UserEntity> userOpt = userRepository.findUserByUserId(Long.parseLong(userId));
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found with ID: " + userId);
         }
-        String password = passwordService.generateStrongRandomPassword();
-        String encodedPassword = passwordEncoder.encode(password);
-        UserEntity user = new UserEntity();
-        user.setEmail(request.getEmail());
-        user.setFullName(request.getName());
-        user.setPassword(encodedPassword);
-        user.setRole(UserRole.NURSE);
+        UserEntity user = userOpt.get();
+        refreshTokenRepository.deleteByUser(user);
+    }
+
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        UserEntity user = userRepository.findUserByUserId(userId)
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new RuntimeException("Old password is incorrect!");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-        emailService.sendEmail(request.getEmail(), "Account: ",
-                "\nEmail: " + request.getEmail()
-                        + "\nPassword: " + password);
-        return modelMapper.map(user, UserDTO.class);
+    }
+
+    public void updateProfile(Long userId, UpdateProfileRequest request) {
+        UserEntity user = userRepository.findUserByUserId(userId)
+            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+        user.setAddress(request.getAddress());
+
+        userRepository.save(user);
     }
 
     public RefreshTokenDTO refreshToken(String refreshToken) {

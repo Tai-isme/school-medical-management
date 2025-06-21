@@ -12,13 +12,15 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventStatDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.services.impl.AdminService;
 
@@ -33,11 +35,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
-
-
-
-
 @Validated
 @RestController
 @RequestMapping("api/admin")
@@ -46,6 +43,24 @@ public class AdminController {
     
     @Autowired
     private AdminService adminService;
+
+    @PostMapping("/create-nurses-account")
+    public ResponseEntity<UserDTO> createNurseAccount(@Valid @RequestBody NurseAccountRequest request) {
+        UserDTO userDTO = adminService.createAccount(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
+    }
+
+    @GetMapping("/accounts")
+    public ResponseEntity<List<UserDTO>> getAllAccounts() {
+        List<UserDTO> userList = adminService.getAllAccounts();
+        return ResponseEntity.ok(userList);
+    }
+
+    @DeleteMapping("/accounts/{id}")
+    public ResponseEntity<Void> deleteAccount(@PathVariable Long id, @RequestBody BlacklistTokenRequest request) {
+        adminService.deleteAccount(id, request.getToken());
+        return ResponseEntity.noContent().build();
+    }
 
     @PostMapping("/health-check-program")
     public ResponseEntity<HealthCheckProgramDTO> createHealthCheckProgram(@Valid @RequestBody HealthCheckProgramRequest request) {
