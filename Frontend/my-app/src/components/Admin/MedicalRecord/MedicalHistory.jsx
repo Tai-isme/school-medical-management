@@ -5,7 +5,8 @@ const mockEvents = [
     type: "Trượt chân",
     category: "Ngã",
     date: "07/10/2020",
-    solution: "Sơ ý",
+    nurseName: "Nguyễn Văn A",
+    detail: "Chay bị trượt chân khi chơi thể thao",
   },
   // Thêm các sự kiện khác nếu muốn
 ];
@@ -19,7 +20,8 @@ export default function MedicalHistory({ events = mockEvents }) {
           <div style={{ fontWeight: "bold", color: "#ff9800" }}>⚡ {e.type}</div>
           <div>Loại sự cố: {e.category}</div>
           <div>Ngày xảy ra sự cố: {e.date}</div>
-          <div>Biện pháp xử lý: {e.solution}</div>
+          <div>Y tá phụ trách xử lý: {e.nurseName}</div>
+          <div>Mô tả chi tiết: {e.detail}</div>
         </div>
       ))}
     </div>
