@@ -7,6 +7,7 @@ import MedicalRecord from '../components/Admin/MedicalRecord/MedicalRecord';
 import HealthCheckProgramList from '../components/Admin/HealthCheckProgram/HealthCheckProgramList';
 import MedicalRequest from '../components/Admin/MedicalRequest/MedicalRequest';
 import MedicalIncidentList from '../components/Admin/MedicalIncidentList/MedicalIncidentList';
+import MedicalDashboard from '../components/Admin/MedicalRecord/MedicalDashboard';
 
 export default function AdminHome() {
   const [selectedMenu, setSelectedMenu] = useState(null);
@@ -41,7 +42,7 @@ export default function AdminHome() {
       
       }
 
-      {selectedMenu === '3' && (
+      {/* {selectedMenu === '3' && (
         <>
           <ClassList onSelectClass={handleSelectClass} />
           {selectedClassId && (
@@ -55,6 +56,12 @@ export default function AdminHome() {
               <MedicalRecord selectedStudentId={selectedStudentId} />
             </div>
           )}
+        </>
+      )} */}
+
+      {selectedMenu === '3' && (
+        <>
+          <MedicalDashboard/>
         </>
       )}
 

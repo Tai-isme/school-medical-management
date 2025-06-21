@@ -22,6 +22,7 @@ function Home() {
 
   return (
     <div>
+      <Navbar /> {/* Đặt Navbar ở đây */}
       <MedicalInfoCards onCardClick={handleCardClick} />
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
     </div>

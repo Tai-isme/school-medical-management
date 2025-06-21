@@ -11,7 +11,7 @@ import Navbar from './components/Navbar/Navbar';
 function App() {
   return (
     <Router>
-      <Navbar /> {/* Đặt Navbar ở đây */}
+      
       <Routes>
         <Route path="/" element={<Home />} /> 
         <Route path="/instruction-form" element={<InstructionFormPage />} />
