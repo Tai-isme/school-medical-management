@@ -1,11 +1,13 @@
 /* Tổng container lấn đầy toàn bộ chiều ngang bên phải */
 .medicine-table-container {
+  flex: 1;
   padding: 24px;
   font-family: 'Segoe UI', sans-serif;
   background-color: #f9f9f9;
   min-height: 100vh;
-  width: 100%; /* chiếm toàn bộ chiều ngang */
+  width: 100%;
   box-sizing: border-box;
+  overflow: auto;
 }
 
 /* Tiêu đề */

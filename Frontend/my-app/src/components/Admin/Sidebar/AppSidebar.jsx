@@ -8,6 +8,7 @@ import {
   BarChartOutlined,
   UnorderedListOutlined,
   AlertOutlined,
+  CommentOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom"; // vừa thêm
@@ -27,7 +28,7 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
     localStorage.removeItem("role");
 
     // Điều hướng về trang đăng nhập
-    navigate("/login");
+    navigate("/home");
   }; // vừa thêm
   return (
     <div className="sidebar-container">
@@ -42,7 +43,7 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
         style={{ flex: 1, borderRight: 0, minHeight: 0 }}
       >
         <Menu.Item key="title" disabled className="sidebar-title">
-          Y Tế
+          Hi Nurse
         </Menu.Item>
         <Menu.Item key="1" icon={<HomeOutlined />}>
           Dashboard
@@ -66,31 +67,24 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
         <Menu.Item key="7" icon={<AlertOutlined />}>
           Sự cố y tế
         </Menu.Item>
+        <Menu.Item key="8" icon={<CommentOutlined />}>
+          Phản hồi
+        </Menu.Item>
       </Menu>
+
       <div
+        className="logout-button"
+        onClick={handleLogout}
         style={{
-          padding: "12px 20px",
+          padding: "10px 16px",
           borderTop: "1px solid #f0f0f0",
           cursor: "pointer",
           color: "red",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontWeight: 600,
-          minHeight: 56,
-          gap: 8,
-          transition: "background 0.3s",
-          borderRadius: 8,
+          fontSize: 14,
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#ffccc7";
-          e.currentTarget.style.color = "#a8071a";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#fff0f0";
-          e.currentTarget.style.color = "#d9363e";
-        }}
-        onClick={handleLogout}
       >
         <LogoutOutlined style={{ marginRight: 8 }} />
         Đăng xuất

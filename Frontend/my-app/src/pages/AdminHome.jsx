@@ -1,13 +1,15 @@
 // AdminHome.jsx
-import React, { useState } from 'react';
-import AppSidebar from '../components/Admin/Sidebar/AppSidebar';
-import ClassList from '../components/Admin/Student/ClassList';
-import StudentList from '../components/Admin/Student/StudentList';
-import MedicalRecord from '../components/Admin/MedicalRecord/MedicalRecord';
-import HealthCheckProgramList from '../components/Admin/HealthCheckProgram/HealthCheckProgramList';
-import MedicalRequest from '../components/Admin/MedicalRequest/MedicalRequest';
-import MedicalIncidentList from '../components/Admin/MedicalIncidentList/MedicalIncidentList';
-import Dashboard from '../components/Admin/Dashboard/Dashboard';
+import React, { useState } from "react";
+import AppSidebar from "../components/Admin/Sidebar/AppSidebar";
+import ClassList from "../components/Admin/Student/ClassList";
+import StudentList from "../components/Admin/Student/StudentList";
+import MedicalRecord from "../components/Admin/MedicalRecord/MedicalRecord";
+import HealthCheckProgramList from "../components/Admin/HealthCheckProgram/HealthCheckProgramList";
+import MedicalRequest from "../components/Admin/MedicalRequest/MedicalRequest";
+import MedicalIncidentList from "../components/Admin/MedicalIncidentList/MedicalIncidentList";
+import VaccineProgramList from "../components/Admin/VaccineProgramList/VaccineProgramList";
+import AccountManagement from "../components/Admin/AccountManagement/AccountManagement";
+import MedicalDashboard from '../components/Admin/MedicalRecord/MedicalDashboard';
 
 export default function AdminHome() {
   const [selectedMenu, setSelectedMenu] = useState(null);
@@ -30,37 +32,34 @@ export default function AdminHome() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-  <AppSidebar onMenuSelect={handleMenuSelect} selectedMenu={selectedMenu} />
+    <div style={{ display: "flex", height: "100vh" }}>
+      <AppSidebar onMenuSelect={handleMenuSelect} selectedMenu={selectedMenu} />
 
-  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-      {selectedMenu === '1' && <Dashboard />}
+      {selectedMenu === "1"}
 
-      {selectedMenu === '2' && <div>Quản lý giáo viên</div>}
+      {selectedMenu === "2" && <AccountManagement />}
 
       {selectedMenu === '3' && (
-        <div style={{ display: 'flex', flex: 1 }}>
-          <ClassList onSelectClass={handleSelectClass} />
-          {selectedClassId && (
-            <StudentList
-              classId={selectedClassId}
-              onSelectStudent={handleSelectStudent}
-            />
-          )}
-          {selectedStudentId && (
-            <div style={{ flex: 1, padding: 24 }}>
-              <MedicalRecord selectedStudentId={selectedStudentId} />
-            </div>
-          )}
-        </div>
+        <>
+          <MedicalDashboard/>
+        </>
       )}
 
-      {selectedMenu === '4' && <MedicalRequest />}
+      {selectedMenu === "4" && <MedicalRequest />}
 
-      {selectedMenu === '5-2' && <HealthCheckProgramList />}
+      {selectedMenu === "5"}
 
-      {selectedMenu === '7' && <MedicalIncidentList />}
+      {selectedMenu === "5-1" && <VaccineProgramList />}
+
+      {selectedMenu === "5-2" && <HealthCheckProgramList />}
+
+      {selectedMenu === "6"}
+
+      {selectedMenu === "7" && <MedicalIncidentList />}
+
+      {selectedMenu === "8"}
+
+      {selectedMenu === "logout"}
     </div>
-  </div>
   );
 }

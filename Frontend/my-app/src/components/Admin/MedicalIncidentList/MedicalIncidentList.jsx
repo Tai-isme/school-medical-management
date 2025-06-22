@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Input, DatePicker, message } from "antd";
+import { Table, Button, Modal, Form, Input, message } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import "./MedicalIncidentList.css";
@@ -23,7 +23,8 @@ const MedicalIncidentList = () => {
 
         const apiData = res.data.map((item) => ({
           ...item,
-          parentPhone: "Chưa có", // nếu chưa có từ backend
+          studentName: item.studentName || `ID ${item.studentId}`,
+          parentPhone: item.parentPhone || "Chưa có",
         }));
 
         setData(apiData);
@@ -70,9 +71,9 @@ const MedicalIncidentList = () => {
         ...res.data,
         eventId: res.data.eventId || Date.now(),
         date: dayjs().format("YYYY-MM-DD"),
-        studentName: `ID ${values.studentId}`, // Không có tên thật → dùng ID
+        studentName: res.data.studentName || `ID ${values.studentId}`,
         nurseId: `ID ${res.data.nurseId || "---"}`,
-        parentPhone: values.parentPhone || "Chưa có",
+        parentPhone: res.data.parentPhone || "Chưa có",
       };
 
       setData((prev) => [...prev, created]);
@@ -151,10 +152,6 @@ const MedicalIncidentList = () => {
             rules={[{ required: true }]}
           >
             <Input.TextArea />
-          </Form.Item>
-
-          <Form.Item label="SĐT phụ huynh" name="parentPhone">
-            <Input />
           </Form.Item>
         </Form>
       </Modal>
