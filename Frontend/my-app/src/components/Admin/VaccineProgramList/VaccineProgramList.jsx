@@ -173,7 +173,7 @@ const VaccineProgramList = () => {
                     style={{ cursor: "pointer" }}
                   >
                     <div>
-                      <strong>{program.name}</strong>
+                      <strong>{program}</strong>
                     </div>
                     <div className="hcp-description">{program.description}</div>
                   </td>

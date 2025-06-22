@@ -10,6 +10,8 @@ import MedicalIncidentList from "../components/Admin/MedicalIncidentList/Medical
 import VaccineProgramList from "../components/Admin/VaccineProgramList/VaccineProgramList";
 import AccountManagement from "../components/Admin/AccountManagement/AccountManagement";
 import MedicalDashboard from '../components/Admin/MedicalRecord/MedicalDashboard';
+import Dashboard from "../components/Admin/Dashboard/Dashboard";
+
 
 export default function AdminHome() {
   const [selectedMenu, setSelectedMenu] = useState(null);
@@ -35,7 +37,7 @@ export default function AdminHome() {
     <div style={{ display: "flex", height: "100vh" }}>
       <AppSidebar onMenuSelect={handleMenuSelect} selectedMenu={selectedMenu} />
 
-      {selectedMenu === "1"}
+      {selectedMenu === "1" && <Dashboard />}
 
       {selectedMenu === "2" && <AccountManagement />}
 

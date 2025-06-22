@@ -6,13 +6,14 @@ const mockContact = {
   address: "số 22, xóm 6/thôn 19, Xã Vũ Ninh, H...",
 };
 
-export default function EmergencyContact({ contact = mockContact }) {
+export default function EmergencyContact({ parentInfo }) {
+  if (!parentInfo) return <div>Không có thông tin phụ huynh</div>;
   return (
     <div style={{ background: "#fff", borderRadius: 8, padding: 16, minHeight: 100 }}>
       <div style={{ fontWeight: "bold", fontSize: 16, marginBottom: 4 }}>Liên hệ khẩn cấp</div>
-      <div style={{ fontWeight: "bold", color: "#009688" }}>{contact.name}</div>
-      <div>📞 {contact.phone}</div>
-      <div>🏠 {contact.address}</div>
+      <div style={{ fontWeight: "bold", color: "#009688" }}>{parentInfo.fullName}</div>
+      <div>📞 {parentInfo.phone}</div>
+      <div>🏠 {parentInfo.address}</div>
     </div>
   );
 }

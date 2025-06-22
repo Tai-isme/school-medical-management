@@ -28,7 +28,7 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
     localStorage.removeItem("role");
 
     // Điều hướng về trang đăng nhập
-    navigate("/home");
+    navigate("/");
   }; // vừa thêm
   return (
     <div className="sidebar-container">

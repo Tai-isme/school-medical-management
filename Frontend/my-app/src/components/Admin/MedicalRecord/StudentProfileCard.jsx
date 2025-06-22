@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const mockProfile = {
   name: "Lê Hải Anh",
@@ -24,23 +25,53 @@ const mockVaccines = [
   { name: "3", desc: "3" },
 ];
 
-export default function StudentProfileCard({ student }) {
+export default function StudentProfileCard({ studentId, studentInfo }) {
   const [tab, setTab] = useState("chronic");
-  const profile = student || mockProfile;
-  const chronic = mockChronic;
+  const [record, setRecord] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!studentId) return;
+    setLoading(true);
+    const fetchRecord = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `http://localhost:8080/api/nurse/medical-records/${studentId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setRecord(res.data);
+      } catch (err) {
+        setRecord(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRecord();
+  }, [studentId]);
+
+  if (!studentId) return <div>Chọn học sinh để xem hồ sơ</div>;
+  if (loading) return <div>Đang tải...</div>;
+
+  // Nếu record là null hoặc undefined, tạo object rỗng với các thuộc tính mặc định
+  const safeRecord = record || {
+    vision: "",
+    hearing: "",
+    weight: "",
+    height: "",
+    allergies: "",
+    chronicDisease: "",
+    treatmentHistory: "",
+    note: "",
+    vaccineHistories: [],
+    studentId: "",
+  };
 
   return (
     <div style={{ background: "#fff", borderRadius: 8, padding: 16, minHeight: 180, width: "700px"}}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 32,
-          marginBottom: 16,
-          minHeight: 120,
-          height: 120,
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", gap: 32, marginBottom: 16, minHeight: 120, height: 120 }}>
         <img
           src="./logo512.png"
           alt="avatar"
@@ -54,15 +85,17 @@ export default function StudentProfileCard({ student }) {
           }}
         />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
-          <div style={{ fontWeight: "bold", fontSize: 28, marginBottom: 6 }}>Tên: {profile.name}</div>
-          <div style={{ color: "#009688", fontWeight: "bold", fontSize: 20, marginBottom: 6 }}>Mã số: {profile.code}</div>
-          <div style={{ fontSize: 16, color: "#444" }}>
-            <span>Lớp: {profile.class}</span>
+          <div style={{ fontWeight: "bold", fontSize: 28, marginBottom: 6 }}>
+            Mã số học sinh: {safeRecord.studentId}
           </div>
-          <div style={{ fontSize: 16, color: "#444", marginBottom: 2 }}>
-            <span>Giới tính: {profile.gender}</span>
-            <span style={{ margin: "0 12px" }}>|</span>
-            <span>Ngày sinh: {profile.dob}</span>
+          <div style={{ fontSize: 20, marginBottom: 2 }}>
+            Tên học sinh: {studentInfo?.fullName || ""}
+          </div>
+          <div style={{ fontSize: 18, marginBottom: 2 }}>
+            Lớp: {studentInfo?.classDTO?.className || ""}
+          </div>
+          <div style={{ fontSize: 18 }}>
+            Giới tính: {studentInfo?.gender || ""}
           </div>
         </div>
       </div>
@@ -127,38 +160,38 @@ export default function StudentProfileCard({ student }) {
             <div style={{ display: "flex", gap: 20, marginBottom: 18 }}>
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                 <label style={{ marginBottom: 6 }}>Thị giác <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} defaultValue="1" />
+                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} value={safeRecord.vision || ""} readOnly />
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                 <label style={{ marginBottom: 6 }}>Thính lực <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} defaultValue="1" />
+                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} value={safeRecord.hearing || ""} readOnly />
               </div>
             </div>
             <div style={{ display: "flex", gap: 20, marginBottom: 18 }}>
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                 <label style={{ marginBottom: 6 }}>Cân nặng <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} defaultValue="1" />
+                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} value={safeRecord.weight || ""} readOnly />
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                 <label style={{ marginBottom: 6 }}>Chiều cao <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} defaultValue="1" />
+                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} value={safeRecord.height || ""} readOnly />
               </div>
             </div>
             <div style={{ marginBottom: 18 }}>
               <label style={{ marginBottom: 6, display: "block" }}>Bị dị ứng với các loại nào</label>
-              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} defaultValue="gdf" />
+              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} value={safeRecord.allergies || ""} readOnly />
             </div>
             <div style={{ marginBottom: 18 }}>
               <label style={{ marginBottom: 6, display: "block" }}>Bệnh mãn tính</label>
-              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} defaultValue="gdg" />
+              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} value={safeRecord.chronicDisease || ""} readOnly />
             </div>
             <div style={{ marginBottom: 18 }}>
               <label style={{ marginBottom: 6, display: "block" }}>Lịch sử điều trị</label>
-              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} defaultValue="dfgdf" />
+              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} value={safeRecord.treatmentHistory || ""} readOnly />
             </div>
             <div>
               <label style={{ marginBottom: 6, display: "block" }}>Ghi chú</label>
-              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} defaultValue="gdfg" />
+              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} value={safeRecord.note || ""} readOnly />
             </div>
           </div>
         )}
@@ -172,7 +205,7 @@ export default function StudentProfileCard({ student }) {
               <div style={{ flex: 1, textAlign: "left" }}>Tên Vaccin</div>
               <div style={{ flex: 1, textAlign: "left" }}>Mô tả</div>
             </div>
-            {mockVaccines.map((v, idx) => (
+            {(safeRecord.vaccineHistories || []).map((v, idx) => (
               <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                 <input
                   style={{
@@ -183,7 +216,7 @@ export default function StudentProfileCard({ student }) {
                     fontSize: 16,
                     fontFamily: "inherit"
                   }}
-                  value={v.name}
+                  value={v.vaccineName || ""}
                   readOnly
                 />
                 <input
@@ -195,7 +228,7 @@ export default function StudentProfileCard({ student }) {
                     fontSize: 16,
                     fontFamily: "inherit"
                   }}
-                  value={v.desc}
+                  value={v.note || ""}
                   readOnly
                 />
               </div>

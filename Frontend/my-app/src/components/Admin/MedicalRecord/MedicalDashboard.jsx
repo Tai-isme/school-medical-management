@@ -13,10 +13,16 @@ export default function MedicalDashboard() {
         <StudentList
           onSelect={setSelectedStudent}
           selectedId={selectedStudent?.id}
+          onFirstStudentLoaded={student => {
+            if (!selectedStudent && student) setSelectedStudent(student);
+          }}
         />
       </div>
       <div style={{ flex: 3, border: "2px solid #ffeb3b", borderRadius: 8 }}>
-        <StudentProfileCard student={selectedStudent} />
+        <StudentProfileCard
+          studentId={selectedStudent?.id}
+          studentInfo={selectedStudent}
+        />
       </div>
       <div style={{
         flex: 2,
@@ -30,9 +36,8 @@ export default function MedicalDashboard() {
           borderRadius: "8px 8px 0 0",
           marginBottom: 16,
           overflow: "auto"
-          // Không đặt flex ở đây, để chiều cao tự động theo nội dung
         }}>
-          <EmergencyContact />
+          <EmergencyContact parentInfo={selectedStudent?.userDTO} />
         </div>
         <div style={{
           border: "2px solid #4caf50",
@@ -40,7 +45,7 @@ export default function MedicalDashboard() {
           flex: 1,
           overflow: "auto"
         }}>
-          <MedicalHistory />
+          <MedicalHistory studentId={selectedStudent?.id}/>
         </div>
       </div>
     </div>
