@@ -29,4 +29,5 @@ public interface StudentRepository extends JpaRepository<StudentEntity, Long> {
             @Param("vaccineName") String vaccineName
     );
 
+    long count();
 }

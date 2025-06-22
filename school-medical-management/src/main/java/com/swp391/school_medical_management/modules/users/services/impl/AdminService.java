@@ -21,9 +21,12 @@ import com.swp391.school_medical_management.modules.users.dtos.request.HealthChe
 import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventStatDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ParticipationDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
@@ -38,19 +41,25 @@ import com.swp391.school_medical_management.modules.users.entities.UserEntity.Us
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
 import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
 import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
+import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
+import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
 import com.swp391.school_medical_management.service.EmailService;
 import com.swp391.school_medical_management.service.PasswordService;
 
@@ -86,6 +95,12 @@ public class AdminService {
     @Autowired private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired private BlacklistService blacklistService;
+
+    @Autowired private MedicalRequestRepository medicalRequestRepository;
+
+    @Autowired private VaccineResultRepository vaccineResultRepository;
+
+    @Autowired private HealthCheckResultRepository healthCheckResultRepository;
     
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, long adminId) {
         UserEntity admin = userRepository.findUserByUserId(adminId)
@@ -472,18 +487,38 @@ public class AdminService {
         userRepository.delete(user);
     }
 
-    public List<Map<String, Object>> getEventStats() {
-        List<EventStatRaw> rawList = medicalEventRepository.getEventStatsRaw();
-        Map<LocalDate, Map<String, Object>> grouped = new TreeMap<>();
+    public long countStudents() {
+        return studentRepository.count();
+    }
+
+    public long countMedicalRecords() {
+        return medicalRecordsRepository.count();
+    }
+
+    public long countVaccineProgram() {
+        return vaccineProgramRepository.countByStatusIn(List.of(VaccineProgramStatus.NOT_STARTED, VaccineProgramStatus.ON_GOING));
+    }
+
+    public long countHealthCheckProgram() {
+        return healthCheckProgramRepository.countByStatusIn(List.of(HealthCheckProgramStatus.NOT_STARTED, HealthCheckProgramStatus.ON_GOING));
+    }
+
+    public long countProcessingMedicalRequest() {
+        return medicalRequestRepository.countByStatusIn(List.of(MedicalRequestStatus.PROCESSING));
+    }
+
+    public List<Map<String, Object>> getEventStatsByMonth(int year) {
+        List<EventStatRaw> rawList = medicalEventRepository.getEventStatsByMonth(year);
+        Map<Integer, Map<String, Object>> grouped = new TreeMap<>();
 
         for (EventStatRaw raw : rawList) {
-            LocalDate date = raw.getDate();
+            Integer month = raw.getMonth();        // 1 → 12
             String type = raw.getTypeEvent();
             int count = raw.getCount().intValue();
 
-            Map<String, Object> row = grouped.computeIfAbsent(date, k -> {
+            Map<String, Object> row = grouped.computeIfAbsent(month, k -> {
                 Map<String, Object> newRow = new HashMap<>();
-                newRow.put("date", date.toString());
+                newRow.put("month", "T" + k);       // Đổi tên theo format T1, T2,...
                 return newRow;
             });
 
@@ -493,5 +528,51 @@ public class AdminService {
         return new ArrayList<>(grouped.values());
     }
 
+    public List<HealthCheckResultStatsDTO> getVaccineResultStatusStatsByProgram() {
+        List<HealthCheckResultByProgramStatsRaw> rawList = vaccineResultRepository.getVaccineResultStatusStatsByProgram();
 
+        return rawList.stream()
+                .map(row -> new HealthCheckResultStatsDTO(
+                        row.getProgramId(),
+                        row.getProgramName(),
+                        row.getStatusHealth(),
+                        row.getCount()
+                ))
+                .collect(Collectors.toList());
+    }
+    public List<HealthCheckResultStatsDTO> getHealthCheckResultStatusStatsByProgram() {
+        List<HealthCheckResultByProgramStatsRaw> rawList = healthCheckResultRepository.getHealthCheckResultStatusStatsByProgram();
+
+        return rawList.stream()
+                .map(row -> new HealthCheckResultStatsDTO(
+                        row.getProgramId(),
+                        row.getProgramName(),
+                        row.getStatusHealth(),
+                        row.getCount()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public ParticipationDTO getLatestParticipation() {
+        ParticipationDTO participationDTO = new ParticipationDTO();
+        Optional<VaccineProgramEntity> lastestVaccineProgramOpt = vaccineProgramRepository.findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus.COMPLETED);
+        Optional<HealthCheckProgramEntity> latestHealthCheckProgramOpt = healthCheckProgramRepository.findTopByStatusOrderByEndDateDesc(HealthCheckProgramStatus.COMPLETED);
+        
+        if(!lastestVaccineProgramOpt.isPresent()){
+            participationDTO.setVaccination(new CommitedPercentDTO(null, 0L, 0L));
+        } else {
+            VaccineProgramEntity latestVaccineProgram = lastestVaccineProgramOpt.get();
+            ParticipationRateRaw vaccine = vaccineFormRepository.getParticipationRateByVaccineId(latestVaccineProgram.getVaccineId());
+            participationDTO.setVaccination(new CommitedPercentDTO(latestVaccineProgram.getVaccineName(), vaccine.getCommittedCount(), vaccine.getTotalSent()));
+        }
+
+        if(!latestHealthCheckProgramOpt.isPresent()){
+            participationDTO.setHealthCheck(new CommitedPercentDTO(null, 0L, 0L));
+        } else {
+            HealthCheckProgramEntity latestHealthCheckProgram = latestHealthCheckProgramOpt.get();
+            ParticipationRateRaw healthCheck = healthCheckFormRepository.getParticipationRateByHealthCheckId(latestHealthCheckProgram.getId());
+            participationDTO.setHealthCheck(new CommitedPercentDTO(latestHealthCheckProgram.getHealthCheckName(), healthCheck.getCommittedCount(), healthCheck.getTotalSent()));
+        }
+        return participationDTO;
+    }
 }

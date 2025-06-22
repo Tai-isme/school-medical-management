@@ -1,5 +1,6 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -150,6 +151,14 @@ public class AuthService {
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
             List<StudentEntity> studentList = studentRepository.findStudentByParent_UserId(userDTO.getId());
             String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(), userDTO.getRole());
+
+            System.out.println("=== NEW JWT TOKEN ===");
+            Date exp = jwtService.extractExpiration(token);
+            System.out.println("Generated token: " + token);
+            System.out.println("Expires at: " + exp);
+            System.out.println("Now: " + new Date());
+            System.out.println("=====================");
+
             String refreshToken = jwtService.generateRefreshToken(userDTO.getId());
             List<StudentDTO> studentDTOList = studentList.stream()
                     .map(student -> modelMapper.map(student, StudentDTO.class)).collect(Collectors.toList());

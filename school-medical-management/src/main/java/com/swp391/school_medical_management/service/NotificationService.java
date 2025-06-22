@@ -55,8 +55,6 @@ public class NotificationService {
 
     public List<NotificationMessageDTO> getNotificationByUserId(Long userId){
         List<NotificationEntity> notificationEntityList = notificationRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
-        if(notificationEntityList.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found notifycation");
         List<NotificationMessageDTO> notificationMessageDTOList = notificationEntityList.stream().map(notify -> modelMapper.map(notify, NotificationMessageDTO.class)).collect(Collectors.toList());
         return notificationMessageDTOList;
     }

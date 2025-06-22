@@ -4,11 +4,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
+import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
 
 public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Long> {
     List<VaccineFormEntity> findVaccineFormEntityByVaccineProgramAndStudent(VaccineProgramEntity vaccineProgramEntity, StudentEntity student);
@@ -17,4 +20,13 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
     List<VaccineFormEntity> findAllByStudentAndStatus(StudentEntity student, VaccineFormStatus status);
     List<VaccineFormEntity> findByCommitTrue();
     Optional<VaccineFormEntity> findByStudentAndStatus(StudentEntity student, VaccineFormStatus status);
+
+     @Query("""
+        SELECT 
+          COUNT(CASE WHEN vf.commit = true THEN 1 END) AS committedCount,
+          COUNT(vf) AS totalSent
+        FROM VaccineFormEntity vf
+        WHERE vf.vaccineProgram.vaccineId = :vaccineId
+        """)
+    ParticipationRateRaw getParticipationRateByVaccineId(@Param("vaccineId") Long vaccineId);
 }

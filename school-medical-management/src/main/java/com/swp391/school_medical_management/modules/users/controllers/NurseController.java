@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("api/nurse")
 @PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
 public class NurseController {
+    
     @Autowired
     private NurseService nurseService;
 

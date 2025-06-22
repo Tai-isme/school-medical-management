@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface MedicalRecordsRepository extends JpaRepository<MedicalRecordEntity, Long> {
     Optional<MedicalRecordEntity> findMedicalRecordByStudent_Id(long studentId);
     List<MedicalRecordEntity> findMedicalRecordByStudent_Parent_UserId(Long parentId);
+    long count();
 }

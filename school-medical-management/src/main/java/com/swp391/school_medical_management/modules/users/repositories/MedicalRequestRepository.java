@@ -17,4 +17,5 @@ public interface MedicalRequestRepository extends JpaRepository<MedicalRequestEn
     boolean existsByStudentAndStatus(StudentEntity student, MedicalRequestStatus status);
     List<MedicalRequestEntity> findByStatus(MedicalRequestStatus status);
     List<MedicalRequestEntity> findByParent(UserEntity parent);
+    long countByStatusIn(List<MedicalRequestStatus> statuses);
 }

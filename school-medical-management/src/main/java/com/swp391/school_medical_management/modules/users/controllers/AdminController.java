@@ -17,8 +17,11 @@ import com.swp391.school_medical_management.modules.users.dtos.request.HealthChe
 import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ParticipationDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
@@ -158,8 +161,39 @@ public class AdminController {
         return ResponseEntity.ok(medicalRecordDTO);
     }
 
-    @GetMapping("/event-stats")
-    public ResponseEntity<List<Map<String, Object>>> getMedicalEventStats() {
-        return ResponseEntity.ok(adminService.getEventStats());
+    @GetMapping("/statistics/overview")
+    public Map<String, Long> getOverviewStats() {
+        long studentCount = adminService.countStudents();
+        long medicalRecordCount = adminService.countMedicalRecords();
+        long vaccineProgramCount = adminService.countVaccineProgram();
+        long healthCheckProgramCount = adminService.countHealthCheckProgram();
+        long processingMedicalRequestCount = adminService.countProcessingMedicalRequest();
+        return Map.of(
+            "studentCount", studentCount,
+            "medicalRecordCount", medicalRecordCount,
+            "vaccineProgramCount", vaccineProgramCount,
+            "healthCheckProgramCount", healthCheckProgramCount,
+            "processingMedicalRequestCount", processingMedicalRequestCount
+        );
     }
-}
+
+    @GetMapping("/event-stats/monthly")
+    public ResponseEntity<List<Map<String, Object>>> getMonthlyStats(@RequestParam int year) {
+        return ResponseEntity.ok(adminService.getEventStatsByMonth(year));
+    }
+
+    @GetMapping("/vaccine-results-status-by-program")
+    public ResponseEntity<List<HealthCheckResultStatsDTO>> getVaccineResultStatusStatsByProgram() {
+        return ResponseEntity.ok(adminService.getVaccineResultStatusStatsByProgram());
+    }
+
+    @GetMapping("/health-check-results-status-by-program")
+    public ResponseEntity<List<HealthCheckResultStatsDTO>> getHealthCheckResultStatusStatsByProgram() {
+        return ResponseEntity.ok(adminService.getHealthCheckResultStatusStatsByProgram());
+    }
+
+    @GetMapping("/committed-participation-rate")
+    public ResponseEntity<ParticipationDTO> getParticipationRate() {
+        return ResponseEntity.ok(adminService.getLatestParticipation());
+    }
+}   

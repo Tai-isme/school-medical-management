@@ -174,6 +174,10 @@ public class JwtService {
         }
     }
 
+    public Date extractExpiration(String token) {
+        return getClaimFromToken(token, Claims::getExpiration);
+    }
+
     public boolean isIssuerToken(String token) {
         try {
             String tokenIssuer = getClaimFromToken(token, Claims::getIssuer);
