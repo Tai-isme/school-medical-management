@@ -139,7 +139,6 @@ public class NurseService {
     }
 
     public List<MedicalEventDTO> getMedicalEventsByStudent(Long studentId) {
-
         Optional<StudentEntity> studentOpt = studentRepository.findStudentById(studentId);
         if (studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
@@ -150,14 +149,20 @@ public class NurseService {
         if (medicalEventEntitieList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found any medical event");
 
-        List<MedicalEventDTO> medicalEventDTOList = medicalEventEntitieList
-                .stream()
-                .map(medicalEventEntitie -> modelMapper
-                        .map(medicalEventEntitie, MedicalEventDTO.class))
-                .collect(Collectors
-                        .toList());
-        return medicalEventDTOList;
+        return medicalEventEntitieList.stream()
+            .map(event -> {
+                MedicalEventDTO dto = modelMapper.map(event, MedicalEventDTO.class);
+
+                if (event.getNurse() != null) {
+                    UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
+                    dto.setUserDTO(nurseDTO);
+                }
+
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
+
 
     public MedicalRequestDTO updateMedicalRequestStatus(int requestId, String status) {
         Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository
