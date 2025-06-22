@@ -129,6 +129,15 @@ public class NurseService {
                 .collect(Collectors.toList());
     }
 
+    public MedicalRecordDTO getMedicalRecordByStudentId(Long studentId) {
+        Optional<MedicalRecordEntity> optMedicalRecord = medicalRecordsRepository
+                .findMedicalRecordByStudent_Id(studentId);
+        if (optMedicalRecord.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical record not found");
+        MedicalRecordEntity medicalRecord = optMedicalRecord.get();
+        return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+    }
+
     public MedicalRequestDTO updateMedicalRequestStatus(int requestId, String status) {
         Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository
                 .findMedicalRequestEntityByRequestId(requestId);

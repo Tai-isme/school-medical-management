@@ -202,6 +202,12 @@ public class NurseController {
         return ResponseEntity.ok(nurseService.getAllStudent());
     }
     
+    @GetMapping("/medical-records/{studentId}")
+    public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable long studentId) {
+        MedicalRecordDTO medicalRecordDTO = nurseService.getMedicalRecordByStudentId(studentId);
+        if (medicalRecordDTO == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(medicalRecordDTO);
+    }
 
     //Lọc ra nhưng học sinh chưa từng tiêm loại vaccine name history đó hoặc chưa từng tham gia chương trình vaccine
     @GetMapping("/students/not-vaccinated")
