@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("api/nurse")
 @PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
 public class NurseController {
-    
+
     @Autowired
     private NurseService nurseService;
 
@@ -196,6 +196,12 @@ public class NurseController {
     public ResponseEntity<List<FeedbackDTO>> getFeedbacksForNurse(@PathVariable Integer nurseId) {
         return ResponseEntity.ok(nurseService.getFeedbacksForNurse(nurseId));
     }
+
+    @GetMapping("/students")
+    public ResponseEntity<List<StudentDTO>> getAllStudent() {
+        return ResponseEntity.ok(nurseService.getAllStudent());
+    }
+    
 
     //Lọc ra nhưng học sinh chưa từng tiêm loại vaccine name history đó hoặc chưa từng tham gia chương trình vaccine
     @GetMapping("/students/not-vaccinated")

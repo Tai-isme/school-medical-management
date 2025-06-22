@@ -19,6 +19,6 @@ public class StudentDTO {
     private LocalDate dob;
     private String gender;
     private String relationship;
-    private long classID;
-    private long parentID;
+    private ClassDTO classDTO;
+    private UserDTO  userDTO;
 }
