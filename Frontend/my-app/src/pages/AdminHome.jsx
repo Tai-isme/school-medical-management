@@ -9,6 +9,7 @@ import MedicalRequest from "../components/Admin/MedicalRequest/MedicalRequest";
 import MedicalIncidentList from "../components/Admin/MedicalIncidentList/MedicalIncidentList";
 import VaccineProgramList from "../components/Admin/VaccineProgramList/VaccineProgramList";
 import AccountManagement from "../components/Admin/AccountManagement/AccountManagement";
+import MedicalDashboard from '../components/Admin/MedicalRecord/MedicalDashboard';
 
 export default function AdminHome() {
   const [selectedMenu, setSelectedMenu] = useState(null);
@@ -38,20 +39,9 @@ export default function AdminHome() {
 
       {selectedMenu === "2" && <AccountManagement />}
 
-      {selectedMenu === "3" && (
+      {selectedMenu === '3' && (
         <>
-          <ClassList onSelectClass={handleSelectClass} />
-          {selectedClassId && (
-            <StudentList
-              classId={selectedClassId}
-              onSelectStudent={handleSelectStudent}
-            />
-          )}
-          {selectedStudentId && (
-            <div style={{ flex: 1, padding: 24 }}>
-              <MedicalRecord selectedStudentId={selectedStudentId} />
-            </div>
-          )}
+          <MedicalDashboard/>
         </>
       )}
 

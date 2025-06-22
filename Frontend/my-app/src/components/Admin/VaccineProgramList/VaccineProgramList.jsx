@@ -20,7 +20,7 @@ const VaccineProgramList = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "http://localhost:8080/api/admin/health-check-program",
+        "http://localhost:8080/api/admin/vaccine-program",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -35,7 +35,7 @@ const VaccineProgramList = () => {
 
   const filteredData = data
     .filter((program) =>
-      program.name.toLowerCase().includes(searchText.toLowerCase())
+      program.name?.toLowerCase().includes(searchText.toLowerCase())
     )
     .sort((a, b) => {
       const dateA = new Date(a.startDate);
@@ -80,16 +80,12 @@ const VaccineProgramList = () => {
         formIds: selectedRowKeys,
       };
 
-      await axios.post(
-        "http://localhost:8080/api/notify-health-check",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await axios.post("http://localhost:8080/api/notify-vaccine", payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       message.success(
         `Đã gửi ${selectedRowKeys.length} chương trình thành công.`

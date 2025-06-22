@@ -11,7 +11,7 @@ const customLocale = {
   },
 };
 
-export default function MedicalRecordModal({ open, onCancel, onSubmit, initialValues, loading, studentId, onChange, fetchStudentInfo }) {
+export default function MedicalRecordModal({ open, onCancel, initialValues, loading, studentId, fetchStudentInfo, editMode }) {
   const [form] = Form.useForm();
   const [vaccineHistories, setVaccineHistories] = useState(
     () => (initialValues?.vaccineHistories || []).map(v => ({ ...v }))
@@ -43,19 +43,34 @@ export default function MedicalRecordModal({ open, onCancel, onSubmit, initialVa
     };
 
     try {
-      await axios.post(
-        "http://localhost:8080/api/parent/medical-records",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      message.success(`Khai báo hồ sơ cho học sinh ${studentId} thành công`);
+      if (editMode) {
+        // Gọi PUT để cập nhật
+        await axios.put(
+          `http://localhost:8080/api/parent/medical-records/${studentId}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        message.success(`Cập nhật hồ sơ cho học sinh ${studentId} thành công`);
+      } else {
+        // Gọi POST để tạo mới
+        await axios.post(
+          "http://localhost:8080/api/parent/medical-records",
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        message.success(`Khai báo hồ sơ cho học sinh ${studentId} thành công`);
+      }
       localStorage.setItem("studentIdAlready", studentId);
-      fetchStudentInfo(studentId); // Cập nhật thông tin học sinh sau khi khai báo
-      onCancel(); // Đóng modal
+      fetchStudentInfo(studentId);
+      onCancel();
     } catch (error) {
       message.error("Có lỗi xảy ra, vui lòng thử lại!");
     }
@@ -111,9 +126,18 @@ export default function MedicalRecordModal({ open, onCancel, onSubmit, initialVa
       title: 'Hành động',
       key: 'action',
       render: (_, record, idx) => (
-        <Button danger onClick={() => {
-          setVaccineHistories(prev => prev.filter((_, i) => i !== idx));
-        }}>Xóa</Button>
+        (editMode && record.note === "Đã tiêm ở tại trường")
+          ? null
+          : (
+            <Button
+              danger
+              onClick={() => {
+                setVaccineHistories(prev => prev.filter((_, i) => i !== idx));
+              }}
+            >
+              Xóa
+            </Button>
+          )
       ),
     },
   ];
@@ -285,7 +309,7 @@ export default function MedicalRecordModal({ open, onCancel, onSubmit, initialVa
                   htmlType="submit"
                   loading={loading}
                 >
-                  Gửi hồ sơ
+                  {editMode ? "Lưu thay đổi" : "Gửi hồ sơ"}
                 </Button>
               </div>
             </div>

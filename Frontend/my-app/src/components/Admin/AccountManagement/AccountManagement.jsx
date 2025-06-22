@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button } from "antd";
+import { Table, Button, message } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
+import axios from "axios";
 import "./AccountManagement.css";
 
 const AccountManagement = () => {
@@ -8,38 +9,38 @@ const AccountManagement = () => {
   const [visiblePasswords, setVisiblePasswords] = useState({});
 
   useEffect(() => {
-    // Dữ liệu cứng để test giao diện
-    const mockData = [
-      {
-        userId: 1,
-        fullName: "Nguyễn Văn A",
-        email: "a@example.com",
-        password: "123456",
-        phone: "0901234567",
-        address: "Hồ Chí Minh",
-        role: "admin",
-      },
-      {
-        userId: 2,
-        fullName: "Trần Thị B",
-        email: "b@example.com",
-        password: "abcdef",
-        phone: "0912345678",
-        address: "Hà Nội",
-        role: "nurse",
-      },
-      {
-        userId: 3,
-        fullName: "Lê Văn C",
-        email: "c@example.com",
-        password: "123abc",
-        phone: "0923456789",
-        address: "Đà Nẵng",
-        role: "parent",
-      },
-    ];
+    const fetchAccounts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          message.error("Không tìm thấy token. Vui lòng đăng nhập lại.");
+          return;
+        }
 
-    setAccounts(mockData);
+        const response = await axios.get("http://localhost:8080/api/admin/accounts", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const responseData = response.data.map((item) => ({
+          userId: item.id,
+          fullName: item.fullName,
+          email: item.email,
+          password: item.password,
+          phone: item.phone,
+          address: item.address,
+          role: item.role.toLowerCase(),
+        }));
+
+        setAccounts(responseData);
+      } catch (error) {
+        console.error("Lỗi khi fetch danh sách tài khoản:", error);
+        message.error("Không thể tải danh sách tài khoản.");
+      }
+    };
+
+    fetchAccounts();
   }, []);
 
   const togglePasswordVisibility = (userId) => {
@@ -90,7 +91,13 @@ const AccountManagement = () => {
     },
     { title: "SĐT", dataIndex: "phone", key: "phone", align: "center" },
     { title: "Địa chỉ", dataIndex: "address", key: "address", align: "center" },
-    { title: "Vai trò", dataIndex: "role", key: "role", align: "center" },
+    {
+      title: "Vai trò",
+      dataIndex: "role",
+      key: "role",
+      align: "center",
+      sorter: (a, b) => a.role.localeCompare(b.role),
+    },
   ];
 
   return (
