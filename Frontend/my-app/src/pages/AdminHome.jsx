@@ -7,6 +7,7 @@ import MedicalRecord from '../components/Admin/MedicalRecord/MedicalRecord';
 import HealthCheckProgramList from '../components/Admin/HealthCheckProgram/HealthCheckProgramList';
 import MedicalRequest from '../components/Admin/MedicalRequest/MedicalRequest';
 import MedicalIncidentList from '../components/Admin/MedicalIncidentList/MedicalIncidentList';
+import Dashboard from '../components/Admin/Dashboard/Dashboard';
 
 export default function AdminHome() {
   const [selectedMenu, setSelectedMenu] = useState(null);
@@ -30,19 +31,15 @@ export default function AdminHome() {
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
-      <AppSidebar onMenuSelect={handleMenuSelect} selectedMenu={selectedMenu} />
-      
+  <AppSidebar onMenuSelect={handleMenuSelect} selectedMenu={selectedMenu} />
 
-      {selectedMenu === '1'
-      
-      }
+  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+      {selectedMenu === '1' && <Dashboard />}
 
-      {selectedMenu === '2'
-      
-      }
+      {selectedMenu === '2' && <div>Quản lý giáo viên</div>}
 
       {selectedMenu === '3' && (
-        <>
+        <div style={{ display: 'flex', flex: 1 }}>
           <ClassList onSelectClass={handleSelectClass} />
           {selectedClassId && (
             <StudentList
@@ -55,33 +52,15 @@ export default function AdminHome() {
               <MedicalRecord selectedStudentId={selectedStudentId} />
             </div>
           )}
-        </>
+        </div>
       )}
 
-      {selectedMenu === '4' && <MedicalRequest/>}
-
-      {selectedMenu === '5'
-      
-      }
-
-      {selectedMenu === '5-1'
-      
-      }
+      {selectedMenu === '4' && <MedicalRequest />}
 
       {selectedMenu === '5-2' && <HealthCheckProgramList />}
 
-      {selectedMenu === '6'
-      
-      }
-
-      {selectedMenu === '7' && <MedicalIncidentList />
-      
-      }
-
-      {selectedMenu === 'logout'
-      
-      }
-
+      {selectedMenu === '7' && <MedicalIncidentList />}
     </div>
+  </div>
   );
 }
