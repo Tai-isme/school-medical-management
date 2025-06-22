@@ -138,6 +138,27 @@ public class NurseService {
         return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
     }
 
+    public List<MedicalEventDTO> getMedicalEventsByStudent(Long studentId) {
+
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(studentId);
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+
+        StudentEntity studentEntity = studentOpt.get();
+
+        List<MedicalEventEntity> medicalEventEntitieList = medicalEventRepository.findByStudent(studentEntity);
+        if (medicalEventEntitieList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found any medical event");
+
+        List<MedicalEventDTO> medicalEventDTOList = medicalEventEntitieList
+                .stream()
+                .map(medicalEventEntitie -> modelMapper
+                        .map(medicalEventEntitie, MedicalEventDTO.class))
+                .collect(Collectors
+                        .toList());
+        return medicalEventDTOList;
+    }
+
     public MedicalRequestDTO updateMedicalRequestStatus(int requestId, String status) {
         Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository
                 .findMedicalRequestEntityByRequestId(requestId);

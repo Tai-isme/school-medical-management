@@ -90,6 +90,12 @@ public class NurseController {
         List<VaccineFormDTO> vaccineFormDTOList = nurseService.getAllCommitedTrueVaccineForm(Long.parseLong(nurseId));
         return ResponseEntity.ok(vaccineFormDTOList);
     }
+
+    @GetMapping("/medical-events/{studentId}")
+    public ResponseEntity<List<MedicalEventDTO>> getMedicalEventsByStudent(@PathVariable Long studentId) {
+        List<MedicalEventDTO> events = nurseService.getMedicalEventsByStudent(studentId);
+        return ResponseEntity.ok(events);
+    }
     
     @PostMapping("/medical-event")
     public ResponseEntity<MedicalEventDTO> createMedicalEvent(@RequestBody MedicalEventRequest request) {
