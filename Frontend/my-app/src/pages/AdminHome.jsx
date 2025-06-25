@@ -9,9 +9,11 @@ import MedicalRequest from "../components/Admin/MedicalRequest/MedicalRequest";
 import MedicalIncidentList from "../components/Admin/MedicalIncidentList/MedicalIncidentList";
 import VaccineProgramList from "../components/Admin/VaccineProgramList/VaccineProgramList";
 import AccountManagement from "../components/Admin/AccountManagement/AccountManagement";
-import MedicalDashboard from '../components/Admin/MedicalRecord/MedicalDashboard';
+import MedicalDashboard from "../components/Admin/MedicalRecord/MedicalDashboard";
 import Dashboard from "../components/Admin/Dashboard/Dashboard";
-
+import HeaderBar from "../components/Admin/HeaderBar/HeaderBar";
+import ProfilePage from "../components/Admin/HeaderBar/ProfilePage";
+import FeedbackList from "../components/Admin/FeedBack/FeedbackList";
 
 export default function AdminHome() {
   const [selectedMenu, setSelectedMenu] = useState(null);
@@ -34,34 +36,50 @@ export default function AdminHome() {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <AppSidebar onMenuSelect={handleMenuSelect} selectedMenu={selectedMenu} />
+    <div>
+      <HeaderBar />
+      <HeaderBar onMenuSelect={handleMenuSelect} />
 
-      {selectedMenu === "1" && <Dashboard />}
+      <div
+        style={{
+          display: "flex",
+          height: "calc(100vh - 60px)",
+          paddingTop: "60px",
+        }}
+      >
+        <AppSidebar
+          onMenuSelect={handleMenuSelect}
+          selectedMenu={selectedMenu}
+        />
 
-      {selectedMenu === "2" && <AccountManagement />}
+        {selectedMenu === "1" && <Dashboard />}
 
-      {selectedMenu === '3' && (
-        <>
-          <MedicalDashboard/>
-        </>
-      )}
+        {selectedMenu === "2" && <AccountManagement />}
 
-      {selectedMenu === "4" && <MedicalRequest />}
+        {selectedMenu === "3" && (
+          <>
+            <MedicalDashboard />
+          </>
+        )}
 
-      {selectedMenu === "5"}
+        {selectedMenu === "4" && <MedicalRequest />}
 
-      {selectedMenu === "5-1" && <VaccineProgramList />}
+        {selectedMenu === "5"}
 
-      {selectedMenu === "5-2" && <HealthCheckProgramList />}
+        {selectedMenu === "5-1" && <VaccineProgramList />}
 
-      {selectedMenu === "6"}
+        {selectedMenu === "5-2" && <HealthCheckProgramList />}
 
-      {selectedMenu === "7" && <MedicalIncidentList />}
+        {selectedMenu === "6"}
 
-      {selectedMenu === "8"}
+        {selectedMenu === "7" && <MedicalIncidentList />}
 
-      {selectedMenu === "logout"}
+        {selectedMenu === "8" && <FeedbackList />}
+
+        {selectedMenu === "logout"}
+
+        {selectedMenu === "profile" && <ProfilePage />}
+      </div>
     </div>
   );
 }

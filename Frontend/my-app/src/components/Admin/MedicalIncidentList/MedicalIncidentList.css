@@ -1,35 +1,107 @@
 .incident-container {
   flex: 1;
   padding: 24px;
-  background-color: #f9f9f9;
+  background-color: #f4fbff; /* Màu xanh y tế dịu */
   min-height: 100vh;
+  border-radius: 12px;
   box-sizing: border-box;
-  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
+/* Header */
 .incident-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .incident-header h2 {
   font-size: 24px;
-  font-weight: bold;
-  color: #1890ff;
+  color: #1476d1;
   margin: 0;
+  font-weight: 600;
 }
 
+/* Table */
+.ant-table-wrapper {
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Table Header */
+.ant-table-thead > tr > th {
+  background-color: #d0ebff !important;
+  font-weight: 600;
+  color: #003d66;
+  text-align: center;
+}
+
+/* Table Body */
+.ant-table-tbody > tr > td {
+  text-align: center;
+  padding: 12px 8px;
+  font-size: 14px;
+}
+
+/* Zebra striping */
+.ant-table-tbody > tr:nth-child(odd) > td {
+  background-color: #f9fcff;
+}
+.ant-table-tbody > tr:nth-child(even) > td {
+  background-color: #ffffff;
+}
+
+/* Hover effect */
+.ant-table-tbody > tr:hover > td {
+  background-color: #e6f7ff !important;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+/* Liên hệ phụ huynh - nút gọi */
 .contact-link {
   color: #1890ff;
+  font-weight: 500;
   text-decoration: underline;
 }
 
-.contact-link:hover {
-  color: #40a9ff;
+/* Modal */
+.ant-modal-title {
+  color: #1476d1;
+  font-size: 20px;
+  font-weight: 600;
 }
 
-.ant-table-wrapper {
-  width: 100%;
+.ant-form-item-label > label {
+  font-weight: 500;
+  color: #003a8c;
+}
+
+.ant-input,
+.ant-input-textarea {
+  border-radius: 6px;
+}
+
+.ant-btn-primary {
+  background-color: #1476d1;
+  border-color: #1476d1;
+}
+
+.ant-btn-primary:hover {
+  background-color: #125fab;
+  border-color: #125fab;
+}
+
+/* Header - căn giữa chữ */
+.ant-table-thead > tr > th {
+  text-align: center !important;
+}
+
+/* Body - căn giữa chữ */
+.ant-table-tbody > tr > td {
+  text-align: center !important;
 }

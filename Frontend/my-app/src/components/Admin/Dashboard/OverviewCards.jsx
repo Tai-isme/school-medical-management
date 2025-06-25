@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./DashboardWidgets.css";
 
 function OverviewCards() {
   const [studentCount, setStudentCount] = useState(0);
@@ -24,14 +25,7 @@ function OverviewCards() {
   }, []);
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(5, 1fr)",
-        gap: "20px",
-        marginBottom: "30px"
-      }}
-    >
+    <div className="overview-grid">
       <StatCard title="👩‍🎓 Tổng số học sinh" value={studentCount} />
       <StatCard title="📄 Tổng hồ sơ y tế" value={medicalRecordCount} />
       <StatCard title="💉 Chương trình vaccine hiện tại" value={vaccineProgramCount} />
@@ -43,35 +37,11 @@ function OverviewCards() {
 
 function StatCard({ title, value }) {
   return (
-    <div style={cardStyle}>
-      <div style={titleStyle}>{title}</div>
-      <div style={valueStyle}>{value}</div>
+    <div className="stat-card">
+      <div className="stat-title">{title}</div>
+      <div className="stat-value">{value}</div>
     </div>
   );
 }
-
-const cardStyle = {
-  background: "#ffffff",
-  borderRadius: "12px",
-  padding: "20px",
-  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-  textAlign: "center",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center"
-};
-
-const titleStyle = {
-  fontSize: "14px",
-  color: "#00796b",
-  marginBottom: "8px",
-  fontWeight: "bold"
-};
-
-const valueStyle = {
-  fontSize: "22px",
-  fontWeight: "bold",
-  color: "#004d40"
-};
 
 export default OverviewCards;

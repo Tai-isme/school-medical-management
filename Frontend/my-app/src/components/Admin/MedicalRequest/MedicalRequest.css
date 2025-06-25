@@ -1,7 +1,7 @@
 /* Tổng container lấn đầy toàn bộ chiều ngang bên phải */
 .medicine-table-container {
   flex: 1;
-  padding: 24px;
+  padding: 24x;
   font-family: 'Segoe UI', sans-serif;
   background-color: #f9f9f9;
   min-height: 100vh;
@@ -81,4 +81,41 @@
 
 .detail-content li {
   margin-bottom: 4px;
+}
+
+.medical-request-wrapper {
+  min-height: 100vh;
+  background: #f6fbff;
+  width: calc(100vw - 240px); /* 240px là width sidebar */
+  margin-left: 240px;
+  padding: 0;
+  transition: margin-left 0.2s;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.full-width-content {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.08);
+  padding: 24px 24px;      /* Giảm padding để bảng rộng hơn */
+  min-height: 80vh;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 32px 0 32px 0;
+}
+
+@media (max-width: 900px) {
+  .medical-request-wrapper {
+    margin-left: 0;
+    width: 100vw;
+    padding: 0;
+  }
+  .full-width-content {
+    padding: 12px 2px;
+    margin: 12px 0;
+  }
 }

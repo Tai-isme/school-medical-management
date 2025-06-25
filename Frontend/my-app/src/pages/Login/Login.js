@@ -84,6 +84,7 @@ const handleGoogleLogin = async () => {
       localStorage.setItem('users', JSON.stringify(data.users));
       localStorage.setItem('students', JSON.stringify(data.students));
       localStorage.setItem('role', JSON.stringify(data.users.role));
+      localStorage.setItem('username', data.users.username);
       onClose();
       // Giả sử kết quả trả về có role
     const role = JSON.parse(localStorage.getItem('role')); // hoặc "nurse", "parent"
