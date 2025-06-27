@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar/Navbar';
-import MedicalInfoCards from '../components/MedicalInfoCards/MedicalInfoCards';
+import MedicalInfoCards from '../components/User/MedicalInfoCards/MedicalInfoCards';
 import Login from './Login/Login'; // import Login
 
 function Home() {
@@ -22,7 +22,7 @@ function Home() {
 
   return (
     <div>
-      <Navbar /> {/* Đặt Navbar ở đây */}
+      
       <MedicalInfoCards onCardClick={handleCardClick} />
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
     </div>

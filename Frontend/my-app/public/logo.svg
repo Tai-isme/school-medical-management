@@ -1,0 +1,21 @@
+<svg width="800" height="200" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="200" fill="white"></rect>
+
+  <!-- Túi y tế -->
+  <g transform="translate(60,50)">
+    <!-- Hình dạng túi -->
+    <rect x="0" y="30" width="120" height="80" rx="10" fill="#007BFF"></rect>
+    
+    <!-- Tay cầm túi -->
+    <rect x="35" y="10" width="50" height="20" rx="5" fill="#007BFF"></rect>
+
+    <!-- Dấu cộng trắng -->
+    <rect x="55" y="50" width="10" height="30" fill="white"></rect>
+    <rect x="45" y="60" width="30" height="10" fill="white"></rect>
+  </g>
+
+  <!-- Văn bản -->
+  <text x="220" y="120" font-size="48" font-family="Poppins, sans-serif" fill="#007BFF">
+    Trang Y Tế Học Đường
+  </text>
+</svg>

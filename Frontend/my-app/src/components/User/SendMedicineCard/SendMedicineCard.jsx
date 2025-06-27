@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import './InstructionForm.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faCaretDown } from '@fortawesome/free-solid-svg-icons';
-import { createMedicalRequest } from '../../api/medicalRequestApi';
-import MedicalRequestDetail from "./MedicalRequestDetail";
-import StudentInfoCard from '../../common/StudentInfoCard';
+import MedicalRequestDetail from "./SendMedicineCardDetails";
+import StudentInfoCard from '../../../common/StudentInfoCard';
 
 export default function InstructionForm({ onShowHistory }) {
   // Lấy students từ localStorage
@@ -112,6 +111,7 @@ setPurpose('');
   return (
     <div className="instruction-form-container">
       {/* Tabs */}
+      <h2 style={{ textAlign: 'center', marginBottom: '20px' , marginTop: '0px' }}>Gửi đơn thuốc</h2>
       <div className="tabs" style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: 0 }}>
         <button
           onClick={() => setActiveTab('create')}

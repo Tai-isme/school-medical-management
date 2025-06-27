@@ -1,6 +1,6 @@
 import React from 'react';
-import Navbar from '../components/Navbar/Navbar';
-import InstructionForm from '../components/InstructionForm/InstructionForm.js';
+import Navbar from '../components/Navbar/Navbar.jsx';
+import InstructionForm from '../components/User/SendMedicineCard/SendMedicineCard.jsx';
 
 function InstructionFormPage() {
   return (

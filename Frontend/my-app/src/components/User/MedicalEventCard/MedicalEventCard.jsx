@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import "./MedicalIncident.css";
+import "./MedicalEventCard.css";
 import axios from "axios";
 import { Table, Tag, Select, Typography, Avatar } from "antd";
-import StudentInfoCard from "../../common/StudentInfoCard";
+import StudentInfoCard from "../../../common/StudentInfoCard";
 const { Title, Text } = Typography;
 
 const columns = [
@@ -29,7 +29,6 @@ const columns = [
     dataIndex: "nurseId",
     key: "nurseId",
     minWidth: 150, // Đặt chiều rộng tối thiểu cho cột
-    render: (text) => text.toString(), // Đảm bảo ID lớn được hiển thị đúng dạng chuỗi
   },
   {
     title: "Mô tả",
@@ -71,7 +70,7 @@ const MedicalIncident = () => {
 
   return (
     <div className="medical-incident-container">
-      <h1 className="main-title">Sự cố y tế</h1>
+      <h1 className="main-title" style={{marginTop: '0px'}}>Sự cố y tế</h1>
       <div className="incident-content">
         {/* Left Section: Student Overview */}
         <div className="left-panel">

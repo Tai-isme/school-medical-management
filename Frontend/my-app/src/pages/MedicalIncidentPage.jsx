@@ -1,6 +1,6 @@
 import React from 'react';
-import Navbar from '../components/Navbar/Navbar';
-import MedicalIncident from '../components/MedicalIncident/MedicalIncident';
+import Navbar from '../components/Navbar/Navbar.jsx';
+import MedicalIncident from '../components/User/MedicalEventCard/MedicalEventCard.jsx';
 
 function MedicalIncidentPage() {
   return (

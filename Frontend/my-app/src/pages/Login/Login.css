@@ -1,57 +1,164 @@
-/* Style cho modal */
+/* Login.css */
+
+/* Global box-sizing for all elements for consistent layout */
+* {
+    box-sizing: border-box;
+}
+
+/* Màu nền gradient */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Overlay mờ */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+    min-height: 100vh;
+    background: linear-gradient(to bottom right, #cfe8fc, #d3f9d8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+/* Form chính */
 .modal-content {
-  position: relative;
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  width: 300px;
-  text-align: center;
+    width: 100%;
+    max-width: 400px;
+    background-color: #fff;
+    border-radius: 20px;
+    padding: 2rem; /* p-8 */
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    position: relative;
+    /* Loại bỏ gap ở đây, nó sẽ được áp dụng trong JS cho các khối riêng biệt */
+    /* display: flex; */
+    /* flex-direction: column; */
+    /* gap: 1rem; */
 }
 
-.modal-content input {
-  display: block;
-  width: 80%;
-  margin: 10px auto;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+/* Ảnh logo */
+.modal-image {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem; /* mb-6 */
+}
+.modal-image img {
+    height: 142px;
+    /* display: block; */ /* Already flex parent centers it */
+    /* margin: 0 auto 0.5rem; */ /* margin-bottom handled by parent div */
 }
 
-.modal-content button {
-  padding: 8px 16px;
-  margin: 5px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+/* Label vai trò */
+.role-label {
+    display: block;
+    color: #4b5563; /* text-gray-700 */
+    font-weight: 600; /* font-semibold */
+    margin-bottom: 0.5rem; /* mb-2 */
+    text-align: center;
+    font-size: 18px; /* text-lg */
 }
 
-.login-submit {
-  background-color: #4a90e2;
-  color: white;
+/* Dropdown chọn role */
+.role-select {
+    width: 100%;
+    padding: 0.5rem 1rem; /* p-2 px-4 */
+    border-radius: 10px; /* rounded-lg */
+    border: 1px solid #ccc; /* border border-gray-300 */
+    margin-bottom: 1.5rem; /* mb-6 */
+    outline: none; /* focus:outline-none */
+    box-shadow: 0 0 0 2px transparent; /* focus:ring-2 focus:ring-transparent */
+    transition: box-shadow 0.2s ease-in-out;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+.role-select:focus {
+    box-shadow: 0 0 0 2px #3b82f6; /* focus:ring-blue-500 */
 }
 
-.login-submit:hover {
-  background-color: #357abd;
+/* Error message */
+.error-message {
+    color: #ef4444; /* text-red-500 */
+    text-align: center;
+    margin-bottom: 1rem; /* mb-4 */
 }
 
+/* General styles for form inputs and buttons within a flex column group */
+/* Sử dụng một class chung cho input và button để đảm bảo width và padding */
+.form-input-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* space-y-4 */
+}
+
+/* Base style cho tất cả input */
+.form-input {
+    width: 100%;
+    padding: 0.5rem 1rem; /* p-2 px-4 */
+    border-radius: 10px; /* rounded-lg */
+    border: 1px solid #ccc; /* border border-gray-300 */
+    outline: none; /* focus:outline-none */
+}
+/* Style cho nút Google */
+.google-login-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem; /* space-x-2 */
+    background-color: white; /* bg-white */
+    border: 1px solid #d1d5db; /* border border-gray-300 */
+    color: #374151; /* text-gray-700 */
+    border-radius: 10px; /* rounded-lg */
+    padding: 0.5rem 1rem; /* p-2 px-4 */
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+.google-login-button:hover {
+    background-color: #f3f4f6; /* hover:bg-gray-100 */
+}
+
+/* Base style cho các nút chính (Gửi OTP, Đăng nhập, Xác thực OTP) */
+.primary-button {
+    width: 100%;
+    color: white;
+    border-radius: 10px; /* rounded-lg */
+    padding: 0.5rem 1rem; /* p-2 px-4 */
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    font-weight: 600; /* semi-bold */
+}
+
+/* Specific colors for different primary buttons */
+.send-otp-button {
+    background-color: #3b82f6; /* bg-blue-500 */
+}
+.send-otp-button:hover {
+    background-color: #2563eb; /* hover:bg-blue-600 */
+}
+
+.verify-otp-button {
+    background-color: #22c55e; /* bg-green-500 */
+}
+.verify-otp-button:hover {
+    background-color: #16a34a; /* hover:bg-green-600 */
+}
+
+.login-button {
+    background-color: #2563eb; /* bg-blue-600 */
+}
+.login-button:hover {
+    background-color: #1d4ed8; /* hover:bg-blue-700 */
+}
 
 .btn-close-login-form {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: red;
-  color: #fff;
+    position: absolute;
+    top: 0rem;   /* Tăng giá trị top để đẩy xuống dưới */
+    right: 0rem; /* Tăng giá trị right để đẩy vào trong */
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0.5rem;
+    z-index: 20; /* Tăng z-index lên cao hơn nữa để đảm bảo */
+    line-height: 1;
+}
+.btn-close-login-form:hover {
+    color: #4b5563;
 }
