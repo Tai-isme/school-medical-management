@@ -20,17 +20,22 @@ import com.swp391.school_medical_management.modules.users.repositories.UserRepos
 @Service
 public class NotificationService {
 
-    @Autowired private NotificationRepository notificationRepository;
+    @Autowired
+    private NotificationRepository notificationRepository;
 
-    @Autowired private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    @Autowired private SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
-    @Autowired private ModelMapper modelMapper;
+    @Autowired
+    private ModelMapper modelMapper;
 
-    public void sendNotificationToParent(Long parentId, String title, String content, String formType, long formId, boolean isRead) {
+    public void sendNotificationToParent(Long parentId, String title, String content, String formType, long formId,
+            boolean isRead) {
         UserEntity user = userRepository.findById(parentId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         NotificationEntity notificationEntity = new NotificationEntity();
         notificationEntity.setUser(user);
@@ -38,24 +43,25 @@ public class NotificationService {
         notificationEntity.setContent(content);
         notificationEntity.setFormType(formType);
         notificationEntity.setFormId(formId);
-        notificationEntity.setRead(isRead); 
+        notificationEntity.setRead(isRead);
         notificationEntity.setCreatedAt(LocalDateTime.now());
         notificationRepository.save(notificationEntity);
 
         NotificationMessageDTO message = new NotificationMessageDTO(
-            title,
-            content,
-            notificationEntity.getCreatedAt().toString(),
-            formType,
-            formId,
-            isRead
-        );
+                title,
+                content,
+                notificationEntity.getCreatedAt().toString(),
+                formType,
+                formId,
+                isRead);
         messagingTemplate.convertAndSend("/topic/parent/" + parentId, message);
     }
 
-    public List<NotificationMessageDTO> getNotificationByUserId(Long userId){
-        List<NotificationEntity> notificationEntityList = notificationRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
-        List<NotificationMessageDTO> notificationMessageDTOList = notificationEntityList.stream().map(notify -> modelMapper.map(notify, NotificationMessageDTO.class)).collect(Collectors.toList());
+    public List<NotificationMessageDTO> getNotificationByUserId(Long userId) {
+        List<NotificationEntity> notificationEntityList = notificationRepository
+                .findByUser_UserIdOrderByCreatedAtDesc(userId);
+        List<NotificationMessageDTO> notificationMessageDTOList = notificationEntityList.stream()
+                .map(notify -> modelMapper.map(notify, NotificationMessageDTO.class)).collect(Collectors.toList());
         return notificationMessageDTOList;
     }
 }

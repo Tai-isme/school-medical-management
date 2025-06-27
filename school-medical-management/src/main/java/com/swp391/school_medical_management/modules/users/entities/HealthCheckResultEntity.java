@@ -1,6 +1,5 @@
 package com.swp391.school_medical_management.modules.users.entities;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,19 +24,14 @@ public class HealthCheckResultEntity {
     @Enumerated(EnumType.STRING)
     private Level level;
 
-    public enum Level{
+    public enum Level {
         GOOD, FAIR, AVERAGE, POOR
     }
-        
 
     @Column(name = "note", length = 255)
     private String note;
 
     @ManyToOne
-    @JoinColumn(
-        name = "health_check_form_id", 
-        referencedColumnName = "health_check_form_id",
-        foreignKey = @ForeignKey(name = "FK_health_check_result_form")
-    )
+    @JoinColumn(name = "health_check_form_id", referencedColumnName = "health_check_form_id", foreignKey = @ForeignKey(name = "FK_health_check_result_form"))
     private HealthCheckFormEntity healthCheckFormEntity;
 }

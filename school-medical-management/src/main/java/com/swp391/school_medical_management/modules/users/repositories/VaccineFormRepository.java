@@ -14,19 +14,25 @@ import com.swp391.school_medical_management.modules.users.entities.VaccineFormEn
 import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
 
 public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Long> {
-    List<VaccineFormEntity> findVaccineFormEntityByVaccineProgramAndStudent(VaccineProgramEntity vaccineProgramEntity, StudentEntity student);
-    Optional<VaccineFormEntity> findByIdAndStatus(Long id, VaccineFormStatus status);
-    List<VaccineFormEntity> findAll();
-    List<VaccineFormEntity> findAllByStudentAndStatus(StudentEntity student, VaccineFormStatus status);
-    List<VaccineFormEntity> findByCommitTrue();
-    Optional<VaccineFormEntity> findByStudentAndStatus(StudentEntity student, VaccineFormStatus status);
+  List<VaccineFormEntity> findVaccineFormEntityByVaccineProgramAndStudent(VaccineProgramEntity vaccineProgramEntity,
+      StudentEntity student);
 
-     @Query("""
-        SELECT 
-          COUNT(CASE WHEN vf.commit = true THEN 1 END) AS committedCount,
-          COUNT(vf) AS totalSent
-        FROM VaccineFormEntity vf
-        WHERE vf.vaccineProgram.vaccineId = :vaccineId
-        """)
-    ParticipationRateRaw getParticipationRateByVaccineId(@Param("vaccineId") Long vaccineId);
+  Optional<VaccineFormEntity> findByIdAndStatus(Long id, VaccineFormStatus status);
+
+  List<VaccineFormEntity> findAll();
+
+  List<VaccineFormEntity> findAllByStudentAndStatus(StudentEntity student, VaccineFormStatus status);
+
+  List<VaccineFormEntity> findByCommitTrue();
+
+  Optional<VaccineFormEntity> findByStudentAndStatus(StudentEntity student, VaccineFormStatus status);
+
+  @Query("""
+      SELECT
+        COUNT(CASE WHEN vf.commit = true THEN 1 END) AS committedCount,
+        COUNT(vf) AS totalSent
+      FROM VaccineFormEntity vf
+      WHERE vf.vaccineProgram.vaccineId = :vaccineId
+      """)
+  ParticipationRateRaw getParticipationRateByVaccineId(@Param("vaccineId") Long vaccineId);
 }

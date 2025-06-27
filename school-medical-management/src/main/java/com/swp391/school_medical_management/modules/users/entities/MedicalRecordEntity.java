@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 @Table(name = "medical_record")
 public class MedicalRecordEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "record_id")

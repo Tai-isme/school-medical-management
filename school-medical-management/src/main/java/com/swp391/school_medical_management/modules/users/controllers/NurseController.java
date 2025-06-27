@@ -28,8 +28,6 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
-
 @Validated
 @RestController
 @RequestMapping("api/nurse")
@@ -54,36 +52,39 @@ public class NurseController {
     @GetMapping("/medical-request-detail/{requestId}")
     public ResponseEntity<List<MedicalRequestDetailDTO>> getMedicalRequestDetail(@PathVariable int requestId) {
         List<MedicalRequestDetailDTO> medicalRequestDetailDTO = nurseService.getMedicalRequestDetail(requestId);
-       return ResponseEntity.ok(medicalRequestDetailDTO);
+        return ResponseEntity.ok(medicalRequestDetailDTO);
     }
 
     @PutMapping("/medical-request/{requestId}/status")
-    public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId,@Valid @RequestParam String status) {
-    MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, status);
-    return ResponseEntity.ok(medicalRequestDTO);
+    public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId,
+            @Valid @RequestParam String status) {
+        MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, status);
+        return ResponseEntity.ok(medicalRequestDTO);
     }
-    
+
     @GetMapping("/health-check-forms/{healthCheckFormId}")
     public ResponseEntity<HealthCheckFormDTO> getHealthCheckFormById(@PathVariable Long healthCheckFormId) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        HealthCheckFormDTO healthCheckFormDTO = nurseService.getHealthCheckFormById(Long.parseLong(nurseId), healthCheckFormId);
+        HealthCheckFormDTO healthCheckFormDTO = nurseService.getHealthCheckFormById(Long.parseLong(nurseId),
+                healthCheckFormId);
         return ResponseEntity.ok(healthCheckFormDTO);
     }
 
     @GetMapping("/health-check-forms/commited")
     public ResponseEntity<List<HealthCheckFormDTO>> getAllCommitedTrueHealthCheckForm() {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<HealthCheckFormDTO> healthCheckFormDTOList = nurseService.getAllCommitedTrueHealthCheckForm(Long.parseLong(nurseId));
+        List<HealthCheckFormDTO> healthCheckFormDTOList = nurseService
+                .getAllCommitedTrueHealthCheckForm(Long.parseLong(nurseId));
         return ResponseEntity.ok(healthCheckFormDTOList);
     }
-    
+
     @GetMapping("/vaccine-forms/{vaccineFormId}")
     public ResponseEntity<VaccineFormDTO> getVaccineFormById(@PathVariable Long vaccineFormId) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
         VaccineFormDTO vaccineFormDTO = nurseService.getVaccinFormById(Long.parseLong(nurseId), vaccineFormId);
         return ResponseEntity.ok(vaccineFormDTO);
     }
- 
+
     @GetMapping("/vaccine-forms/commited")
     public ResponseEntity<List<VaccineFormDTO>> getAllCommitedTrueVaccineForm() {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -96,7 +97,7 @@ public class NurseController {
         List<MedicalEventDTO> events = nurseService.getMedicalEventsByStudent(studentId);
         return ResponseEntity.ok(events);
     }
-    
+
     @PostMapping("/medical-event")
     public ResponseEntity<MedicalEventDTO> createMedicalEvent(@RequestBody MedicalEventRequest request) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -105,12 +106,14 @@ public class NurseController {
     }
 
     @PutMapping("/medical-event/{medicalEventId}")
-    public ResponseEntity<MedicalEventDTO> updateMedicalEvent(@PathVariable Long medicalEventId, @RequestBody MedicalEventRequest request) {
+    public ResponseEntity<MedicalEventDTO> updateMedicalEvent(@PathVariable Long medicalEventId,
+            @RequestBody MedicalEventRequest request) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalEventDTO medicalEventDTO = nurseService.updateMedicalEvent(Long.parseLong(nurseId), medicalEventId, request);
+        MedicalEventDTO medicalEventDTO = nurseService.updateMedicalEvent(Long.parseLong(nurseId), medicalEventId,
+                request);
         return ResponseEntity.ok(medicalEventDTO);
     }
-    
+
     @GetMapping("/medical-event/{medicalEventId}")
     public ResponseEntity<MedicalEventDTO> getMedicalEvent(@PathVariable Long medicalEventId) {
         MedicalEventDTO medicalEventDTO = nurseService.getMedicalEvent(medicalEventId);
@@ -122,7 +125,7 @@ public class NurseController {
         List<MedicalEventDTO> medicalEventDTOList = nurseService.getAllMedicalEvent();
         return ResponseEntity.ok(medicalEventDTOList);
     }
-    
+
     @DeleteMapping("/medical-event/{medicalEventId}")
     public ResponseEntity<Void> deleteMedicalEvent(@PathVariable Long medicalEventId) {
         nurseService.deleteMedicalEvent(medicalEventId);
@@ -134,9 +137,10 @@ public class NurseController {
         HealthCheckResultDTO healthCheckResultDTO = nurseService.createHealthCheckResult(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(healthCheckResultDTO);
     }
-    
+
     @PutMapping("/health-check-result/{healCheckResultId}")
-    public ResponseEntity<HealthCheckResultDTO> putMethodName(@PathVariable Long healCheckResultId, @RequestBody HealthCheckResultRequest request) {
+    public ResponseEntity<HealthCheckResultDTO> putMethodName(@PathVariable Long healCheckResultId,
+            @RequestBody HealthCheckResultRequest request) {
         HealthCheckResultDTO healthCheckResultDTO = nurseService.updateHealthCheckResult(healCheckResultId, request);
         return ResponseEntity.ok(healthCheckResultDTO);
     }
@@ -146,7 +150,7 @@ public class NurseController {
         HealthCheckResultDTO healthCheckResultDTO = nurseService.getHealthCheckResult(healCheckResultId);
         return ResponseEntity.ok(healthCheckResultDTO);
     }
-    
+
     @GetMapping("/health-check-result")
     public ResponseEntity<List<HealthCheckResultDTO>> getAllHealthCheckResult() {
         List<HealthCheckResultDTO> healthCheckResultDTOList = nurseService.getAllHealthCheckResult();
@@ -162,15 +166,16 @@ public class NurseController {
     @PostMapping("/vaccine-result")
     public ResponseEntity<VaccineResultDTO> createVaccineResult(@RequestBody VaccineResultRequest request) {
         VaccineResultDTO vaccineResultDTO = nurseService.createVaccineResult(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(vaccineResultDTO);        
+        return ResponseEntity.status(HttpStatus.CREATED).body(vaccineResultDTO);
     }
 
     @PutMapping("/vaccine-result/{vaccineResultId}")
-    public ResponseEntity<VaccineResultDTO> updateVaccineResult(@PathVariable Long vaccineResultId, @RequestBody VaccineResultRequest request) {
+    public ResponseEntity<VaccineResultDTO> updateVaccineResult(@PathVariable Long vaccineResultId,
+            @RequestBody VaccineResultRequest request) {
         VaccineResultDTO vaccineResultDTO = nurseService.updateVaccineResult(vaccineResultId, request);
         return ResponseEntity.ok(vaccineResultDTO);
     }
-    
+
     @GetMapping("/vaccine-result/{vaccineResultId}")
     public ResponseEntity<VaccineResultDTO> getVaccineResult(@PathVariable Long vaccineResultId) {
         VaccineResultDTO vaccineResultDTO = nurseService.getVaccineResult(vaccineResultId);
@@ -192,8 +197,7 @@ public class NurseController {
     @PostMapping("/{id}/replyfeeback")
     public ResponseEntity<String> replyToFeedback(
             @PathVariable("id") Integer feedbackId,
-            @RequestBody Map<String, String> request
-    ) {
+            @RequestBody Map<String, String> request) {
         nurseService.replyToFeedback(feedbackId, request.get("response"));
         return ResponseEntity.ok("Replied to feedback.");
     }
@@ -207,15 +211,17 @@ public class NurseController {
     public ResponseEntity<List<StudentDTO>> getAllStudent() {
         return ResponseEntity.ok(nurseService.getAllStudent());
     }
-    
+
     @GetMapping("/medical-records/{studentId}")
     public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable long studentId) {
         MedicalRecordDTO medicalRecordDTO = nurseService.getMedicalRecordByStudentId(studentId);
-        if (medicalRecordDTO == null) return ResponseEntity.notFound().build();
+        if (medicalRecordDTO == null)
+            return ResponseEntity.notFound().build();
         return ResponseEntity.ok(medicalRecordDTO);
     }
 
-    //Lọc ra nhưng học sinh chưa từng tiêm loại vaccine name history đó hoặc chưa từng tham gia chương trình vaccine
+    // Lọc ra nhưng học sinh chưa từng tiêm loại vaccine name history đó hoặc chưa
+    // từng tham gia chương trình vaccine
     @GetMapping("/students/not-vaccinated")
     public ResponseEntity<List<StudentDTO>> getStudentsNotVaccinated(
             @RequestParam(required = false) Long vaccineProgramId,
@@ -244,7 +250,7 @@ public class NurseController {
 
     @PutMapping("/{id}")
     public ResponseEntity<BlogResponse> updatePost(@PathVariable Long id,
-                                                       @RequestBody BlogRequest request) {
+            @RequestBody BlogRequest request) {
         BlogResponse response = nurseService.update(id, request);
         return ResponseEntity.ok(response);
     }

@@ -36,36 +36,44 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class AuthService {
 
-    @Autowired private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    @Autowired private StudentRepository studentRepository;
+    @Autowired
+    private StudentRepository studentRepository;
 
-    @Autowired private ModelMapper modelMapper;
+    @Autowired
+    private ModelMapper modelMapper;
 
-    @Autowired private JwtService jwtService;
+    @Autowired
+    private JwtService jwtService;
 
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    @Autowired private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
-    @Autowired private BlacklistService blacklistService;
+    @Autowired
+    private BlacklistService blacklistService;
 
     public LoginResponse authenticate(LoginRequest request) {
         Optional<UserEntity> userOpt = userRepository.findUserByEmail(request.getEmail());
-        if(userOpt.isEmpty())
+        if (userOpt.isEmpty())
             throw new BadCredentialsException("Incorrect email or password!");
         UserEntity user = userOpt.get();
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
             throw new BadCredentialsException("Incorrect email or password!");
         UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-        String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(), userDTO.getRole());
+        String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(),
+                userDTO.getRole());
         String refreshToken = jwtService.generateRefreshToken(user.getUserId());
         return new LoginResponse(token, refreshToken, userDTO, null);
     }
 
     public void logout(String bearerToken) {
         String token = bearerToken.substring(7); // Bỏ "Bearer "
-        
+
         // 1. Đưa vào blacklist
         BlacklistTokenRequest request = new BlacklistTokenRequest();
         request.setToken(token);
@@ -83,7 +91,7 @@ public class AuthService {
 
     public void changePassword(Long userId, ChangePasswordRequest request) {
         UserEntity user = userRepository.findUserByUserId(userId)
-            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             throw new RuntimeException("Old password is incorrect!");
@@ -95,7 +103,7 @@ public class AuthService {
 
     public void updateProfile(Long userId, UpdateProfileRequest request) {
         UserEntity user = userRepository.findUserByUserId(userId)
-            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
@@ -125,12 +133,13 @@ public class AuthService {
             if (phoneNumberINTL.startsWith("+84"))
                 phoneNumberINTL = "0" + phoneNumberINTL.substring(3);
             Optional<UserEntity> userOpt = userRepository.findUserByPhone(phoneNumberINTL);
-            if(userOpt.isEmpty())
+            if (userOpt.isEmpty())
                 throw new BadCredentialsException("Not found user with phone number: " + phoneNumberINTL);
             UserEntity user = userOpt.get();
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
             List<StudentEntity> studentList = studentRepository.findStudentByParent_UserId(userDTO.getId());
-            String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(), userDTO.getRole());
+            String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(),
+                    userDTO.getRole());
             String refreshToken = jwtService.generateRefreshToken(userDTO.getId());
             List<StudentDTO> studentDTOList = studentList.stream()
                     .map(student -> modelMapper.map(student, StudentDTO.class)).collect(Collectors.toList());
@@ -145,12 +154,13 @@ public class AuthService {
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(request.getIdToken());
             String email = decodedToken.getEmail();
             Optional<UserEntity> userOpt = userRepository.findUserByEmail(email);
-            if(userOpt.isEmpty())
+            if (userOpt.isEmpty())
                 throw new BadCredentialsException("Not found user with email: " + email);
             UserEntity user = userOpt.get();
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
             List<StudentEntity> studentList = studentRepository.findStudentByParent_UserId(userDTO.getId());
-            String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(), userDTO.getRole());
+            String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(),
+                    userDTO.getRole());
 
             System.out.println("=== NEW JWT TOKEN ===");
             Date exp = jwtService.extractExpiration(token);

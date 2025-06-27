@@ -14,8 +14,8 @@ import com.swp391.school_medical_management.helpers.WebSocketAuthInterceptor;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-
-    @Autowired WebSocketAuthInterceptor webSocketAuthInterceptor;
+    @Autowired
+    WebSocketAuthInterceptor webSocketAuthInterceptor;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {

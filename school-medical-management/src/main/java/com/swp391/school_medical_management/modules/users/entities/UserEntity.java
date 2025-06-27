@@ -37,7 +37,7 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    public enum UserRole{
+    public enum UserRole {
         PARENT, NURSE, ADMIN
     }
 

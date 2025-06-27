@@ -25,7 +25,7 @@ public class StudentEntity {
     @ManyToOne
     @JoinColumn(name = "class_id", referencedColumnName = "class_id")
     private ClassEntity classEntity;
-    @ManyToOne 
+    @ManyToOne
     @JoinColumn(name = "parent_id")
     private UserEntity parent;
 }

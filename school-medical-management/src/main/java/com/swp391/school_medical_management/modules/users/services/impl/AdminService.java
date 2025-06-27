@@ -1,4 +1,5 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,54 +67,73 @@ import com.swp391.school_medical_management.service.PasswordService;
 @Service
 public class AdminService {
 
-    @Autowired private HealthCheckProgramRepository healthCheckProgramRepository;
+    @Autowired
+    private HealthCheckProgramRepository healthCheckProgramRepository;
 
-    @Autowired private VaccineProgramRepository vaccineProgramRepository;
+    @Autowired
+    private VaccineProgramRepository vaccineProgramRepository;
 
-    @Autowired private ModelMapper modelMapper;
+    @Autowired
+    private ModelMapper modelMapper;
 
-    @Autowired private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    @Autowired private ClassRepository classRepository;
+    @Autowired
+    private ClassRepository classRepository;
 
-    @Autowired private StudentRepository studentRepository;
+    @Autowired
+    private StudentRepository studentRepository;
 
-    @Autowired private MedicalRecordsRepository medicalRecordsRepository;
+    @Autowired
+    private MedicalRecordsRepository medicalRecordsRepository;
 
-    @Autowired private HealthCheckFormRepository healthCheckFormRepository;
-    
-    @Autowired private VaccineFormRepository vaccineFormRepository;
+    @Autowired
+    private HealthCheckFormRepository healthCheckFormRepository;
 
-    @Autowired private MedicalEventRepository medicalEventRepository;
+    @Autowired
+    private VaccineFormRepository vaccineFormRepository;
 
-    @Autowired private PasswordService passwordService;
+    @Autowired
+    private MedicalEventRepository medicalEventRepository;
 
-    @Autowired private EmailService emailService;
+    @Autowired
+    private PasswordService passwordService;
 
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired
+    private EmailService emailService;
 
-    @Autowired private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    @Autowired private BlacklistService blacklistService;
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
-    @Autowired private MedicalRequestRepository medicalRequestRepository;
+    @Autowired
+    private BlacklistService blacklistService;
 
-    @Autowired private VaccineResultRepository vaccineResultRepository;
+    @Autowired
+    private MedicalRequestRepository medicalRequestRepository;
 
-    @Autowired private HealthCheckResultRepository healthCheckResultRepository;
-    
+    @Autowired
+    private VaccineResultRepository vaccineResultRepository;
+
+    @Autowired
+    private HealthCheckResultRepository healthCheckResultRepository;
+
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, long adminId) {
         UserEntity admin = userRepository.findUserByUserId(adminId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
-                
+
         Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository
                 .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
-                
+
         if (existingProgramOpt.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check program with name '" + request.getHealthCheckName() + "' already exists and not started.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check program with name '"
+                    + request.getHealthCheckName() + "' already exists and not started.");
         }
 
-        if (request.getStartDate().isAfter(request.getEndDate())) 
+        if (request.getStartDate().isAfter(request.getEndDate()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date must be before end date");
 
         HealthCheckProgramEntity healthCheckProgramEntity = new HealthCheckProgramEntity();
@@ -131,25 +151,27 @@ public class AdminService {
     public HealthCheckProgramDTO updateHealthCheckProgram(Long id, HealthCheckProgramRequest request) {
         Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository.findById(id);
 
-        if(existingProgramOpt.isEmpty())
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
+        if (existingProgramOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
 
         HealthCheckProgramEntity existingProgram = existingProgramOpt.get();
 
-        if(existingProgram.getStatus() == HealthCheckProgramStatus.COMPLETED || existingProgram.getStatus() == HealthCheckProgramStatus.ON_GOING)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                "Cannot update 'COMPLETED' or 'ON_GOING' program");
+        if (existingProgram.getStatus() == HealthCheckProgramStatus.COMPLETED
+                || existingProgram.getStatus() == HealthCheckProgramStatus.ON_GOING)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot update 'COMPLETED' or 'ON_GOING' program");
 
-        if (request.getStartDate().isAfter(request.getEndDate())) 
+        if (request.getStartDate().isAfter(request.getEndDate()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date must be before end date");
 
         if (!existingProgram.getHealthCheckName().equals(request.getHealthCheckName())) {
-        Optional<HealthCheckProgramEntity> duplicateProgramOpt = healthCheckProgramRepository
-                .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
-                if(duplicateProgramOpt.isPresent()) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                        "Health check program with name '" + request.getHealthCheckName() + "' already exists and not started.");
-                }
+            Optional<HealthCheckProgramEntity> duplicateProgramOpt = healthCheckProgramRepository
+                    .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
+            if (duplicateProgramOpt.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Health check program with name '" + request.getHealthCheckName()
+                                + "' already exists and not started.");
+            }
         }
 
         existingProgram.setHealthCheckName(request.getHealthCheckName());
@@ -157,14 +179,14 @@ public class AdminService {
         existingProgram.setStartDate(request.getStartDate());
         existingProgram.setEndDate(request.getEndDate());
         existingProgram.setNote(request.getNote());
-        
+
         healthCheckProgramRepository.save(existingProgram);
         return modelMapper.map(existingProgram, HealthCheckProgramDTO.class);
     }
 
     public HealthCheckProgramDTO updateHealthCheckProgramStatus(Long id, String status) {
         Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
-        if(healthCheckProgramOpt.isEmpty())
+        if (healthCheckProgramOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
         HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
 
@@ -176,21 +198,24 @@ public class AdminService {
         }
 
         if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already COMPLETED and cannot be updated");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Program is already COMPLETED and cannot be updated");
         }
 
-        if(healthCheckProgramEntity.getStatus() == (newStatus)) {
+        if (healthCheckProgramEntity.getStatus() == (newStatus)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already in status: " + newStatus);
         }
 
-        if (newStatus == HealthCheckProgramStatus.COMPLETED && healthCheckProgramEntity.getStatus() != HealthCheckProgramStatus.ON_GOING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot mark as COMPLETED unless the program is ON_GOING");
+        if (newStatus == HealthCheckProgramStatus.COMPLETED
+                && healthCheckProgramEntity.getStatus() != HealthCheckProgramStatus.ON_GOING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot mark as COMPLETED unless the program is ON_GOING");
         }
 
         healthCheckProgramEntity.setStatus(newStatus);
         healthCheckProgramRepository.save(healthCheckProgramEntity);
 
-        if(newStatus == HealthCheckProgramStatus.ON_GOING) {
+        if (newStatus == HealthCheckProgramStatus.ON_GOING) {
             createHealthCheckForm(healthCheckProgramEntity);
         }
 
@@ -198,18 +223,20 @@ public class AdminService {
     }
 
     public void createHealthCheckForm(HealthCheckProgramEntity programEntity) {
-        
+
         List<StudentEntity> students = studentRepository.findAll();
 
         for (StudentEntity studentEntity : students) {
             UserEntity parent = studentEntity.getParent();
-            if (parent == null) 
+            if (parent == null)
                 continue;
-            
-            List<HealthCheckFormEntity> existingForms = healthCheckFormRepository.findHealthCheckFormEntityByHealthCheckProgramAndStudent(programEntity, studentEntity);
+
+            List<HealthCheckFormEntity> existingForms = healthCheckFormRepository
+                    .findHealthCheckFormEntityByHealthCheckProgramAndStudent(programEntity, studentEntity);
             boolean hasUncommittedForm = existingForms.stream()
-                .anyMatch(form -> form.getCommit() == null);
-            if (hasUncommittedForm) continue;
+                    .anyMatch(form -> form.getCommit() == null);
+            if (hasUncommittedForm)
+                continue;
 
             HealthCheckFormEntity healthCheckFormEntity = new HealthCheckFormEntity();
             healthCheckFormEntity.setStudent(studentEntity);
@@ -222,12 +249,12 @@ public class AdminService {
             healthCheckFormRepository.save(healthCheckFormEntity);
         }
     }
- 
+
     public List<HealthCheckProgramDTO> getAllHealthCheckProgram(long adminId) {
         List<HealthCheckProgramEntity> healthCheckProgramEntityList = healthCheckProgramRepository.findAll();
         if (healthCheckProgramEntityList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check programs found");
-            List<HealthCheckProgramDTO> healthCheckProgramDTOList = healthCheckProgramEntityList.stream()
+        List<HealthCheckProgramDTO> healthCheckProgramDTOList = healthCheckProgramEntityList.stream()
                 .map(entity -> modelMapper.map(entity, HealthCheckProgramDTO.class))
                 .toList();
         return healthCheckProgramDTOList;
@@ -235,7 +262,7 @@ public class AdminService {
 
     public HealthCheckProgramDTO getHealthCheckProgramById(long adminId, Long id) {
         Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
-        if(healthCheckProgramOpt.isEmpty()) 
+        if (healthCheckProgramOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
         HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
         return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
@@ -245,7 +272,7 @@ public class AdminService {
         UserEntity admin = userRepository.findUserByUserId(adminId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
         Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
-        if(healthCheckProgramOpt.isEmpty())
+        if (healthCheckProgramOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
 
         HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
@@ -254,8 +281,10 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to delete this program");
         }
 
-        if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete 'COMPLETED' or 'ON_GOING' program");
+        if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED
+                || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot delete 'COMPLETED' or 'ON_GOING' program");
         }
 
         healthCheckProgramRepository.delete(healthCheckProgramEntity);
@@ -264,12 +293,13 @@ public class AdminService {
     public VaccineProgramDTO createVaccineProgram(VaccineProgramRequest request, long adminId) {
         UserEntity admin = userRepository.findUserByUserId(adminId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
-       
+
         Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository
                 .findByVaccineNameAndStatus(request.getVaccineName(), VaccineProgramStatus.NOT_STARTED);
-                
+
         if (existingProgramOpt.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine program with name '" + request.getVaccineName() + "' already exists and not started.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Vaccine program with name '" + request.getVaccineName() + "' already exists and not started.");
         }
 
         VaccineProgramEntity vaccineProgramEntity = new VaccineProgramEntity();
@@ -295,9 +325,10 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to update this program");
         }
 
-        if (existingProgram.getStatus() == VaccineProgramStatus.COMPLETED || existingProgram.getStatus() == VaccineProgramStatus.ON_GOING) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                "Cannot update 'COMPLETED' or 'ON_GOING' program");
+        if (existingProgram.getStatus() == VaccineProgramStatus.COMPLETED
+                || existingProgram.getStatus() == VaccineProgramStatus.ON_GOING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot update 'COMPLETED' or 'ON_GOING' program");
         }
         existingProgram.setVaccineName(request.getVaccineName());
         existingProgram.setDescription(request.getDescription());
@@ -309,7 +340,7 @@ public class AdminService {
 
     public VaccineProgramDTO updateVaccineProgramStatus(Long id, String status) {
         Optional<VaccineProgramEntity> vaccineProgramOpt = vaccineProgramRepository.findById(id);
-        if(vaccineProgramOpt.isEmpty())
+        if (vaccineProgramOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
         VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
 
@@ -321,21 +352,24 @@ public class AdminService {
         }
 
         if (vaccineProgramEntity.getStatus() == VaccineProgramStatus.COMPLETED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already COMPLETED and cannot be updated");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Program is already COMPLETED and cannot be updated");
         }
 
-        if(vaccineProgramEntity.getStatus() == (newStatus)) {
+        if (vaccineProgramEntity.getStatus() == (newStatus)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already in status: " + newStatus);
         }
 
-        if (newStatus == VaccineProgramStatus.COMPLETED && vaccineProgramEntity.getStatus() != VaccineProgramStatus.ON_GOING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot mark as COMPLETED unless the program is ON_GOING");
+        if (newStatus == VaccineProgramStatus.COMPLETED
+                && vaccineProgramEntity.getStatus() != VaccineProgramStatus.ON_GOING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot mark as COMPLETED unless the program is ON_GOING");
         }
 
         vaccineProgramEntity.setStatus(newStatus);
         vaccineProgramRepository.save(vaccineProgramEntity);
 
-        if(newStatus == VaccineProgramStatus.ON_GOING) {
+        if (newStatus == VaccineProgramStatus.ON_GOING) {
             createVaccineForm(vaccineProgramEntity);
         }
 
@@ -343,22 +377,25 @@ public class AdminService {
     }
 
     public void createVaccineForm(VaccineProgramEntity programEntity) {
-        
+
         String vaccineName = programEntity.getVaccineName();
         Long programId = programEntity.getVaccineId();
 
-        List<StudentEntity> students = studentRepository.findStudentsNeverVaccinatedByProgramOrName(programId, vaccineName);
+        List<StudentEntity> students = studentRepository.findStudentsNeverVaccinatedByProgramOrName(programId,
+                vaccineName);
 
         for (StudentEntity studentEntity : students) {
             UserEntity parent = studentEntity.getParent();
-            if (parent == null) 
+            if (parent == null)
                 continue;
-            
-            List<VaccineFormEntity> existingForms = vaccineFormRepository.findVaccineFormEntityByVaccineProgramAndStudent(programEntity, studentEntity);
+
+            List<VaccineFormEntity> existingForms = vaccineFormRepository
+                    .findVaccineFormEntityByVaccineProgramAndStudent(programEntity, studentEntity);
 
             boolean hasUncommittedForm = existingForms.stream()
-                .anyMatch(form -> form.getCommit() == null);
-            if (hasUncommittedForm) continue;
+                    .anyMatch(form -> form.getCommit() == null);
+            if (hasUncommittedForm)
+                continue;
 
             VaccineFormEntity vaccineFormEntity = new VaccineFormEntity();
             vaccineFormEntity.setStudent(studentEntity);
@@ -374,11 +411,12 @@ public class AdminService {
 
     public List<VaccineProgramDTO> getAllVaccineProgram(long adminId) {
         // UserEntity admin = userRepository.findUserByUserId(adminId)
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin
+        // not found"));
         List<VaccineProgramEntity> vaccineProgramEntitieList = vaccineProgramRepository.findAll();
         if (vaccineProgramEntitieList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine programs found");
-            List<VaccineProgramDTO> vaccineProgramDTOList = vaccineProgramEntitieList.stream()
+        List<VaccineProgramDTO> vaccineProgramDTOList = vaccineProgramEntitieList.stream()
                 .map(entity -> modelMapper.map(entity, VaccineProgramDTO.class))
                 .toList();
         return vaccineProgramDTOList;
@@ -400,29 +438,29 @@ public class AdminService {
         vaccineProgramRepository.delete(vaccineProgramEntity);
     }
 
-    public List<ClassDTO> getAllClass(){
+    public List<ClassDTO> getAllClass() {
         List<ClassEntity> classEntityList = classRepository.findAll();
-        if(classEntityList.isEmpty())
+        if (classEntityList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found");
         List<ClassDTO> classDTOList = classEntityList.stream()
-                    .map(classEntity -> modelMapper.map(classEntity, ClassDTO.class))
-                    .collect(Collectors.toList());
+                .map(classEntity -> modelMapper.map(classEntity, ClassDTO.class))
+                .collect(Collectors.toList());
         return classDTOList;
     }
 
-    public List<StudentDTO> getAllStudentInClass(Long classId){
+    public List<StudentDTO> getAllStudentInClass(Long classId) {
         Optional<ClassEntity> classOpt = classRepository.findByClassId(classId);
-        if(classOpt.isEmpty())
+        if (classOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found");
         ClassEntity classEntity = classOpt.get();
 
         List<StudentEntity> studentEntitieList = studentRepository.findByClassEntity(classEntity);
-        if(studentEntitieList.isEmpty())
+        if (studentEntitieList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class is empty");
 
         List<StudentDTO> studentDTOList = studentEntitieList.stream()
-                    .map(studentEntitie -> modelMapper.map(studentEntitie, StudentDTO.class))
-                    .collect(Collectors.toList());
+                .map(studentEntitie -> modelMapper.map(studentEntitie, StudentDTO.class))
+                .collect(Collectors.toList());
         return studentDTOList;
     }
 
@@ -452,9 +490,8 @@ public class AdminService {
                         + "\nPassword: " + password);
         return modelMapper.map(user, UserDTO.class);
     }
-    
 
-    public List<UserDTO> getAllAccounts(){
+    public List<UserDTO> getAllAccounts() {
         List<UserEntity> userEntities = userRepository.findAll();
         if (userEntities.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No accounts found");
@@ -463,7 +500,7 @@ public class AdminService {
                 .map(user -> modelMapper.map(user, UserDTO.class))
                 .collect(Collectors.toList());
     }
-    
+
     public void deleteAccount(Long userId, String token) {
         Optional<UserEntity> userOpt = userRepository.findUserByUserId(userId);
         if (userOpt.isEmpty()) {
@@ -496,11 +533,13 @@ public class AdminService {
     }
 
     public long countVaccineProgram() {
-        return vaccineProgramRepository.countByStatusIn(List.of(VaccineProgramStatus.NOT_STARTED, VaccineProgramStatus.ON_GOING));
+        return vaccineProgramRepository
+                .countByStatusIn(List.of(VaccineProgramStatus.NOT_STARTED, VaccineProgramStatus.ON_GOING));
     }
 
     public long countHealthCheckProgram() {
-        return healthCheckProgramRepository.countByStatusIn(List.of(HealthCheckProgramStatus.NOT_STARTED, HealthCheckProgramStatus.ON_GOING));
+        return healthCheckProgramRepository
+                .countByStatusIn(List.of(HealthCheckProgramStatus.NOT_STARTED, HealthCheckProgramStatus.ON_GOING));
     }
 
     public long countProcessingMedicalRequest() {
@@ -512,13 +551,13 @@ public class AdminService {
         Map<Integer, Map<String, Object>> grouped = new TreeMap<>();
 
         for (EventStatRaw raw : rawList) {
-            Integer month = raw.getMonth();        // 1 → 12
+            Integer month = raw.getMonth(); // 1 → 12
             String type = raw.getTypeEvent();
             int count = raw.getCount().intValue();
 
             Map<String, Object> row = grouped.computeIfAbsent(month, k -> {
                 Map<String, Object> newRow = new HashMap<>();
-                newRow.put("month", "T" + k);       // Đổi tên theo format T1, T2,...
+                newRow.put("month", "T" + k); // Đổi tên theo format T1, T2,...
                 return newRow;
             });
 
@@ -529,49 +568,56 @@ public class AdminService {
     }
 
     public List<HealthCheckResultStatsDTO> getVaccineResultStatusStatsByProgram() {
-        List<HealthCheckResultByProgramStatsRaw> rawList = vaccineResultRepository.getVaccineResultStatusStatsByProgram();
+        List<HealthCheckResultByProgramStatsRaw> rawList = vaccineResultRepository
+                .getVaccineResultStatusStatsByProgram();
 
         return rawList.stream()
                 .map(row -> new HealthCheckResultStatsDTO(
                         row.getProgramId(),
                         row.getProgramName(),
                         row.getStatusHealth(),
-                        row.getCount()
-                ))
+                        row.getCount()))
                 .collect(Collectors.toList());
     }
+
     public List<HealthCheckResultStatsDTO> getHealthCheckResultStatusStatsByProgram() {
-        List<HealthCheckResultByProgramStatsRaw> rawList = healthCheckResultRepository.getHealthCheckResultStatusStatsByProgram();
+        List<HealthCheckResultByProgramStatsRaw> rawList = healthCheckResultRepository
+                .getHealthCheckResultStatusStatsByProgram();
 
         return rawList.stream()
                 .map(row -> new HealthCheckResultStatsDTO(
                         row.getProgramId(),
                         row.getProgramName(),
                         row.getStatusHealth(),
-                        row.getCount()
-                ))
+                        row.getCount()))
                 .collect(Collectors.toList());
     }
 
     public ParticipationDTO getLatestParticipation() {
         ParticipationDTO participationDTO = new ParticipationDTO();
-        Optional<VaccineProgramEntity> lastestVaccineProgramOpt = vaccineProgramRepository.findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus.COMPLETED);
-        Optional<HealthCheckProgramEntity> latestHealthCheckProgramOpt = healthCheckProgramRepository.findTopByStatusOrderByEndDateDesc(HealthCheckProgramStatus.COMPLETED);
-        
-        if(!lastestVaccineProgramOpt.isPresent()){
+        Optional<VaccineProgramEntity> lastestVaccineProgramOpt = vaccineProgramRepository
+                .findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus.COMPLETED);
+        Optional<HealthCheckProgramEntity> latestHealthCheckProgramOpt = healthCheckProgramRepository
+                .findTopByStatusOrderByEndDateDesc(HealthCheckProgramStatus.COMPLETED);
+
+        if (!lastestVaccineProgramOpt.isPresent()) {
             participationDTO.setVaccination(new CommitedPercentDTO(null, 0L, 0L));
         } else {
             VaccineProgramEntity latestVaccineProgram = lastestVaccineProgramOpt.get();
-            ParticipationRateRaw vaccine = vaccineFormRepository.getParticipationRateByVaccineId(latestVaccineProgram.getVaccineId());
-            participationDTO.setVaccination(new CommitedPercentDTO(latestVaccineProgram.getVaccineName(), vaccine.getCommittedCount(), vaccine.getTotalSent()));
+            ParticipationRateRaw vaccine = vaccineFormRepository
+                    .getParticipationRateByVaccineId(latestVaccineProgram.getVaccineId());
+            participationDTO.setVaccination(new CommitedPercentDTO(latestVaccineProgram.getVaccineName(),
+                    vaccine.getCommittedCount(), vaccine.getTotalSent()));
         }
 
-        if(!latestHealthCheckProgramOpt.isPresent()){
+        if (!latestHealthCheckProgramOpt.isPresent()) {
             participationDTO.setHealthCheck(new CommitedPercentDTO(null, 0L, 0L));
         } else {
             HealthCheckProgramEntity latestHealthCheckProgram = latestHealthCheckProgramOpt.get();
-            ParticipationRateRaw healthCheck = healthCheckFormRepository.getParticipationRateByHealthCheckId(latestHealthCheckProgram.getId());
-            participationDTO.setHealthCheck(new CommitedPercentDTO(latestHealthCheckProgram.getHealthCheckName(), healthCheck.getCommittedCount(), healthCheck.getTotalSent()));
+            ParticipationRateRaw healthCheck = healthCheckFormRepository
+                    .getParticipationRateByHealthCheckId(latestHealthCheckProgram.getId());
+            participationDTO.setHealthCheck(new CommitedPercentDTO(latestHealthCheckProgram.getHealthCheckName(),
+                    healthCheck.getCommittedCount(), healthCheck.getTotalSent()));
         }
         return participationDTO;
     }

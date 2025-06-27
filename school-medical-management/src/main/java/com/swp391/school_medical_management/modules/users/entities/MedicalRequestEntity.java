@@ -19,8 +19,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -46,7 +44,7 @@ public class MedicalRequestEntity {
     @Enumerated(EnumType.STRING)
     private MedicalRequestStatus status;
 
-    public enum MedicalRequestStatus{
+    public enum MedicalRequestStatus {
         SUBMITTED, COMPLETED, PROCESSING, CANCELLED
     }
 

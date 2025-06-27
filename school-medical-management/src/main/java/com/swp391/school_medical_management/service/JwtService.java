@@ -77,8 +77,8 @@ public class JwtService {
 
         LocalDateTime localExpiryDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-        UserEntity user = userRepository.findUserByUserId(userId).orElseThrow(() ->
-                new RuntimeException("User not found"));
+        UserEntity user = userRepository.findUserByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         Optional<RefreshTokenEntity> optionalRefreshToken = refreshTokenRepository.findByUser(user);
         if (optionalRefreshToken.isPresent()) {
             RefreshTokenEntity dBRefreshToken = optionalRefreshToken.get();
@@ -235,7 +235,7 @@ public class JwtService {
     public Authentication getAuthentication(String token) {
         String userId = getUserIdFromJwt(token);
         UserRole role = getRoleFromJwt(token);
-        
+
         if (userId == null || role == null) {
             return null;
         }

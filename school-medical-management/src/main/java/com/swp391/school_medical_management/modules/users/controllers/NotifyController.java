@@ -29,55 +29,58 @@ import com.swp391.school_medical_management.service.NotificationService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-
-
 @RestController
 @RequestMapping("/api")
 public class NotifyController {
 
-    @Autowired NotificationService notificationService;
+    @Autowired
+    NotificationService notificationService;
 
-    @Autowired StudentRepository studentRepository;
+    @Autowired
+    StudentRepository studentRepository;
 
-    @Autowired HealthCheckFormRepository healthCheckFormRepository;
+    @Autowired
+    HealthCheckFormRepository healthCheckFormRepository;
 
-    @Autowired VaccineFormRepository vaccineFormRepository;
+    @Autowired
+    VaccineFormRepository vaccineFormRepository;
 
     @PostMapping("/notify-health-check")
-    public ResponseEntity<?> notifyHealthCheckToParents(@RequestBody NotifyToParentRequest request ) {
+    public ResponseEntity<?> notifyHealthCheckToParents(@RequestBody NotifyToParentRequest request) {
         List<Long> formIds = request.getFormIds();
         List<Long> skippedForms = new ArrayList<>();
         for (Long formId : formIds) {
 
             Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(formId);
-            if(healthCheckFormOpt.isEmpty())
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found health check form with id: " + formId);
+            if (healthCheckFormOpt.isEmpty())
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Not found health check form with id: " + formId);
 
             HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
-            
+
             StudentEntity studentEntity = healthCheckFormEntity.getStudent();
-            if(studentEntity == null)
+            if (studentEntity == null)
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found in form");
 
             UserEntity parentEntity = studentEntity.getParent();
 
-            if(parentEntity == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found with student ID: " + studentEntity.getId());
+            if (parentEntity == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Parent not found with student ID: " + studentEntity.getId());
 
-            if(healthCheckFormEntity.getStatus() == HealthCheckFormStatus.SENT){
+            if (healthCheckFormEntity.getStatus() == HealthCheckFormStatus.SENT) {
                 skippedForms.add(formId);
                 continue;
             }
 
             notificationService.sendNotificationToParent(
-                parentEntity.getUserId(),
-                "Thông báo chương trình khám sức khỏe định kỳ",
-                "Bạn có phiếu thông báo khám sức khỏe định kỳ mới cần xác nhận.",
-                "HEALTH_CHECK",
-                formId,
-                false
-            );
-           
+                    parentEntity.getUserId(),
+                    "Thông báo chương trình khám sức khỏe định kỳ",
+                    "Bạn có phiếu thông báo khám sức khỏe định kỳ mới cần xác nhận.",
+                    "HEALTH_CHECK",
+                    formId,
+                    false);
+
             healthCheckFormEntity.setStatus(HealthCheckFormStatus.SENT);
             healthCheckFormRepository.save(healthCheckFormEntity);
         }
@@ -85,39 +88,39 @@ public class NotifyController {
     }
 
     @PostMapping("/notify-vaccine")
-    public ResponseEntity<?> notifyVaccineToParents(@RequestBody NotifyToParentRequest request ) {
+    public ResponseEntity<?> notifyVaccineToParents(@RequestBody NotifyToParentRequest request) {
         List<Long> formIds = request.getFormIds();
         List<Long> skippedForms = new ArrayList<>();
         for (Long formId : formIds) {
 
             Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(formId);
-            if(vaccineFormOpt.isEmpty())
+            if (vaccineFormOpt.isEmpty())
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found vaccine form with id: " + formId);
 
             VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
-            
+
             StudentEntity studentEntity = vaccineFormEntity.getStudent();
-            if(studentEntity == null)
+            if (studentEntity == null)
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found in form");
 
             UserEntity parentEntity = studentEntity.getParent();
 
-            if(parentEntity == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found with student ID: " + studentEntity.getId());
-            
-            if(vaccineFormEntity.getStatus() == VaccineFormStatus.SENT){
+            if (parentEntity == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Parent not found with student ID: " + studentEntity.getId());
+
+            if (vaccineFormEntity.getStatus() == VaccineFormStatus.SENT) {
                 skippedForms.add(formId);
                 continue;
             }
 
             notificationService.sendNotificationToParent(
-                parentEntity.getUserId(),
-                "Thông báo chương trình tiêm vaccine cho học sinh " + parentEntity.getFullName(),
-                "Bạn có phiếu thông báo tiêm chủng vaccine mới cần xác nhận.",
-                "VACCINE",
-                formId,
-                false
-            );
+                    parentEntity.getUserId(),
+                    "Thông báo chương trình tiêm vaccine cho học sinh " + parentEntity.getFullName(),
+                    "Bạn có phiếu thông báo tiêm chủng vaccine mới cần xác nhận.",
+                    "VACCINE",
+                    formId,
+                    false);
 
             vaccineFormEntity.setStatus(VaccineFormStatus.SENT);
             vaccineFormRepository.save(vaccineFormEntity);
@@ -128,8 +131,9 @@ public class NotifyController {
     @GetMapping("/notify/{studentId}")
     public ResponseEntity<List<NotificationMessageDTO>> getAllNotify(@PathVariable Long studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<NotificationMessageDTO> notificationMessageDTOList = notificationService.getNotificationByUserId(Long.parseLong(parentId));
+        List<NotificationMessageDTO> notificationMessageDTOList = notificationService
+                .getNotificationByUserId(Long.parseLong(parentId));
         return ResponseEntity.ok(notificationMessageDTOList);
     }
-    
+
 }

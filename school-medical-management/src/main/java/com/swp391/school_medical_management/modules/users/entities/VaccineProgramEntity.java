@@ -42,13 +42,13 @@ public class VaccineProgramEntity {
     @Enumerated(EnumType.STRING)
     private VaccineProgramStatus status;
 
-    public enum VaccineProgramStatus{
+    public enum VaccineProgramStatus {
         ON_GOING, COMPLETED, NOT_STARTED
     }
 
     @Column(name = "note")
     private String note;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id", referencedColumnName = "user_id")
     private UserEntity admin;

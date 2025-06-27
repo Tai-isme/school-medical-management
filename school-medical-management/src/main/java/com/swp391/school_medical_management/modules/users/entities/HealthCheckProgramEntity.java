@@ -41,7 +41,7 @@ public class HealthCheckProgramEntity {
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    private HealthCheckProgramStatus status; 
+    private HealthCheckProgramStatus status;
 
     public enum HealthCheckProgramStatus {
         ON_GOING, COMPLETED, NOT_STARTED

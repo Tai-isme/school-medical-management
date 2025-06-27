@@ -34,17 +34,19 @@ import jakarta.validation.Valid;
 @RequestMapping("api/auth")
 public class AuthController {
 
-    @Autowired private AuthService authService;
+    @Autowired
+    private AuthService authService;
 
-    @Autowired private BlacklistService blacklistService;
+    @Autowired
+    private BlacklistService blacklistService;
 
-    @Autowired private UserRepository userRepository;
-
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-            LoginResponse response = authService.authenticate(request);
-            return ResponseEntity.ok(response);
+        LoginResponse response = authService.authenticate(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/change-password")
@@ -66,8 +68,8 @@ public class AuthController {
     @PostMapping("/blacklisted")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> addTokenToBlacklist(@Valid @RequestBody BlacklistTokenRequest request) {
-            blacklistService.create(request);
-            return ResponseEntity.noContent().build();
+        blacklistService.create(request);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/logout")
@@ -77,12 +79,11 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-
     @PostMapping("/refresh")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<RefreshTokenDTO> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-            RefreshTokenDTO response = authService.refreshToken(request.getRefreshToken());
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        RefreshTokenDTO response = authService.refreshToken(request.getRefreshToken());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/phone")
@@ -96,12 +97,13 @@ public class AuthController {
         LoginResponse response = authService.googleLogin(request);
         return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> me() {
         String id = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = (UserEntity) userRepository.findUserByUserId(Long.parseLong(id)).orElseThrow(() -> new RuntimeException("User khong ton tai"));
+        UserEntity user = (UserEntity) userRepository.findUserByUserId(Long.parseLong(id))
+                .orElseThrow(() -> new RuntimeException("User khong ton tai"));
 
         UserDTO userDTO = UserDTO.builder()
                 .id(user.getUserId())
@@ -115,4 +117,3 @@ public class AuthController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Success", userDTO));
     }
 }
-

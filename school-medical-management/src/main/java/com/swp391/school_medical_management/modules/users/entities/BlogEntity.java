@@ -1,4 +1,5 @@
 package com.swp391.school_medical_management.modules.users.entities;
+
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "blog")
 public class BlogEntity {
-    @Id     
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -44,11 +45,10 @@ public class BlogEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity author;
 
-
     @PrePersist
     public void prePersist() {
-    this.createdAt = LocalDateTime.now();
-    this.updatedAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
@@ -56,5 +56,4 @@ public class BlogEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    
 }

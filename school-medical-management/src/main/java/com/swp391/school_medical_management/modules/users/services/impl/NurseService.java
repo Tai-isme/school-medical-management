@@ -150,19 +150,18 @@ public class NurseService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found any medical event");
 
         return medicalEventEntitieList.stream()
-            .map(event -> {
-                MedicalEventDTO dto = modelMapper.map(event, MedicalEventDTO.class);
+                .map(event -> {
+                    MedicalEventDTO dto = modelMapper.map(event, MedicalEventDTO.class);
 
-                if (event.getNurse() != null) {
-                    UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
-                    dto.setUserDTO(nurseDTO);
-                }
+                    if (event.getNurse() != null) {
+                        UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
+                        dto.setUserDTO(nurseDTO);
+                    }
 
-                return dto;
-            })
-            .collect(Collectors.toList());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
-
 
     public MedicalRequestDTO updateMedicalRequestStatus(int requestId, String status) {
         Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository

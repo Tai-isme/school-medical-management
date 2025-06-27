@@ -43,4 +43,3 @@ public class BlacklistedTokenEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
-

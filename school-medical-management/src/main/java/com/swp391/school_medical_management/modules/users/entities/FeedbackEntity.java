@@ -62,4 +62,3 @@ public class FeedbackEntity {
     @JoinColumn(name = "health_result_id")
     private HealthCheckResultEntity healthResult;
 }
-

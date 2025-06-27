@@ -20,7 +20,7 @@ public class MedicalEventEntity {
     private Integer eventId;
 
     @Column(name = "type_event", length = 100)
-    private String typeEvent;         
+    private String typeEvent;
 
     @Column(name = "date")
     private LocalDate date;
@@ -29,12 +29,10 @@ public class MedicalEventEntity {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "student_id", referencedColumnName = "student_id", 
-                foreignKey = @ForeignKey(name = "FK_medical_event_student"))
+    @JoinColumn(name = "student_id", referencedColumnName = "student_id", foreignKey = @ForeignKey(name = "FK_medical_event_student"))
     private StudentEntity student;
 
     @ManyToOne
-    @JoinColumn(name = "nurse_id", referencedColumnName = "user_id",
-                foreignKey = @ForeignKey(name = "FK_medical_event_nurse"))
+    @JoinColumn(name = "nurse_id", referencedColumnName = "user_id", foreignKey = @ForeignKey(name = "FK_medical_event_nurse"))
     private UserEntity nurse;
 }

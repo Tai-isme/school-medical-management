@@ -23,7 +23,7 @@ public class MedicalRequestDetailEntity {
     @Id
     @Column(name = "detail_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int detailId;   
+    private int detailId;
     @Column(name = "medicine_name")
     private String medicineName;
     private String dosage;
