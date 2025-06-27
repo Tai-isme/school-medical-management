@@ -22,6 +22,34 @@ CREATE TABLE `blacklisted_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
+DROP TABLE IF EXISTS `blog`;
+CREATE TABLE `blog` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) DEFAULT NULL,
+  `slug` varchar(255) DEFAULT NULL,
+  `category` varchar(255) DEFAULT NULL,
+  `content` text,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `slug` (`slug`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `blog_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO `blog` (`id`, `title`, `slug`, `category`, `content`, `created_at`, `updated_at`, `user_id`) VALUES
+(1,	'Giới thiệu hệ thống y tế học đường',	'gioi-thieu-he-thong-y-te-hoc-duong',	'Y tế học đường',	'Nội dung bài viết về hệ thống y tế học đường...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	1),
+(2,	'Tác động của dinh dưỡng đến học sinh',	'tac-dong-cua-dinh-duong-den-hoc-sinh',	'Dinh dưỡng',	'Bài viết nói về vai trò của dinh dưỡng đối với học sinh...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	2),
+(3,	'Cách phòng tránh bệnh theo mùa',	'cach-phong-tranh-benh-theo-mua',	'Sức khỏe',	'Một số lưu ý giúp phòng tránh bệnh theo mùa...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	1),
+(4,	'Tiêm chủng định kỳ trong trường học',	'tiem-chung-dinh-ky-trong-truong-hoc',	'Tiêm chủng',	'Tại sao tiêm chủng là quan trọng trong môi trường học đường...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	3),
+(5,	'Lịch khám sức khỏe định kỳ năm 2025',	'lich-kham-suc-khoe-dinh-ky-nam-2025',	'Khám sức khỏe',	'Chi tiết lịch khám sức khỏe định kỳ năm học 2025...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	2),
+(6,	'Tầm quan trọng của giấc ngủ với học sinh',	'tam-quan-trong-cua-giac-ngu-voi-hoc-sinh',	'Sức khỏe học đường',	'Giấc ngủ ảnh hưởng như thế nào đến học tập và phát triển của trẻ...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	1),
+(7,	'Hướng dẫn sơ cứu cơ bản',	'huong-dan-so-cuu-co-ban',	'Kỹ năng y tế',	'Những kỹ năng sơ cứu cần thiết cho giáo viên và học sinh...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	3),
+(8,	'Vai trò của y tá trường học',	'vai-tro-cua-y-ta-truong-hoc',	'Y tế học đường',	'Bài viết về công việc và trách nhiệm của y tá trong trường học...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	2),
+(9,	'Cách xử lý khi học sinh bị dị ứng',	'cach-xu-ly-khi-hoc-sinh-bi-di-ung',	'An toàn trường học',	'Nhận biết và xử lý các trường hợp dị ứng ở học sinh...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	1),
+(10,	'Ứng dụng công nghệ trong quản lý y tế học đường',	'ung-dung-cong-nghe-trong-quan-ly-y-te-hoc-duong',	'Công nghệ y tế',	'Phân tích cách công nghệ hỗ trợ công tác quản lý y tế học đường...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	2);
+
 DROP TABLE IF EXISTS `class`;
 CREATE TABLE `class` (
   `class_id` int NOT NULL AUTO_INCREMENT,
@@ -29,12 +57,15 @@ CREATE TABLE `class` (
   `class_name` varchar(20) DEFAULT NULL,
   `quantity` int DEFAULT NULL,
   PRIMARY KEY (`class_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `class` (`class_id`, `teacher_name`, `class_name`, `quantity`) VALUES
 (1,	'Nguyen Van A',	'1A',	30),
 (2,	'Tran Thi B',	'2B',	28),
-(3,	'Le Van C',	'3C',	35);
+(3,	'Le Van C',	'3C',	35),
+(4,	'Nguyễn Văn A',	'4A',	40),
+(5,	'Trần Thị B',	'4B',	40),
+(6,	'Lê Văn C',	'4C',	40);
 
 DROP TABLE IF EXISTS `feedback`;
 CREATE TABLE `feedback` (
@@ -61,6 +92,87 @@ CREATE TABLE `feedback` (
   CONSTRAINT `feedback_chk_2` CHECK ((`status` in (_utf8mb4'NOT_REPLIED',_utf8mb4'REPLIED')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+INSERT INTO `feedback` (`feedback_id`, `satisfaction`, `comment`, `created_at`, `parent_id`, `nurse_id`, `vaccine_result_id`, `health_result_id`, `response_nurse`, `status`) VALUES
+(1,	'SATISFIED',	'Cảm ơn cô y tá đã hỗ trợ nhiệt tình.',	'2025-06-01 08:00:00',	11,	9,	NULL,	204,	NULL,	'NOT_REPLIED'),
+(2,	'UNSATISFIED',	'Phản hồi chậm, mong cải thiện.',	'2025-06-01 08:10:00',	12,	9,	NULL,	205,	'Chúng tôi xin lỗi và sẽ cải thiện.',	'REPLIED'),
+(3,	'SATISFIED',	'Bé được khám kỹ lưỡng, tôi yên tâm.',	'2025-06-01 08:20:00',	13,	9,	NULL,	206,	NULL,	'NOT_REPLIED'),
+(4,	'UNSATISFIED',	'Chưa được giải thích rõ ràng.',	'2025-06-01 08:30:00',	14,	9,	NULL,	207,	'Chúng tôi sẽ giải thích lại chi tiết hơn.',	'REPLIED'),
+(5,	'SATISFIED',	'Dịch vụ tốt, cảm ơn nhà trường.',	'2025-06-01 08:40:00',	15,	9,	NULL,	208,	NULL,	'NOT_REPLIED'),
+(6,	'UNSATISFIED',	'Kết quả chưa rõ ràng.',	'2025-06-01 08:50:00',	16,	9,	NULL,	209,	'Đã gửi lại kết quả chi tiết cho phụ huynh.',	'REPLIED'),
+(7,	'SATISFIED',	'Tôi rất hài lòng với chương trình.',	'2025-06-01 09:00:00',	17,	9,	NULL,	210,	NULL,	'NOT_REPLIED'),
+(8,	'UNSATISFIED',	'Không nhận được thông báo trước.',	'2025-06-01 09:10:00',	18,	9,	NULL,	211,	'Chúng tôi sẽ cập nhật thông tin tốt hơn.',	'REPLIED'),
+(9,	'SATISFIED',	'Cảm ơn cô y tá đã tư vấn tận tình.',	'2025-06-01 09:20:00',	19,	9,	NULL,	212,	NULL,	'NOT_REPLIED'),
+(10,	'UNSATISFIED',	'Quy trình chậm trễ.',	'2025-06-01 09:30:00',	20,	9,	NULL,	213,	'Sẽ cải thiện quy trình xử lý.',	'REPLIED'),
+(11,	'SATISFIED',	'Bé rất vui sau buổi khám.',	'2025-06-01 09:40:00',	21,	9,	NULL,	214,	NULL,	'NOT_REPLIED'),
+(12,	'UNSATISFIED',	'Thiếu thông tin về bệnh lý.',	'2025-06-01 09:50:00',	22,	9,	NULL,	215,	'Chúng tôi sẽ bổ sung chi tiết.',	'REPLIED'),
+(13,	'SATISFIED',	'Hài lòng với kết quả khám.',	'2025-06-01 10:00:00',	23,	9,	NULL,	216,	NULL,	'NOT_REPLIED'),
+(14,	'UNSATISFIED',	'Không có ai hỗ trợ khi hỏi.',	'2025-06-01 10:10:00',	24,	9,	NULL,	217,	'Chúng tôi xin lỗi và sẽ khắc phục.',	'REPLIED'),
+(15,	'SATISFIED',	'Rất chuyên nghiệp.',	'2025-06-01 10:20:00',	25,	9,	NULL,	218,	NULL,	'NOT_REPLIED'),
+(16,	'UNSATISFIED',	'Không nhận được phiếu kết quả.',	'2025-06-01 10:30:00',	26,	9,	NULL,	219,	'Chúng tôi sẽ gửi lại ngay.',	'REPLIED'),
+(17,	'SATISFIED',	'Cảm ơn sự hỗ trợ tận tình.',	'2025-06-01 10:40:00',	27,	9,	NULL,	220,	NULL,	'NOT_REPLIED'),
+(18,	'UNSATISFIED',	'Không rõ ràng về quy trình.',	'2025-06-01 10:50:00',	28,	9,	NULL,	221,	'Sẽ gửi tài liệu hướng dẫn cụ thể.',	'REPLIED'),
+(19,	'SATISFIED',	'Tôi đánh giá cao đội ngũ y tế.',	'2025-06-01 11:00:00',	29,	9,	NULL,	222,	NULL,	'NOT_REPLIED'),
+(20,	'UNSATISFIED',	'Khó liên hệ phản hồi.',	'2025-06-01 11:10:00',	30,	9,	NULL,	223,	'Sẽ bổ sung thêm kênh liên hệ.',	'REPLIED'),
+(21,	'SATISFIED',	'Không có vấn đề gì.',	'2025-06-01 11:20:00',	31,	9,	NULL,	224,	NULL,	'NOT_REPLIED'),
+(22,	'UNSATISFIED',	'Thiếu người hướng dẫn tại chỗ.',	'2025-06-01 11:30:00',	32,	9,	NULL,	225,	'Đã bổ sung người hỗ trợ trực.',	'REPLIED'),
+(23,	'SATISFIED',	'Rất nhanh chóng và hiệu quả.',	'2025-06-01 11:40:00',	33,	9,	NULL,	226,	NULL,	'NOT_REPLIED'),
+(24,	'UNSATISFIED',	'Không biết phải làm gì tiếp theo.',	'2025-06-01 11:50:00',	34,	9,	NULL,	227,	'Sẽ gửi hướng dẫn chi tiết cho PH.',	'REPLIED'),
+(25,	'SATISFIED',	'Thái độ phục vụ tốt.',	'2025-06-01 12:00:00',	35,	9,	NULL,	228,	NULL,	'NOT_REPLIED'),
+(26,	'UNSATISFIED',	'Không rõ kết luận khám.',	'2025-06-01 12:10:00',	36,	9,	NULL,	229,	'Đã gửi lại thông tin chi tiết.',	'REPLIED'),
+(27,	'SATISFIED',	'Không có gì để phàn nàn.',	'2025-06-01 12:20:00',	37,	9,	NULL,	230,	NULL,	'NOT_REPLIED'),
+(28,	'UNSATISFIED',	'Gửi nhầm kết quả học sinh khác.',	'2025-06-01 12:30:00',	38,	9,	NULL,	231,	'Đã đính chính lại và xin lỗi.',	'REPLIED'),
+(29,	'SATISFIED',	'Bé được quan tâm tận tình.',	'2025-06-01 12:40:00',	39,	9,	NULL,	232,	NULL,	'NOT_REPLIED'),
+(30,	'UNSATISFIED',	'Thiếu hướng dẫn rõ ràng.',	'2025-06-01 12:50:00',	40,	9,	NULL,	233,	'Đã bổ sung tài liệu hướng dẫn.',	'REPLIED'),
+(31,	'SATISFIED',	'Hài lòng về thông tin cung cấp.',	'2025-06-01 13:00:00',	41,	9,	NULL,	234,	NULL,	'NOT_REPLIED'),
+(32,	'UNSATISFIED',	'Thông tin thiếu chính xác.',	'2025-06-01 13:10:00',	42,	9,	NULL,	235,	'Đã điều chỉnh lại thông tin.',	'REPLIED'),
+(33,	'SATISFIED',	'Rất đáng tin cậy.',	'2025-06-01 13:20:00',	43,	9,	NULL,	236,	NULL,	'NOT_REPLIED'),
+(34,	'UNSATISFIED',	'Không hiểu rõ kết quả.',	'2025-06-01 13:30:00',	44,	9,	NULL,	237,	'Đã giải thích lại qua email.',	'REPLIED'),
+(35,	'SATISFIED',	'Bé hợp tác tốt trong khám.',	'2025-06-01 13:40:00',	45,	9,	NULL,	238,	NULL,	'NOT_REPLIED'),
+(36,	'UNSATISFIED',	'Không hài lòng với phản hồi.',	'2025-06-01 13:50:00',	46,	9,	NULL,	239,	'Xin lỗi, sẽ tiếp thu ý kiến.',	'REPLIED'),
+(37,	'SATISFIED',	'Mọi thứ diễn ra ổn định.',	'2025-06-01 14:00:00',	47,	9,	NULL,	240,	NULL,	'NOT_REPLIED'),
+(38,	'UNSATISFIED',	'Chậm xử lý thắc mắc.',	'2025-06-01 14:10:00',	48,	9,	NULL,	241,	'Chúng tôi sẽ cải thiện tốc độ.',	'REPLIED'),
+(39,	'SATISFIED',	'Bé được chăm sóc tốt.',	'2025-06-01 14:20:00',	49,	9,	NULL,	242,	NULL,	'NOT_REPLIED'),
+(40,	'UNSATISFIED',	'Không được thông báo kết quả.',	'2025-06-01 14:30:00',	50,	9,	NULL,	243,	'Đã gửi lại đầy đủ kết quả.',	'REPLIED'),
+(41,	'SATISFIED',	'Cảm ơn nhà trường đã tiêm đúng lịch.',	'2025-06-01 08:00:00',	11,	9,	3,	NULL,	NULL,	'REPLIED'),
+(42,	'UNSATISFIED',	'Sau tiêm bé hơi sốt, cần tư vấn thêm.',	'2025-06-02 08:00:00',	12,	9,	4,	NULL,	NULL,	'NOT_REPLIED'),
+(43,	'SATISFIED',	'Không có phản ứng, rất tốt.',	'2025-06-03 08:00:00',	13,	9,	5,	NULL,	NULL,	'REPLIED'),
+(44,	'UNSATISFIED',	'Bé mệt nhẹ sau tiêm.',	'2025-06-04 08:00:00',	14,	9,	6,	NULL,	NULL,	'NOT_REPLIED'),
+(45,	'SATISFIED',	'Rất an tâm với quy trình.',	'2025-06-05 08:00:00',	15,	9,	7,	NULL,	NULL,	'REPLIED'),
+(46,	'UNSATISFIED',	'Mong y tá kiểm tra kỹ hơn lần sau.',	'2025-06-06 08:00:00',	16,	9,	8,	NULL,	NULL,	'NOT_REPLIED'),
+(47,	'SATISFIED',	'Phản hồi nhanh, hỗ trợ tốt.',	'2025-06-07 08:00:00',	17,	9,	9,	NULL,	NULL,	'REPLIED'),
+(48,	'UNSATISFIED',	'Bé có biểu hiện buồn ngủ nhiều.',	'2025-06-08 08:00:00',	18,	9,	10,	NULL,	NULL,	'NOT_REPLIED'),
+(49,	'SATISFIED',	'Đội ngũ y tế làm việc chuyên nghiệp.',	'2025-06-09 08:00:00',	19,	9,	11,	NULL,	NULL,	'REPLIED'),
+(50,	'UNSATISFIED',	'Chưa rõ thông tin vaccine.',	'2025-06-10 08:00:00',	20,	9,	12,	NULL,	NULL,	'NOT_REPLIED'),
+(51,	'SATISFIED',	'Phụ huynh rất yên tâm.',	'2025-06-11 08:00:00',	21,	9,	13,	NULL,	NULL,	'REPLIED'),
+(52,	'UNSATISFIED',	'Bé kêu đau tay sau tiêm.',	'2025-06-12 08:00:00',	22,	9,	14,	NULL,	NULL,	'NOT_REPLIED'),
+(53,	'SATISFIED',	'Không có phản ứng nào sau tiêm.',	'2025-06-13 08:00:00',	23,	9,	15,	NULL,	NULL,	'REPLIED'),
+(54,	'UNSATISFIED',	'Mong kiểm tra lại nhiệt độ.',	'2025-06-14 08:00:00',	24,	9,	16,	NULL,	NULL,	'NOT_REPLIED'),
+(55,	'SATISFIED',	'Cảm ơn nhà trường đã hỗ trợ.',	'2025-06-15 08:00:00',	25,	9,	17,	NULL,	NULL,	'REPLIED'),
+(56,	'UNSATISFIED',	'Bé hơi quấy khóc.',	'2025-06-16 08:00:00',	26,	9,	18,	NULL,	NULL,	'NOT_REPLIED'),
+(57,	'SATISFIED',	'Thông tin rõ ràng, minh bạch.',	'2025-06-17 08:00:00',	27,	9,	19,	NULL,	NULL,	'REPLIED'),
+(58,	'UNSATISFIED',	'Chưa thấy báo cáo chi tiết.',	'2025-06-18 08:00:00',	28,	9,	20,	NULL,	NULL,	'NOT_REPLIED'),
+(59,	'SATISFIED',	'Rất đáng khen đội y tế.',	'2025-06-19 08:00:00',	29,	9,	21,	NULL,	NULL,	'REPLIED'),
+(60,	'UNSATISFIED',	'Đề nghị gọi điện xác minh thêm.',	'2025-06-20 08:00:00',	30,	9,	22,	NULL,	NULL,	'NOT_REPLIED'),
+(61,	'SATISFIED',	'Dịch vụ tiêm chủng tốt.',	'2025-06-21 08:00:00',	31,	9,	23,	NULL,	NULL,	'REPLIED'),
+(62,	'UNSATISFIED',	'Phản ứng hơi mạnh.',	'2025-06-22 08:00:00',	32,	9,	24,	NULL,	NULL,	'NOT_REPLIED'),
+(63,	'SATISFIED',	'Bé vẫn ăn uống bình thường.',	'2025-06-23 08:00:00',	33,	9,	25,	NULL,	NULL,	'REPLIED'),
+(64,	'UNSATISFIED',	'Không rõ bé tiêm loại gì.',	'2025-06-24 08:00:00',	34,	9,	26,	NULL,	NULL,	'NOT_REPLIED'),
+(65,	'SATISFIED',	'Mọi thứ đều ổn.',	'2025-06-25 08:00:00',	35,	9,	27,	NULL,	NULL,	'REPLIED'),
+(66,	'UNSATISFIED',	'Có dấu hiệu đỏ vùng tiêm.',	'2025-06-26 08:00:00',	36,	9,	28,	NULL,	NULL,	'NOT_REPLIED'),
+(67,	'SATISFIED',	'Rất tốt, không vấn đề gì.',	'2025-06-27 08:00:00',	37,	9,	29,	NULL,	NULL,	'REPLIED'),
+(68,	'UNSATISFIED',	'Tiêm xong bé khó ngủ.',	'2025-06-28 08:00:00',	38,	9,	30,	NULL,	NULL,	'NOT_REPLIED'),
+(69,	'SATISFIED',	'Phụ huynh hài lòng.',	'2025-06-29 08:00:00',	39,	9,	31,	NULL,	NULL,	'REPLIED'),
+(70,	'UNSATISFIED',	'Chưa rõ thông tin hậu kiểm.',	'2025-06-30 08:00:00',	40,	9,	32,	NULL,	NULL,	'NOT_REPLIED'),
+(71,	'SATISFIED',	'Đội ngũ y tế hỗ trợ tốt.',	'2025-07-01 08:00:00',	41,	9,	33,	NULL,	NULL,	'REPLIED'),
+(72,	'UNSATISFIED',	'Bé có phản ứng chậm.',	'2025-07-02 08:00:00',	42,	9,	34,	NULL,	NULL,	'NOT_REPLIED'),
+(73,	'SATISFIED',	'Thời gian tiêm hợp lý.',	'2025-07-03 08:00:00',	43,	9,	35,	NULL,	NULL,	'REPLIED'),
+(74,	'UNSATISFIED',	'Chưa được tư vấn rõ ràng.',	'2025-07-04 08:00:00',	44,	9,	36,	NULL,	NULL,	'NOT_REPLIED'),
+(75,	'SATISFIED',	'Bé khỏe mạnh bình thường.',	'2025-07-05 08:00:00',	45,	9,	37,	NULL,	NULL,	'REPLIED'),
+(76,	'UNSATISFIED',	'Mong nhận báo cáo tiêm.',	'2025-07-06 08:00:00',	46,	9,	38,	NULL,	NULL,	'NOT_REPLIED'),
+(77,	'SATISFIED',	'Không có phản ứng nào đáng lo.',	'2025-07-07 08:00:00',	47,	9,	39,	NULL,	NULL,	'REPLIED'),
+(78,	'UNSATISFIED',	'Phụ huynh cần gọi lại xác nhận.',	'2025-07-08 08:00:00',	48,	9,	40,	NULL,	NULL,	'NOT_REPLIED'),
+(79,	'SATISFIED',	'Rất an tâm.',	'2025-07-09 08:00:00',	49,	9,	41,	NULL,	NULL,	'REPLIED'),
+(80,	'UNSATISFIED',	'Bé đau nhẹ khi sờ vào.',	'2025-07-10 08:00:00',	50,	9,	42,	NULL,	NULL,	'NOT_REPLIED');
 
 DROP TABLE IF EXISTS `health_check_form`;
 CREATE TABLE `health_check_form` (
@@ -80,8 +192,52 @@ CREATE TABLE `health_check_form` (
   CONSTRAINT `health_check_form_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
   CONSTRAINT `health_check_form_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `health_check_form_chk_1` CHECK ((`status` in (_utf8mb4'DRAFT',_utf8mb4'SENT')))
-) ENGINE=InnoDB AUTO_INCREMENT=588 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+INSERT INTO `health_check_form` (`health_check_form_id`, `health_check_id`, `student_id`, `parent_id`, `form_date`, `notes`, `commit`, `status`) VALUES
+(1001,	7,	205,	7,	'2025-06-01',	'Không vấn đề',	1,	'SENT'),
+(1002,	8,	206,	2,	'2025-06-01',	'Thấy mệt',	1,	'SENT'),
+(1003,	7,	207,	9,	'2025-06-15',	'Thấy mệt nhiều',	1,	'SENT'),
+(1004,	9,	304,	11,	'2025-06-01',	'Không có ghi chú đặc biệt',	1,	'DRAFT'),
+(1005,	9,	305,	12,	'2025-06-01',	'Đã từng dị ứng nhẹ',	0,	'SENT'),
+(1006,	9,	306,	13,	'2025-06-01',	'Khỏe mạnh',	1,	'DRAFT'),
+(1007,	9,	307,	14,	'2025-06-01',	'Không có vấn đề gì',	0,	'SENT'),
+(1008,	9,	308,	15,	'2025-06-01',	'Đã từng khám tai mũi họng',	1,	'DRAFT'),
+(1009,	9,	309,	16,	'2025-06-02',	'Phản hồi tốt',	0,	'SENT'),
+(1010,	9,	310,	17,	'2025-06-02',	'Phát triển bình thường',	1,	'DRAFT'),
+(1011,	9,	311,	18,	'2025-06-02',	'Không có bệnh nền',	0,	'SENT'),
+(1012,	9,	312,	19,	'2025-06-02',	'Dị ứng nhẹ với trứng',	1,	'DRAFT'),
+(1013,	9,	313,	20,	'2025-06-02',	'Không có vấn đề gì',	0,	'SENT'),
+(1014,	9,	314,	21,	'2025-06-03',	'Khám định kỳ',	1,	'DRAFT'),
+(1015,	9,	315,	22,	'2025-06-03',	'Cần theo dõi thêm',	0,	'SENT'),
+(1016,	9,	316,	23,	'2025-06-03',	'Không có ghi chú',	1,	'DRAFT'),
+(1017,	9,	317,	24,	'2025-06-03',	'Khỏe mạnh',	0,	'SENT'),
+(1018,	9,	318,	25,	'2025-06-03',	'Có tiền sử dị ứng',	1,	'DRAFT'),
+(1019,	9,	319,	26,	'2025-06-04',	'Cần kiểm tra thêm',	0,	'SENT'),
+(1020,	9,	320,	27,	'2025-06-04',	'Không có vấn đề gì',	1,	'DRAFT'),
+(1021,	9,	321,	28,	'2025-06-04',	'Được tiêm đầy đủ',	0,	'SENT'),
+(1022,	9,	322,	29,	'2025-06-04',	'Phản hồi tích cực',	1,	'DRAFT'),
+(1023,	9,	323,	30,	'2025-06-04',	'Không có ghi chú',	0,	'SENT'),
+(1024,	9,	324,	31,	'2025-06-05',	'Tình trạng ổn định',	1,	'DRAFT'),
+(1025,	9,	325,	32,	'2025-06-05',	'Khỏe mạnh',	0,	'SENT'),
+(1026,	9,	326,	33,	'2025-06-05',	'Đã tiêm phòng đầy đủ',	1,	'DRAFT'),
+(1027,	9,	327,	34,	'2025-06-05',	'Cần theo dõi cân nặng',	0,	'SENT'),
+(1028,	9,	328,	35,	'2025-06-05',	'Bé phát triển tốt',	1,	'DRAFT'),
+(1029,	9,	329,	36,	'2025-06-06',	'Không có bệnh nền',	0,	'SENT'),
+(1030,	9,	330,	37,	'2025-06-06',	'Cần đo lại thị lực',	1,	'DRAFT'),
+(1031,	9,	331,	38,	'2025-06-06',	'Khỏe mạnh',	0,	'SENT'),
+(1032,	9,	332,	39,	'2025-06-06',	'Không có phản hồi',	1,	'DRAFT'),
+(1033,	9,	333,	40,	'2025-06-06',	'Được phụ huynh đồng ý',	0,	'SENT'),
+(1034,	9,	334,	41,	'2025-06-07',	'Không có vấn đề gì',	1,	'DRAFT'),
+(1035,	9,	335,	42,	'2025-06-07',	'Có dấu hiệu ho nhẹ',	0,	'SENT'),
+(1036,	9,	336,	43,	'2025-06-07',	'Được xác nhận từ phụ huynh',	1,	'DRAFT'),
+(1037,	9,	337,	44,	'2025-06-07',	'Cần theo dõi dị ứng',	0,	'SENT'),
+(1038,	9,	338,	45,	'2025-06-08',	'Không có ghi chú',	1,	'DRAFT'),
+(1039,	9,	339,	46,	'2025-06-08',	'Bé ăn uống kém',	0,	'SENT'),
+(1040,	9,	340,	47,	'2025-06-08',	'Cần bổ sung vitamin',	1,	'DRAFT'),
+(1041,	9,	341,	48,	'2025-06-08',	'Không có vấn đề gì',	0,	'SENT'),
+(1042,	9,	342,	49,	'2025-06-09',	'Tiêm phòng đầy đủ',	1,	'DRAFT'),
+(1043,	9,	343,	50,	'2025-06-10',	'Khỏe mạnh',	0,	'SENT');
 
 DROP TABLE IF EXISTS `health_check_program`;
 CREATE TABLE `health_check_program` (
@@ -97,7 +253,7 @@ CREATE TABLE `health_check_program` (
   KEY `admin_id` (`admin_id`),
   CONSTRAINT `health_check_program_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `health_check_program_chk_1` CHECK ((`status` in (_utf8mb4'ON_GOING',_utf8mb4'COMPLETED',_utf8mb4'NOT_STARTED')))
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `health_check_program` (`health_check_id`, `health_check_name`, `description`, `start_date`, `end_date`, `status`, `note`, `admin_id`) VALUES
 (7,	'Health Check - Semester 1',	'Kiểm tra sức khỏe đầu năm học 2025',	'2025-09-01',	'2025-09-10',	'ON_GOING',	'12345',	1),
@@ -115,8 +271,52 @@ CREATE TABLE `health_check_result` (
   KEY `health_check_form_id` (`health_check_form_id`),
   CONSTRAINT `health_check_result_ibfk_1` FOREIGN KEY (`health_check_form_id`) REFERENCES `health_check_form` (`health_check_form_id`) ON DELETE CASCADE,
   CONSTRAINT `health_check_result_chk_1` CHECK ((`level` in (_utf8mb4'GOOD',_utf8mb4'FAIR',_utf8mb4'AVERAGE',_utf8mb4'POOR')))
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+INSERT INTO `health_check_result` (`health_result_id`, `diagnosis`, `level`, `note`, `health_check_form_id`) VALUES
+(201,	'Khỏe mạnh',	'GOOD',	'Không vấn đề gì',	1001),
+(202,	'Mệt nhẹ',	'FAIR',	'Nên theo dõi thêm',	1002),
+(203,	'Cần nghỉ ngơi',	'POOR',	'Chóng mặt',	1003),
+(204,	'Khỏe mạnh',	'GOOD',	'Không có dấu hiệu bất thường',	1004),
+(205,	'Dị ứng nhẹ',	'FAIR',	'Cần tránh tiếp xúc với phấn hoa',	1005),
+(206,	'Cân nặng thấp',	'AVERAGE',	'Cần cải thiện chế độ ăn',	1006),
+(207,	'Sâu răng',	'FAIR',	'Nên đi khám nha khoa',	1007),
+(208,	'Bình thường',	'GOOD',	'Phát triển tốt',	1008),
+(209,	'Cận thị nhẹ',	'AVERAGE',	'Đề xuất đo lại thị lực định kỳ',	1009),
+(210,	'Da mẩn đỏ',	'FAIR',	'Khuyến cáo sử dụng kem dị ứng',	1010),
+(211,	'Khỏe mạnh',	'GOOD',	'Không có triệu chứng bất thường',	1011),
+(212,	'Viêm họng nhẹ',	'FAIR',	'Cần giữ ấm cổ họng',	1012),
+(213,	'Chậm tăng chiều cao',	'AVERAGE',	'Nên bổ sung canxi',	1013),
+(214,	'Sức khỏe tốt',	'GOOD',	'Phát triển bình thường',	1014),
+(215,	'Viêm da tiếp xúc',	'FAIR',	'Tránh dùng xà phòng mạnh',	1015),
+(216,	'Béo phì mức 1',	'AVERAGE',	'Cần tập luyện nhiều hơn',	1016),
+(217,	'Thị lực tốt',	'GOOD',	'Không cần can thiệp',	1017),
+(218,	'Hô hấp ổn định',	'GOOD',	'Không có dấu hiệu khò khè',	1018),
+(219,	'Viêm mũi dị ứng',	'FAIR',	'Cần tránh bụi và lông động vật',	1019),
+(220,	'Sâu răng nhiều',	'POOR',	'Cần điều trị nha khoa sớm',	1020),
+(221,	'Suy dinh dưỡng nhẹ',	'AVERAGE',	'Cần bổ sung năng lượng',	1021),
+(222,	'Không có bệnh',	'GOOD',	'Bé rất khỏe mạnh',	1022),
+(223,	'Viêm kết mạc',	'FAIR',	'Cần tra thuốc đúng lịch',	1023),
+(224,	'Thừa cân nhẹ',	'AVERAGE',	'Khuyên giảm ăn ngọt',	1024),
+(225,	'Hô hấp tốt',	'GOOD',	'Không có bất thường',	1025),
+(226,	'Viêm da cơ địa',	'FAIR',	'Nên theo dõi thêm',	1026),
+(227,	'Hệ tiêu hóa ổn',	'GOOD',	'Không có vấn đề tiêu hóa',	1027),
+(228,	'Thiếu máu nhẹ',	'AVERAGE',	'Cần bổ sung sắt',	1028),
+(229,	'Khỏe mạnh',	'GOOD',	'Không ghi nhận bất thường',	1029),
+(230,	'Đau mắt đỏ',	'FAIR',	'Tránh tiếp xúc gần với bạn bè',	1030),
+(231,	'Đau đầu nhẹ',	'AVERAGE',	'Theo dõi thêm nếu tái phát',	1031),
+(232,	'Không bệnh lý',	'GOOD',	'Bình thường theo độ tuổi',	1032),
+(233,	'Viêm phế quản nhẹ',	'FAIR',	'Nghỉ ngơi và uống nước ấm',	1033),
+(234,	'Tăng huyết áp nhẹ',	'AVERAGE',	'Nên theo dõi thêm',	1034),
+(235,	'Cơ xương phát triển tốt',	'GOOD',	'Không lệch vẹo cột sống',	1035),
+(236,	'Thiếu vitamin D',	'AVERAGE',	'Cần tiếp xúc ánh nắng nhiều hơn',	1036),
+(237,	'Không bất thường',	'GOOD',	'Hoàn toàn khỏe mạnh',	1037),
+(238,	'Cận thị trung bình',	'FAIR',	'Cần đeo kính khi học',	1038),
+(239,	'Chán ăn',	'AVERAGE',	'Khuyến khích vận động nhẹ',	1039),
+(240,	'Khỏe mạnh',	'GOOD',	'Không vấn đề gì',	1040),
+(241,	'Đầy bụng khó tiêu',	'FAIR',	'Nên ăn uống điều độ',	1041),
+(242,	'Viêm lợi',	'AVERAGE',	'Cần khám nha sĩ',	1042),
+(243,	'Bình thường',	'GOOD',	'Không có ghi chú thêm',	1043);
 
 DROP TABLE IF EXISTS `medical_event`;
 CREATE TABLE `medical_event` (
@@ -131,7 +331,7 @@ CREATE TABLE `medical_event` (
   KEY `nurse_id` (`nurse_id`),
   CONSTRAINT `medical_event_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
   CONSTRAINT `medical_event_ibfk_2` FOREIGN KEY (`nurse_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `medical_event` (`event_id`, `type_event`, `date`, `description`, `student_id`, `nurse_id`) VALUES
 (6,	'Ngất xỉu trong lớp',	'2025-06-17',	'Học sinh ngất xỉu khi đang học môn Thể dục, đã được sơ cứu và chuyển đến phòng y tế.',	209,	9),
@@ -150,7 +350,22 @@ INSERT INTO `medical_event` (`event_id`, `type_event`, `date`, `description`, `s
 (61,	'Đau bụng',	'2025-06-04',	'Đau bụng sáng sớm',	278,	9),
 (62,	'Sốt',	'2025-06-05',	'Sốt kèm mệt mỏi',	303,	9),
 (63,	'Ngất xỉu trong lớp',	'2025-06-05',	'Ngất trong giờ học',	301,	9),
-(64,	'Đau bụng',	'2025-06-05',	'Đau bụng nhẹ',	302,	9);
+(64,	'Đau bụng',	'2025-06-05',	'Đau bụng nhẹ',	302,	9),
+(65,	'Khám sức khỏe định kỳ',	'2025-06-01',	'Khám tổng quát học kỳ II',	304,	9),
+(66,	'Sơ cứu',	'2025-06-02',	'Bé bị té trầy nhẹ đầu gối',	305,	9),
+(67,	'Phát hiện bệnh',	'2025-06-03',	'Có dấu hiệu viêm họng',	306,	9),
+(68,	'Khám sức khỏe',	'2025-06-04',	'Đo chiều cao, cân nặng định kỳ',	307,	9),
+(69,	'Sơ cứu',	'2025-06-05',	'Bé bị chảy máu mũi nhẹ',	308,	9),
+(70,	'Tư vấn y tế',	'2025-06-06',	'Tư vấn vệ sinh cá nhân',	309,	9),
+(71,	'Phát hiện dị ứng',	'2025-06-07',	'Phát ban sau khi ăn hải sản',	310,	9),
+(72,	'Khám thị lực',	'2025-06-08',	'Kiểm tra mắt khi bé nhìn không rõ',	311,	9),
+(73,	'Khám tai mũi họng',	'2025-06-09',	'Bé ho và có đờm',	312,	9),
+(74,	'Sơ cứu',	'2025-06-10',	'Trầy xước tay do chơi cầu trượt',	313,	9),
+(75,	'Phát hiện sâu răng',	'2025-06-11',	'Đau răng khi ăn uống',	314,	9),
+(76,	'Khám da liễu',	'2025-06-12',	'Phát hiện nổi mẩn ở tay',	315,	9),
+(77,	'Tư vấn sức khỏe',	'2025-06-13',	'Tư vấn dinh dưỡng',	316,	9),
+(78,	'Khám tổng quát',	'2025-06-14',	'Kiểm tra chỉ số BMI',	317,	9),
+(79,	'Khám tai',	'2025-06-15',	'Bé nghe không rõ',	318,	9);
 
 DROP TABLE IF EXISTS `medical_record`;
 CREATE TABLE `medical_record` (
@@ -168,12 +383,52 @@ CREATE TABLE `medical_record` (
   PRIMARY KEY (`record_id`),
   KEY `student_id` (`student_id`),
   CONSTRAINT `medical_record_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `medical_record` (`record_id`, `student_id`, `allergies`, `chronic_disease`, `treatment_history`, `vision`, `hearing`, `weight`, `height`, `last_update`, `note`) VALUES
 (7,	209,	'Pollen',	'Asthma',	'Used inhaler for 3 years',	'Normal',	'Normal',	45.5,	150,	'2025-06-08 16:18:24',	'Student is in good condition'),
 (8,	225,	'string',	'string',	'string',	'Unknown',	'',	1,	30,	'2025-06-08 16:18:57',	'string'),
-(10,	213,	'2',	'2',	'2',	'2',	'2',	2,	2,	'2025-06-08 16:18:57',	'2');
+(10,	213,	'2',	'2',	'2',	'2',	'2',	2,	2,	'2025-06-08 16:18:57',	'2'),
+(11,	304,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	25.5,	130,	'2025-06-23 14:07:29',	'Khám định kỳ'),
+(12,	305,	'Hải sản',	'Không',	'Viêm họng',	'9/10',	'Bình thường',	27,	132,	'2025-06-23 14:07:29',	'Cần theo dõi dị ứng'),
+(13,	306,	'Không',	'Hen suyễn',	'Điều trị định kỳ',	'10/10',	'Tốt',	30.2,	135.5,	'2025-06-23 14:07:29',	'Đang điều trị hen'),
+(14,	307,	'Bụi',	'Không',	'Không',	'10/10',	'Bình thường',	28.7,	134,	'2025-06-23 14:07:29',	'Thỉnh thoảng dị ứng nhẹ'),
+(15,	308,	'Không',	'Không',	'Cảm cúm',	'10/10',	'Tốt',	26.8,	131,	'2025-06-23 14:07:29',	'Đã khỏi bệnh'),
+(16,	309,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	29.5,	136,	'2025-06-23 14:07:29',	'Khỏe mạnh'),
+(17,	310,	'Không',	'Viêm da cơ địa',	'Đã điều trị',	'9/10',	'Bình thường',	27.3,	133,	'2025-06-23 14:07:29',	'Da nhạy cảm'),
+(18,	311,	'Trứng',	'Không',	'Không',	'10/10',	'Bình thường',	25,	128,	'2025-06-23 14:07:29',	'Dị ứng nhẹ'),
+(19,	312,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	31,	137,	'2025-06-23 14:07:29',	'Phát triển tốt'),
+(20,	313,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	28,	132.5,	'2025-06-23 14:07:29',	'Không có vấn đề'),
+(21,	314,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	26.2,	129,	'2025-06-23 14:07:29',	'Khám định kỳ'),
+(22,	315,	'Không',	'Không',	'Đau bụng nhẹ',	'10/10',	'Bình thường',	27.8,	130,	'2025-06-23 14:07:29',	'Tiêu hóa yếu'),
+(23,	316,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	29.1,	134,	'2025-06-23 14:07:29',	'Bình thường'),
+(24,	317,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	30,	135,	'2025-06-23 14:07:29',	'Khỏe'),
+(25,	318,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	28.5,	132,	'2025-06-23 14:07:29',	'Bình thường'),
+(26,	319,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	26.9,	130,	'2025-06-23 14:07:29',	'Khỏe mạnh'),
+(27,	320,	'Sữa bò',	'Không',	'Không',	'9/10',	'Bình thường',	27,	129.5,	'2025-06-23 14:07:29',	'Theo dõi dị ứng sữa'),
+(28,	321,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	28.6,	131,	'2025-06-23 14:07:29',	'Bình thường'),
+(29,	322,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	30.4,	136,	'2025-06-23 14:07:29',	'Khám định kỳ'),
+(30,	323,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	29.7,	133,	'2025-06-23 14:07:29',	'Không có vấn đề'),
+(31,	324,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	25.3,	127,	'2025-06-23 14:07:29',	'Bình thường'),
+(32,	325,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	28.1,	132,	'2025-06-23 14:07:29',	'Bình thường'),
+(33,	326,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	29,	134,	'2025-06-23 14:07:29',	'Khám sức khỏe học kỳ'),
+(34,	327,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	26.7,	130,	'2025-06-23 14:07:29',	'Không có ghi chú'),
+(35,	328,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	30,	135.5,	'2025-06-23 14:07:29',	'Phát triển tốt'),
+(36,	329,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	27.5,	130.5,	'2025-06-23 14:07:29',	'Khám định kỳ'),
+(37,	330,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	28.9,	133,	'2025-06-23 14:07:29',	'Bình thường'),
+(38,	331,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	31.1,	137,	'2025-06-23 14:07:29',	'Phát triển tốt'),
+(39,	332,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	27.4,	129,	'2025-06-23 14:07:29',	'Khám sức khỏe học sinh'),
+(40,	333,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	29.8,	134,	'2025-06-23 14:07:29',	'Không có vấn đề'),
+(41,	334,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	28.3,	132,	'2025-06-23 14:07:29',	'Khám định kỳ'),
+(42,	335,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	26,	128,	'2025-06-23 14:07:29',	'Bình thường'),
+(43,	336,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	30.5,	136,	'2025-06-23 14:07:29',	'Phát triển tốt'),
+(44,	337,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	27.6,	130.5,	'2025-06-23 14:07:29',	'Không có vấn đề'),
+(45,	338,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	29.2,	133,	'2025-06-23 14:07:29',	'Khám định kỳ'),
+(46,	339,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	30.7,	135,	'2025-06-23 14:07:29',	'Khỏe mạnh'),
+(47,	340,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	28.4,	131,	'2025-06-23 14:07:29',	'Bình thường'),
+(48,	341,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	29.9,	134.5,	'2025-06-23 14:07:29',	'Phát triển tốt'),
+(49,	342,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	26.5,	128,	'2025-06-23 14:07:29',	'Khám định kỳ'),
+(50,	343,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	27.7,	130,	'2025-06-23 14:07:29',	'Bình thường');
 
 DROP TABLE IF EXISTS `medical_request`;
 CREATE TABLE `medical_request` (
@@ -190,10 +445,25 @@ CREATE TABLE `medical_request` (
   CONSTRAINT `medical_request_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
   CONSTRAINT `medical_request_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `chk_status` CHECK ((`status` in (_utf8mb4'SUBMITTED',_utf8mb4'COMPLETED',_utf8mb4'PROCESSING',_utf8mb4'CANCELLED')))
-) ENGINE=InnoDB AUTO_INCREMENT=150793 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `medical_request` (`request_id`, `request_name`, `date`, `note`, `status`, `student_id`, `parent_id`) VALUES
-(150792,	'Yêu cầu cấp phát thuốc',	'2025-06-18',	'Học sinh bị sốt nhẹ, cần uống thuốc theo đơn',	'PROCESSING',	209,	1);
+(150792,	'Yêu cầu cấp phát thuốc',	'2025-06-18',	'Học sinh bị sốt nhẹ, cần uống thuốc theo đơn',	'PROCESSING',	209,	1),
+(150793,	'Yêu cầu phát thuốc',	'2025-06-10',	'Bé ho và chảy mũi',	'PROCESSING',	304,	11),
+(150794,	'Khám tai mũi họng',	'2025-06-11',	'Có dấu hiệu viêm mũi',	'SUBMITTED',	305,	12),
+(150795,	'Khám sốt nhẹ',	'2025-06-12',	'Bé bị sốt nhẹ từ tối qua',	'COMPLETED',	306,	13),
+(150796,	'Đơn thuốc hạ sốt',	'2025-06-13',	'Mong được phát thuốc Paracetamol',	'PROCESSING',	307,	14),
+(150797,	'Yêu cầu kiểm tra tiêu hóa',	'2025-06-14',	'Đau bụng sáng nay',	'SUBMITTED',	308,	15),
+(150798,	'Phát thuốc ho',	'2025-06-15',	'Ho khan kéo dài',	'PROCESSING',	309,	16),
+(150799,	'Yêu cầu thăm khám',	'2025-06-15',	'Bé kêu chóng mặt',	'COMPLETED',	310,	17),
+(150800,	'Khám tổng quát',	'2025-06-16',	'Kiểm tra sức khỏe định kỳ',	'SUBMITTED',	311,	18),
+(150801,	'Cấp thuốc dị ứng',	'2025-06-16',	'Dị ứng nhẹ sau bữa ăn',	'PROCESSING',	312,	19),
+(150802,	'Yêu cầu kiểm tra mắt',	'2025-06-17',	'Nhìn mờ trên lớp',	'SUBMITTED',	313,	20),
+(150803,	'Khám hô hấp',	'2025-06-18',	'Thở khò khè nhẹ',	'PROCESSING',	314,	21),
+(150804,	'Kiểm tra tai',	'2025-06-18',	'Đau tai trái',	'COMPLETED',	315,	22),
+(150805,	'Yêu cầu thuốc tiêu hóa',	'2025-06-19',	'Khó tiêu sau ăn',	'SUBMITTED',	316,	23),
+(150806,	'Cấp thuốc dị ứng',	'2025-06-19',	'Nổi mẩn ở tay',	'PROCESSING',	317,	24),
+(150807,	'Khám da liễu',	'2025-06-20',	'Mụn đỏ vùng mặt',	'COMPLETED',	318,	25);
 
 DROP TABLE IF EXISTS `medical_request_detail`;
 CREATE TABLE `medical_request_detail` (
@@ -205,11 +475,26 @@ CREATE TABLE `medical_request_detail` (
   PRIMARY KEY (`detail_id`),
   KEY `request_id` (`request_id`),
   CONSTRAINT `medical_request_detail_ibfk_1` FOREIGN KEY (`request_id`) REFERENCES `medical_request` (`request_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=150796 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `medical_request_detail` (`detail_id`, `medicine_name`, `dosage`, `time`, `request_id`) VALUES
 (150794,	'Paracetamol 500mg',	'1 viên',	'Sáng sau ăn',	150792),
-(150795,	'Vitamin C',	'1 viên',	'Chiều sau ăn',	150792);
+(150795,	'Vitamin C',	'1 viên',	'Chiều sau ăn',	150792),
+(150796,	'Paracetamol 250mg',	'1 viên',	'Sáng, chiều',	150793),
+(150797,	'Xịt mũi Natri Clorid 0.9%',	'2 lần/ngày',	'Sáng và tối',	150794),
+(150798,	'Thuốc hạ sốt Hapacol',	'1 viên 250mg',	'Khi sốt trên 38.5°C',	150795),
+(150799,	'Paracetamol gói bột',	'1 gói',	'Sau ăn sáng và tối',	150796),
+(150800,	'Men tiêu hóa Lactomin',	'1 gói',	'Trước bữa ăn',	150797),
+(150801,	'Siro ho Prospan',	'5ml',	'3 lần/ngày sau ăn',	150798),
+(150802,	'Oresol',	'1 gói pha nước',	'Uống từng ngụm nhỏ, 3 lần/ngày',	150799),
+(150803,	'Vitamin C 100mg',	'1 viên',	'Sáng sau ăn',	150800),
+(150804,	'Thuốc dị ứng Clorpheniramin',	'1 viên',	'Tối trước khi ngủ',	150801),
+(150805,	'Thuốc nhỏ mắt V-Rohto',	'2 giọt',	'Sáng và tối',	150802),
+(150806,	'Dung dịch súc miệng Betadine',	'10ml',	'Sau bữa ăn trưa và tối',	150803),
+(150807,	'Thuốc nhỏ tai Otipax',	'2 giọt',	'3 lần/ngày',	150804),
+(150808,	'Thuốc tiêu hóa Enterogermina',	'1 ống',	'Sáng sau ăn',	150805),
+(150809,	'Viên dị ứng Telfast',	'1 viên',	'Tối sau ăn',	150806),
+(150810,	'Kem bôi trị viêm da Fucicort',	'Bôi mỏng',	'2 lần/ngày',	150807);
 
 DROP TABLE IF EXISTS `notification`;
 CREATE TABLE `notification` (
@@ -224,8 +509,89 @@ CREATE TABLE `notification` (
   PRIMARY KEY (`id`),
   KEY `fk_notification_user` (`user_id`),
   CONSTRAINT `fk_notification_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=149 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+INSERT INTO `notification` (`id`, `user_id`, `title`, `content`, `form_type`, `form_id`, `created_at`, `is_read`) VALUES
+(1,	11,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1004,	'2025-06-23 14:45:08',	0),
+(2,	12,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1005,	'2025-06-23 14:45:08',	0),
+(3,	13,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1006,	'2025-06-23 14:45:08',	0),
+(4,	14,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1007,	'2025-06-23 14:45:08',	0),
+(5,	15,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1008,	'2025-06-23 14:45:08',	0),
+(6,	16,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1009,	'2025-06-23 14:45:08',	0),
+(7,	17,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1010,	'2025-06-23 14:45:08',	0),
+(8,	18,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1011,	'2025-06-23 14:45:08',	0),
+(9,	19,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1012,	'2025-06-23 14:45:08',	0),
+(10,	20,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1013,	'2025-06-23 14:45:08',	0),
+(11,	21,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1014,	'2025-06-23 14:45:08',	0),
+(12,	22,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1015,	'2025-06-23 14:45:08',	0),
+(13,	23,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1016,	'2025-06-23 14:45:08',	0),
+(14,	24,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1017,	'2025-06-23 14:45:08',	0),
+(15,	25,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1018,	'2025-06-23 14:45:08',	0),
+(16,	26,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1019,	'2025-06-23 14:45:08',	0),
+(17,	27,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1020,	'2025-06-23 14:45:08',	0),
+(18,	28,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1021,	'2025-06-23 14:45:08',	0),
+(19,	29,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1022,	'2025-06-23 14:45:08',	0),
+(20,	30,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1023,	'2025-06-23 14:45:08',	0),
+(21,	31,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1024,	'2025-06-23 14:45:08',	0),
+(22,	32,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1025,	'2025-06-23 14:45:08',	0),
+(23,	33,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1026,	'2025-06-23 14:45:08',	0),
+(24,	34,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1027,	'2025-06-23 14:45:08',	0),
+(25,	35,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1028,	'2025-06-23 14:45:08',	0),
+(26,	36,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1029,	'2025-06-23 14:45:08',	0),
+(27,	37,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1030,	'2025-06-23 14:45:08',	0),
+(28,	38,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1031,	'2025-06-23 14:45:08',	0),
+(29,	39,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1032,	'2025-06-23 14:45:08',	0),
+(30,	40,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1033,	'2025-06-23 14:45:08',	0),
+(31,	41,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1034,	'2025-06-23 14:45:08',	0),
+(32,	42,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1035,	'2025-06-23 14:45:08',	0),
+(33,	43,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1036,	'2025-06-23 14:45:08',	0),
+(34,	44,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1037,	'2025-06-23 14:45:08',	0),
+(35,	45,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1038,	'2025-06-23 14:45:08',	0),
+(36,	46,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1039,	'2025-06-23 14:45:08',	0),
+(37,	47,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1040,	'2025-06-23 14:45:08',	0),
+(38,	48,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1041,	'2025-06-23 14:45:08',	0),
+(39,	49,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1042,	'2025-06-23 14:45:08',	0),
+(40,	50,	'Kết quả khám sức khỏe của bé đã sẵn sàng',	'Vui lòng kiểm tra kết quả khám sức khỏe gần nhất.',	'HEALTH',	1043,	'2025-06-23 14:45:08',	0),
+(41,	11,	'Thông báo kết quả tiêm chủng',	'Kết quả tiêm chủng của học sinh đã được cập nhật.',	'VACCINE_FORM',	303,	'2025-06-23 14:58:33',	0),
+(42,	12,	'Thông báo kết quả tiêm chủng',	'Kết quả đã sẵn sàng để xem.',	'VACCINE_FORM',	304,	'2025-06-23 14:58:33',	1),
+(43,	13,	'Thông báo kết quả tiêm chủng',	'Vui lòng kiểm tra phản hồi từ y tế.',	'VACCINE_FORM',	305,	'2025-06-23 14:58:33',	0),
+(44,	14,	'Thông báo kết quả tiêm chủng',	'Học sinh đã được tiêm và theo dõi.',	'VACCINE_FORM',	306,	'2025-06-23 14:58:33',	1),
+(45,	15,	'Thông báo kết quả tiêm chủng',	'Mời phụ huynh xem lại thông tin tiêm.',	'VACCINE_FORM',	307,	'2025-06-23 14:58:33',	0),
+(46,	16,	'Thông báo kết quả tiêm chủng',	'Không có phản ứng sau tiêm.',	'VACCINE_FORM',	308,	'2025-06-23 14:58:33',	1),
+(47,	17,	'Thông báo kết quả tiêm chủng',	'Phản ứng sau tiêm đã được ghi nhận.',	'VACCINE_FORM',	309,	'2025-06-23 14:58:33',	0),
+(48,	18,	'Thông báo kết quả tiêm chủng',	'Kết quả đã được cập nhật trong hệ thống.',	'VACCINE_FORM',	310,	'2025-06-23 14:58:33',	1),
+(49,	19,	'Thông báo kết quả tiêm chủng',	'Mời quý phụ huynh xem thông tin chi tiết.',	'VACCINE_FORM',	311,	'2025-06-23 14:58:33',	0),
+(50,	20,	'Thông báo kết quả tiêm chủng',	'Học sinh khỏe mạnh sau tiêm.',	'VACCINE_FORM',	312,	'2025-06-23 14:58:33',	1),
+(51,	21,	'Thông báo kết quả tiêm chủng',	'Không có bất thường nào được ghi nhận.',	'VACCINE_FORM',	313,	'2025-06-23 14:58:33',	0),
+(52,	22,	'Thông báo kết quả tiêm chủng',	'Đã cập nhật dữ liệu tiêm chủng.',	'VACCINE_FORM',	314,	'2025-06-23 14:58:33',	1),
+(53,	23,	'Thông báo kết quả tiêm chủng',	'Phụ huynh có thể liên hệ để biết thêm chi tiết.',	'VACCINE_FORM',	315,	'2025-06-23 14:58:33',	0),
+(54,	24,	'Thông báo kết quả tiêm chủng',	'Đã ghi nhận phản hồi từ phụ huynh.',	'VACCINE_FORM',	316,	'2025-06-23 14:58:33',	1),
+(55,	25,	'Thông báo kết quả tiêm chủng',	'Thông tin tiêm chủng đã đầy đủ.',	'VACCINE_FORM',	317,	'2025-06-23 14:58:33',	0),
+(56,	26,	'Thông báo kết quả tiêm chủng',	'Đề nghị kiểm tra phản ứng sau tiêm.',	'VACCINE_FORM',	318,	'2025-06-23 14:58:33',	1),
+(57,	27,	'Thông báo kết quả tiêm chủng',	'Kết quả có sẵn trong hệ thống.',	'VACCINE_FORM',	319,	'2025-06-23 14:58:33',	0),
+(58,	28,	'Thông báo kết quả tiêm chủng',	'Đã xác nhận hoàn thành tiêm.',	'VACCINE_FORM',	320,	'2025-06-23 14:58:33',	1),
+(59,	29,	'Thông báo kết quả tiêm chủng',	'Thông báo nhắc lại về việc theo dõi sau tiêm.',	'VACCINE_FORM',	321,	'2025-06-23 14:58:33',	0),
+(60,	30,	'Thông báo kết quả tiêm chủng',	'Đã nhận phản hồi từ y tá.',	'VACCINE_FORM',	322,	'2025-06-23 14:58:33',	1),
+(61,	31,	'Thông báo kết quả tiêm chủng',	'Mọi thông tin đã được lưu trữ.',	'VACCINE_FORM',	323,	'2025-06-23 14:58:33',	0),
+(62,	32,	'Thông báo kết quả tiêm chủng',	'Không có bất thường nào được ghi nhận.',	'VACCINE_FORM',	324,	'2025-06-23 14:58:33',	1),
+(63,	33,	'Thông báo kết quả tiêm chủng',	'Mời phụ huynh xác nhận lại thông tin.',	'VACCINE_FORM',	325,	'2025-06-23 14:58:33',	0),
+(64,	34,	'Thông báo kết quả tiêm chủng',	'Bé có biểu hiện sốt nhẹ, đã theo dõi.',	'VACCINE_FORM',	326,	'2025-06-23 14:58:33',	1),
+(65,	35,	'Thông báo kết quả tiêm chủng',	'Phản ứng nhẹ đã hết.',	'VACCINE_FORM',	327,	'2025-06-23 14:58:33',	0),
+(66,	36,	'Thông báo kết quả tiêm chủng',	'Y tá đã cập nhật thông tin.',	'VACCINE_FORM',	328,	'2025-06-23 14:58:33',	1),
+(67,	37,	'Thông báo kết quả tiêm chủng',	'Cần theo dõi thêm 24h.',	'VACCINE_FORM',	329,	'2025-06-23 14:58:33',	0),
+(68,	38,	'Thông báo kết quả tiêm chủng',	'Mọi phản ứng đều trong giới hạn an toàn.',	'VACCINE_FORM',	330,	'2025-06-23 14:58:33',	1),
+(69,	39,	'Thông báo kết quả tiêm chủng',	'Mời quý phụ huynh đọc báo cáo.',	'VACCINE_FORM',	331,	'2025-06-23 14:58:33',	0),
+(70,	40,	'Thông báo kết quả tiêm chủng',	'Chúc bé luôn khỏe mạnh.',	'VACCINE_FORM',	332,	'2025-06-23 14:58:33',	1),
+(71,	41,	'Thông báo kết quả tiêm chủng',	'Hệ thống đã cập nhật kết quả tiêm.',	'VACCINE_FORM',	333,	'2025-06-23 14:58:33',	0),
+(72,	42,	'Thông báo kết quả tiêm chủng',	'Không có gì bất thường.',	'VACCINE_FORM',	334,	'2025-06-23 14:58:33',	1),
+(73,	43,	'Thông báo kết quả tiêm chủng',	'Kết quả đã được xác nhận.',	'VACCINE_FORM',	335,	'2025-06-23 14:58:33',	0),
+(74,	44,	'Thông báo kết quả tiêm chủng',	'Y tá đã gửi kết quả tiêm chủng.',	'VACCINE_FORM',	336,	'2025-06-23 14:58:33',	1),
+(75,	45,	'Thông báo kết quả tiêm chủng',	'Thông tin chi tiết đã gửi qua hệ thống.',	'VACCINE_FORM',	337,	'2025-06-23 14:58:33',	0),
+(76,	46,	'Thông báo kết quả tiêm chủng',	'Vui lòng xác nhận lại thông tin.',	'VACCINE_FORM',	338,	'2025-06-23 14:58:33',	1),
+(77,	47,	'Thông báo kết quả tiêm chủng',	'Không phản ứng, bé hoàn toàn khỏe mạnh.',	'VACCINE_FORM',	339,	'2025-06-23 14:58:33',	0),
+(78,	48,	'Thông báo kết quả tiêm chủng',	'Đã gửi nhắc nhở theo dõi.',	'VACCINE_FORM',	340,	'2025-06-23 14:58:33',	1),
+(79,	49,	'Thông báo kết quả tiêm chủng',	'Kết quả tốt, bé khỏe.',	'VACCINE_FORM',	341,	'2025-06-23 14:58:33',	0),
+(80,	50,	'Thông báo kết quả tiêm chủng',	'Không có phản ứng nào sau tiêm.',	'VACCINE_FORM',	342,	'2025-06-23 14:58:33',	1);
 
 DROP TABLE IF EXISTS `refresh_token`;
 CREATE TABLE `refresh_token` (
@@ -239,7 +605,7 @@ CREATE TABLE `refresh_token` (
   UNIQUE KEY `refresh_token` (`refresh_token`),
   UNIQUE KEY `user_id` (`user_id`),
   CONSTRAINT `fk_refresh_token_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `refresh_token` (`id`, `refresh_token`, `expiry_date`, `created_at`, `updated_at`, `user_id`) VALUES
 (2,	'88b3dca1-7bb9-4496-8939-c1a32c4cd708',	'2025-06-18 02:55:34',	'2025-06-07 21:30:59',	'2025-06-11 02:55:34',	1),
@@ -249,7 +615,7 @@ INSERT INTO `refresh_token` (`id`, `refresh_token`, `expiry_date`, `created_at`,
 (6,	'8161c7e2-0318-4cc1-b2ca-fc0c0e5bb011',	'2025-06-18 03:00:03',	'2025-06-07 21:33:12',	'2025-06-11 03:00:03',	5),
 (7,	'2cc987b5-3514-4432-a81a-60a1d0e57f02',	'2025-06-18 03:00:30',	'2025-06-07 21:33:35',	'2025-06-11 03:00:30',	6),
 (8,	'b73a8475-85d5-454a-98dc-8bf70941b530',	'2025-06-18 03:00:53',	'2025-06-07 21:33:59',	'2025-06-11 03:00:53',	7),
-(9,	'2a787ce4-1b08-42ca-9943-5870e714af08',	'2025-06-28 02:19:02',	'2025-06-07 21:34:25',	'2025-06-21 02:19:03',	8),
+(9,	'8574a965-59a8-4ba8-ba9c-f81500d234ac',	'2025-06-30 07:51:32',	'2025-06-07 21:34:25',	'2025-06-23 07:51:32',	8),
 (10,	'62046d5f-4c4f-4566-a458-f4652a931302',	'2025-06-25 16:06:04',	'2025-06-07 21:34:51',	'2025-06-18 16:06:04',	9),
 (11,	'a555b1fd-5ac5-4c30-bfb2-77c7a1bfc488',	'2025-06-25 19:42:21',	'2025-06-07 21:35:16',	'2025-06-18 19:42:21',	10);
 
@@ -267,7 +633,7 @@ CREATE TABLE `student` (
   KEY `parent_id` (`parent_id`),
   CONSTRAINT `student_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `class` (`class_id`) ON DELETE CASCADE,
   CONSTRAINT `student_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=304 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `student` (`student_id`, `student_name`, `dob`, `gender`, `relationship`, `class_id`, `parent_id`) VALUES
 (204,	'Nguyễn Văn 1',	'2012-01-01',	'Nam',	'Con trai',	1,	3),
@@ -369,7 +735,47 @@ INSERT INTO `student` (`student_id`, `student_name`, `dob`, `gender`, `relations
 (300,	'Quyền Lan 97',	'2012-02-05',	'Nữ',	'Con gái',	1,	6),
 (301,	'Sáng Văn 98',	'2011-09-22',	'Nam',	'Con trai',	3,	8),
 (302,	'Thịnh Thị 99',	'2012-12-14',	'Nữ',	'Con gái',	2,	5),
-(303,	'Uyển Hữu 100',	'2011-02-11',	'Nam',	'Con trai',	1,	10);
+(303,	'Uyển Hữu 100',	'2011-02-11',	'Nam',	'Con trai',	1,	10),
+(304,	'Nguyễn Minh Khang',	'2014-03-15',	'Nam',	'Con trai',	4,	11),
+(305,	'Lê Hoàng Bảo',	'2015-07-22',	'Nam',	'Con trai',	4,	12),
+(306,	'Trần Nhật Minh',	'2013-11-30',	'Nam',	'Con trai',	4,	13),
+(307,	'Phạm Anh Tú',	'2014-09-12',	'Nam',	'Con trai',	4,	14),
+(308,	'Hoàng Gia Huy',	'2016-01-25',	'Nam',	'Con trai',	4,	15),
+(309,	'Đỗ Trung Kiên',	'2013-06-10',	'Nam',	'Con trai',	4,	16),
+(310,	'Ngô Minh Quân',	'2014-12-05',	'Nam',	'Con trai',	4,	17),
+(311,	'Vũ Bảo Long',	'2015-08-14',	'Nam',	'Con trai',	4,	18),
+(312,	'Mai Tuấn Khải',	'2014-04-02',	'Nam',	'Con trai',	4,	19),
+(313,	'Bùi Quốc Anh',	'2013-10-21',	'Nam',	'Con trai',	4,	20),
+(314,	'Nguyễn Ngọc Lan',	'2014-02-17',	'Nữ',	'Con gái',	4,	21),
+(315,	'Lê Khánh Linh',	'2013-09-28',	'Nữ',	'Con gái',	4,	22),
+(316,	'Trần Diệu Anh',	'2015-05-19',	'Nữ',	'Con gái',	4,	23),
+(317,	'Phạm Thảo Nhi',	'2016-03-08',	'Nữ',	'Con gái',	4,	24),
+(318,	'Hoàng Ánh Tuyết',	'2014-07-03',	'Nữ',	'Con gái',	4,	25),
+(319,	'Đỗ Hà My',	'2013-01-11',	'Nữ',	'Con gái',	4,	26),
+(320,	'Ngô Phương Thảo',	'2015-06-27',	'Nữ',	'Con gái',	4,	27),
+(321,	'Vũ Minh Châu',	'2014-12-14',	'Nữ',	'Con gái',	4,	28),
+(322,	'Mai Thanh Hà',	'2013-03-09',	'Nữ',	'Con gái',	4,	29),
+(323,	'Bùi Trúc Mai',	'2015-10-26',	'Nữ',	'Con gái',	4,	30),
+(324,	'Nguyễn Hữu Phúc',	'2014-05-30',	'Nam',	'Con trai',	4,	31),
+(325,	'Lê Minh Khôi',	'2015-01-13',	'Nam',	'Con trai',	4,	32),
+(326,	'Trần Nhật Hào',	'2016-04-07',	'Nam',	'Con trai',	4,	33),
+(327,	'Phạm Quang Vinh',	'2013-08-18',	'Nam',	'Con trai',	4,	34),
+(328,	'Hoàng Thiên Bảo',	'2014-10-05',	'Nam',	'Con trai',	4,	35),
+(329,	'Đỗ Tuấn Minh',	'2015-09-16',	'Nam',	'Con trai',	4,	36),
+(330,	'Ngô Khánh Duy',	'2016-02-04',	'Nam',	'Con trai',	4,	37),
+(331,	'Vũ Hữu Đức',	'2013-11-23',	'Nam',	'Con trai',	4,	38),
+(332,	'Mai Hưng Thịnh',	'2014-06-06',	'Nam',	'Con trai',	4,	39),
+(333,	'Bùi Công Thành',	'2015-07-29',	'Nam',	'Con trai',	4,	40),
+(334,	'Nguyễn Gia Hân',	'2014-01-09',	'Nữ',	'Con gái',	4,	41),
+(335,	'Lê Bảo Ngọc',	'2013-12-22',	'Nữ',	'Con gái',	4,	42),
+(336,	'Trần Thiên Kim',	'2015-03-18',	'Nữ',	'Con gái',	4,	43),
+(337,	'Phạm Nhã Uyên',	'2016-08-01',	'Nữ',	'Con gái',	4,	44),
+(338,	'Hoàng Minh Anh',	'2013-04-25',	'Nữ',	'Con gái',	4,	45),
+(339,	'Đỗ Yến Nhi',	'2014-09-19',	'Nữ',	'Con gái',	4,	46),
+(340,	'Ngô Hà Vy',	'2015-06-30',	'Nữ',	'Con gái',	4,	47),
+(341,	'Vũ Phương Anh',	'2016-05-11',	'Nữ',	'Con gái',	4,	48),
+(342,	'Mai Khánh Chi',	'2013-07-08',	'Nữ',	'Con gái',	4,	49),
+(343,	'Bùi Ngọc Hân',	'2014-11-27',	'Nữ',	'Con gái',	4,	50);
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
@@ -382,7 +788,7 @@ CREATE TABLE `users` (
   `role` varchar(50) DEFAULT 'PARENT',
   PRIMARY KEY (`user_id`),
   CONSTRAINT `users_chk_1` CHECK ((`role` in (_utf8mb4'PARENT',_utf8mb4'NURSE',_utf8mb4'ADMIN')))
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `users` (`user_id`, `full_name`, `email`, `password`, `phone`, `address`, `role`) VALUES
 (1,	'Parent 1',	'',	'',	'0707333797',	'HCM',	'PARENT'),
@@ -394,7 +800,47 @@ INSERT INTO `users` (`user_id`, `full_name`, `email`, `password`, `phone`, `addr
 (7,	'Parent 7',	'',	'',	'0898158174',	'HCM',	'PARENT'),
 (8,	'Parent 8',	'nguyenhonghieutai7a9@gmail.com',	'',	'',	'HCM',	'ADMIN'),
 (9,	'Parent 9',	'tainhhse182011@fpt.edu.vn',	'',	'',	'HCM',	'NURSE'),
-(10,	'Parent 10',	'nguyenhonghieutai10cba6@gmail.com',	'',	'',	'HCM',	'PARENT');
+(10,	'Parent 10',	'nguyenhonghieutai10cba6@gmail.com',	'',	'',	'HCM',	'PARENT'),
+(11,	'Nguyễn Văn A1',	'parent1@example.com',	NULL,	'0900000001',	'Hà Nội',	'PARENT'),
+(12,	'Nguyễn Văn A2',	'parent2@example.com',	NULL,	'0900000002',	'Hà Nội',	'PARENT'),
+(13,	'Nguyễn Văn A3',	'parent3@example.com',	NULL,	'0900000003',	'Hà Nội',	'PARENT'),
+(14,	'Nguyễn Văn A4',	'parent4@example.com',	NULL,	'0900000004',	'Hà Nội',	'PARENT'),
+(15,	'Nguyễn Văn A5',	'parent5@example.com',	NULL,	'0900000005',	'Hà Nội',	'PARENT'),
+(16,	'Nguyễn Văn A6',	'parent6@example.com',	NULL,	'0900000006',	'Hà Nội',	'PARENT'),
+(17,	'Nguyễn Văn A7',	'parent7@example.com',	NULL,	'0900000007',	'Hà Nội',	'PARENT'),
+(18,	'Nguyễn Văn A8',	'parent8@example.com',	NULL,	'0900000008',	'Hà Nội',	'PARENT'),
+(19,	'Nguyễn Văn A9',	'parent9@example.com',	NULL,	'0900000009',	'Hà Nội',	'PARENT'),
+(20,	'Nguyễn Văn A10',	'parent10@example.com',	NULL,	'0900000010',	'Hà Nội',	'PARENT'),
+(21,	'Nguyễn Văn A11',	'parent11@example.com',	NULL,	'0900000011',	'Hà Nội',	'PARENT'),
+(22,	'Nguyễn Văn A12',	'parent12@example.com',	NULL,	'0900000012',	'Hà Nội',	'PARENT'),
+(23,	'Nguyễn Văn A13',	'parent13@example.com',	NULL,	'0900000013',	'Hà Nội',	'PARENT'),
+(24,	'Nguyễn Văn A14',	'parent14@example.com',	NULL,	'0900000014',	'Hà Nội',	'PARENT'),
+(25,	'Nguyễn Văn A15',	'parent15@example.com',	NULL,	'0900000015',	'Hà Nội',	'PARENT'),
+(26,	'Nguyễn Văn A16',	'parent16@example.com',	NULL,	'0900000016',	'Hà Nội',	'PARENT'),
+(27,	'Nguyễn Văn A17',	'parent17@example.com',	NULL,	'0900000017',	'Hà Nội',	'PARENT'),
+(28,	'Nguyễn Văn A18',	'parent18@example.com',	NULL,	'0900000018',	'Hà Nội',	'PARENT'),
+(29,	'Nguyễn Văn A19',	'parent19@example.com',	NULL,	'0900000019',	'Hà Nội',	'PARENT'),
+(30,	'Nguyễn Văn A20',	'parent20@example.com',	NULL,	'0900000020',	'Hà Nội',	'PARENT'),
+(31,	'Nguyễn Văn A21',	'parent21@example.com',	NULL,	'0900000021',	'Hà Nội',	'PARENT'),
+(32,	'Nguyễn Văn A22',	'parent22@example.com',	NULL,	'0900000022',	'Hà Nội',	'PARENT'),
+(33,	'Nguyễn Văn A23',	'parent23@example.com',	NULL,	'0900000023',	'Hà Nội',	'PARENT'),
+(34,	'Nguyễn Văn A24',	'parent24@example.com',	NULL,	'0900000024',	'Hà Nội',	'PARENT'),
+(35,	'Nguyễn Văn A25',	'parent25@example.com',	NULL,	'0900000025',	'Hà Nội',	'PARENT'),
+(36,	'Nguyễn Văn A26',	'parent26@example.com',	NULL,	'0900000026',	'Hà Nội',	'PARENT'),
+(37,	'Nguyễn Văn A27',	'parent27@example.com',	NULL,	'0900000027',	'Hà Nội',	'PARENT'),
+(38,	'Nguyễn Văn A28',	'parent28@example.com',	NULL,	'0900000028',	'Hà Nội',	'PARENT'),
+(39,	'Nguyễn Văn A29',	'parent29@example.com',	NULL,	'0900000029',	'Hà Nội',	'PARENT'),
+(40,	'Nguyễn Văn A30',	'parent30@example.com',	NULL,	'0900000030',	'Hà Nội',	'PARENT'),
+(41,	'Nguyễn Văn A31',	'parent31@example.com',	NULL,	'0900000031',	'Hà Nội',	'PARENT'),
+(42,	'Nguyễn Văn A32',	'parent32@example.com',	NULL,	'0900000032',	'Hà Nội',	'PARENT'),
+(43,	'Nguyễn Văn A33',	'parent33@example.com',	NULL,	'0900000033',	'Hà Nội',	'PARENT'),
+(44,	'Nguyễn Văn A34',	'parent34@example.com',	NULL,	'0900000034',	'Hà Nội',	'PARENT'),
+(45,	'Nguyễn Văn A35',	'parent35@example.com',	NULL,	'0900000035',	'Hà Nội',	'PARENT'),
+(46,	'Nguyễn Văn A36',	'parent36@example.com',	NULL,	'0900000036',	'Hà Nội',	'PARENT'),
+(47,	'Nguyễn Văn A37',	'parent37@example.com',	NULL,	'0900000037',	'Hà Nội',	'PARENT'),
+(48,	'Nguyễn Văn A38',	'parent38@example.com',	NULL,	'0900000038',	'Hà Nội',	'PARENT'),
+(49,	'Nguyễn Văn A39',	'parent39@example.com',	NULL,	'0900000039',	'Hà Nội',	'PARENT'),
+(50,	'Nguyễn Văn A40',	'parent40@example.com',	NULL,	'0900000040',	'Hà Nội',	'PARENT');
 
 DROP TABLE IF EXISTS `vaccine_form`;
 CREATE TABLE `vaccine_form` (
@@ -414,10 +860,51 @@ CREATE TABLE `vaccine_form` (
   CONSTRAINT `vaccine_form_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
   CONSTRAINT `vaccine_form_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `chk_vaccine_form_status` CHECK ((`status` in (_utf8mb4'DRAFT',_utf8mb4'SENT')))
-) ENGINE=InnoDB AUTO_INCREMENT=302 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `vaccine_form` (`vaccine_form_id`, `vaccine_id`, `student_id`, `parent_id`, `form_date`, `note`, `commit`, `status`) VALUES
-(301,	1,	209,	10,	'2025-06-19',	NULL,	1,	'SENT');
+(301,	1,	209,	10,	'2025-06-19',	NULL,	1,	'SENT'),
+(302,	1,	205,	1,	'2025-06-19',	'xxx',	0,	'SENT'),
+(303,	2,	304,	11,	'2025-06-01',	'Đã điền đầy đủ thông tin',	1,	'SENT'),
+(304,	2,	305,	12,	'2025-06-02',	'Chưa xác nhận',	0,	'DRAFT'),
+(305,	2,	306,	13,	'2025-06-03',	'Sẽ gửi lại sau',	0,	'DRAFT'),
+(306,	2,	307,	14,	'2025-06-04',	'Đã xác nhận tham gia',	1,	'SENT'),
+(307,	2,	308,	15,	'2025-06-05',	'Mẹ đã ký tên',	1,	'SENT'),
+(308,	2,	309,	16,	'2025-06-06',	'Đợi y tá kiểm tra lại',	0,	'DRAFT'),
+(309,	2,	310,	17,	'2025-06-07',	'Yêu cầu thêm thông tin',	0,	'DRAFT'),
+(310,	2,	311,	18,	'2025-06-08',	'Đã gửi bản cứng',	1,	'SENT'),
+(311,	2,	312,	19,	'2025-06-09',	'Đã ký tên và xác nhận',	1,	'SENT'),
+(312,	2,	313,	20,	'2025-06-10',	'Chờ phản hồi từ trường',	0,	'DRAFT'),
+(313,	2,	314,	21,	'2025-06-11',	'Hỏi lại phụ huynh',	0,	'DRAFT'),
+(314,	2,	315,	22,	'2025-06-12',	'Đã đồng ý tham gia',	1,	'SENT'),
+(315,	2,	316,	23,	'2025-06-13',	'Chưa gửi bản gốc',	0,	'DRAFT'),
+(316,	2,	317,	24,	'2025-06-14',	'Phụ huynh yêu cầu kiểm tra thêm',	0,	'DRAFT'),
+(317,	2,	318,	25,	'2025-06-15',	'Sẽ xác nhận trước hạn',	1,	'SENT'),
+(318,	2,	319,	26,	'2025-06-16',	'Không tham gia đợt này',	0,	'DRAFT'),
+(319,	2,	320,	27,	'2025-06-17',	'Đã đăng ký online',	1,	'SENT'),
+(320,	2,	321,	28,	'2025-06-18',	'Đang xem xét',	0,	'DRAFT'),
+(321,	2,	322,	29,	'2025-06-19',	'Chờ ngày tiêm',	1,	'SENT'),
+(322,	2,	323,	30,	'2025-06-20',	'Bé có lịch đi xa',	0,	'DRAFT'),
+(323,	2,	324,	31,	'2025-06-21',	'Tham gia đầy đủ',	1,	'SENT'),
+(324,	2,	325,	32,	'2025-06-22',	'Không rõ loại vaccine',	0,	'DRAFT'),
+(325,	2,	326,	33,	'2025-06-23',	'Cần giải thích thêm',	0,	'DRAFT'),
+(326,	2,	327,	34,	'2025-06-24',	'Xác nhận qua Zalo',	1,	'SENT'),
+(327,	2,	328,	35,	'2025-06-25',	'Đồng ý tham gia',	1,	'SENT'),
+(328,	2,	329,	36,	'2025-06-26',	'Chưa rõ thời gian tiêm',	0,	'DRAFT'),
+(329,	2,	330,	37,	'2025-06-27',	'Có tiền sử dị ứng',	0,	'DRAFT'),
+(330,	2,	331,	38,	'2025-06-28',	'Đã ký giấy xác nhận',	1,	'SENT'),
+(331,	2,	332,	39,	'2025-06-29',	'Đang xử lý',	0,	'DRAFT'),
+(332,	2,	333,	40,	'2025-06-30',	'Đã gửi lại đơn chính thức',	1,	'SENT'),
+(333,	2,	334,	41,	'2025-07-01',	'Đã xác nhận',	1,	'SENT'),
+(334,	2,	335,	42,	'2025-07-02',	'Chưa nhận được giấy mời',	0,	'DRAFT'),
+(335,	2,	336,	43,	'2025-07-03',	'Tham gia qua đăng ký trực tuyến',	1,	'SENT'),
+(336,	2,	337,	44,	'2025-07-04',	'Cần hỏi lại bác sĩ gia đình',	0,	'DRAFT'),
+(337,	2,	338,	45,	'2025-07-05',	'Đã gửi mẫu xác nhận',	1,	'SENT'),
+(338,	2,	339,	46,	'2025-07-06',	'Không đồng ý tiêm',	0,	'DRAFT'),
+(339,	2,	340,	47,	'2025-07-07',	'Mong sắp xếp lịch phù hợp',	0,	'DRAFT'),
+(340,	2,	341,	48,	'2025-07-08',	'Đã liên hệ y tế',	1,	'SENT'),
+(341,	2,	342,	49,	'2025-07-09',	'Gửi nhầm mã số học sinh',	0,	'DRAFT'),
+(342,	2,	343,	50,	'2025-07-10',	'Xác nhận đúng form',	1,	'SENT');
 
 DROP TABLE IF EXISTS `vaccine_history`;
 CREATE TABLE `vaccine_history` (
@@ -431,12 +918,52 @@ CREATE TABLE `vaccine_history` (
   KEY `fk_vaccine_history_vaccine_program` (`vaccine_id`),
   CONSTRAINT `fk_vaccine_history_vaccine_program` FOREIGN KEY (`vaccine_id`) REFERENCES `vaccine_program` (`vaccine_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `vaccine_history_ibfk_1` FOREIGN KEY (`record_id`) REFERENCES `medical_record` (`record_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `vaccine_history` (`vaccine_history_id`, `vaccine_name`, `note`, `record_id`, `vaccine_id`) VALUES
 (13,	'Hepatitis B',	'First dose at 12 months',	7,	NULL),
 (14,	'Hepatitis B',	'Completed 3-dose series',	7,	NULL),
-(17,	'Hepatitis B',	'Chương trình vaccine tại trường!',	7,	1);
+(17,	'Hepatitis B',	'Chương trình vaccine tại trường!',	7,	1),
+(58,	'Viêm gan B',	'Mũi 1 đã tiêm',	11,	NULL),
+(59,	'Viêm gan B',	'Mũi 1 đã tiêm',	12,	NULL),
+(60,	'Viêm gan B',	'Mũi 1 đã tiêm',	13,	NULL),
+(61,	'Viêm gan B',	'Mũi 1 đã tiêm',	14,	NULL),
+(62,	'Viêm gan B',	'Mũi 1 đã tiêm',	15,	NULL),
+(63,	'BCG',	'Tiêm phòng lao',	16,	NULL),
+(64,	'BCG',	'Tiêm phòng lao',	17,	NULL),
+(65,	'BCG',	'Tiêm phòng lao',	18,	NULL),
+(66,	'BCG',	'Tiêm phòng lao',	19,	NULL),
+(67,	'BCG',	'Tiêm phòng lao',	20,	NULL),
+(68,	'DPT',	'Mũi 1 đã tiêm',	21,	NULL),
+(69,	'DPT',	'Mũi 1 đã tiêm',	22,	NULL),
+(70,	'DPT',	'Mũi 1 đã tiêm',	23,	NULL),
+(71,	'DPT',	'Mũi 2 đã tiêm',	24,	NULL),
+(72,	'DPT',	'Mũi 2 đã tiêm',	25,	NULL),
+(73,	'Bại liệt',	'Đã tiêm Sabin',	26,	NULL),
+(74,	'Bại liệt',	'Đã tiêm Sabin',	27,	NULL),
+(75,	'Bại liệt',	'Đã tiêm Sabin',	28,	NULL),
+(76,	'Bại liệt',	'Đã tiêm Sabin',	29,	NULL),
+(77,	'Bại liệt',	'Đã tiêm Sabin',	30,	NULL),
+(78,	'Sởi',	'Mũi 1 đã tiêm',	31,	NULL),
+(79,	'Sởi',	'Mũi 1 đã tiêm',	32,	NULL),
+(80,	'Sởi',	'Mũi 1 đã tiêm',	33,	NULL),
+(81,	'Sởi',	'Mũi 2 đã tiêm',	34,	NULL),
+(82,	'Sởi',	'Mũi 2 đã tiêm',	35,	NULL),
+(83,	'Rubella',	'Mũi đầu tiên',	36,	NULL),
+(84,	'Rubella',	'Mũi đầu tiên',	37,	NULL),
+(85,	'Rubella',	'Mũi đầu tiên',	38,	NULL),
+(86,	'Rubella',	'Mũi thứ hai',	39,	NULL),
+(87,	'Rubella',	'Mũi thứ hai',	40,	NULL),
+(88,	'Cúm mùa',	'Tiêm đầu năm',	41,	NULL),
+(89,	'Cúm mùa',	'Tiêm đầu năm',	42,	NULL),
+(90,	'Cúm mùa',	'Tiêm đầu năm',	43,	NULL),
+(91,	'Cúm mùa',	'Tiêm đầu năm',	44,	NULL),
+(92,	'Cúm mùa',	'Tiêm đầu năm',	45,	NULL),
+(93,	'COVID-19',	'Mũi 1 đã tiêm',	46,	NULL),
+(94,	'COVID-19',	'Mũi 1 đã tiêm',	47,	NULL),
+(95,	'COVID-19',	'Mũi 2 đã tiêm',	48,	NULL),
+(96,	'COVID-19',	'Mũi 2 đã tiêm',	49,	NULL),
+(97,	'COVID-19',	'Đã tiêm đầy đủ',	50,	NULL);
 
 DROP TABLE IF EXISTS `vaccine_program`;
 CREATE TABLE `vaccine_program` (
@@ -451,10 +978,11 @@ CREATE TABLE `vaccine_program` (
   KEY `admin_id` (`admin_id`),
   CONSTRAINT `vaccine_program_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `chk_vaccine_status` CHECK ((`status` in (_utf8mb4'ON_GOING',_utf8mb4'COMPLETED',_utf8mb4'NOT_STARTED')))
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `vaccine_program` (`vaccine_id`, `vaccine_name`, `description`, `vaccine_date`, `status`, `note`, `admin_id`) VALUES
-(1,	'Hepatitis B',	'Protects against Hepatitis B virus',	'2025-07-01',	'NOT_STARTED',	'Administered at birth',	10);
+(1,	'Hepatitis B',	'Protects against Hepatitis B virus',	'2025-07-01',	'COMPLETED',	'Administered at birth',	10),
+(2,	'Covid 19',	NULL,	'2025-09-01',	'NOT_STARTED',	NULL,	10);
 
 DROP TABLE IF EXISTS `vaccine_result`;
 CREATE TABLE `vaccine_result` (
@@ -467,9 +995,49 @@ CREATE TABLE `vaccine_result` (
   PRIMARY KEY (`vaccine_result_id`),
   KEY `vaccine_form_id` (`vaccine_form_id`),
   CONSTRAINT `vaccine_result_ibfk_1` FOREIGN KEY (`vaccine_form_id`) REFERENCES `vaccine_form` (`vaccine_form_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `vaccine_result` (`vaccine_result_id`, `status_health`, `result_note`, `reaction`, `created_at`, `vaccine_form_id`) VALUES
-(2,	'GOOD',	'Cần theo dõi thêm',	'GOOD',	'2025-06-21 03:39:07',	301);
+(2,	'Tốt',	'Cần theo dõi thêm',	'Không có biểu hiện xấu',	'2025-06-21 03:39:07',	301),
+(3,	'Tốt',	'Không có biểu hiện bất thường',	'Không phản ứng',	'2025-06-23 14:51:39',	303),
+(4,	'Bình thường',	'Theo dõi thêm 24h',	'Sốt nhẹ',	'2025-06-23 14:51:39',	304),
+(5,	'Tốt',	'Phản ứng nhẹ, không đáng lo',	'Đỏ tại chỗ tiêm',	'2025-06-23 14:51:39',	305),
+(6,	'Tốt',	'Không có phản ứng phụ',	'Không phản ứng',	'2025-06-23 14:51:39',	306),
+(7,	'Khá',	'Theo dõi thêm',	'Sưng nhẹ',	'2025-06-23 14:51:39',	307),
+(8,	'Bình thường',	'Phản ứng nhẹ sau 2h',	'Ngủ nhiều hơn',	'2025-06-23 14:51:39',	308),
+(9,	'Tốt',	'Không có biểu hiện gì',	'Không phản ứng',	'2025-06-23 14:51:39',	309),
+(10,	'Bình thường',	'Mệt mỏi trong ngày đầu',	'Sốt nhẹ',	'2025-06-23 14:51:39',	310),
+(11,	'Tốt',	'Phản ứng nhẹ và đã hết',	'Đỏ nhẹ',	'2025-06-23 14:51:39',	311),
+(12,	'Tốt',	'Trạng thái tốt sau tiêm',	'Không phản ứng',	'2025-06-23 14:51:39',	312),
+(13,	'Khá',	'Theo dõi thêm',	'Chán ăn nhẹ',	'2025-06-23 14:51:39',	313),
+(14,	'Bình thường',	'Không sốt nhưng hơi mệt',	'Buồn ngủ',	'2025-06-23 14:51:39',	314),
+(15,	'Tốt',	'Không có biểu hiện gì',	'Không phản ứng',	'2025-06-23 14:51:39',	315),
+(16,	'Tốt',	'Bé vui chơi bình thường',	'Không phản ứng',	'2025-06-23 14:51:39',	316),
+(17,	'Bình thường',	'Hơi sốt trong buổi chiều',	'Sốt nhẹ',	'2025-06-23 14:51:39',	317),
+(18,	'Tốt',	'Tiêm xong không có phản ứng',	'Không phản ứng',	'2025-06-23 14:51:39',	318),
+(19,	'Tốt',	'Sức khỏe ổn định sau tiêm',	'Không phản ứng',	'2025-06-23 14:51:39',	319),
+(20,	'Bình thường',	'Theo dõi tại nhà 1 ngày',	'Sưng nhẹ',	'2025-06-23 14:51:39',	320),
+(21,	'Tốt',	'Không có biểu hiện bất thường',	'Không phản ứng',	'2025-06-23 14:51:39',	321),
+(22,	'Khá',	'Khóc nhiều sau tiêm',	'Khó chịu nhẹ',	'2025-06-23 14:51:39',	322),
+(23,	'Tốt',	'Trạng thái tốt',	'Không phản ứng',	'2025-06-23 14:51:39',	323),
+(24,	'Tốt',	'Không phản ứng gì cả',	'Không phản ứng',	'2025-06-23 14:51:39',	324),
+(25,	'Bình thường',	'Mệt nhẹ vào buổi tối',	'Mệt mỏi',	'2025-06-23 14:51:39',	325),
+(26,	'Tốt',	'Không có dấu hiệu sốt',	'Không phản ứng',	'2025-06-23 14:51:39',	326),
+(27,	'Tốt',	'Bé ăn uống bình thường',	'Không phản ứng',	'2025-06-23 14:51:39',	327),
+(28,	'Bình thường',	'Sốt nhẹ, đã ổn',	'Sốt nhẹ',	'2025-06-23 14:51:39',	328),
+(29,	'Tốt',	'Không bị sưng đau',	'Không phản ứng',	'2025-06-23 14:51:39',	329),
+(30,	'Tốt',	'Không phát hiện phản ứng phụ',	'Không phản ứng',	'2025-06-23 14:51:39',	330),
+(31,	'Bình thường',	'Cần theo dõi thêm',	'Đau nhẹ',	'2025-06-23 14:51:39',	331),
+(32,	'Tốt',	'Không phản ứng',	'Không phản ứng',	'2025-06-23 14:51:39',	332),
+(33,	'Tốt',	'Bé khỏe mạnh sau tiêm',	'Không phản ứng',	'2025-06-23 14:51:39',	333),
+(34,	'Tốt',	'Không có phản ứng phụ',	'Không phản ứng',	'2025-06-23 14:51:39',	334),
+(35,	'Khá',	'Đỏ tại vị trí tiêm',	'Đỏ nhẹ',	'2025-06-23 14:51:39',	335),
+(36,	'Tốt',	'Ổn định',	'Không phản ứng',	'2025-06-23 14:51:39',	336),
+(37,	'Tốt',	'Không có biểu hiện gì bất thường',	'Không phản ứng',	'2025-06-23 14:51:39',	337),
+(38,	'Bình thường',	'Có phản ứng nhẹ',	'Sưng nhẹ',	'2025-06-23 14:51:39',	338),
+(39,	'Tốt',	'Không có dấu hiệu gì',	'Không phản ứng',	'2025-06-23 14:51:39',	339),
+(40,	'Tốt',	'Không sốt, chơi bình thường',	'Không phản ứng',	'2025-06-23 14:51:39',	340),
+(41,	'Bình thường',	'Theo dõi tại nhà',	'Sốt nhẹ',	'2025-06-23 14:51:39',	341),
+(42,	'Tốt',	'Không phản ứng',	'Không phản ứng',	'2025-06-23 14:51:39',	342);
 
--- 2025-06-20 20:40:39 UTC
+-- 2025-06-23 14:58:50 UTC
