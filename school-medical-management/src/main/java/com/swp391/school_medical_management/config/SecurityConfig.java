@@ -47,7 +47,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/ws/**",
-                                "/api/test"
+                                "/api/test",
+                                "/api/upload/image" // Cho phép truy cập không cần xác thực
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
