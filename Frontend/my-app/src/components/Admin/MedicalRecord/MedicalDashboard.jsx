@@ -8,7 +8,7 @@ export default function MedicalDashboard() {
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   return (
-    <div style={{ display: "flex", height: "100vh", gap: 16 }}>
+    <div style={{ marginLeft: 240, display: "flex", height: "100vh", gap: 16 }}>
       <div style={{ flex: 2, borderRadius: 8 }}>
         <StudentList
           onSelect={setSelectedStudent}

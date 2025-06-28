@@ -1,6 +1,7 @@
 /* Bố cục tổng */
 .hcp-container {
-  padding: 24px;
+  margin-left: 240px; /* Hiển thị bên phải sidebar */
+  padding: 25px;
   font-family: 'Segoe UI', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;

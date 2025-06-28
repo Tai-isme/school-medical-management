@@ -12,7 +12,16 @@ const FeedbackList = () => {
 
   const fetchFeedbacks = async () => {
     try {
-      const res = await axios.get("https://your-api/feedbacks"); // Thay bằng URL thật
+      const token = localStorage.getItem("token");
+      const parentId = 9007199254740991; // Thay bằng parentId thực tế hoặc truyền từ props
+      const res = await axios.get(
+        `http://localhost:8080/api/parent/getfeedback/${parentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setFeedbacks(res.data);
     } catch (error) {
       message.error("Không thể tải dữ liệu phản hồi");
@@ -63,7 +72,14 @@ const FeedbackList = () => {
   ];
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div
+      style={{
+        padding: "20px",
+        marginLeft: "240px",
+        minHeight: "100vh",
+        background: "#f6fbff",
+      }}
+    >
       <h2>📋 Danh sách phản hồi</h2>
       {loading ? (
         <Spin tip="Đang tải..." />

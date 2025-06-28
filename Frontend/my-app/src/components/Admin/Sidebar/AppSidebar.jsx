@@ -1,5 +1,5 @@
 import React from "react";
-import { Menu } from "antd";
+import { Menu, Avatar } from "antd";
 import {
   HomeOutlined,
   UserSwitchOutlined,
@@ -10,14 +10,23 @@ import {
   AlertOutlined,
   CommentOutlined,
   LogoutOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom"; // vừa thêm
+import { useNavigate } from "react-router-dom";
 import "./AppSidebar.css";
 
 const { SubMenu } = Menu;
 
 const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
-  const navigate = useNavigate(); // vừa thêm
+  const navigate = useNavigate();
+
+  // Lấy thông tin user từ localStorage
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("users"));
+  } catch {
+    user = null;
+  }
 
   // Hàm xử lý đăng xuất
   const handleLogout = () => {
@@ -35,6 +44,29 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
       <div className="sidebar-logo">
         <img src="/logo1.png" alt="Logo Y Tế" />
       </div>
+      {/* User Info */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 16px 8px 16px",
+          borderBottom: "1px solid #f0f0f0",
+          marginBottom: 8,
+        }}
+      >
+        <div className="sidebar-userinfo">
+          <Avatar
+            size={32}
+            src={user?.avatar || undefined}
+            icon={<UserOutlined />}
+            style={{ background: "#e6f7ff", color: "#1476d1" }}
+          />
+          <div className="sidebar-userinfo-name">
+            {user?.fullName || user?.username || "User"}
+          </div>
+        </div>
+      </div>
       <Menu
         mode="inline"
         theme="light"
@@ -42,9 +74,7 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
         onClick={({ key }) => onMenuSelect(key)}
         style={{ flex: 1, borderRight: 0, minHeight: 0 }}
       >
-        <Menu.Item key="title" disabled className="sidebar-title">
-          Hi Nurse
-        </Menu.Item>
+        
         <Menu.Item key="1" icon={<HomeOutlined />}>
           Dashboard
         </Menu.Item>
@@ -61,9 +91,6 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
           <Menu.Item key="5-1">Vaccine</Menu.Item>
           <Menu.Item key="5-2">Khám định kỳ</Menu.Item>
         </SubMenu>
-        <Menu.Item key="6" icon={<UnorderedListOutlined />}>
-          Form
-        </Menu.Item>
         <Menu.Item key="7" icon={<AlertOutlined />}>
           Sự cố y tế
         </Menu.Item>
