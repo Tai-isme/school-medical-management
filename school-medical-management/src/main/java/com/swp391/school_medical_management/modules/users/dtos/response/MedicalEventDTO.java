@@ -16,5 +16,5 @@ public class MedicalEventDTO {
     private String description;
     private Long studentId;
     private String studentName;
-    private UserDTO  userDTO;
+    private UserDTO userDTO;
 }

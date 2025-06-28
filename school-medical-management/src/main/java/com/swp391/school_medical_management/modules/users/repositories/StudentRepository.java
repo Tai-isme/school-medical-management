@@ -1,12 +1,13 @@
 package com.swp391.school_medical_management.modules.users.repositories;
-import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
-import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
+import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 
 public interface StudentRepository extends JpaRepository<StudentEntity, Long> {
     List<StudentEntity> findStudentByParent_UserId(Long aLong);
@@ -30,4 +31,9 @@ public interface StudentRepository extends JpaRepository<StudentEntity, Long> {
     );
 
     long count();
+
+    List<StudentEntity> findByClassEntity_ClassId(Long classId);
+
+    List<StudentEntity> findByFullNameContainingIgnoreCase(String keyword);
+
 }

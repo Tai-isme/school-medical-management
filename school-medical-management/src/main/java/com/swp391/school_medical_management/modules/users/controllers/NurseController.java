@@ -1,10 +1,11 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,7 +14,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,11 +25,23 @@ import com.swp391.school_medical_management.modules.users.dtos.request.BlogReque
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
+import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
 
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 
@@ -253,6 +268,57 @@ public class NurseController {
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         nurseService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users/search")
+    public ResponseEntity<List<UserDTO>> searchUsers(
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) UserRole role) {
+        return ResponseEntity.ok(nurseService.searchUsers(keyword, role));
+    }   
+
+    @GetMapping("/class/{classId}")
+    public ResponseEntity<List<StudentDTO>> getStudentsByClass(@PathVariable Long classId) {
+        List<StudentDTO> students = nurseService.getStudentsByClass(classId);
+        return ResponseEntity.ok(students);
+    }
+
+    @GetMapping("/search-medicalrecord")
+    public ResponseEntity<List<MedicalRecordDTO>> searchMedicalRecords(@RequestParam String keyword) {
+        List<MedicalRecordDTO> records = nurseService.searchMedicalRecordsByStudentName(keyword);
+        return ResponseEntity.ok(records);
+    }
+
+     @GetMapping("/status/{status}")
+    public ResponseEntity<List<MedicalRequestDTO>> getByStatus(@PathVariable String status) {
+        var statusEnum = MedicalRequestEntity.MedicalRequestStatus.valueOf(status.toUpperCase());
+        return ResponseEntity.ok(nurseService.getByStatus(statusEnum));
+    }
+
+    @GetMapping("/date/{date}")
+    public ResponseEntity<List<MedicalRequestDTO>> getByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(nurseService.getByDate(date));
+    }
+
+    @GetMapping("/class/{classId}/students")
+    public ResponseEntity<List<MedicalRequestDTO>> getByClass(@PathVariable Long classId) {
+        return ResponseEntity.ok(nurseService.getByClass(classId));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<MedicalRequestDTO>> searchByDateRange(
+            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return ResponseEntity.ok(nurseService.searchByDateRange(from, to));
+    }
+
+    @PutMapping("/{requestId}/status")
+    public ResponseEntity<Void> updateStatus(
+            @PathVariable int requestId,
+            @RequestParam("status") String status) {
+        var newStatus = MedicalRequestEntity.MedicalRequestStatus.valueOf(status.toUpperCase());
+        nurseService.updateStatus(requestId, newStatus);
+        return ResponseEntity.ok().build();
     }
 
 }
