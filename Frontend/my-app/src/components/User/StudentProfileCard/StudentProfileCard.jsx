@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import './StudentProfile.css';
+import './StudentProfileCard.css';
 import axios from 'axios';
-import StudentInfoCard from '../../common/StudentInfoCard';
+import StudentInfoCard from '../../../common/StudentInfoCard';
 import { Button, Modal, Input, Form, Table } from 'antd'; // Import Button and Modal from antd
 import MedicalRecordModal from './MedicalRecordModal'; // Import MedicalRecordModal component
 
@@ -161,7 +161,7 @@ const StudentProfile = () => {
   const selectedStudent = students.find(s => s.id === selectedStudentId);
   return (
     <div className="student-profile-container">
-      <h1 className="main-title">Hồ sơ học sinh</h1>
+      <h1 className="main-title" style={{marginTop: '0px'}}>Hồ sơ học sinh</h1>
 
       <div className="tabs">
         <button

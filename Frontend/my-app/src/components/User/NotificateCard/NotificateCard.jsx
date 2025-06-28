@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import NotificationsList from "./NotificationsList";
-import "./Notifications.css";
-import StudentInfoCard from "../../common/StudentInfoCard";
+import "./NotificateCard.css";
+import StudentInfoCard from "../../../common/StudentInfoCard";
 
 const Notifications = () => {
   const students = JSON.parse(localStorage.getItem("students") || "[]");
@@ -84,7 +84,7 @@ const Notifications = () => {
 
   return (
     <div className="notifications-container">
-      <h1 className="main-title">Các thông báo</h1>
+      <h1 className="main-title" style={{marginTop: '0px'}}>Các thông báo</h1>
       <div className="notifications-content">
         {/* Left Section: Student Overview */}
         <div className="left-panel">

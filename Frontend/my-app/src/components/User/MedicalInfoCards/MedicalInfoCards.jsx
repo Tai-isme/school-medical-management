@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; // Import component FontAwesomeIcon
-import '../MedicalInfoCards/MedicalInfoCards.css'; // Import CSS cho component này
+import './MedicalInfoCards.css'; // Import CSS cho component này
 
 
 const MedicalInfoCards = (props) => {
