@@ -20,6 +20,8 @@ public class StudentEntity {
     @Column(name = "student_name")
     private String fullName;
     private LocalDate dob;
+    @Column(name = "avatar_url")
+    private String avatarUrl;
     private String gender;
     private String relationship;
     @ManyToOne

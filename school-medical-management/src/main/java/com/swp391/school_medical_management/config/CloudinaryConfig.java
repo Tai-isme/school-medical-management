@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import com.cloudinary.Cloudinary;
 
 @Configuration
-public class ConfigCloudinary {
+public class CloudinaryConfig {
     @Bean
     public Cloudinary configKey(){
         Map<String, String> config = new HashMap<>();

@@ -11,13 +11,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Validated
 @RestController
 @RequestMapping("api/admin")
-@PreAuthorize("hasRole('ROLE_ADMIN')")
+// @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminController {
 
     @Autowired
@@ -169,6 +169,16 @@ public class AdminController {
         if (medicalRecordDTO == null)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(medicalRecordDTO);
+    }
+
+    @PostMapping("/student/import-excel")
+    public ResponseEntity<String> uploadExcel(@RequestParam("file") MultipartFile file) {
+        try {
+            adminService.importFromExcel(file);
+            return ResponseEntity.ok("Import thành công!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Import thất bại: " + e.getMessage());
+        }
     }
 
     @GetMapping("/statistics/overview")
