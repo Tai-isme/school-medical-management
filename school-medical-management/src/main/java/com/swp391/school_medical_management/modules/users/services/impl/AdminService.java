@@ -1,5 +1,6 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,12 +10,18 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.checkerframework.checker.units.qual.A;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
@@ -522,6 +529,80 @@ public class AdminService {
         blacklistService.create(blacklistRequest);
 
         userRepository.delete(user);
+    }
+
+    public void importFromExcel(MultipartFile file) {
+        try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            DataFormatter formatter = new DataFormatter();
+            for (Row row : sheet) {
+                int rowNum = row.getRowNum();
+                if (rowNum == 0)
+                    continue; // skip header
+                try {
+
+                    // student
+                    String studentName = row.getCell(0).getStringCellValue();
+                    LocalDate dob = row.getCell(1).getLocalDateTimeCellValue().toLocalDate();
+                    String gender = row.getCell(2).getStringCellValue();
+                    String relationship = row.getCell(3).getStringCellValue();
+
+                    // class
+                    String className = row.getCell(4).getStringCellValue();
+                    String teacherName = row.getCell(5).getStringCellValue();
+
+                    // parent
+                    String parentName = row.getCell(6).getStringCellValue();
+                    String parentEmail = row.getCell(7).getStringCellValue();
+                    String parentPhone = formatter.formatCellValue(row.getCell(8));
+                    String parentAddress = row.getCell(9).getStringCellValue();
+
+                    // class
+                    Optional<ClassEntity> classOpt = classRepository.findByClassName(className);
+                    ClassEntity classEntity;
+                    if (classOpt.isPresent()) {
+                        classEntity = classOpt.get();
+                    } else {
+                        classEntity = new ClassEntity();
+                        classEntity.setClassName(className);
+                        classEntity.setTeacherName(teacherName);
+                        classEntity.setQuantity(0);
+                        classEntity = classRepository.save(classEntity);
+                    }
+
+                    // parent
+                    Optional<UserEntity> parentOpt = userRepository.findUserByEmail(parentEmail);
+                    UserEntity parent;
+                    if (parentOpt.isPresent()) {
+                        parent = parentOpt.get();
+                    } else {
+                        parent = new UserEntity();
+                        parent.setFullName(parentName);
+                        parent.setEmail(parentEmail);
+                        parent.setPhone(parentPhone);
+                        parent.setAddress(parentAddress);
+                        parent.setRole(UserRole.PARENT);
+                        parent = userRepository.save(parent);
+                    }
+
+                    // student
+                    StudentEntity student = new StudentEntity();
+                    student.setFullName(studentName);
+                    student.setDob(dob);
+                    student.setGender(gender);
+                    student.setRelationship(relationship);
+                    student.setClassEntity(classEntity);
+                    student.setParent(parent);
+
+                    studentRepository.save(student);
+                } catch (Exception e) {
+                    throw new RuntimeException("Lỗi ở dòng Excel số " + (rowNum + 1) + ": "
+                            + row.getCell(0).getStringCellValue() + " - " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi đọc file Excel: " + e.getMessage());
+        }
     }
 
     public long countStudents() {

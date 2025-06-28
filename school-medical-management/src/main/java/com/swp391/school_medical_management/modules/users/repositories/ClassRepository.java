@@ -13,5 +13,7 @@ public interface ClassRepository extends JpaRepository<ClassEntity, Integer> {
 
     Optional<ClassEntity> findByClassId(Long classId);
 
+    Optional<ClassEntity> findByClassName(String className);
+
     List<ClassEntity> findAll();
 }
