@@ -1,12 +1,5 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.*;
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
-import com.swp391.school_medical_management.modules.users.services.impl.AuthService;
-
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +15,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.swp391.school_medical_management.helpers.ApiResponse;
+import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.ChangePasswordRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.IdTokenRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.LoginRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.RefreshTokenRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.LoginResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.RefreshTokenDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.modules.users.services.impl.AuthService;
 import com.swp391.school_medical_management.modules.users.services.impl.BlacklistService;
-import com.swp391.school_medical_management.service.JwtService;
 
 import jakarta.validation.Valid;
 
@@ -80,10 +82,10 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<RefreshTokenDTO> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-        RefreshTokenDTO response = authService.refreshToken(request.getRefreshToken());
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            System.out.println("123123123123123");
+            RefreshTokenDTO response = authService.refreshToken(request.getRefreshToken());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/phone")

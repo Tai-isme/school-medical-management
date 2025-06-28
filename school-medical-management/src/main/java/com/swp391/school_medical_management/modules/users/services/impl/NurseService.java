@@ -4,14 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import com.swp391.school_medical_management.modules.users.dtos.response.*;
-import com.swp391.school_medical_management.modules.users.entities.*;
-import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
-import com.swp391.school_medical_management.modules.users.repositories.*;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +18,48 @@ import com.swp391.school_medical_management.modules.users.dtos.request.BlogReque
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
+import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
+import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity;
+import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
+import com.swp391.school_medical_management.modules.users.repositories.BlogRepository;
+import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
+import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineHistoryRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
 
 @Service
 public class NurseService {
@@ -240,34 +277,53 @@ public class NurseService {
     }
 
     public MedicalEventDTO createMedicalEvent(Long nurseId, MedicalEventRequest request) {
-        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        if (nurseOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
+    Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
+    if (nurseOpt.isEmpty())
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
 
-        UserEntity nurse = nurseOpt.get();
+    UserEntity nurse = nurseOpt.get();
 
-        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
-        if (studentOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+    Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+    if (studentOpt.isEmpty())
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
 
-        StudentEntity student = studentOpt.get();
+    StudentEntity student = studentOpt.get();
 
-        Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository
-                .findByStudentAndTypeEventAndDescription(student, request.getTypeEvent(), request.getDescription());
-        if (medicalEventOpt.isPresent())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical event already exists");
+    Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository
+            .findByStudentAndTypeEventAndDescription(student, request.getTypeEvent(), request.getDescription());
+    if (medicalEventOpt.isPresent())
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical event already exists");
 
-        MedicalEventEntity medicalEventEntity = new MedicalEventEntity();
-        medicalEventEntity.setTypeEvent(request.getTypeEvent());
-        medicalEventEntity.setDate(LocalDate.now());
-        medicalEventEntity.setDescription(request.getDescription());
-        medicalEventEntity.setStudent(student);
-        medicalEventEntity.setNurse(nurse);
+    MedicalEventEntity medicalEventEntity = new MedicalEventEntity();
+    medicalEventEntity.setTypeEvent(request.getTypeEvent());
+    medicalEventEntity.setDate(LocalDate.now());
+    medicalEventEntity.setDescription(request.getDescription());
+    medicalEventEntity.setStudent(student);
+    medicalEventEntity.setNurse(nurse);
 
-        medicalEventRepository.save(medicalEventEntity);
+    medicalEventRepository.save(medicalEventEntity);
 
-        return modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
+    MedicalEventDTO dto = modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
+    dto.setStudentId(student.getId());
+    dto.setStudentName(student.getFullName());
+
+    UserEntity parent = student.getParent();
+    if (parent != null) {
+        UserDTO userDTO = UserDTO.builder()
+                .id(parent.getUserId())
+                .fullName(parent.getFullName())
+                .email(parent.getEmail())
+                .phone(parent.getPhone())
+                .address(parent.getAddress())
+                .role(parent.getRole())
+                .build();
+
+        dto.setUserDTO(userDTO);
     }
+
+    return dto;
+}
+
 
     public MedicalEventDTO updateMedicalEvent(Long nurseId, Long medicalEventId, MedicalEventRequest request) {
         Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findByEventId(medicalEventId);
@@ -308,15 +364,45 @@ public class NurseService {
     }
 
     public List<MedicalEventDTO> getAllMedicalEvent() {
-        List<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findAll();
-        if (medicalEventOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not found");
-        List<MedicalEventDTO> medicalEventDTOList = medicalEventOpt
-                .stream()
-                .map(medicalEventEntity -> modelMapper.map(medicalEventEntity, MedicalEventDTO.class))
-                .collect(Collectors.toList());
-        return medicalEventDTOList;
+        List<MedicalEventEntity> events = medicalEventRepository.findAll();
+
+        if (events.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not found");
+        }
+
+        List<MedicalEventDTO> medicalEventDTOList = new ArrayList<>();
+
+    for (MedicalEventEntity event : events) {
+        MedicalEventDTO dto = new MedicalEventDTO();
+        dto.setEventId(event.getEventId());
+        dto.setTypeEvent(event.getTypeEvent());
+        dto.setDate(event.getDate());
+        dto.setDescription(event.getDescription());
+
+        StudentEntity student = event.getStudent();
+        if (student != null) {
+            dto.setStudentId(student.getId());
+            dto.setStudentName(student.getFullName());
+
+            UserEntity parent = student.getParent();
+            if (parent != null) {
+                UserDTO userDTO = UserDTO.builder()
+                        .id(parent.getUserId())
+                        .fullName(parent.getFullName())
+                        .email(parent.getEmail())
+                        .phone(parent.getPhone()) 
+                        .address(parent.getAddress())
+                        .role(parent.getRole())
+                        .build();
+
+                dto.setUserDTO(userDTO);
+            }
+        }
+        medicalEventDTOList.add(dto);
     }
+    return medicalEventDTOList;
+}
+
 
     public void deleteMedicalEvent(Long meidcalEventId) {
         Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findByEventId(meidcalEventId);
@@ -681,6 +767,112 @@ public class NurseService {
         BlogResponse response = modelMapper.map(post, BlogResponse.class);
         response.setUserId(post.getAuthor().getUserId());
         return response;
+    }
+
+    public List<UserDTO> searchUsers(String keyword, UserRole roleFilter) {
+    // Lấy toàn bộ danh sách user từ database
+    List<UserEntity> userList = userRepository.findAll();
+
+    // Lọc bỏ user có role là ADMIN và theo điều kiện keyword/roleFilter
+    List<UserDTO> result = userList.stream()
+            .filter(user -> user.getRole() != UserEntity.UserRole.ADMIN)
+            .filter(user -> {
+                boolean matchesKeyword = true;
+                if (keyword != null && !keyword.isBlank()) {
+                    String lowerKeyword = keyword.toLowerCase();
+                    matchesKeyword = (user.getFullName() != null && user.getFullName().toLowerCase().contains(lowerKeyword))
+                            || (user.getEmail() != null && user.getEmail().toLowerCase().contains(lowerKeyword))
+                            || (user.getPhone() != null && user.getPhone().toLowerCase().contains(lowerKeyword));
+                }
+                boolean matchesRole = (roleFilter == null || user.getRole() == roleFilter);
+                return matchesKeyword && matchesRole;
+            })
+            .map(user -> modelMapper.map(user, UserDTO.class))
+            .collect(Collectors.toList());
+
+    if (result.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found");
+    }
+
+    return result;
+}
+
+    public List<StudentDTO> getStudentsByClass(Long classId) {
+        List<StudentEntity> students = studentRepository.findByClassEntity_ClassId(classId);
+        return students.stream()
+                .map(student -> modelMapper.map(student, StudentDTO.class))
+                .collect(Collectors.toList());
+    }
+
+
+    public List<MedicalRecordDTO> searchMedicalRecordsByStudentName(String keyword) {
+    List<StudentEntity> students = studentRepository.findByFullNameContainingIgnoreCase(keyword);
+
+    List<MedicalRecordDTO> medicalRecords = new ArrayList<>();
+
+    for (StudentEntity student : students) {
+        Optional<MedicalRecordEntity> recordOpt = medicalRecordsRepository
+                .findMedicalRecordByStudent_Id(student.getId());
+
+        recordOpt.ifPresent(record -> {
+            MedicalRecordDTO dto = modelMapper.map(record, MedicalRecordDTO.class);
+            dto.setStudentId(student.getId());
+            medicalRecords.add(dto);
+        });
+    }
+
+        return medicalRecords;
+    }
+
+    public List<MedicalRequestDTO> getByStatus(MedicalRequestEntity.MedicalRequestStatus status) {
+        List<MedicalRequestEntity> entities = medicalRequestRepository.findByStatus(status);
+        return entities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<MedicalRequestDTO> getByDate(LocalDate date) {
+        List<MedicalRequestEntity> entities = medicalRequestRepository.findAll()
+                .stream()
+                .filter(r -> r.getDate().isEqual(date))
+                .collect(Collectors.toList());
+        return entities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<MedicalRequestDTO> getByClass(Long classId) {
+        List<MedicalRequestEntity> entities = medicalRequestRepository.findAll()
+                .stream()
+                .filter(r -> r.getStudent().getClassEntity().getClassId() == classId)
+                .collect(Collectors.toList());
+        return entities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<MedicalRequestDTO> searchByDateRange(LocalDate from, LocalDate to) {
+        List<MedicalRequestEntity> entities = medicalRequestRepository.findAll()
+                .stream()
+                .filter(r -> !r.getDate().isBefore(from) && !r.getDate().isAfter(to))
+                .collect(Collectors.toList());
+        return entities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public void updateStatus(int requestId, MedicalRequestEntity.MedicalRequestStatus newStatus) {
+        MedicalRequestEntity entity = medicalRequestRepository.findById(requestId)
+                .orElseThrow(() -> new NoSuchElementException("Request not found"));
+        entity.setStatus(newStatus);
+        medicalRequestRepository.save(entity);
+    }
+
+    private MedicalRequestDTO convertToDTO(MedicalRequestEntity entity) {
+        MedicalRequestDTO dto = modelMapper.map(entity, MedicalRequestDTO.class);
+        dto.setStatus(entity.getStatus().name());
+        dto.setParentId(entity.getParent().getUserId());
+        return dto;
     }
 
 }
