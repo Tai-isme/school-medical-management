@@ -129,7 +129,7 @@ export default function StudentInfoCard({ onChange }) {
         style={{ display: "none" }}
         onChange={handleAvatarSelect}
       />
-      {/* {previewAvatar ? (
+      {previewAvatar ? (
         <Button
           onClick={handleAvatarUpload}
           loading={uploading}
@@ -146,7 +146,7 @@ export default function StudentInfoCard({ onChange }) {
         >
           Chỉnh sửa ảnh
         </Button>
-      )} */}
+      )}
       <Text strong style={{ fontSize: 20, marginBottom: 8 }}>
         {selectedStudent?.fullName || selectedStudent?.name || "--"}
       </Text>

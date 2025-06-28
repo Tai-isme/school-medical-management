@@ -14,6 +14,7 @@ import Dashboard from "../components/Admin/Dashboard/Dashboard";
 import HeaderBar from "../components/Admin/HeaderBar/HeaderBar";
 import ProfilePage from "../components/Admin/HeaderBar/ProfilePage";
 import FeedbackList from "../components/Admin/FeedBack/FeedbackList";
+import BlogAdminPage from "../components/Admin/BlogManagement/BlogAdminPage";
 
 export default function AdminHome() {
   const [selectedMenu, setSelectedMenu] = useState(null);
@@ -75,6 +76,8 @@ export default function AdminHome() {
         {selectedMenu === "7" && <MedicalIncidentList />}
 
         {selectedMenu === "8" && <FeedbackList />}
+
+        {selectedMenu === "9" && <BlogAdminPage />}
 
         {selectedMenu === "logout"}
 

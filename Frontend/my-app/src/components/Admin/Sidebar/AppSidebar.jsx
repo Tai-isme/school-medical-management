@@ -70,6 +70,9 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
         <Menu.Item key="8" icon={<CommentOutlined />}>
           Phản hồi
         </Menu.Item>
+        <Menu.Item key="9" icon={<CommentOutlined />}>
+          Blog
+        </Menu.Item>
       </Menu>
 
       <div
