@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Input, message } from "antd";
+import { Table, Button, Modal, Form, Input, message, Row, Col, DatePicker, Card, Tag, Pagination } from "antd";
+import { CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
 import "./MedicalIncidentList.css";
@@ -8,6 +9,10 @@ const MedicalIncidentList = () => {
   const [data, setData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const [searchEvent, setSearchEvent] = useState("");
+  const [searchDate, setSearchDate] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
   // Tải danh sách sự kiện y tế từ API
   useEffect(() => {
@@ -86,41 +91,126 @@ const MedicalIncidentList = () => {
     }
   };
 
-  const columns = [
-    { title: "ID Sự kiện", dataIndex: "eventId", key: "eventId" },
-    { title: "Tên sự kiện", dataIndex: "typeEvent", key: "typeEvent" },
-    { title: "Ngày xảy ra", dataIndex: "date", key: "date" },
-    { title: "Tên học sinh", dataIndex: "studentName", key: "studentName" },
-    { title: "Người phụ trách", dataIndex: "nurseId", key: "nurseId" },
-    { title: "Mô tả", dataIndex: "description", key: "description" },
-    {
-      title: "Liên hệ PH",
-      key: "contact",
-      render: (_, record) => (
-        <a href={`tel:${record.parentPhone}`} className="contact-link">
-          {record.parentPhone}
-        </a>
-      ),
-    },
-  ];
+  // Lọc dữ liệu theo tên sự kiện và ngày
+  const filteredData = data.filter((item) => {
+    const matchEvent = item.typeEvent
+      .toLowerCase()
+      .includes(searchEvent.toLowerCase());
+    const matchDate = searchDate
+      ? dayjs(item.date).isSame(searchDate, "day")
+      : true;
+    return matchEvent && matchDate;
+  });
+
+  // Dữ liệu trang hiện tại
+  const pagedData = filteredData.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const statusMap = {
+    DONE: { text: "Đã xử lý", color: "geekblue", icon: <CheckCircleOutlined /> },
+    PROCESSING: { text: "Đang xử lý", color: "volcano", icon: <ClockCircleOutlined /> },
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchEvent, searchDate]);
 
   return (
     <div className="incident-container">
       <div className="incident-header">
-        <h2>Danh sách sự cố y tế</h2>
-        <Button type="primary" onClick={showModal}>
-          + Tạo sự kiện
+        <h2>Sự Kiện Y Tế Gần Đây</h2>
+        <Button type="primary" danger onClick={showModal}>
+          + Thêm sự kiện
         </Button>
       </div>
 
-      <Table
-        dataSource={data}
-        columns={columns}
-        rowKey="eventId"
-        bordered
-        pagination={{ pageSize: 5 }}
-      />
+      {/* Thanh tìm kiếm */}
+      <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Col>
+          <Input
+            placeholder="Tìm theo tên sự kiện"
+            value={searchEvent}
+            onChange={(e) => setSearchEvent(e.target.value)}
+            allowClear
+          />
+        </Col>
+        <Col>
+          <DatePicker
+            placeholder="Tìm theo ngày"
+            value={searchDate}
+            onChange={setSearchDate}
+            allowClear
+            format="YYYY-MM-DD"
+          />
+        </Col>
+      </Row>
 
+      {/* Danh sách card */}
+      <div style={{ padding: 8 }}>
+        {pagedData.length === 0 ? (
+          <div style={{ textAlign: "center", color: "#888" }}>Không có sự kiện nào</div>
+        ) : (
+          pagedData.map((item) => (
+            <Card
+              key={item.eventId}
+              style={{
+                marginBottom: 16,
+                borderRadius: 10,
+                border: "1px solid #eee",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+              }}
+              bodyStyle={{ padding: 20 }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 17, marginBottom: 4 }}>
+                    {item.studentName} {item.className ? `- ${item.className}` : ""}
+                  </div>
+                  <div style={{ color: "#444", marginBottom: 8 }}>{item.typeEvent}</div>
+                  <div style={{ color: "#888", fontSize: 14, marginBottom: 8 }}>
+                    {item.time || ""} {item.date ? `- ${dayjs(item.date).format("DD/MM/YYYY")}` : ""}
+                  </div>
+                  <div style={{ color: "#555", fontSize: 15, marginBottom: 12 }}>{item.description}</div>
+                  <Button size="small" style={{ marginRight: 8 }}>Chi tiết</Button>
+                  {item.status !== "DONE" && (
+                    <Button
+                      size="small"
+                      type="primary"
+                      style={{ background: "#52c41a", border: "none" }}
+                    >
+                      Đánh dấu hoàn thành
+                    </Button>
+                  )}
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <Tag
+                    color={statusMap[item.status]?.color || "default"}
+                    style={{ fontSize: 15, padding: "4px 14px", borderRadius: 16 }}
+                    icon={statusMap[item.status]?.icon}
+                  >
+                    {statusMap[item.status]?.text || "Không rõ"}
+                  </Tag>
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Phân trang */}
+      <div style={{ textAlign: "center", margin: "16px 0" }}>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={filteredData.length}
+          onChange={setCurrentPage}
+          showSizeChanger={false}
+        />
+      </div>
+
+      {/* Modal tạo sự kiện giữ nguyên */}
       <Modal
         title="Tạo sự cố y tế"
         open={isModalVisible}
@@ -137,7 +227,6 @@ const MedicalIncidentList = () => {
           >
             <Input />
           </Form.Item>
-
           <Form.Item
             label="ID học sinh"
             name="studentId"
@@ -145,7 +234,6 @@ const MedicalIncidentList = () => {
           >
             <Input placeholder="Nhập ID học sinh" />
           </Form.Item>
-
           <Form.Item
             label="Mô tả"
             name="description"

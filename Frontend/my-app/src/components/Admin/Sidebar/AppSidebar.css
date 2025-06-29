@@ -1,10 +1,14 @@
 .sidebar-container {
-  height: 100vh;
+  position: fixed;
+  top: 0; /* Bắt đầu từ trên cùng */
+  left: 0;
+  height: 100vh; /* Chiếm toàn bộ chiều cao màn hình */
   width: 240px;
   background: linear-gradient(to bottom, #007fbc, #a8dadc);
   display: flex;
   flex-direction: column;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 999;
 }
 
 .ant-menu {
@@ -86,6 +90,41 @@
   background-color: #ff4d4f22;
   color: #ff4d4f;
   transition: 0.3s;
+}
+
+.sidebar-userinfo {
+  background: linear-gradient(90deg, #e0f7fa 60%, #e3f2fd 100%);
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(33, 150, 243, 0.08);
+  padding: 7px 14px 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  max-width: 240px;
+  width: 95%;
+  margin: 0 auto;
+}
+
+.sidebar-userinfo:hover {
+  box-shadow: 0 4px 16px rgba(20, 118, 209, 0.13);
+}
+
+.sidebar-userinfo .ant-avatar {
+  border: 2px solid #00bcd4;
+  background: #e1f5fe !important;
+  color: #0288d1 !important;
+}
+
+.sidebar-userinfo-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: #0288d1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  letter-spacing: 0.2px;
 }
 
 

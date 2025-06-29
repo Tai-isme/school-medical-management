@@ -188,7 +188,7 @@ setPurpose('');
               {dateError && (
                 <span style={{ color: 'red', fontSize: '0.9em' }}>{dateError}</span>
               )}
-              <h2 style={{marginTop: '0px'}}>Chi tiết đơn thuốc</h2>
+              <h2 style={{margin: '0px 0px 5px 0px'}}>Chi tiết đơn thuốc</h2>
               <div className="medicine-list">
                 {medicines.map((medicine, index) => (
                   <div key={index} className="medicine-item" style={{position: 'relative'}}>
@@ -263,11 +263,13 @@ setPurpose('');
                   rows="3"
                 ></textarea>
               </div>
+              <div className="submit-btn-wrapper">
+                <button type="submit" className="submit-btn">
+                  Xác nhận gửi
+                </button>
+              </div>
             </div>
           </div>
-          <button type="submit" className="submit-btn">
-            Xác nhận gửi
-          </button>
         </form>
       )}
 

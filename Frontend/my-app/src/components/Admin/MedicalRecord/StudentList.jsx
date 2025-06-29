@@ -5,12 +5,13 @@ export default function StudentList({ onSelect, selectedId, onFirstStudentLoaded
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [nameFilter, setNameFilter] = useState("");
-  const [classFilter, setClassFilter] = useState("");
+  const [classFilter, setClassFilter] = useState(""); // className
+  const [classList, setClassList] = useState([]);
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const token = localStorage.getItem("token"); // hoặc nơi bạn lưu token
+        const token = localStorage.getItem("token");
         const res = await axios.get(
           `http://localhost:8080/api/nurse/students`,
           {
@@ -20,10 +21,14 @@ export default function StudentList({ onSelect, selectedId, onFirstStudentLoaded
           }
         );
         setStudents(res.data);
+        // Lấy danh sách lớp duy nhất
+        const classes = Array.from(
+          new Set(res.data.map(s => s.classDTO?.className).filter(Boolean))
+        );
+        setClassList(classes);
         if (onFirstStudentLoaded && res.data.length > 0) {
           onFirstStudentLoaded(res.data[0]);
         }
-        console.log("Fetched students:", res.data);
       } catch (err) {
         setStudents([]);
       } finally {
@@ -36,13 +41,13 @@ export default function StudentList({ onSelect, selectedId, onFirstStudentLoaded
   const filteredStudents = students.filter(
     (s) =>
       s.fullName?.toLowerCase().includes(nameFilter.toLowerCase()) &&
-      (s.classDTO?.className || "").toLowerCase().includes(classFilter.toLowerCase())
+      (classFilter === "" || s.classDTO?.className === classFilter)
   );
 
   if (loading) return <div>Đang tải...</div>;
 
   return (
-    <div style={{ background: "#f7fbff", paddingLeft: "10px" , width: "420px" , height: "100%", overflowY: "auto"}}>
+    <div style={{ background: "#f7fbff", paddingLeft: "10px", width: "420px", height: "100%", overflowY: "auto" }}>
       <div style={{ display: "flex", fontWeight: "bold", marginBottom: 0, gap: 12 }}>
         <div style={{ flex: 2, display: "flex", flexDirection: "column" }}>
           <span>Họ tên</span>
@@ -54,13 +59,17 @@ export default function StudentList({ onSelect, selectedId, onFirstStudentLoaded
           />
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <span>Lớp</span>
-          <input
+          <span>Lọc theo lớp</span>
+          <select
             style={{ width: "90%", padding: 4, borderRadius: 4, border: "1px solid #ccc", marginTop: 2, marginBottom: 8 }}
-            placeholder="Lọc lớp..."
             value={classFilter}
             onChange={e => setClassFilter(e.target.value)}
-          />
+          >
+            <option value="">Tất cả</option>
+            {classList.map((cls) => (
+              <option key={cls} value={cls}>{cls}</option>
+            ))}
+          </select>
         </div>
       </div>
       {filteredStudents.map((s) => (

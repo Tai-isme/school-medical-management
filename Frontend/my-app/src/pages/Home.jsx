@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar/Navbar';
 import MedicalInfoCards from '../components/User/MedicalInfoCards/MedicalInfoCards';
-import Login from './Login/Login'; // import Login
+import Login from '../components/Layout/Login/Login';
+import Slider from '../components/Layout/Slider/Slider';
 
 function Home() {
   const navigate = useNavigate();
@@ -22,8 +22,8 @@ function Home() {
 
   return (
     <div>
-      
       <MedicalInfoCards onCardClick={handleCardClick} />
+      <Slider />
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
     </div>
     

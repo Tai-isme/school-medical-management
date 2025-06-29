@@ -1,9 +1,10 @@
 .incident-container {
+  margin-left: 240px; /* Hiển thị bên phải sidebar */
   flex: 1;
-  padding: 24px;
-  background-color: #f4fbff; /* Màu xanh y tế dịu */
+  padding: 20px;
+  background: #fafbfc;
   min-height: 100vh;
-  border-radius: 12px;
+  border-radius: 10px;
   box-sizing: border-box;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -14,7 +15,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .incident-header h2 {
@@ -104,4 +105,12 @@
 /* Body - căn giữa chữ */
 .ant-table-tbody > tr > td {
   text-align: center !important;
+}
+
+/* Card hover effect */
+.ant-card {
+  transition: box-shadow 0.2s;
+}
+.ant-card:hover {
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.12);
 }

@@ -5,8 +5,7 @@ import Home from "../pages/Home";
 
 
 export default function ProtectedRoute() {
-  const role = JSON.parse(localStorage.getItem("role"));
-  // const role = user?.role;
+  const role = localStorage.getItem("role"); // Sửa lại, bỏ JSON.parse
 
 
   if (role === "ADMIN" || role === "NURSE") {

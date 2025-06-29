@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Tabs, Button, Tag, Modal } from "antd";
+import { Tabs, Button, Tag, Modal, Row, Col, Card, Empty } from "antd";
 import dayjs from "dayjs";
 import "./MedicalRequest.css";
 
@@ -22,6 +22,7 @@ const colorMap = {
 const mockData = [
   {
     requestId: 1001,
+    requestName: "Yêu cầu uống Paracetamol", // Thêm dòng này
     date: "2025-06-20",
     status: "PROCESSING",
     note: "Uống sau bữa trưa",
@@ -34,6 +35,7 @@ const mockData = [
   },
   {
     requestId: 1002,
+    requestName: "Yêu cầu uống Decolgen", // Thêm dòng này
     date: "2025-06-21",
     status: "APPROVED",
     note: "Thuốc cảm",
@@ -46,6 +48,7 @@ const mockData = [
   },
   {
     requestId: 1003,
+    requestName: "Yêu cầu uống Vitamin C", // Thêm dòng này
     date: "2025-06-22",
     status: "GIVEN",
     note: "Vitamin C mỗi sáng",
@@ -58,6 +61,7 @@ const mockData = [
   },
   {
     requestId: 1004,
+    requestName: "Yêu cầu uống thuốc không hợp lệ", // Thêm dòng này
     date: "2025-06-23",
     status: "REJECTED",
     note: "Không hợp lệ",
@@ -112,84 +116,103 @@ const MedicalRequest = () => {
     setRequests(updated);
   };
 
-  const columns = [
-    {
-      title: "Mã yêu cầu",
-      dataIndex: "requestId",
-      key: "requestId",
-      align: "center",
-    },
-    {
-      title: "Ngày gửi",
-      dataIndex: "date",
-      key: "date",
-      align: "center",
-      render: (text) => dayjs(text).format("DD/MM/YYYY"),
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      align: "center",
-      render: (status) => (
-        <Tag color={colorMap[status]}>{statusMap[status]}</Tag>
-      ),
-    },
-    {
-      title: "Xem chi tiết",
-      key: "detail",
-      align: "center",
-      render: (_, record) => (
-        <Button type="link" onClick={() => handleViewDetail(record)}>
-          Xem
-        </Button>
-      ),
-    },
-    {
-      title: "Hành động",
-      key: "action",
-      align: "center",
-      render: (_, record) => {
-        if (record.status === "PROCESSING") {
-          return (
-            <div>
-              <Button
-                type="primary"
-                onClick={() => handleApprove(record.requestId)}
-              >
-                Duyệt
-              </Button>{" "}
-              <Button danger onClick={() => handleReject(record.requestId)}>
-                Từ chối
-              </Button>
-            </div>
-          );
-        }
-        if (record.status === "APPROVED") {
-          return (
-            <Button
-              type="primary"
-              onClick={() => handleGiveMedicine(record.requestId)}
-            >
-              Cho uống thuốc
-            </Button>
-          );
-        }
-        return null;
-      },
-    },
-  ];
-
-  const renderTable = (status) => {
+  // Hiển thị card cho từng request
+  const renderCards = (status) => {
     const filtered = requests.filter((req) => req.status === status);
+    if (filtered.length === 0) return <Empty description="Không có dữ liệu" />;
     return (
-      <Table
-        rowKey="requestId"
-        columns={columns}
-        dataSource={filtered}
-        loading={loading}
-        pagination={{ pageSize: 5 }}
-      />
+      <Row gutter={[16, 16]}>
+        {filtered.map((record) => (
+          <Col xs={24} sm={12} md={8} lg={6} key={record.requestId}>
+            <Card
+              className={
+                record.status === "PROCESSING"
+                  ? "card-processing"
+                  : record.status === "APPROVED"
+                  ? "card-approved"
+                  : record.status === "GIVEN"
+                  ? "card-given"
+                  : record.status === "REJECTED"
+                  ? "card-rejected"
+                  : ""
+              }
+              title={
+                <span>
+                  <Tag color={colorMap[record.status]}>
+                    {statusMap[record.status]}
+                  </Tag>
+                  <span style={{ marginLeft: 8 }}>#{record.requestId}</span>
+                </span>
+              }
+              bordered
+              extra={
+                <Button type="link" onClick={() => handleViewDetail(record)}>
+                  Xem chi tiết
+                </Button>
+              }
+              style={{ minHeight: 220 }}
+            >
+              {/* Đưa tên yêu cầu lên đầu */}
+              <p style={{ fontWeight: 700, fontSize: 16, color: "#1476d1", marginBottom: 8 }}>
+                {record.requestName}
+              </p>
+              <p>
+                <strong>Ngày gửi:</strong> {dayjs(record.date).format("DD/MM/YYYY")}
+              </p>
+              <p>
+                <strong>Học sinh:</strong> {record.studentDTO?.fullName || "Không rõ"}
+              </p>
+              <p>
+                <strong>Ghi chú:</strong> {record.note || "Không có"}
+              </p>
+              <div>
+                <strong>Chi tiết thuốc:</strong>
+                <ul style={{ margin: 0, paddingLeft: 18 }}>
+                  {record.medicalRequestDetailDTO.length > 0 ? (
+                    record.medicalRequestDetailDTO.map((item, idx) => (
+                      <li key={idx}>
+                        {item.medicineName} - {item.quantity}
+                      </li>
+                    ))
+                  ) : (
+                    <li>Không có</li>
+                  )}
+                </ul>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                {record.status === "PROCESSING" && (
+                  <>
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={() => handleApprove(record.requestId)}
+                      style={{ marginRight: 8 }}
+                    >
+                      Duyệt
+                    </Button>
+                    <Button
+                      danger
+                      size="small"
+                      onClick={() => handleReject(record.requestId)}
+                    >
+                      Từ chối
+                    </Button>
+                  </>
+                )}
+                {record.status === "APPROVED" && (
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={() => handleGiveMedicine(record.requestId)}
+                  >
+                    Cho uống thuốc
+                  </Button>
+                )}
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
     );
   };
 
@@ -199,22 +222,22 @@ const MedicalRequest = () => {
         <h2>Danh sách yêu cầu gửi thuốc</h2>
         <Tabs defaultActiveKey="PROCESSING">
           <TabPane tab="Chờ xử lý" key="PROCESSING">
-            {renderTable("PROCESSING")}
+            {renderCards("PROCESSING")}
           </TabPane>
           <TabPane tab="Đã duyệt" key="APPROVED">
-            {renderTable("APPROVED")}
+            {renderCards("APPROVED")}
           </TabPane>
           <TabPane tab="Đã cho uống" key="GIVEN">
-            {renderTable("GIVEN")}
+            {renderCards("GIVEN")}
           </TabPane>
           <TabPane tab="Từ chối" key="REJECTED">
-            {renderTable("REJECTED")}
+            {renderCards("REJECTED")}
           </TabPane>
         </Tabs>
 
         <Modal
           title="Chi tiết yêu cầu"
-          visible={modalVisible}
+          open={modalVisible}
           onCancel={() => setModalVisible(false)}
           footer={null}
         >
@@ -222,6 +245,9 @@ const MedicalRequest = () => {
             <div>
               <p>
                 <strong>Mã yêu cầu:</strong> {selectedRequest.requestId}
+              </p>
+              <p>
+                <strong>Tên yêu cầu:</strong> {selectedRequest.requestName}
               </p>
               <p>
                 <strong>Ngày gửi:</strong>{" "}

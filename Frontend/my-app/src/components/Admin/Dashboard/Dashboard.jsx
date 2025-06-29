@@ -35,6 +35,7 @@ function Dashboard() {
   return (
     <div
       style={{
+        marginLeft: 240,
         minHeight: "100vh",
         padding: "30px",
         background: "linear-gradient(135deg, #e0f7fa, #ffffff)",

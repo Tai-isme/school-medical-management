@@ -1,14 +1,15 @@
 .account-container {
+  margin-left: 240px; /* Hiển thị bên phải sidebar */
   flex: 1;
-  padding: 24px;
+  padding: 20px;
   background-color: #f4fbff; /* Nền xanh y tế */
-  border-radius: 12px;
+  border-radius: 0 0 12px 0; /* Nếu muốn bo góc dưới bên phải */
   height: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  overflow: auto;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  width: calc(100vw - 240px); /* Thêm dòng này */
 }
 
 .account-container h2 {

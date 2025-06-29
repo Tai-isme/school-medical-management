@@ -11,10 +11,12 @@ import VaccineProgramList from "../components/Admin/VaccineProgramList/VaccinePr
 import AccountManagement from "../components/Admin/AccountManagement/AccountManagement";
 import MedicalDashboard from "../components/Admin/MedicalRecord/MedicalDashboard";
 import Dashboard from "../components/Admin/Dashboard/Dashboard";
-import HeaderBar from "../components/Admin/HeaderBar/HeaderBar";
-import ProfilePage from "../components/Admin/HeaderBar/ProfilePage";
 import FeedbackList from "../components/Admin/FeedBack/FeedbackList";
+
 import BlogAdminPage from "../components/Admin/BlogManagement/BlogAdminPage";
+
+import "./AdminHome.css"; // Import your CSS file for styling
+
 
 export default function AdminHome() {
   const [selectedMenu, setSelectedMenu] = useState(null);
@@ -38,14 +40,11 @@ export default function AdminHome() {
 
   return (
     <div>
-      <HeaderBar />
-      <HeaderBar onMenuSelect={handleMenuSelect} />
-
       <div
         style={{
           display: "flex",
-          height: "calc(100vh - 60px)",
-          paddingTop: "60px",
+          height: "100vh", // Sửa lại cho sát trên cùng
+          paddingTop: 0,   // Xóa padding top
         }}
       >
         <AppSidebar
@@ -80,8 +79,6 @@ export default function AdminHome() {
         {selectedMenu === "9" && <BlogAdminPage />}
 
         {selectedMenu === "logout"}
-
-        {selectedMenu === "profile" && <ProfilePage />}
       </div>
     </div>
   );

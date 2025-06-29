@@ -3,8 +3,7 @@
   font-family: 'Arial', sans-serif;
   text-align: center;
   padding: 40px 20px;
-  background-color: #fff; /* Light background for the whole page */
-  min-height: 100vh; /* Ensure it takes full height */
+  background-color: #e3f2fd; /* Light background for the whole page */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -21,16 +20,17 @@
 /* Grid for the cards */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive grid */
+  grid-template-columns: repeat(3, 1fr); /* Luôn 3 cột mỗi hàng */
   gap: 30px; /* Space between cards */
-  max-width: 1200px; /* Max width for the grid */
-  width: 100%;
+  max-width: none;         /* Bỏ giới hạn max-width */
+  width: calc(100% - 400px); /* Cách đều 2 bên 200px */
+  margin: 0 auto;      /* Thêm dòng này để căn giữa */
 }
 
 /* Individual Card Styling */
 .info-card {
-  background-color: #8bbdfc; /* Blue background for cards, similar to image */
-  color: white;
+  background: linear-gradient(135deg, #64b5f6 60%, #1976d2 100%);
+  color: #fff;
   padding: 25px;
   border-radius: 20px; /* More rounded corners */
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
@@ -48,7 +48,8 @@
 
 /* Icon Wrapper Styling */
 .card-icon-wrapper {
-  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white background for icon */
+  background: #fff;
+  color: #1976d2;
   border-radius: 50%; /* Circular background */
   width: 80px;
   height: 80px;
@@ -69,14 +70,14 @@
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 10px;
-  color: white; /* Ensure title is white */
+  color: #fff;
 }
 
 /* Card Description */
 .card-description {
   font-size: 15px;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.9); /* Slightly transparent white for description */
+  color: #e3f2fd; /* Slightly transparent white for description */
   margin-bottom: 0;
 }
 
