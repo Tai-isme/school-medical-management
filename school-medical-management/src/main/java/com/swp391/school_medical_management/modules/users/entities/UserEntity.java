@@ -32,7 +32,8 @@ public class UserEntity {
     private String password;
     private String phone;
     private String address;
-
+    @Column(name = "active")
+    private boolean isActive;
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private UserRole role;

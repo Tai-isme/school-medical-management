@@ -40,6 +40,9 @@ public class MedicalRequestEntity {
     @Column(name = "note", length = 255)
     private String note;
 
+    @Column(name = "reason_rejected", length = 255)
+    private String reason;
+
     @Column(name = "status", length = 50)
     @Enumerated(EnumType.STRING)
     private MedicalRequestStatus status;

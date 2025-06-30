@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.swp391.school_medical_management.modules.users.controllers.AdminController;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
@@ -34,6 +35,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.VaccineR
 import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
@@ -44,6 +46,7 @@ import com.swp391.school_medical_management.modules.users.entities.MedicalReques
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
@@ -63,6 +66,8 @@ import com.swp391.school_medical_management.modules.users.repositories.VaccineRe
 
 @Service
 public class NurseService {
+
+    private final AdminController adminController;
 
     public static final String DEFAULT_VACCINE_HS_NOTE = "Chương trình vaccine tại trường!";
 
@@ -104,6 +109,10 @@ public class NurseService {
 
     @Autowired
     private BlogRepository blogRepository;
+
+    NurseService(AdminController adminController) {
+        this.adminController = adminController;
+    }
 
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
         List<MedicalRequestEntity> pendingMedicalRequestList = medicalRequestRepository
@@ -249,6 +258,19 @@ public class NurseService {
                 .collect(Collectors.toList());
 
         return healthCheckFormDTOList;
+    }
+
+    public long countHealthCheckForm(){
+        return healthCheckFormRepository.countByStatusAndCommitFalse(HealthCheckFormStatus.DRAFT);
+    }
+
+    public Map<String, Long> countDraftForm(){
+        long vaccineForm = vaccineFormRepository.countByStatusAndCommitFalse(VaccineFormStatus.DRAFT);
+        long healthCheckForm = healthCheckFormRepository.countByStatusAndCommitFalse(HealthCheckFormStatus.DRAFT);
+        return Map.of(
+                "vaccineForm", vaccineForm,
+                "healthCheckForm", healthCheckForm
+        );
     }
 
     public VaccineFormDTO getVaccinFormById(Long nurseId, Long vaccineFormId) {
@@ -874,5 +896,6 @@ public class NurseService {
         dto.setParentId(entity.getParent().getUserId());
         return dto;
     }
+
 
 }

@@ -35,6 +35,8 @@ public class VaccineProgramEntity {
     @Column(name = "description")
     private String description;
 
+    private String manufacture;
+
     @Column(name = "vaccine_date")
     private LocalDate vaccineDate;
 

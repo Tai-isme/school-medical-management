@@ -25,6 +25,8 @@ public interface HealthCheckFormRepository extends JpaRepository<HealthCheckForm
 
     List<HealthCheckFormEntity> findByCommitTrue();
 
+    long countByStatusAndCommitFalse(HealthCheckFormStatus status);
+
     Optional<HealthCheckFormEntity> findByStudentAndStatus(StudentEntity student, HealthCheckFormStatus status);
 
     @Query("""

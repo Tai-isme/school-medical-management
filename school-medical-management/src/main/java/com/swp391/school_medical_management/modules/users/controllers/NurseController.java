@@ -46,7 +46,7 @@ import jakarta.validation.Valid;
 @Validated
 @RestController
 @RequestMapping("api/nurse")
-@PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
+// @PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
 public class NurseController {
 
     @Autowired
@@ -105,6 +105,11 @@ public class NurseController {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
         List<VaccineFormDTO> vaccineFormDTOList = nurseService.getAllCommitedTrueVaccineForm(Long.parseLong(nurseId));
         return ResponseEntity.ok(vaccineFormDTOList);
+    }
+
+    @GetMapping("/draft-form/count")
+    public ResponseEntity<Map<String, Long>> countDraftForms() {
+        return ResponseEntity.ok(nurseService.countDraftForm());
     }
 
     @GetMapping("/medical-events/{studentId}")
@@ -278,10 +283,10 @@ public class NurseController {
 
     @GetMapping("/users/search")
     public ResponseEntity<List<UserDTO>> searchUsers(
-        @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) UserRole role) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) UserRole role) {
         return ResponseEntity.ok(nurseService.searchUsers(keyword, role));
-    }   
+    }
 
     @GetMapping("/class/{classId}")
     public ResponseEntity<List<StudentDTO>> getStudentsByClass(@PathVariable Long classId) {
@@ -295,14 +300,15 @@ public class NurseController {
         return ResponseEntity.ok(records);
     }
 
-     @GetMapping("/status/{status}")
+    @GetMapping("/status/{status}")
     public ResponseEntity<List<MedicalRequestDTO>> getByStatus(@PathVariable String status) {
         var statusEnum = MedicalRequestEntity.MedicalRequestStatus.valueOf(status.toUpperCase());
         return ResponseEntity.ok(nurseService.getByStatus(statusEnum));
     }
 
     @GetMapping("/date/{date}")
-    public ResponseEntity<List<MedicalRequestDTO>> getByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public ResponseEntity<List<MedicalRequestDTO>> getByDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(nurseService.getByDate(date));
     }
 
