@@ -1,93 +1,54 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Button, Tag, Modal, Row, Col, Card, Empty } from "antd";
+import { Tabs, Button, Tag, Modal, Row, Col, Card, Empty, message } from "antd";
 import dayjs from "dayjs";
+import axios from "axios";
 import "./MedicalRequest.css";
 
 const { TabPane } = Tabs;
 
 const statusMap = {
   PROCESSING: "Chờ xử lý",
-  APPROVED: "Đã duyệt",
-  GIVEN: "Đã cho uống",
-  REJECTED: "Từ chối",
+  SUBMITTED: "Đã duyệt",
+  COMPLETED: "Đã cho uống",
+  CANCELLED: "Từ chối", // Đổi từ REJECTED sang CANCELLED
 };
 
 const colorMap = {
   PROCESSING: "gold",
-  APPROVED: "green",
-  GIVEN: "blue",
-  REJECTED: "red",
+  SUBMITTED: "green",
+  COMPLETED: "blue",
+  CANCELLED: "red", // Đổi từ REJECTED sang CANCELLED
 };
-
-const mockData = [
-  {
-    requestId: 1001,
-    requestName: "Yêu cầu uống Paracetamol", // Thêm dòng này
-    date: "2025-06-20",
-    status: "PROCESSING",
-    note: "Uống sau bữa trưa",
-    medicalRequestDetailDTO: [
-      { medicineName: "Paracetamol", quantity: "1 viên" },
-    ],
-    studentDTO: {
-      fullName: "Nguyễn Văn A",
-    },
-  },
-  {
-    requestId: 1002,
-    requestName: "Yêu cầu uống Decolgen", // Thêm dòng này
-    date: "2025-06-21",
-    status: "APPROVED",
-    note: "Thuốc cảm",
-    medicalRequestDetailDTO: [
-      { medicineName: "Decolgen", quantity: "2 viên" },
-    ],
-    studentDTO: {
-      fullName: "Trần Thị B",
-    },
-  },
-  {
-    requestId: 1003,
-    requestName: "Yêu cầu uống Vitamin C", // Thêm dòng này
-    date: "2025-06-22",
-    status: "GIVEN",
-    note: "Vitamin C mỗi sáng",
-    medicalRequestDetailDTO: [
-      { medicineName: "Vitamin C", quantity: "1 viên" },
-    ],
-    studentDTO: {
-      fullName: "Lê Văn C",
-    },
-  },
-  {
-    requestId: 1004,
-    requestName: "Yêu cầu uống thuốc không hợp lệ", // Thêm dòng này
-    date: "2025-06-23",
-    status: "REJECTED",
-    note: "Không hợp lệ",
-    medicalRequestDetailDTO: [],
-    studentDTO: {
-      fullName: "Phạm Thị D",
-    },
-  },
-];
 
 const MedicalRequest = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [activeStatus, setActiveStatus] = useState("PROCESSING");
+  const [searchTerm, setSearchTerm] = useState(""); // Thêm state tìm kiếm
 
   useEffect(() => {
-    fetchRequests();
-  }, []);
+    fetchRequests(activeStatus);
+  }, [activeStatus]);
 
-  const fetchRequests = () => {
+  const fetchRequests = async (status) => {
     setLoading(true);
-    setTimeout(() => {
-      setRequests(mockData);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `http://localhost:8080/api/nurse/status/${status}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setRequests(res.data);
+    } catch (err) {
+      message.error("Không thể tải dữ liệu!");
+      setRequests([]);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   const handleViewDetail = (record) => {
@@ -95,34 +56,63 @@ const MedicalRequest = () => {
     setModalVisible(true);
   };
 
-  const handleApprove = (id) => {
-    const updated = requests.map((req) =>
-      req.requestId === id ? { ...req, status: "APPROVED" } : req
-    );
-    setRequests(updated);
+  const handleApprove = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `http://localhost:8080/api/nurse/${id}/status?status=SUBMITTED`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Duyệt thành công!");
+      fetchRequests(activeStatus); // Refresh list
+    } catch {
+      message.error("Duyệt thất bại!");
+    }
   };
 
-  const handleReject = (id) => {
-    const updated = requests.map((req) =>
-      req.requestId === id ? { ...req, status: "REJECTED" } : req
-    );
-    setRequests(updated);
+  const handleReject = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `http://localhost:8080/api/nurse/${id}/status?status=CANCELLED`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Từ chối thành công!");
+      fetchRequests(activeStatus);
+    } catch {
+      message.error("Từ chối thất bại!");
+    }
   };
 
-  const handleGiveMedicine = (id) => {
-    const updated = requests.map((req) =>
-      req.requestId === id ? { ...req, status: "GIVEN" } : req
-    );
-    setRequests(updated);
+  const handleGiveMedicine = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `http://localhost:8080/api/nurse/${id}/status?status=COMPLETED`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Đã cho uống thuốc!");
+      fetchRequests(activeStatus);
+    } catch {
+      message.error("Cập nhật thất bại!");
+    }
   };
 
-  // Hiển thị card cho từng request
-  const renderCards = (status) => {
-    const filtered = requests.filter((req) => req.status === status);
-    if (filtered.length === 0) return <Empty description="Không có dữ liệu" />;
+  // Lọc requests theo tên yêu cầu
+  const filteredRequests = requests.filter((r) =>
+    r.requestName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Sửa renderCards dùng filteredRequests
+  const renderCards = () => {
+    if (loading) return <div>Đang tải...</div>;
+    if (filteredRequests.length === 0) return <Empty description="Không có dữ liệu" />;
     return (
       <Row gutter={[16, 16]}>
-        {filtered.map((record) => (
+        {filteredRequests.map((record) => (
           <Col xs={24} sm={12} md={8} lg={6} key={record.requestId}>
             <Card
               className={
@@ -168,7 +158,7 @@ const MedicalRequest = () => {
               <div>
                 <strong>Chi tiết thuốc:</strong>
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
-                  {record.medicalRequestDetailDTO.length > 0 ? (
+                  {Array.isArray(record.medicalRequestDetailDTO) && record.medicalRequestDetailDTO.length > 0 ? (
                     record.medicalRequestDetailDTO.map((item, idx) => (
                       <li key={idx}>
                         {item.medicineName} - {item.quantity}
@@ -199,7 +189,7 @@ const MedicalRequest = () => {
                     </Button>
                   </>
                 )}
-                {record.status === "APPROVED" && (
+                {record.status === "SUBMITTED" && (
                   <Button
                     type="primary"
                     size="small"
@@ -220,18 +210,38 @@ const MedicalRequest = () => {
     <div className="medical-request-wrapper">
       <div className="full-width-content">
         <h2>Danh sách yêu cầu gửi thuốc</h2>
-        <Tabs defaultActiveKey="PROCESSING">
+        {/* Ô tìm kiếm */}
+        <div style={{ marginBottom: 16, maxWidth: 320 }}>
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên yêu cầu..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: "100%",
+              padding: 8,
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              fontSize: 15,
+            }}
+          />
+        </div>
+        <Tabs
+          defaultActiveKey="PROCESSING"
+          activeKey={activeStatus}
+          onChange={setActiveStatus}
+        >
           <TabPane tab="Chờ xử lý" key="PROCESSING">
-            {renderCards("PROCESSING")}
+            {renderCards()}
           </TabPane>
-          <TabPane tab="Đã duyệt" key="APPROVED">
-            {renderCards("APPROVED")}
+          <TabPane tab="Đã duyệt" key="SUBMITTED">
+            {renderCards()}
           </TabPane>
-          <TabPane tab="Đã cho uống" key="GIVEN">
-            {renderCards("GIVEN")}
+          <TabPane tab="Đã cho uống" key="COMPLETED">
+            {renderCards()}
           </TabPane>
-          <TabPane tab="Từ chối" key="REJECTED">
-            {renderCards("REJECTED")}
+          <TabPane tab="Từ chối" key="CANCELLED">
+            {renderCards()}
           </TabPane>
         </Tabs>
 
@@ -264,7 +274,7 @@ const MedicalRequest = () => {
                 <strong>Chi tiết thuốc:</strong>
               </p>
               <ul>
-                {selectedRequest.medicalRequestDetailDTO.length > 0 ? (
+                {Array.isArray(selectedRequest.medicalRequestDetailDTO) && selectedRequest.medicalRequestDetailDTO.length > 0 ? (
                   selectedRequest.medicalRequestDetailDTO.map((item, idx) => (
                     <li key={idx}>
                       {item.medicineName} - {item.quantity}

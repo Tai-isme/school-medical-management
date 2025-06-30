@@ -17,8 +17,8 @@ function App() {
 
   return (
     <Router>
-      {/* Chỉ render Navbar nếu role là ADMIN hoặc NURSE */}
-      <Navbar/>
+      {/* Chỉ render Navbar nếu role là PARENT hoặc null */}
+      {(role === "PARENT" || role === null) && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} /> 
         <Route path="/instruction-form" element={<InstructionFormPage />} />

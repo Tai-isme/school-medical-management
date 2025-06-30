@@ -13,6 +13,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./AppSidebar.css";
 
 const { SubMenu } = Menu;
@@ -29,15 +30,27 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
   }
 
   // Hàm xử lý đăng xuất
-  const handleLogout = () => {
-    // Xoá dữ liệu đăng nhập khỏi localStorage
-    localStorage.removeItem("token");
-    localStorage.removeItem("users");
-    localStorage.removeItem("students");
-    localStorage.removeItem("role");
-
-    // Điều hướng về trang đăng nhập
-    navigate("/");
+  const handleLogout = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.post(
+        "http://localhost:8080/api/auth/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (error) {
+      // Có thể log lỗi hoặc bỏ qua
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("users");
+      localStorage.removeItem("students");
+      localStorage.removeItem("role");
+      navigate("/");
+    }
   }; // vừa thêm
   return (
     <div className="sidebar-container">

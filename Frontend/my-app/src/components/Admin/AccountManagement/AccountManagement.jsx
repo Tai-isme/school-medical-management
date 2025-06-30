@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, message, Input, Row, Col, Select } from "antd";
+import { Table, Button, message, Input, Row, Col, Select, Modal, Form } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined, SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
 import "./AccountManagement.css";
@@ -10,6 +10,9 @@ const AccountManagement = () => {
   const [searchName, setSearchName] = useState("");
   const [searchEmail, setSearchEmail] = useState("");
   const [filterRole, setFilterRole] = useState(""); // Trạng thái cho vai trò
+  const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -111,9 +114,60 @@ const AccountManagement = () => {
     },
   ];
 
+  // Hàm tạo tài khoản Nurse
+  const handleCreateNurse = async (values) => {
+    setCreateLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        "http://localhost:8080/api/admin/accounts",
+        {
+          fullName: values.fullName,
+          email: values.email,
+          password: values.password,
+          phone: values.phone,
+          address: values.address,
+          role: "nurse",
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      message.success("Tạo tài khoản Nurse thành công!");
+      setCreateModalVisible(false);
+      form.resetFields();
+      // Reload danh sách tài khoản
+      const response = await axios.get("http://localhost:8080/api/admin/accounts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const responseData = response.data.map((item) => ({
+        userId: item.id,
+        fullName: item.fullName,
+        email: item.email,
+        password: item.password,
+        phone: item.phone,
+        address: item.address,
+        role: item.role.toLowerCase(),
+      }));
+      setAccounts(responseData);
+    } catch (err) {
+      message.error("Tạo tài khoản Nurse thất bại!");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   return (
     <div className="account-container">
-      <h2>Quản lý tài khoản</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>Quản lý tài khoản</h2>
+        <Button
+          type="primary"
+          onClick={() => setCreateModalVisible(true)}
+        >
+          Tạo tài khoản Nurse
+        </Button>
+      </div>
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col>
           <Input
@@ -156,6 +210,65 @@ const AccountManagement = () => {
         bordered
         pagination={{ pageSize: 8 }}
       />
+
+      {/* Modal tạo tài khoản Nurse */}
+      <Modal
+        title="Tạo tài khoản Nurse"
+        open={createModalVisible}
+        onCancel={() => setCreateModalVisible(false)}
+        onOk={() => form.submit()}
+        confirmLoading={createLoading}
+        okText="Tạo"
+        cancelText="Hủy"
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleCreateNurse}
+        >
+          <Form.Item
+            label="Họ và tên"
+            name="fullName"
+            rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: "Vui lòng nhập email" },
+              { type: "email", message: "Email không hợp lệ" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Mật khẩu"
+            name="password"
+            rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item
+            label="Số điện thoại"
+            name="phone"
+            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Địa chỉ"
+            name="address"
+            rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item label="Vai trò">
+            <Input value="Nurse" disabled />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
