@@ -2,9 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from "react-router-dom";
 import '../Navbar/Navbar.css';
-import Login from '../../pages/Login/Login';
+import Login from '../Login/Login';
 import NotificationSocket from './NotificationSocket';
 import NotificationPanel from './NotificationPanel';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBell } from '@fortawesome/free-solid-svg-icons';
 
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -84,7 +86,22 @@ const Navbar = () => {
           {user && (
             <li className="notification-wrapper">
               <button className="notification-button" onClick={toggleNotificationPanel}>
-                Thông báo ({numberNoti || notifications.length})
+                <FontAwesomeIcon icon={faBell} style={{ fontSize: "32px", color: "#1976d2" }} />
+                {(Number(numberNoti) >= 1 || notifications.length >= 1) && (
+                  <span style={{
+                    background: "#1976d2",
+                    color: "#fff",
+                    borderRadius: "50%",
+                    padding: "2px 8px",
+                    fontSize: "16px",
+                    marginLeft: "2px",
+                    position: "relative",
+                    top: "-12px",
+                    left: "-10px"
+                  }}>
+                    {numberNoti || notifications.length}
+                  </span>
+                )}
               </button>
               {isNotiOpen && (
                 <NotificationPanel
@@ -98,7 +115,7 @@ const Navbar = () => {
           <li>
             {user ? (
               <>
-                <span>Xin chào {renderGreeting()}</span>
+                <span>{renderGreeting()}</span>
                 <button id="btn-logout" onClick={handleLogout} style={{ marginLeft: '10px' }}>
                   Đăng xuất
                 </button>

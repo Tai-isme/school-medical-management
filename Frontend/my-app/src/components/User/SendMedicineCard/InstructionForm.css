@@ -1,5 +1,6 @@
 /* General container styling */
 .instruction-form-container {
+  background-color: #007bff;
   font-family: 'Arial', sans-serif;
   max-width: 1500px; /* Adjust as needed */
   margin: 50px auto;
@@ -27,7 +28,7 @@
 
 .student-info-section,
 .prescription-details-section {
-  padding: 25px;
+  padding: 15px 25px 5px 25px;
 }
 
 /* Student Info Section */
@@ -110,14 +111,14 @@
 }
 
 .medicine-list {
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
 
 .medicine-item {
   background-color: #e0f2ff; /* Background for each medicine input group */
   padding: 15px;
   border-radius: 8px;
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -182,7 +183,7 @@
 }
 
 .note-section {
-  margin-top: 25px;
+  margin-top: 0px;
   background-color: #e0f2ff; /* Background for note section */
   padding: 15px;
   border-radius: 8px;
@@ -206,13 +207,14 @@
 .submit-btn {
   background-color: #007bff; /* Blue background for submit button */
   color: white;
-  padding: 12px 30px;
+  border-radius: 30px;
+  padding: 10px 10px;
   border: none;
-  border-radius: 5px;
+  border-radius: 20px;
   cursor: pointer;
   font-size: 18px;
   font-weight: bold;
-  margin-top: 25px;
+  margin-top: 15px;
   transition: background-color 0.3s ease;
 }
 
@@ -277,4 +279,10 @@
   -webkit-appearance: none;
   -moz-appearance: none;
   padding-right: 32px; /* Để icon không đè lên text */
+}
+
+.submit-btn-wrapper{
+  display: flex;
+  justify-content: center;
+  margin-top: 15px 0px 10px 0px;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { auth, googleProvider } from '../../config/firebase';
+import { auth, googleProvider } from '../../../config/firebase'
 import { signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
@@ -58,17 +58,17 @@ function Login({ onClose }) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('users', JSON.stringify(data.users));
                 localStorage.setItem('students', JSON.stringify(data.students));
-                localStorage.setItem('role', JSON.stringify(data.users.role));
+                localStorage.setItem('role', data.users.role);
                 onClose();
 
                 const role = data.users.role;
                 console.log("Role:", role);
 
-                if (role === "ADMIN" || role === "NURSE") {
-                    navigate("/dashboard");
-                } else if (role === "PARENT") {
-                    navigate("/");
-                }
+                // if (role === "ADMIN" || role === "NURSE") {
+                //     navigate("/dashboard");
+                // } else if (role === "PARENT") {
+                //     navigate("/");
+                // }
             } else {
                 setError("Tài khoản không tồn tại hoặc thông tin không chính xác!");
             }
@@ -103,7 +103,7 @@ function Login({ onClose }) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('users', JSON.stringify(data.users));
                 localStorage.setItem('students', JSON.stringify(data.students));
-                localStorage.setItem('role', JSON.stringify(data.users.role));
+                localStorage.setItem('role', data.users.role);
                 onClose();
 
                 const role = data.users.role;

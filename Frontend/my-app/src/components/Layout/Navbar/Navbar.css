@@ -1,12 +1,14 @@
 .navbar {
-  height: 90px;
+  background: #e3f2fd; /* Xanh dương nhạt chủ đề y tế học đường */
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.07);
+  width: 100%;
+  height: 90px;              /* Tăng chiều cao navbar */
   display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
   align-items: center;
-  padding: 10px 20px;
-  background-color: #fff;
-  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0;
 }
 
 .logo {
@@ -15,84 +17,83 @@
 }
 
 .logo img {
-    height: 90px;
-    width: auto;
-}
-
-.nav-links{
-
-    width: 1440px;
+  height: 62px;              /* Tăng kích thước logo */
+  margin-right: 40px;
 }
 
 .nav-links {
+  justify-content: center;
   display: flex;
-  justify-content: space-around;
   align-items: center;
   list-style: none;
-  margin: 0;
-  padding: 0;
+  width: 100%;
+  max-width: 1700px;         /* Tăng chiều rộng tối đa */
+  margin: 0 auto;
+  padding: 0 60px;           /* Tăng padding hai bên */
 }
 
 .nav-links li {
-    text-align: center;
-    margin-left: 20px;
-    
+  margin: 0 28px;            /* Tăng khoảng cách giữa các mục */
 }
 
 .nav-links a {
+  color: #1976d2;
+  font-weight: 600;
   text-decoration: none;
-  color: #333;
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 22px;           /* Tăng cỡ chữ */
+  transition: color 0.2s;
 }
 
 .nav-links a:hover {
-  color: #007bff;
+  color: #388e3c; /* Xanh lá nhấn */
 }
 
 .search-bar input {
-  padding: 8px 12px;
-  border: 1px solid #007bff;
+  border: 1.5px solid #90caf9;
   border-radius: 20px;
+  padding: 7px 18px;
+  font-size: 16px;
   outline: none;
-  width: 276px;
-  font-size: 14px;
+  background: #f5f8fd;
+  transition: border 0.2s;
 }
 
-.search-bar input::placeholder {
-  color: #999;
+.search-bar input:focus {
+  border: 1.5px solid #1976d2;
 }
 
-
-#btn-login{
-  font-size: 14px;
-    font-weight: bold;
-    width: 110px;
-    height: 40px;
-    border-radius: 15px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-}
-
-#btn-logout {
-    font-size: 14px;
-    font-weight: bold;
-    height: 40px;
-    border-radius: 40px;
-    background-color: #ee0000;
-    color: #fdfbfb;
-    border: none;
-}
-
-#btn-logout:hover {
-    color: #333;
-    background-color: #d60000;
+#btn-login {
+  background: #43a047;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 22px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: background 0.2s;
 }
 
 #btn-login:hover {
-    color: #333;
-    background-color: #1c79d6;
+  background: #388e3c;
+}
+
+#btn-logout {
+  background: #d32f2f;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 22px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: background 0.2s;
+}
+
+#btn-logout:hover {
+  background: #b71c1c;
 }
 
 /* Form login */
@@ -206,17 +207,28 @@
 }
 
 .notification-button {
-  background: none;
+  background: #e3f2fd;
+  color: #1976d2;
   border: none;
+  border-radius: 20px;
+  padding: 7px 18px;
   font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
-  color: #333;
-  padding: 8px 12px;
-  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
 }
 
 .notification-button:hover {
-  background-color: #f0f0f0;
+  background: #1976d2;
+  color: #fff;
+}
+
+.notification-button .fa-bell {
+  transition: color 0.2s;
+}
+
+.notification-button:hover .fa-bell {
+  color: white !important; /* Màu vàng khi hover */
 }
 
 .notification-popup {
@@ -277,4 +289,75 @@
   cursor: pointer;
   padding: 0;
   margin-left: 5px;
+}
+
+.user-avatar-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  background: #1976d2;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 22px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.12);
+  overflow: hidden;
+  position: relative;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.logout-btn {
+  display: none;
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #d32f2f;
+  border: 2px solid #d32f2f;
+  border-radius: 20px;
+  padding: 6px 18px 6px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.12);
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  align-items: center;
+  gap: 6px;
+}
+
+.logout-btn .logout-icon {
+  margin-right: 6px;
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+.user-avatar:hover .logout-btn,
+.user-avatar:focus-within .logout-btn {
+  display: flex;
+}
+
+.logout-btn:hover {
+  background: #d32f2f;
+  color: #fff;
+  border: 2px solid #d32f2f;
 }
