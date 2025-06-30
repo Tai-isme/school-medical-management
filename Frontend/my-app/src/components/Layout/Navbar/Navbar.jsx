@@ -75,10 +75,18 @@ const Navbar = () => {
       <nav className="navbar">
         <ul className="nav-links">
           <li className="logo"><img src="./Logo.png" alt="Logo" /></li>
-          <li> <a style={{cursor:'pointer'}} onClick={()=> {navigate("/")}}>Trang chủ</a></li>
-          <li><a href="/">Tài liệu</a></li>
-          <li><a href="/">Blog</a></li>
-          <li><a href="/">Giới thiệu</a></li>
+          <li>
+            <a style={{ cursor: 'pointer' }} onClick={() => { navigate("/") }}>Trang chủ</a>
+          </li>
+          <li>
+            <a href="/">Tài liệu</a>
+          </li>
+          <li>
+            <a style={{ cursor: 'pointer' }} onClick={() => { navigate("/blog") }}>Blog</a>
+          </li>
+          <li>
+            <a href="/">Giới thiệu</a>
+          </li>
           <li className="search-bar">
             <input type="text" placeholder="Tìm kiếm ..." />
           </li>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
+import BlogPage from './pages/BlogPage';
 import InstructionFormPage from './pages/InstructionFormPage';
 import StudentProfilePage from './pages/StudentProfilePage';
 import MedicalIncidentPage from './pages/MedicalIncidentPage';
@@ -39,6 +40,7 @@ function App() {
       {(!role || role === "PARENT") && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} /> 
+        <Route path="/blog" element={<BlogPage />} /> 
         <Route path="/instruction-form" element={<InstructionFormPage />} />
         <Route path="/student-profile" element={<StudentProfilePage />} />
         <Route path="/medical-incident" element={<MedicalIncidentPage />} />
