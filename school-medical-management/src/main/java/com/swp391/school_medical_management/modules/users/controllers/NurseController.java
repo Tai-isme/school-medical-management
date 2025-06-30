@@ -324,5 +324,4 @@ public class NurseController {
         nurseService.updateStatus(requestId, newStatus);
         return ResponseEntity.ok().build();
     }
-
 }

@@ -40,6 +40,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.VaccineH
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
 import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
+import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
@@ -496,7 +497,8 @@ public class NurseService {
             StudentEntity student = event.getStudent();
             if (student != null) {
                 dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
-
+                ClassEntity classEntity = student.getClassEntity();
+                dto.setClassDTO(modelMapper.map(classEntity, ClassDTO.class));
                 UserEntity parent = student.getParent();
                 if (parent != null) {
                     UserDTO userDTO = UserDTO.builder()

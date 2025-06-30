@@ -17,4 +17,5 @@ public class MedicalEventDTO {
     private StudentDTO studentDTO;
     private UserDTO parentDTO;
     private UserDTO nurseDTO;
+    private ClassDTO classDTO;
 }
