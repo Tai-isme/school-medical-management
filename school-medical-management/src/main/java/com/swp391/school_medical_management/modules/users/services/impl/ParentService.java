@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -152,9 +153,22 @@ public class ParentService {
         if (optMedicalRecord.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical record not found");
         MedicalRecordEntity medicalRecord = optMedicalRecord.get();
+
+        List<VaccineHistoryDTO> vaccineHistoryDTOList = medicalRecord.getVaccineHistories().stream()
+                .map(vaccineHistory -> {
+                    VaccineHistoryDTO vaccineHistoryDTO = modelMapper.map(vaccineHistory, VaccineHistoryDTO.class);
+                    if (vaccineHistory.getVaccineProgram() != null) {
+                        vaccineHistoryDTO.setVaccineProgramDTO(
+                                modelMapper.map(vaccineHistory.getVaccineProgram(), VaccineProgramDTO.class));
+                    }
+                    return vaccineHistoryDTO;
+                }).collect(Collectors.toList());
+
         if (!medicalRecord.getStudent().getParent().getUserId().equals(parentId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+        MedicalRecordDTO medicalRecordDTO = modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+        medicalRecordDTO.setVaccineHistories(vaccineHistoryDTOList);
+        return medicalRecordDTO;
     }
 
     public void deleteMedicalRecord(Long parentId, Long studentId) {

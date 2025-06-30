@@ -14,7 +14,7 @@ public class MedicalEventDTO {
     private String typeEvent;
     private LocalDate date;
     private String description;
-    private Long studentId;
-    private String studentName;
-    private UserDTO userDTO;
+    private StudentDTO studentDTO;
+    private UserDTO parentDTO;
+    private UserDTO nurseDTO;
 }

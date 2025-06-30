@@ -7,6 +7,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -74,6 +76,13 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/update-account-status/{UserId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Void> updateAccountStatus(@PathVariable Long UserId, @PathVariable boolean status) {
+        authService.updateAccountStatus(UserId, status);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String bearerToken) {
@@ -83,9 +92,9 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<RefreshTokenDTO> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-            System.out.println("123123123123123");
-            RefreshTokenDTO response = authService.refreshToken(request.getRefreshToken());
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        System.out.println("123123123123123");
+        RefreshTokenDTO response = authService.refreshToken(request.getRefreshToken());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/phone")

@@ -312,6 +312,7 @@ public class AdminService {
         VaccineProgramEntity vaccineProgramEntity = new VaccineProgramEntity();
         vaccineProgramEntity.setVaccineName(request.getVaccineName());
         vaccineProgramEntity.setDescription(request.getDescription());
+        vaccineProgramEntity.setManufacture(request.getManufacture());
         vaccineProgramEntity.setVaccineDate(request.getVaccineDate());
         vaccineProgramEntity.setNote(request.getNote());
         vaccineProgramEntity.setStatus(VaccineProgramStatus.NOT_STARTED);
@@ -490,6 +491,9 @@ public class AdminService {
         user.setEmail(request.getEmail());
         user.setFullName(request.getName());
         user.setPassword(encodedPassword);
+        user.setPhone(request.getPhone());
+        user.setAddress(request.getAddress());
+        user.setActive(true);
         user.setRole(UserRole.NURSE);
         userRepository.save(user);
         emailService.sendEmail(request.getEmail(), "Account: ",
@@ -497,6 +501,8 @@ public class AdminService {
                         + "\nPassword: " + password);
         return modelMapper.map(user, UserDTO.class);
     }
+
+
 
     public List<UserDTO> getAllAccounts() {
         List<UserEntity> userEntities = userRepository.findAll();
@@ -581,6 +587,7 @@ public class AdminService {
                         parent.setEmail(parentEmail);
                         parent.setPhone(parentPhone);
                         parent.setAddress(parentAddress);
+                        parent.setActive(true);
                         parent.setRole(UserRole.PARENT);
                         parent = userRepository.save(parent);
                     }

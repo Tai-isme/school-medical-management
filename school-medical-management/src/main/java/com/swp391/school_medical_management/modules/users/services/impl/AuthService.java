@@ -28,6 +28,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.StudentD
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.service.JwtService;
@@ -62,6 +63,9 @@ public class AuthService {
         if (userOpt.isEmpty())
             throw new BadCredentialsException("Incorrect email or password!");
         UserEntity user = userOpt.get();
+        if (user.isActive() == false) {
+            throw new BadCredentialsException("Your account is not active!");
+        }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
             throw new BadCredentialsException("Incorrect email or password!");
         UserDTO userDTO = modelMapper.map(user, UserDTO.class);
@@ -69,6 +73,19 @@ public class AuthService {
                 userDTO.getRole());
         String refreshToken = jwtService.generateRefreshToken(user.getUserId());
         return new LoginResponse(token, refreshToken, userDTO, null);
+    }
+
+    public void updateAccountStatus(Long userId, boolean status) {
+        Optional<UserEntity> userOpt = userRepository.findUserByUserId(userId);
+        if (userOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        UserEntity user = userOpt.get();
+        if (user.getRole() == UserRole.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot disable ADMIN account");
+        }
+        user.setActive(status);
+        userRepository.save(user);
     }
 
     public void logout(String bearerToken) {
@@ -133,9 +150,13 @@ public class AuthService {
             if (phoneNumberINTL.startsWith("+84"))
                 phoneNumberINTL = "0" + phoneNumberINTL.substring(3);
             Optional<UserEntity> userOpt = userRepository.findUserByPhone(phoneNumberINTL);
-            if (userOpt.isEmpty())
+            if (userOpt.isEmpty()) {
                 throw new BadCredentialsException("Not found user with phone number: " + phoneNumberINTL);
+            }
             UserEntity user = userOpt.get();
+            if (user.isActive() == false) {
+                throw new BadCredentialsException("Your account is not active!");
+            }
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
             List<StudentEntity> studentList = studentRepository.findStudentByParent_UserId(userDTO.getId());
             String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(),
@@ -157,6 +178,9 @@ public class AuthService {
             if (userOpt.isEmpty())
                 throw new BadCredentialsException("Not found user with email: " + email);
             UserEntity user = userOpt.get();
+            if (user.isActive() == false) {
+                throw new BadCredentialsException("Your account is not active!");
+            }
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
             List<StudentEntity> studentList = studentRepository.findStudentByParent_UserId(userDTO.getId());
             String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(),

@@ -10,14 +10,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.google.api.services.storage.Storage.BucketAccessControls.Update;
 import com.swp391.school_medical_management.modules.users.controllers.AdminController;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
@@ -31,6 +36,8 @@ import com.swp391.school_medical_management.modules.users.dtos.response.MedicalR
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
 import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity;
@@ -67,7 +74,7 @@ import com.swp391.school_medical_management.modules.users.repositories.VaccineRe
 @Service
 public class NurseService {
 
-    private final AdminController adminController;
+    private static final Logger logger = LoggerFactory.getLogger(NurseService.class);
 
     public static final String DEFAULT_VACCINE_HS_NOTE = "Chương trình vaccine tại trường!";
 
@@ -109,10 +116,6 @@ public class NurseService {
 
     @Autowired
     private BlogRepository blogRepository;
-
-    NurseService(AdminController adminController) {
-        this.adminController = adminController;
-    }
 
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
         List<MedicalRequestEntity> pendingMedicalRequestList = medicalRequestRepository
@@ -175,57 +178,132 @@ public class NurseService {
                 .collect(Collectors.toList());
     }
 
-    public MedicalRecordDTO getMedicalRecordByStudentId(Long studentId) {
-        Optional<MedicalRecordEntity> optMedicalRecord = medicalRecordsRepository
-                .findMedicalRecordByStudent_Id(studentId);
-        if (optMedicalRecord.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical record not found");
-        MedicalRecordEntity medicalRecord = optMedicalRecord.get();
-        return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
-    }
-
     public List<MedicalEventDTO> getMedicalEventsByStudent(Long studentId) {
         Optional<StudentEntity> studentOpt = studentRepository.findStudentById(studentId);
         if (studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
 
         StudentEntity studentEntity = studentOpt.get();
-
+        UserEntity parent = studentEntity.getParent();
         List<MedicalEventEntity> medicalEventEntitieList = medicalEventRepository.findByStudent(studentEntity);
         if (medicalEventEntitieList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found any medical event");
-
-        return medicalEventEntitieList.stream()
+        List<MedicalEventDTO> medicalEventDTOList = medicalEventEntitieList.stream()
                 .map(event -> {
                     MedicalEventDTO dto = modelMapper.map(event, MedicalEventDTO.class);
 
                     if (event.getNurse() != null) {
                         UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
-                        dto.setUserDTO(nurseDTO);
+                        dto.setNurseDTO(nurseDTO);
                     }
-
+                    if (event.getStudent() != null) {
+                        StudentDTO studentDTO = modelMapper.map(event.getStudent(), StudentDTO.class);
+                        dto.setStudentDTO(studentDTO);
+                    }
+                    if (parent != null) {
+                        UserDTO parentDTO = modelMapper.map(parent, UserDTO.class);
+                        dto.setParentDTO(parentDTO);
+                    }
                     return dto;
                 })
                 .collect(Collectors.toList());
+        return medicalEventDTOList;
     }
 
-    public MedicalRequestDTO updateMedicalRequestStatus(int requestId, String status) {
+    public MedicalRequestDTO updateMedicalRequestStatus(int requestId, UpdateMedicalRequestStatus request) {
         Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository
                 .findMedicalRequestEntityByRequestId(requestId);
         if (medicalRequestOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found");
         MedicalRequestEntity medicalRequest = medicalRequestOpt.get();
-
-        MedicalRequestEntity.MedicalRequestStatus statusEnum = MedicalRequestEntity.MedicalRequestStatus
-                .valueOf(status.toUpperCase());
-
-        if (statusEnum == null || !(statusEnum == MedicalRequestStatus.SUBMITTED)
-                || !(statusEnum == MedicalRequestStatus.COMPLETED)
-                || !(statusEnum == MedicalRequestStatus.CANCELLED))
+        StudentEntity student = medicalRequest.getStudent();
+        logger.info(medicalRequest.getStatus().toString());
+        MedicalRequestStatus statusEnum;
+        try {
+            statusEnum = MedicalRequestEntity.MedicalRequestStatus.valueOf(request.getStatus().name().toUpperCase());
+        } catch (IllegalArgumentException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
+        }
+
+        if (medicalRequest.getStatus() == MedicalRequestStatus.PROCESSING
+                && (statusEnum == MedicalRequestStatus.PROCESSING)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot update PROCESSING to PROCESSING");
+        }
+
+        if (medicalRequest.getStatus() == MedicalRequestStatus.PROCESSING
+                && (statusEnum == MedicalRequestStatus.COMPLETED)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot update PROCESSING to COMPLETED");
+        }
+
+        if (medicalRequest.getStatus() == MedicalRequestStatus.PROCESSING
+                && (statusEnum == MedicalRequestStatus.CANCELLED)) {
+
+            if (medicalRequest.getReason() == null || request.getReason_rejected().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Reason is required when cancelling a PROCESSING request");
+            }
+
+            medicalRequest.setReason(request.getReason_rejected());
+        }
+
+        if (medicalRequest.getStatus() == MedicalRequestStatus.SUBMITTED
+                && (statusEnum == MedicalRequestStatus.SUBMITTED)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot update SUBMITTED to SUBMITTED");
+        }
+
+        if (medicalRequest.getStatus() == MedicalRequestStatus.SUBMITTED
+                && (statusEnum == MedicalRequestStatus.PROCESSING)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot update SUBMITTED to PROCESSING");
+        }
+
+        if (medicalRequest.getStatus() == MedicalRequestStatus.SUBMITTED
+                && (statusEnum == MedicalRequestStatus.CANCELLED)) {
+
+            if (request.getReason_rejected() == null || request.getReason_rejected().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Reason is required when cancelling a SUBMITTED request");
+            }
+            medicalRequest.setReason(request.getReason_rejected());
+        }
+
+        if (medicalRequest.getStatus() == MedicalRequestStatus.CANCELLED
+                && (statusEnum == MedicalRequestStatus.CANCELLED)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot update CANCELLED to CANCELLED");
+        }
+
+        if (medicalRequest.getStatus() == MedicalRequestStatus.CANCELLED &&
+                (statusEnum == MedicalRequestStatus.PROCESSING ||
+                        statusEnum == MedicalRequestStatus.SUBMITTED ||
+                        statusEnum == MedicalRequestStatus.CANCELLED ||
+                        statusEnum == MedicalRequestStatus.COMPLETED)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot update CANCELLED to CANCELLED, PROCESSING, SUBMITTED, or COMPLETED");
+        }
+
+        if (medicalRequest.getStatus() == MedicalRequestStatus.COMPLETED &&
+                (statusEnum == MedicalRequestStatus.PROCESSING ||
+                        statusEnum == MedicalRequestStatus.COMPLETED ||
+                        statusEnum == MedicalRequestStatus.CANCELLED ||
+                        statusEnum == MedicalRequestStatus.SUBMITTED)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot update COMPLETED to COMPLETED, PROCESSING or SUBMITTED");
+        }
+
         medicalRequest.setStatus(statusEnum);
         medicalRequestRepository.save(medicalRequest);
-        return modelMapper.map(medicalRequest, MedicalRequestDTO.class);
+        List<MedicalRequestDetailDTO> detailDTOs = medicalRequest.getMedicalRequestDetailEntities()
+                .stream()
+                .map(entity -> modelMapper.map(entity, MedicalRequestDetailDTO.class))
+                .collect(Collectors.toList());
+        MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequest, MedicalRequestDTO.class);
+        medicalRequestDTO.setMedicalRequestDetailDTO(detailDTOs);
+        medicalRequestDTO.setStudentDTO(modelMapper.map(student, StudentDTO.class));
+        return medicalRequestDTO;
     }
 
     public HealthCheckFormDTO getHealthCheckFormById(Long nurseId, Long healthCheckFormId) {
@@ -260,17 +338,16 @@ public class NurseService {
         return healthCheckFormDTOList;
     }
 
-    public long countHealthCheckForm(){
+    public long countHealthCheckForm() {
         return healthCheckFormRepository.countByStatusAndCommitFalse(HealthCheckFormStatus.DRAFT);
     }
 
-    public Map<String, Long> countDraftForm(){
+    public Map<String, Long> countDraftForm() {
         long vaccineForm = vaccineFormRepository.countByStatusAndCommitFalse(VaccineFormStatus.DRAFT);
         long healthCheckForm = healthCheckFormRepository.countByStatusAndCommitFalse(HealthCheckFormStatus.DRAFT);
         return Map.of(
                 "vaccineForm", vaccineForm,
-                "healthCheckForm", healthCheckForm
-        );
+                "healthCheckForm", healthCheckForm);
     }
 
     public VaccineFormDTO getVaccinFormById(Long nurseId, Long vaccineFormId) {
@@ -299,53 +376,51 @@ public class NurseService {
     }
 
     public MedicalEventDTO createMedicalEvent(Long nurseId, MedicalEventRequest request) {
-    Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-    if (nurseOpt.isEmpty())
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
+        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
+        if (nurseOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
 
-    UserEntity nurse = nurseOpt.get();
+        UserEntity nurse = nurseOpt.get();
 
-    Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
-    if (studentOpt.isEmpty())
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
 
-    StudentEntity student = studentOpt.get();
+        StudentEntity student = studentOpt.get();
 
-    Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository
-            .findByStudentAndTypeEventAndDescription(student, request.getTypeEvent(), request.getDescription());
-    if (medicalEventOpt.isPresent())
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical event already exists");
+        Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository
+                .findByStudentAndTypeEventAndDescription(student, request.getTypeEvent(), request.getDescription());
+        if (medicalEventOpt.isPresent())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical event already exists");
 
-    MedicalEventEntity medicalEventEntity = new MedicalEventEntity();
-    medicalEventEntity.setTypeEvent(request.getTypeEvent());
-    medicalEventEntity.setDate(LocalDate.now());
-    medicalEventEntity.setDescription(request.getDescription());
-    medicalEventEntity.setStudent(student);
-    medicalEventEntity.setNurse(nurse);
+        MedicalEventEntity medicalEventEntity = new MedicalEventEntity();
+        medicalEventEntity.setTypeEvent(request.getTypeEvent());
+        medicalEventEntity.setDate(LocalDate.now());
+        medicalEventEntity.setDescription(request.getDescription());
+        medicalEventEntity.setStudent(student);
+        medicalEventEntity.setNurse(nurse);
 
-    medicalEventRepository.save(medicalEventEntity);
+        medicalEventRepository.save(medicalEventEntity);
 
-    MedicalEventDTO dto = modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
-    dto.setStudentId(student.getId());
-    dto.setStudentName(student.getFullName());
+        MedicalEventDTO dto = modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
+        dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
 
-    UserEntity parent = student.getParent();
-    if (parent != null) {
-        UserDTO userDTO = UserDTO.builder()
-                .id(parent.getUserId())
-                .fullName(parent.getFullName())
-                .email(parent.getEmail())
-                .phone(parent.getPhone())
-                .address(parent.getAddress())
-                .role(parent.getRole())
-                .build();
+        UserEntity parent = student.getParent();
+        if (parent != null) {
+            UserDTO userDTO = UserDTO.builder()
+                    .id(parent.getUserId())
+                    .fullName(parent.getFullName())
+                    .email(parent.getEmail())
+                    .phone(parent.getPhone())
+                    .address(parent.getAddress())
+                    .role(parent.getRole())
+                    .build();
 
-        dto.setUserDTO(userDTO);
+            dto.setParentDTO(userDTO);
+        }
+
+        return dto;
     }
-
-    return dto;
-}
-
 
     public MedicalEventDTO updateMedicalEvent(Long nurseId, Long medicalEventId, MedicalEventRequest request) {
         Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findByEventId(medicalEventId);
@@ -382,49 +457,64 @@ public class NurseService {
         if (medicalEventOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not found");
         MedicalEventEntity medicalEventEntity = medicalEventOpt.get();
-        return modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
+        MedicalEventDTO medicalEventDTO = modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
+        if (medicalEventEntity.getNurse() != null) {
+            UserDTO nurseDTO = modelMapper.map(medicalEventEntity.getNurse(), UserDTO.class);
+            medicalEventDTO.setNurseDTO(nurseDTO);
+        }
+        if (medicalEventEntity.getStudent() != null) {
+            StudentDTO studentDTO = modelMapper.map(medicalEventEntity.getStudent(), StudentDTO.class);
+            medicalEventDTO.setStudentDTO(studentDTO);
+
+            if (medicalEventEntity.getStudent().getParent() != null) {
+                UserDTO parentDTO = modelMapper.map(medicalEventEntity.getStudent().getParent(), UserDTO.class);
+                medicalEventDTO.setParentDTO(parentDTO);
+            }
+        }
+        return medicalEventDTO;
     }
 
     public List<MedicalEventDTO> getAllMedicalEvent() {
         List<MedicalEventEntity> events = medicalEventRepository.findAll();
 
         if (events.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not found");
         }
 
         List<MedicalEventDTO> medicalEventDTOList = new ArrayList<>();
 
-    for (MedicalEventEntity event : events) {
-        MedicalEventDTO dto = new MedicalEventDTO();
-        dto.setEventId(event.getEventId());
-        dto.setTypeEvent(event.getTypeEvent());
-        dto.setDate(event.getDate());
-        dto.setDescription(event.getDescription());
-
-        StudentEntity student = event.getStudent();
-        if (student != null) {
-            dto.setStudentId(student.getId());
-            dto.setStudentName(student.getFullName());
-
-            UserEntity parent = student.getParent();
-            if (parent != null) {
-                UserDTO userDTO = UserDTO.builder()
-                        .id(parent.getUserId())
-                        .fullName(parent.getFullName())
-                        .email(parent.getEmail())
-                        .phone(parent.getPhone()) 
-                        .address(parent.getAddress())
-                        .role(parent.getRole())
-                        .build();
-
-                dto.setUserDTO(userDTO);
+        for (MedicalEventEntity event : events) {
+            MedicalEventDTO dto = new MedicalEventDTO();
+            dto.setEventId(event.getEventId());
+            dto.setTypeEvent(event.getTypeEvent());
+            dto.setDate(event.getDate());
+            dto.setDescription(event.getDescription());
+            if (event.getNurse() != null) {
+                UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
+                dto.setNurseDTO(nurseDTO);
             }
-        }
-        medicalEventDTOList.add(dto);
-    }
-    return medicalEventDTOList;
-}
+            StudentEntity student = event.getStudent();
+            if (student != null) {
+                dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
 
+                UserEntity parent = student.getParent();
+                if (parent != null) {
+                    UserDTO userDTO = UserDTO.builder()
+                            .id(parent.getUserId())
+                            .fullName(parent.getFullName())
+                            .email(parent.getEmail())
+                            .phone(parent.getPhone())
+                            .address(parent.getAddress())
+                            .role(parent.getRole())
+                            .build();
+
+                    dto.setParentDTO(userDTO);
+                }
+            }
+            medicalEventDTOList.add(dto);
+        }
+        return medicalEventDTOList;
+    }
 
     public void deleteMedicalEvent(Long meidcalEventId) {
         Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findByEventId(meidcalEventId);
@@ -792,32 +882,33 @@ public class NurseService {
     }
 
     public List<UserDTO> searchUsers(String keyword, UserRole roleFilter) {
-    // Lấy toàn bộ danh sách user từ database
-    List<UserEntity> userList = userRepository.findAll();
+        // Lấy toàn bộ danh sách user từ database
+        List<UserEntity> userList = userRepository.findAll();
 
-    // Lọc bỏ user có role là ADMIN và theo điều kiện keyword/roleFilter
-    List<UserDTO> result = userList.stream()
-            .filter(user -> user.getRole() != UserEntity.UserRole.ADMIN)
-            .filter(user -> {
-                boolean matchesKeyword = true;
-                if (keyword != null && !keyword.isBlank()) {
-                    String lowerKeyword = keyword.toLowerCase();
-                    matchesKeyword = (user.getFullName() != null && user.getFullName().toLowerCase().contains(lowerKeyword))
-                            || (user.getEmail() != null && user.getEmail().toLowerCase().contains(lowerKeyword))
-                            || (user.getPhone() != null && user.getPhone().toLowerCase().contains(lowerKeyword));
-                }
-                boolean matchesRole = (roleFilter == null || user.getRole() == roleFilter);
-                return matchesKeyword && matchesRole;
-            })
-            .map(user -> modelMapper.map(user, UserDTO.class))
-            .collect(Collectors.toList());
+        // Lọc bỏ user có role là ADMIN và theo điều kiện keyword/roleFilter
+        List<UserDTO> result = userList.stream()
+                .filter(user -> user.getRole() != UserEntity.UserRole.ADMIN)
+                .filter(user -> {
+                    boolean matchesKeyword = true;
+                    if (keyword != null && !keyword.isBlank()) {
+                        String lowerKeyword = keyword.toLowerCase();
+                        matchesKeyword = (user.getFullName() != null
+                                && user.getFullName().toLowerCase().contains(lowerKeyword))
+                                || (user.getEmail() != null && user.getEmail().toLowerCase().contains(lowerKeyword))
+                                || (user.getPhone() != null && user.getPhone().toLowerCase().contains(lowerKeyword));
+                    }
+                    boolean matchesRole = (roleFilter == null || user.getRole() == roleFilter);
+                    return matchesKeyword && matchesRole;
+                })
+                .map(user -> modelMapper.map(user, UserDTO.class))
+                .collect(Collectors.toList());
 
-    if (result.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found");
+        if (result.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found");
+        }
+
+        return result;
     }
-
-    return result;
-}
 
     public List<StudentDTO> getStudentsByClass(Long classId) {
         List<StudentEntity> students = studentRepository.findByClassEntity_ClassId(classId);
@@ -826,22 +917,21 @@ public class NurseService {
                 .collect(Collectors.toList());
     }
 
-
     public List<MedicalRecordDTO> searchMedicalRecordsByStudentName(String keyword) {
-    List<StudentEntity> students = studentRepository.findByFullNameContainingIgnoreCase(keyword);
+        List<StudentEntity> students = studentRepository.findByFullNameContainingIgnoreCase(keyword);
 
-    List<MedicalRecordDTO> medicalRecords = new ArrayList<>();
+        List<MedicalRecordDTO> medicalRecords = new ArrayList<>();
 
-    for (StudentEntity student : students) {
-        Optional<MedicalRecordEntity> recordOpt = medicalRecordsRepository
-                .findMedicalRecordByStudent_Id(student.getId());
+        for (StudentEntity student : students) {
+            Optional<MedicalRecordEntity> recordOpt = medicalRecordsRepository
+                    .findMedicalRecordByStudent_Id(student.getId());
 
-        recordOpt.ifPresent(record -> {
-            MedicalRecordDTO dto = modelMapper.map(record, MedicalRecordDTO.class);
-            dto.setStudentId(student.getId());
-            medicalRecords.add(dto);
-        });
-    }
+            recordOpt.ifPresent(record -> {
+                MedicalRecordDTO dto = modelMapper.map(record, MedicalRecordDTO.class);
+                dto.setStudentId(student.getId());
+                medicalRecords.add(dto);
+            });
+        }
 
         return medicalRecords;
     }
@@ -896,6 +986,5 @@ public class NurseService {
         dto.setParentId(entity.getParent().getUserId());
         return dto;
     }
-
 
 }

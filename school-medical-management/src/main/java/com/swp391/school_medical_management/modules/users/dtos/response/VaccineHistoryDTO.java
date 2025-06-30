@@ -11,4 +11,5 @@ public class VaccineHistoryDTO {
     private Long id;
     private String vaccineName;
     private String note;
+    private VaccineProgramDTO vaccineProgramDTO;
 }

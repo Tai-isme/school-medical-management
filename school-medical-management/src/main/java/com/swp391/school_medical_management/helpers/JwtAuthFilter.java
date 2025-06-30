@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.cloud.storage.Option;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.service.JwtService;
 
 import jakarta.annotation.Nonnull;
@@ -37,6 +41,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Autowired
     private final JwtService jwtService;
+
+    @Autowired
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -122,6 +129,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         userId = jwtService.getUserIdFromJwt(jwt);
         role = jwtService.getRoleFromJwt(jwt);
+        Optional<UserEntity> userOpt = userRepository.findUserByUserId(Long.parseLong(userId));
+        if(userOpt.isEmpty()) {
+            sendErrorResponse(response,
+                    request,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Xac thuc khong thanh cong!",
+                    "Nguoi dung khong ton tai");
+            return;
+        }   
+        UserEntity user = userOpt.get();
+        if(user.isActive() == false) {
+            sendErrorResponse(response,
+                    request,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Xac thuc khong thanh cong!",
+                    "Tai khoan da bi khoa");
+            return;
+        }
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(

@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
@@ -71,9 +72,8 @@ public class NurseController {
     }
 
     @PutMapping("/medical-request/{requestId}/status")
-    public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId,
-            @Valid @RequestParam String status) {
-        MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, status);
+    public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId, @RequestBody @Valid UpdateMedicalRequestStatus request) {
+        MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, request);
         return ResponseEntity.ok(medicalRequestDTO);
     }
 
@@ -230,14 +230,6 @@ public class NurseController {
     @GetMapping("/students")
     public ResponseEntity<List<StudentDTO>> getAllStudent() {
         return ResponseEntity.ok(nurseService.getAllStudent());
-    }
-
-    @GetMapping("/medical-records/{studentId}")
-    public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable long studentId) {
-        MedicalRecordDTO medicalRecordDTO = nurseService.getMedicalRecordByStudentId(studentId);
-        if (medicalRecordDTO == null)
-            return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(medicalRecordDTO);
     }
 
     // Lọc ra nhưng học sinh chưa từng tiêm loại vaccine name history đó hoặc chưa
