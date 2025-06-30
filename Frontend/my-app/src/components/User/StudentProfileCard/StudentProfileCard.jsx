@@ -198,7 +198,7 @@ const StudentProfile = () => {
     }}
   >
     <div style={{ fontSize: 18, marginBottom: 16 }}>
-      Thông tin của học sinh <b>{selectedStudent?.fullName || selectedStudent?.name}</b> chưa được khai báo.<br />
+      Hồ sơ sức khỏe của học sinh <b>{selectedStudent?.fullName || selectedStudent?.name}</b> chưa được khai báo.<br />
       Vui lòng nhấn vào nút bên dưới để khai báo hồ sơ học sinh.
     </div>
     <button
@@ -214,7 +214,7 @@ const StudentProfile = () => {
       }}
       onClick={() => setOpenMedicalForm(true)} // Viết hàm này để mở form khai báo
     >
-      Khai báo hồ sơ cho học sinh
+      Tiến hành khai báo hồ sơ
     </button>
   </div>
 ) : (

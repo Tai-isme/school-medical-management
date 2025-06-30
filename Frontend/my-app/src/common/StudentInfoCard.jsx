@@ -82,28 +82,7 @@ export default function StudentInfoCard({ onChange }) {
         justifyContent: "center"
       }}
     >
-      {/* <style>
-        {`
-        .rgb-avatar-border {
-          padding: 6px;
-          border-radius: 50%;
-          background: conic-gradient(
-            #ff0000, #ff9900, #33ff00, #00ffff, #0033ff, #9900ff, #ff0099, #ff0000
-          );
-          animation: rgb-spin 2s linear infinite;
-          display: inline-block;
-        }
-        @keyframes rgb-spin {
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-        .rgb-avatar-border .ant-avatar {
-          border: 4px solid #fff;
-          background: #e3f2fd;
-        }
-        `}
-      </style> */}
+      
       <Title level={3} style={{ color: "#8ab4e6", marginBottom: 24 }}>Học sinh</Title>
       <Select
         style={{ width: "100%", marginBottom: 32 }}
@@ -129,24 +108,7 @@ export default function StudentInfoCard({ onChange }) {
         style={{ display: "none" }}
         onChange={handleAvatarSelect}
       />
-      {previewAvatar ? (
-        <Button
-          onClick={handleAvatarUpload}
-          loading={uploading}
-          style={{ marginBottom: 16 }}
-          type="primary"
-        >
-          Cập nhật
-        </Button>
-      ) : (
-        <Button
-          onClick={() => fileInputRef.current && fileInputRef.current.click()}
-          loading={uploading}
-          style={{ marginBottom: 16 }}
-        >
-          Chỉnh sửa ảnh
-        </Button>
-      )}
+      
       <Text strong style={{ fontSize: 20, marginBottom: 8 }}>
         {selectedStudent?.fullName || selectedStudent?.name || "--"}
       </Text>

@@ -110,6 +110,7 @@
 
 .notification-item {
   background-color: #fff;
+  height: 100px;
   border-radius: 10px;
   padding: 12px 20px 20px 20px; /* Giảm padding-top từ 24px xuống 12px */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);

@@ -92,7 +92,6 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
       title: (
         <>
           Tên Vaccin
-          {/* Thêm (nếu có) vào tiêu đề cột */}
           <Text type="secondary" style={{ marginLeft: 4, fontWeight: 'normal' }}>(nếu có)</Text>
         </>
       ),
@@ -102,6 +101,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
           value={text}
           onChange={e => handleVaccineChange(e.target.value, idx, "vaccineName")}
           placeholder="Bạch hầu, Ho gà, Uốn ván,..."
+          style={{ width: 150 }}
         />
       ),
     },
@@ -109,35 +109,18 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
       title: (
         <>
           Mô tả
-          {/* Thêm (nếu có) vào tiêu đề cột */}
           <Text type="secondary" style={{ marginLeft: 4, fontWeight: 'normal' }}>(nếu có)</Text>
         </>
       ),
       dataIndex: "note",
       render: (text, record, idx) => (
-        <Input
+        <Input.TextArea
           value={text}
           onChange={e => handleVaccineChange(e.target.value, idx, "note")}
           placeholder="Đã tiêm ở VNVC"
+          autoSize={{ minRows: 1, maxRows: 4 }}
+          style={{ width: 350 }}
         />
-      ),
-    },
-    {
-      title: 'Hành động',
-      key: 'action',
-      render: (_, record, idx) => (
-        (editMode && record.note === "Đã tiêm ở tại trường")
-          ? null
-          : (
-            <Button
-              danger
-              onClick={() => {
-                setVaccineHistories(prev => prev.filter((_, i) => i !== idx));
-              }}
-            >
-              Xóa
-            </Button>
-          )
       ),
     },
   ];
@@ -158,7 +141,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
       }}
       title={
         <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 28, padding: '16px 24px' }}>
-          Khai báo hồ sơ học sinh
+          Khai báo hồ sơ sức khỏe cho học sinh
         </div>
       }
     >
@@ -288,7 +271,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                 pagination={false}
                 rowKey={(record) => record.key || record.vaccineName + record.note}
                 columns={vaccineTableColumns}
-                style={{ width: 600 }}
+                style={{ width: 660 }}
               />
               <Button type="primary" style={{ marginTop: 16 }} onClick={handleAddVaccine}>
                 + Thêm mới vaccin

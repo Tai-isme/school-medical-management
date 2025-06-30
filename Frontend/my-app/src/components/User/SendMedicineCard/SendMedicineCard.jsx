@@ -177,6 +177,7 @@ setPurpose('');
                 <input
                   type="date"
                   value={usageTime}
+                  min={new Date().toISOString().split('T')[0]} // Chỉ cho chọn từ hôm nay trở đi
                   onChange={e => {
                     setUsageTime(e.target.value);
                     setDateError(''); // Xóa lỗi khi người dùng thay đổi ngày

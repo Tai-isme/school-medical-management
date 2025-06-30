@@ -49,7 +49,7 @@ const MedicalInfoCards = (props) => {
           <div className="card-icon-wrapper">
             <FontAwesomeIcon icon={faSyringe} style={{ fontSize: '32px', color: '#64b5f6' }} />
           </div>
-          <h2 className="card-title">Kiểm tra kết quả vaccin</h2>
+          <h2 className="card-title">Kết quả tiêm vaccine</h2>
           <p className="card-description">Xem kết quả tiêm chủng và lịch sử vaccin của học sinh</p>
         </div>
 
@@ -58,7 +58,7 @@ const MedicalInfoCards = (props) => {
           <div className="card-icon-wrapper">
             <FontAwesomeIcon icon={faStethoscope} style={{ fontSize: '32px', color: '#64b5f6' }} />
           </div>
-          <h2 className="card-title">Kiểm tra sức khỏe</h2>
+          <h2 className="card-title">Kết quả kiểm tra sức khỏe</h2>
           <p className="card-description">Kiểm tra và theo dõi sức khỏe tổng quát của học sinh</p>
         </div>
       </div>

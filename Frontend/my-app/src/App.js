@@ -6,6 +6,7 @@ import StudentProfilePage from './pages/StudentProfilePage';
 import MedicalIncidentPage from './pages/MedicalIncidentPage';
 import NotificationPage from './pages/NotificationPage';
 import VaccineResultPage from './pages/VaccineResultPage';
+import HealthCheckResultPage from './pages/HealthCheckResultPage';
 import ProtectedRoute from './routes/ProtectedRoute';
 import Navbar from "./components/Layout/Navbar/Navbar";
 import '@fontsource/poppins/400.css';
@@ -43,7 +44,7 @@ function App() {
         <Route path="/medical-incident" element={<MedicalIncidentPage />} />
         <Route path="/notification" element={<NotificationPage />} />
         <Route path="/vaccine-result" element={<VaccineResultPage />} />
-        <Route path="/" element={<NotificationPage />} />
+        <Route path="/health-check" element={<HealthCheckResultPage />} />
         <Route path="/dashboard" element={<ProtectedRoute />} />
       </Routes>
     </Router>

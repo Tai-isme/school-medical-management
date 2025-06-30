@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import StudentInfoCard from '../../../common/StudentInfoCard';
 import { Input, DatePicker, Row, Col } from 'antd';
 import dayjs from 'dayjs';
-import VaccineHistoryDetailModal from './VaccineHistoryDetailModal';
+import HealthCheckResultDetailModal from './HealthCheckResultDetailModal';
 // import './VaccineResult.css';
 
-const VaccineResultCard = () => {
+const HealthCheckResultCard = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState();
   const [vaccineHistory, setVaccineHistory] = useState([]);
@@ -135,6 +135,7 @@ const VaccineResultCard = () => {
                         setModalOpen(true);
                       }}
                     >
+                      {/* Dòng 1: Tên chương trình */}
                       <div style={{
                         fontWeight: 600,
                         fontSize: 18,
@@ -143,6 +144,7 @@ const VaccineResultCard = () => {
                       }}>
                         {item.vaccineName}
                       </div>
+                      {/* Dòng 2: Ngày và Trạng thái */}
                       <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -158,21 +160,29 @@ const VaccineResultCard = () => {
                           Trạng thái: <span style={{color: '#43a047', fontWeight: 600}}>Hoàn thành</span>
                         </div>
                       </div>
+                      {/* Chi tiết khi mở rộng */}
+                      {openDetailIdx === idx && (
+                        <div style={{marginTop: 16, fontSize: 16, color: '#333'}}>
+                          <div><b>Mô tả:</b> {item.note || 'Không có mô tả.'}</div>
+                          {item.place && <div><b>Địa điểm:</b> {item.place}</div>}
+                          {item.doctor && <div><b>Bác sĩ:</b> {item.doctor}</div>}
+                        </div>
+                      )}
                     </div>
                   ))}
-                  <VaccineHistoryDetailModal
-                    open={modalOpen}
-                    onClose={() => setModalOpen(false)}
-                    data={modalData}
-                  />
                 </div>
               </>
             )}
           </div>
         </div>
       </div>
+      <HealthCheckResultDetailModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        data={modalData}
+      />
     </div>
   );
 };
 
-export default VaccineResultCard;
+export default HealthCheckResultCard;
