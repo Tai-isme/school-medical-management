@@ -12,7 +12,11 @@ const AccountManagement = () => {
   const [filterRole, setFilterRole] = useState(""); // Trạng thái cho vai trò
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
+  const [editingAccount, setEditingAccount] = useState(null);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -112,6 +116,27 @@ const AccountManagement = () => {
       align: "center",
       sorter: (a, b) => a.role.localeCompare(b.role),
     },
+    {
+      title: "Hành động",
+      key: "action",
+      align: "center",
+      render: (_, record) => (
+        <div className="account-action-cell">
+          <Button
+            className="account-action-btn"
+            onClick={() => handleEditAccount(record)}
+          >
+            Sửa
+          </Button>
+          <Button
+            className="account-action-btn danger"
+            onClick={() => handleDisableAccount(record)}
+          >
+            Vô hiệu hóa
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   // Hàm tạo tài khoản Nurse
@@ -119,12 +144,13 @@ const AccountManagement = () => {
     setCreateLoading(true);
     try {
       const token = localStorage.getItem("token");
+      console.log("Token:", values);
       await axios.post(
-        "http://localhost:8080/api/admin/accounts",
+        "http://localhost:8080/api/admin/create-nurses-account",
         {
           fullName: values.fullName,
           email: values.email,
-          password: values.password,
+          newPassword: values.password, // Đổi thành newPassword nếu backend yêu cầu
           phone: values.phone,
           address: values.address,
           role: "nurse",
@@ -155,6 +181,64 @@ const AccountManagement = () => {
     } finally {
       setCreateLoading(false);
     }
+  };
+
+  const handleEditAccount = (record) => {
+    setEditingAccount(record);
+    setEditModalVisible(true);
+    // Set form values
+    editForm.setFieldsValue({
+      fullName: record.fullName,
+      email: record.email,
+      password: record.password,
+      phone: record.phone,
+      address: record.address,
+    });
+  };
+
+  const handleUpdateAccount = async (values) => {
+    setEditLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `http://localhost:8080/api/admin/accounts/${editingAccount.userId}`,
+        {
+          fullName: values.fullName,
+          email: values.email,
+          password: values.password,
+          phone: values.phone,
+          address: values.address,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      message.success("Cập nhật tài khoản thành công!");
+      setEditModalVisible(false);
+      // Reload danh sách tài khoản
+      const response = await axios.get("http://localhost:8080/api/admin/accounts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const responseData = response.data.map((item) => ({
+        userId: item.id,
+        fullName: item.fullName,
+        email: item.email,
+        password: item.password,
+        phone: item.phone,
+        address: item.address,
+        role: item.role.toLowerCase(),
+      }));
+      setAccounts(responseData);
+    } catch (err) {
+      message.error("Cập nhật tài khoản thất bại!");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleDisableAccount = async (record) => {
+    // TODO: Gọi API để vô hiệu hóa tài khoản
+    message.info(`Vô hiệu hóa tài khoản: ${record.fullName}`);
   };
 
   return (
@@ -266,6 +350,62 @@ const AccountManagement = () => {
           </Form.Item>
           <Form.Item label="Vai trò">
             <Input value="Nurse" disabled />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Modal chỉnh sửa tài khoản */}
+      <Modal
+        title="Chỉnh sửa tài khoản"
+        open={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        onOk={() => editForm.submit()}
+        confirmLoading={editLoading}
+        okText="Cập nhật"
+        cancelText="Hủy"
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={handleUpdateAccount}
+        >
+          <Form.Item
+            label="Họ và tên"
+            name="fullName"
+            rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: "Vui lòng nhập email" },
+              { type: "email", message: "Email không hợp lệ" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Mật khẩu"
+            name="password"
+            rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item
+            label="Số điện thoại"
+            name="phone"
+            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Địa chỉ"
+            name="address"
+            rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
+          >
+            <Input />
           </Form.Item>
         </Form>
       </Modal>

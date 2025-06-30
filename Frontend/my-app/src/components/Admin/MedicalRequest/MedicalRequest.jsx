@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Button, Tag, Modal, Row, Col, Card, Empty, message } from "antd";
+import { Tabs, Button, Tag, Modal, Row, Col, Card, Empty, message, DatePicker } from "antd";
 import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import axios from "axios";
 import "./MedicalRequest.css";
 
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+
 const { TabPane } = Tabs;
+const { RangePicker } = DatePicker;
 
 const statusMap = {
   PROCESSING: "Chờ xử lý",
@@ -27,20 +33,20 @@ const MedicalRequest = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [activeStatus, setActiveStatus] = useState("PROCESSING");
   const [searchTerm, setSearchTerm] = useState(""); // Thêm state tìm kiếm
+  const [dateRange, setDateRange] = useState([null, null]);
 
+  // Gọi API lấy tất cả khi đổi tab hoặc lần đầu
   useEffect(() => {
-    fetchRequests(activeStatus);
-  }, [activeStatus]);
+    fetchRequests();
+  }, []);
 
-  const fetchRequests = async (status) => {
+  const fetchRequests = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:8080/api/nurse/status/${status}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        "http://localhost:8080/api/nurse/medical-request",
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setRequests(res.data);
     } catch (err) {
@@ -101,13 +107,29 @@ const MedicalRequest = () => {
     }
   };
 
-  // Lọc requests theo tên yêu cầu
-  const filteredRequests = requests.filter((r) =>
-    r.requestName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Lọc theo status cho từng tab
+  const getFilteredRequests = () => {
+    let filtered = requests;
+    if (activeStatus !== "ALL") {
+      filtered = filtered.filter(r => r.status === activeStatus);
+    }
+    // Lọc theo tên và ngày như cũ
+    const matchTerm = r => r.requestName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchDate = r => {
+      if (Array.isArray(dateRange) && dateRange[0] && dateRange[1]) {
+        const reqDate = dayjs(r.date);
+        return (
+          reqDate.isSameOrAfter(dayjs(dateRange[0]), "day") &&
+          reqDate.isSameOrBefore(dayjs(dateRange[1]), "day")
+        );
+      }
+      return true;
+    };
+    return filtered.filter(r => matchTerm(r) && matchDate(r));
+  };
 
-  // Sửa renderCards dùng filteredRequests
   const renderCards = () => {
+    const filteredRequests = getFilteredRequests();
     if (loading) return <div>Đang tải...</div>;
     if (filteredRequests.length === 0) return <Empty description="Không có dữ liệu" />;
     return (
@@ -118,12 +140,12 @@ const MedicalRequest = () => {
               className={
                 record.status === "PROCESSING"
                   ? "card-processing"
-                  : record.status === "APPROVED"
-                  ? "card-approved"
-                  : record.status === "GIVEN"
-                  ? "card-given"
-                  : record.status === "REJECTED"
-                  ? "card-rejected"
+                  : record.status === "SUBMITTED"
+                  ? "card-submitted"
+                  : record.status === "COMPLETED"
+                  ? "card-completed"
+                  : record.status === "CANCELLED"
+                  ? "card-cancelled"
                   : ""
               }
               title={
@@ -142,7 +164,7 @@ const MedicalRequest = () => {
               }
               style={{ minHeight: 220 }}
             >
-              {/* Đưa tên yêu cầu lên đầu */}
+              {/* Chỉ giữ lại 3 thông tin */}
               <p style={{ fontWeight: 700, fontSize: 16, color: "#1476d1", marginBottom: 8 }}>
                 {record.requestName}
               </p>
@@ -152,23 +174,6 @@ const MedicalRequest = () => {
               <p>
                 <strong>Học sinh:</strong> {record.studentDTO?.fullName || "Không rõ"}
               </p>
-              <p>
-                <strong>Ghi chú:</strong> {record.note || "Không có"}
-              </p>
-              <div>
-                <strong>Chi tiết thuốc:</strong>
-                <ul style={{ margin: 0, paddingLeft: 18 }}>
-                  {Array.isArray(record.medicalRequestDetailDTO) && record.medicalRequestDetailDTO.length > 0 ? (
-                    record.medicalRequestDetailDTO.map((item, idx) => (
-                      <li key={idx}>
-                        {item.medicineName} - {item.quantity}
-                      </li>
-                    ))
-                  ) : (
-                    <li>Không có</li>
-                  )}
-                </ul>
-              </div>
               <div style={{ marginTop: 12 }}>
                 {record.status === "PROCESSING" && (
                   <>
@@ -211,14 +216,30 @@ const MedicalRequest = () => {
       <div className="full-width-content">
         <h2>Danh sách yêu cầu gửi thuốc</h2>
         {/* Ô tìm kiếm */}
-        <div style={{ marginBottom: 16, maxWidth: 320 }}>
+        <div
+          style={{
+            marginBottom: 16,
+            display: "flex",
+            gap: 12,
+            maxWidth: 600,
+            alignItems: "center",
+          }}
+        >
+          <RangePicker
+            style={{ flex: 1 }}
+            format="DD/MM/YYYY"
+            value={dateRange}
+            onChange={setDateRange}
+            allowClear
+            placeholder={["Từ ngày", "Đến ngày"]}
+          />
           <input
             type="text"
             placeholder="Tìm kiếm theo tên yêu cầu..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
-              width: "100%",
+              flex: 1,
               padding: 8,
               borderRadius: 4,
               border: "1px solid #ccc",
@@ -231,6 +252,9 @@ const MedicalRequest = () => {
           activeKey={activeStatus}
           onChange={setActiveStatus}
         >
+          <TabPane tab="Tất cả danh sách gửi thuốc" key="ALL">
+            {renderCards()}
+          </TabPane>
           <TabPane tab="Chờ xử lý" key="PROCESSING">
             {renderCards()}
           </TabPane>

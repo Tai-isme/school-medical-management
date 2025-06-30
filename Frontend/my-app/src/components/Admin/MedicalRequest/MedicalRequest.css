@@ -122,8 +122,8 @@ html, body {
 
 /* Card màu theo trạng thái */
 .card-processing {
+  border: 2px solid #faad14 !important;
   background: #fffbe6 !important;
-  border: 1.5px solid #ffe58f !important;
 }
 .card-approved {
   background: #f6ffed !important;
@@ -136,6 +136,18 @@ html, body {
 .card-rejected {
   background: #fff1f0 !important;
   border: 1.5px solid #ffa39e !important;
+}
+.card-submitted {
+  border: 2px solid #52c41a !important;
+  background: #f6ffed !important;
+}
+.card-completed {
+  border: 2px solid #1890ff !important;
+  background: #e6f7ff !important;
+}
+.card-cancelled {
+  border: 2px solid #ff4d4f !important;
+  background: #fff1f0 !important;
 }
 .ant-card {
   border-radius: 14px !important;

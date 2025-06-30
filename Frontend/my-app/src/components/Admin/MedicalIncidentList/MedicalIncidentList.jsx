@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Input, message, Row, Col, DatePicker, Card, Tag, Pagination } from "antd";
-import { CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { Table, Button, Modal, Form, Input, message, Row, Col, DatePicker, Card, Pagination, Select } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import "./MedicalIncidentList.css";
@@ -8,10 +7,16 @@ import "./MedicalIncidentList.css";
 const MedicalIncidentList = () => {
   const [data, setData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [searchEvent, setSearchEvent] = useState("");
   const [searchDate, setSearchDate] = useState(null);
+  const [searchStudent, setSearchStudent] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [classList, setClassList] = useState([]);
+  const [studentList, setStudentList] = useState([]);
+  const [selectedClass, setSelectedClass] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const pageSize = 5;
 
   // Tải danh sách sự kiện y tế từ API
@@ -28,7 +33,7 @@ const MedicalIncidentList = () => {
 
         const apiData = res.data.map((item) => ({
           ...item,
-          studentName: item.studentName || `ID ${item.studentId}`,
+          studentName: item.studentDTO.fullName || `ID ${item.studentId}`,
           parentPhone: item.parentPhone || "Chưa có",
         }));
 
@@ -42,7 +47,37 @@ const MedicalIncidentList = () => {
     fetchEvents();
   }, []);
 
-  const showModal = () => setIsModalVisible(true);
+  // Lấy danh sách lớp khi mở modal
+  const showModal = async () => {
+    setIsModalVisible(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:8080/api/admin/class", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setClassList(res.data);
+    } catch {
+      setClassList([]);
+    }
+  };
+
+  // Khi chọn lớp, lấy danh sách học sinh của lớp đó
+  const handleClassChange = async (classId) => {
+    setSelectedClass(classId);
+    form.setFieldsValue({ studentId: undefined }); // reset chọn học sinh
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `http://localhost:8080/api/admin/students/${classId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setStudentList(res.data);
+    } catch {
+      setStudentList([]);
+    }
+  };
 
   const handleCancel = () => {
     form.resetFields();
@@ -72,11 +107,15 @@ const MedicalIncidentList = () => {
         }
       );
 
+      // Tìm học sinh vừa chọn trong studentList để lấy tên và lớp
+      const selectedStudent = studentList.find(stu => stu.id === values.studentId);
+
       const created = {
         ...res.data,
         eventId: res.data.eventId || Date.now(),
         date: dayjs().format("YYYY-MM-DD"),
-        studentName: res.data.studentName || `ID ${values.studentId}`,
+        studentName: selectedStudent ? selectedStudent.fullName : `ID ${values.studentId}`,
+        className: selectedStudent ? selectedStudent.className : "Không rõ",
         nurseId: `ID ${res.data.nurseId || "---"}`,
         parentPhone: res.data.parentPhone || "Chưa có",
       };
@@ -96,10 +135,13 @@ const MedicalIncidentList = () => {
     const matchEvent = item.typeEvent
       .toLowerCase()
       .includes(searchEvent.toLowerCase());
+    const matchStudent = item.studentName
+      ?.toLowerCase()
+      .includes(searchStudent.toLowerCase());
     const matchDate = searchDate
       ? dayjs(item.date).isSame(searchDate, "day")
       : true;
-    return matchEvent && matchDate;
+    return matchEvent && matchStudent && matchDate;
   });
 
   // Dữ liệu trang hiện tại
@@ -108,14 +150,9 @@ const MedicalIncidentList = () => {
     currentPage * pageSize
   );
 
-  const statusMap = {
-    DONE: { text: "Đã xử lý", color: "geekblue", icon: <CheckCircleOutlined /> },
-    PROCESSING: { text: "Đang xử lý", color: "volcano", icon: <ClockCircleOutlined /> },
-  };
-
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchEvent, searchDate]);
+  }, [searchEvent, searchDate, searchStudent]);
 
   return (
     <div className="incident-container">
@@ -133,6 +170,14 @@ const MedicalIncidentList = () => {
             placeholder="Tìm theo tên sự kiện"
             value={searchEvent}
             onChange={(e) => setSearchEvent(e.target.value)}
+            allowClear
+          />
+        </Col>
+        <Col>
+          <Input
+            placeholder="Tìm theo tên học sinh"
+            value={searchStudent}
+            onChange={(e) => setSearchStudent(e.target.value)}
             allowClear
           />
         </Col>
@@ -164,34 +209,39 @@ const MedicalIncidentList = () => {
               bodyStyle={{ padding: 20 }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 17, marginBottom: 4 }}>
-                    {item.studentName} {item.className ? `- ${item.className}` : ""}
-                  </div>
-                  <div style={{ color: "#444", marginBottom: 8 }}>{item.typeEvent}</div>
-                  <div style={{ color: "#888", fontSize: 14, marginBottom: 8 }}>
-                    {item.time || ""} {item.date ? `- ${dayjs(item.date).format("DD/MM/YYYY")}` : ""}
-                  </div>
-                  <div style={{ color: "#555", fontSize: 15, marginBottom: 12 }}>{item.description}</div>
-                  <Button size="small" style={{ marginRight: 8 }}>Chi tiết</Button>
-                  {item.status !== "DONE" && (
-                    <Button
-                      size="small"
-                      type="primary"
-                      style={{ background: "#52c41a", border: "none" }}
-                    >
-                      Đánh dấu hoàn thành
-                    </Button>
-                  )}
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <Tag
-                    color={statusMap[item.status]?.color || "default"}
-                    style={{ fontSize: 15, padding: "4px 14px", borderRadius: 16 }}
-                    icon={statusMap[item.status]?.icon}
+                <div style={{ width: "100%" }}>
+                  {/* Tên sự kiện ở trên cùng, căn giữa, nổi bật */}
+                  <div
+                    style={{
+                      color: "#ff4d4f",
+                      fontWeight: 700,
+                      fontSize: 18,
+                      marginBottom: 12,
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                    }}
                   >
-                    {statusMap[item.status]?.text || "Không rõ"}
-                  </Tag>
+                    {item.typeEvent}
+                  </div>
+                  <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 6 }}>
+                    <span style={{ color: "#1476d1" }}>Tên học sinh:</span> {item.studentDTO.fullName} {item.className ? `- ${item.className}` : ""}
+                  </div>
+                  <div style={{ color: "#888", fontSize: 14, marginBottom: 6 }}>
+                    <span style={{ color: "#1476d1" }}>Ngày:</span> {item.date ? dayjs(item.date).format("DD/MM/YYYY") : ""}
+                  </div>
+                  <div style={{ color: "#555", fontSize: 15, marginBottom: 12 }}>
+                    <span style={{ color: "#1476d1" }}>Mô tả:</span> {item.description}
+                  </div>
+                  <Button
+                    size="small"
+                    style={{ marginRight: 8 }}
+                    onClick={() => {
+                      setSelectedEvent(item);
+                      setDetailModalVisible(true);
+                    }}
+                  >
+                    Chi tiết
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -228,11 +278,46 @@ const MedicalIncidentList = () => {
             <Input />
           </Form.Item>
           <Form.Item
-            label="ID học sinh"
-            name="studentId"
-            rules={[{ required: true }]}
+            label="Chọn lớp"
+            name="classId"
+            rules={[{ required: true, message: "Vui lòng chọn lớp" }]}
           >
-            <Input placeholder="Nhập ID học sinh" />
+            <Select
+              placeholder="Chọn lớp"
+              onChange={handleClassChange}
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {classList.map((cls) => (
+                <Select.Option key={cls.classId} value={cls.classId}>
+                  {cls.className}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="Chọn học sinh"
+            name="studentId"
+            rules={[{ required: true, message: "Vui lòng chọn học sinh" }]}
+          >
+            <Select
+              placeholder="Chọn học sinh"
+              disabled={!selectedClass}
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {studentList.map((stu) => (
+                <Select.Option key={stu.id} value={stu.id}>
+                  {stu.fullName}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item
             label="Mô tả"
@@ -242,6 +327,43 @@ const MedicalIncidentList = () => {
             <Input.TextArea />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Modal chi tiết sự kiện */}
+      <Modal
+        title="Chi tiết sự kiện y tế"
+        open={detailModalVisible}
+        onCancel={() => setDetailModalVisible(false)}
+        footer={null}
+      >
+        {selectedEvent && (
+          <div>
+            <div
+              style={{
+                color: "#ff4d4f",
+                fontWeight: 700,
+                fontSize: 18,
+                marginBottom: 16,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+              }}
+            >
+              {selectedEvent.typeEvent}
+            </div>
+            <p>
+              <strong>Tên học sinh:</strong> {selectedEvent.studentName}
+            </p>
+            <p>
+              <strong>Lớp:</strong> {selectedEvent.classDTO?.className || "Không rõ"}
+            </p>
+            <p>
+              <strong>Ngày:</strong> {selectedEvent.date ? dayjs(selectedEvent.date).format("DD/MM/YYYY") : ""}
+            </p>
+            <p>
+              <strong>Mô tả:</strong> {selectedEvent.description}
+            </p>
+          </div>
+        )}
       </Modal>
     </div>
   );
