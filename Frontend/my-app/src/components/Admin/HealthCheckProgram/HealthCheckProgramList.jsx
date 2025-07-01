@@ -1,202 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { Input, Button, Modal, Checkbox, message } from 'antd';
-import axios from 'axios';
-import './HealthCheckProgramList.css';
+import React from "react";
+import { Button, Card, Row, Col, Tag } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 
 const HealthCheckProgramList = () => {
-  const [searchText, setSearchText] = useState('');
-  const [sortAsc, setSortAsc] = useState(true);
-  const [sortByStatusAsc, setSortByStatusAsc] = useState(true);
-  const [data, setData] = useState([]);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedProgram, setSelectedProgram] = useState(null);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8080/api/admin/health-check-program', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      setData(res.data);
-    } catch (err) {
-      message.error('Không thể tải dữ liệu chương trình!');
-    }
-  };
-
-  const filteredData = data
-    .filter(program =>
-      program.name.toLowerCase().includes(searchText.toLowerCase())
-    )
-    .sort((a, b) => {
-      const dateA = new Date(a.startDate);
-      const dateB = new Date(b.startDate);
-      return sortAsc ? dateA - dateB : dateB - dateA;
-    })
-    .sort((a, b) => {
-      if (!sortByStatusAsc) {
-        return b.status.localeCompare(a.status);
-      }
-      return a.status.localeCompare(b.status);
-    });
-
-  const allIds = filteredData.map(p => p.id);
-  const isAllSelected = allIds.length > 0 && allIds.every(id => selectedRowKeys.includes(id));
-
-  const getStatusClass = (status) => {
-    switch (status) {
-      case 'ON_GOING': return 'on_going';
-      case 'COMPLETED': return 'completed';
-      case 'NOT_STARTED': return 'not_started';
-      default: return '';
-    }
-  };
-
-  const handleSelect = (id) => {
-    setSelectedRowKeys(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
-
-  const handleSend = async () => {
-    try {
-      const token = localStorage.getItem('token');
-
-      const payload = {
-        formIds: selectedRowKeys
-      };
-
-      await axios.post('http://localhost:8080/api/notify-health-check', payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      message.success(`Đã gửi ${selectedRowKeys.length} chương trình thành công.`);
-      setSelectedRowKeys([]);
-      fetchData();
-    } catch (error) {
-      console.error('Lỗi khi gửi chương trình:', error);
-      message.error('Gửi thất bại. Vui lòng thử lại.');
-    }
+  // Dữ liệu mẫu, bạn thay bằng API thực tế
+  const program = {
+    name: "Cúm mùa 2024",
+    classes: ["1A", "1B", "2A", "2B"],
+    date: "20/11/2024",
+    totalStudents: 120,
+    confirmed: 95,
+    status: "Chờ thực hiện",
   };
 
   return (
-    <div className="hcp-container">
-      <div className="hcp-header-bar">
-        <div className="hcp-title">Chương trình khám sức khỏe</div>
-        <Input
-          placeholder="Tìm kiếm theo tên..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          style={{ width: 250 }}
-          allowClear
-        />
+    <div style={{ padding: 24, marginLeft: 220, transition: "margin 0.2s", maxWidth: "100vw" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>
+          <span style={{ color: "#52c41a", marginRight: 8 }}>🛡️</span>
+          Quản Lý Chương Trình Khám Sức Khỏe
+        </h2>
+        <Button type="primary" icon={<PlusOutlined />} style={{ background: "#21ba45", border: "none" }}>
+          Lên lịch khám sức khỏe
+        </Button>
       </div>
-
-      <div className="hcp-table-wrapper">
-        <table className="hcp-table">
-          <thead>
-            <tr>
-              <th>
-                <Checkbox
-                  checked={isAllSelected}
-                  indeterminate={selectedRowKeys.length > 0 && !isAllSelected}
-                  onChange={(e) => {
-                    setSelectedRowKeys(e.target.checked ? allIds : []);
-                  }}
-                />
-              </th>
-              <th>Tên chương trình</th>
-              <th>
-                <Button
-                  type="link"
-                  onClick={() => setSortAsc(!sortAsc)}
-                  style={{ padding: 0 }}
-                >
-                  Thời gian {sortAsc ? '↑' : '↓'}
-                </Button>
-              </th>
-              <th>
-                <Button
-                  type="link"
-                  onClick={() => setSortByStatusAsc(!sortByStatusAsc)}
-                  style={{ padding: 0 }}
-                >
-                  Trạng thái {sortByStatusAsc ? '↑' : '↓'}
-                </Button>
-              </th>
-              <th>Ghi chú</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.length === 0 ? (
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: 20, color: '#888' }}>
-                  Không có chương trình nào phù hợp.
-                </td>
-              </tr>
-            ) : (
-              filteredData.map(program => (
-                <tr key={program.id}>
-                  <td>
-                    <Checkbox
-                      checked={selectedRowKeys.includes(program.id)}
-                      onChange={() => handleSelect(program.id)}
-                    />
-                  </td>
-                  <td
-                    onClick={() => {
-                      setSelectedProgram(program);
-                      setIsDetailModalOpen(true);
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div><strong>{program.name}</strong></div>
-                    <div className="hcp-description">{program.description}</div>
-                  </td>
-                  <td>{program.startDate} → {program.endDate}</td>
-                  <td>
-                    <span className={`hcp-status ${getStatusClass(program.status)}`}>
-                      {program.status.replace('_', ' ').toLowerCase()}
-                    </span>
-                  </td>
-                  <td>{program.note || '-'}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        {selectedRowKeys.length > 0 && (
-          <div style={{ textAlign: 'right', marginTop: 16 }}>
-            <Button type="primary" onClick={handleSend}>Gửi</Button>
-          </div>
-        )}
-      </div>
-
-      <Modal
-        title="Chi tiết chương trình"
-        open={isDetailModalOpen}
-        onCancel={() => setIsDetailModalOpen(false)}
-        footer={null}
+      <Card
+        style={{
+          background: "#f6fcf7",
+          borderRadius: 10,
+          border: "1px solid #e6f4ea",
+          width: "calc(100vw - 260px)", // kéo dài hết bên phải, trừ sidebar
+          minWidth: 1200, // tăng minWidth nếu muốn
+          margin: "0 auto",
+          transition: "width 0.2s",
+        }}
+        bodyStyle={{ padding: 24 }}
       >
-        {selectedProgram && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <p><strong>Tên:</strong> {selectedProgram.name}</p>
-            <p><strong>Mô tả:</strong> {selectedProgram.description}</p>
-            <p><strong>Thời gian:</strong> {selectedProgram.startDate} → {selectedProgram.endDate}</p>
-            <p><strong>Trạng thái:</strong> {selectedProgram.status}</p>
-            <p><strong>Ghi chú:</strong> {selectedProgram.note || '-'}</p>
+            <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{program.name}</div>
+            <div style={{ color: "#555", marginBottom: 2 }}>
+              Lớp: {program.classes.join(", ")}
+            </div>
+            <div style={{ color: "#555", marginBottom: 8 }}>
+              Ngày khám: {program.date}
+            </div>
           </div>
-        )}
-      </Modal>
+          <Tag color="blue" style={{ fontSize: 14, marginTop: 4 }}>{program.status}</Tag>
+        </div>
+        <Row gutter={32} style={{ margin: "24px 0" }}>
+          <Col span={12}>
+            <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
+              <div style={{ color: "#1890ff", fontWeight: 700, fontSize: 32 }}>120</div>
+              <div style={{ color: "#888", fontWeight: 500 }}>Tổng học sinh</div>
+            </div>
+          </Col>
+          <Col span={12}>
+            <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
+              <div style={{ color: "#21ba45", fontWeight: 700, fontSize: 32 }}>95</div>
+              <div style={{ color: "#888", fontWeight: 500 }}>Đã xác nhận</div>
+            </div>
+          </Col>
+        </Row>
+        <div style={{ display: "flex", gap: 12 }}>
+          <Button>Gửi thông báo</Button>
+          <Button type="primary" style={{ background: "#21ba45", border: "none" }}>
+            Bắt đầu tiêm
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { Menu, Avatar, Dropdown } from "antd";
+import { Menu, Avatar } from "antd";
 import {
   HomeOutlined,
   UserSwitchOutlined,
@@ -52,66 +52,34 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
       navigate("/");
     }
   }; // vừa thêm
-
-  // Xử lý chọn menu trong dropdown user info
-  const handleUserMenuClick = ({ key }) => {
-    if (key === "info") {
-      // Điều hướng đến trang thông tin tài khoản
-      navigate("/account-info");
-    } else if (key === "changepass") {
-      // Điều hướng đến trang đổi mật khẩu
-      navigate("/change-password");
-    } else if (key === "logout") {
-      handleLogout();
-    }
-  };
-
-  const userMenu = (
-    <Menu onClick={handleUserMenuClick}>
-      <Menu.Item key="info" icon={<UserOutlined />}>
-        Thông tin tài khoản
-      </Menu.Item>
-      <Menu.Item key="changepass" icon={<UserSwitchOutlined />}>
-        Đổi mật khẩu
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="logout" icon={<LogoutOutlined />} style={{ color: "red" }}>
-        Đăng xuất
-      </Menu.Item>
-    </Menu>
-  );
-
   return (
     <div className="sidebar-container">
       <div className="sidebar-logo">
         <img src="/logo1.png" alt="Logo Y Tế" />
       </div>
-      {/* User Info Dropdown */}
-      <Dropdown overlay={userMenu} trigger={["click"]}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            padding: "12px 16px 8px 16px",
-            borderBottom: "1px solid #f0f0f0",
-            marginBottom: 8,
-            cursor: "pointer",
-          }}
-        >
-          <div className="sidebar-userinfo">
-            <Avatar
-              size={32}
-              src={user?.avatar || undefined}
-              icon={<UserOutlined />}
-              style={{ background: "#e6f7ff", color: "#1476d1" }}
-            />
-            <div className="sidebar-userinfo-name">
-              {user?.fullName || user?.username || "User"}
-            </div>
+      {/* User Info */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 16px 8px 16px",
+          borderBottom: "1px solid #f0f0f0",
+          marginBottom: 8,
+        }}
+      >
+        <div className="sidebar-userinfo">
+          <Avatar
+            size={32}
+            src={user?.avatar || undefined}
+            icon={<UserOutlined />}
+            style={{ background: "#e6f7ff", color: "#1476d1" }}
+          />
+          <div className="sidebar-userinfo-name">
+            {user?.fullName || user?.username || "User"}
           </div>
         </div>
-      </Dropdown>
+      </div>
       <Menu
         mode="inline"
         theme="light"
@@ -146,6 +114,24 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
           Blog
         </Menu.Item>
       </Menu>
+
+      <div
+        className="logout-button"
+        onClick={handleLogout}
+        style={{
+          padding: "10px 16px",
+          borderTop: "1px solid #f0f0f0",
+          cursor: "pointer",
+          color: "red",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 14,
+        }}
+      >
+        <LogoutOutlined style={{ marginRight: 8 }} />
+        Đăng xuất
+      </div>
     </div>
   );
 };

@@ -17,7 +17,6 @@ import BlogAdminPage from "../components/Admin/BlogManagement/BlogAdminPage";
 
 import "./AdminHome.css"; // Import your CSS file for styling
 
-
 export default function AdminHome() {
   const [selectedMenu, setSelectedMenu] = useState(null);
   const [selectedClassId, setSelectedClassId] = useState(null);
@@ -44,7 +43,7 @@ export default function AdminHome() {
         style={{
           display: "flex",
           height: "100vh", // Sửa lại cho sát trên cùng
-          paddingTop: 0,   // Xóa padding top
+          paddingTop: 0, // Xóa padding top
         }}
       >
         <AppSidebar
@@ -56,11 +55,7 @@ export default function AdminHome() {
 
         {selectedMenu === "2" && <AccountManagement />}
 
-        {selectedMenu === "3" && (
-          <>
-            <MedicalDashboard />
-          </>
-        )}
+        {selectedMenu === "3" && <MedicalDashboard />}
 
         {selectedMenu === "4" && <MedicalRequest />}
 
@@ -78,7 +73,7 @@ export default function AdminHome() {
 
         {selectedMenu === "9" && <BlogAdminPage />}
 
-        {selectedMenu === "logout"}
+        {/* {selectedMenu === "logout"} */}
       </div>
     </div>
   );
