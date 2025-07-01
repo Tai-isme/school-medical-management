@@ -17,8 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.google.api.services.storage.Storage.BucketAccessControls.Update;
-import com.swp391.school_medical_management.modules.users.controllers.AdminController;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
@@ -36,15 +34,13 @@ import com.swp391.school_medical_management.modules.users.dtos.response.MedicalR
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
 import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
 import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
@@ -54,9 +50,10 @@ import com.swp391.school_medical_management.modules.users.entities.MedicalReques
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity.VaccineName;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
 import com.swp391.school_medical_management.modules.users.repositories.BlogRepository;
@@ -650,11 +647,9 @@ public class NurseService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
         VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
 
-        if (vaccineFormEntity.getCommit() == null || !vaccineFormEntity.getCommit()) {
+        if (Boolean.FALSE.equals(vaccineFormEntity.getCommit())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent has not committed the vaccine form yet");
         }
-
-        VaccineFormDTO vaccineFormDTO = modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
 
         Optional<VaccineResultEntity> existingResultOpt = vaccineResultRepository
                 .findByVaccineFormEntity(vaccineFormEntity);
@@ -663,11 +658,11 @@ public class NurseService {
                     "Vaccine result already exists for this student: " + vaccineFormEntity.getStudent().getId());
         }
 
-        Optional<MedicalRecordEntity> medicalRecordOpt = medicalRecordsRepository
-                .findMedicalRecordByStudent_Id(vaccineFormDTO.getStudentId());
-        if (medicalRecordOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found medical record by student");
-        MedicalRecordEntity medicalRecordEntity = medicalRecordOpt.get();
+        Long studentId = vaccineFormEntity.getStudent().getId();
+        MedicalRecordEntity medicalRecordEntity = medicalRecordsRepository
+                .findMedicalRecordByStudent_Id(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Not found medical record by student"));
 
         VaccineResultEntity vaccineResultEntity = new VaccineResultEntity();
         vaccineResultEntity.setStatusHealth(request.getStatusHealth());
@@ -680,15 +675,23 @@ public class NurseService {
         VaccineProgramEntity program = vaccineFormEntity.getVaccineProgram();
 
         VaccineHistoryEntity history = new VaccineHistoryEntity();
-        history.setVaccineName(program.getVaccineName());
+
+        try {
+            VaccineName vaccineEnum = VaccineName.valueOf(program.getVaccineName().toUpperCase());
+            history.setVaccineName(vaccineEnum);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Invalid vaccine name in program: " + program.getVaccineName());
+        }
+
         history.setNote(DEFAULT_VACCINE_HS_NOTE);
         history.setMedicalRecord(medicalRecordEntity);
         history.setVaccineProgram(program);
         vaccineHistoryRepository.save(history);
 
         VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
-        vaccineResultDTO.setVaccineFormId(vaccineFormDTO.getId());
-        vaccineResultDTO.setStudentId(vaccineFormDTO.getStudentId());
+        vaccineResultDTO.setVaccineFormId(vaccineFormEntity.getId());
+        vaccineResultDTO.setStudentId(studentId);
         return vaccineResultDTO;
     }
 

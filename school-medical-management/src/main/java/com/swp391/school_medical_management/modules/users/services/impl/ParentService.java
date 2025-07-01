@@ -1,13 +1,11 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.*;
-import com.swp391.school_medical_management.modules.users.dtos.response.*;
-import com.swp391.school_medical_management.modules.users.entities.*;
-import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
-import com.swp391.school_medical_management.modules.users.repositories.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -17,13 +15,50 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
+import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.FeedbackRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequestDetailRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineHistoryRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
+import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity;
+import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
+import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity.VaccineName;
+import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
+import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
+import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
 
 @Service
 public class ParentService {
@@ -63,16 +98,18 @@ public class ParentService {
     @Autowired
     private MedicalEventRepository medicalEventRepository;
 
-    public MedicalRecordDTO createMedicalRecord(Long parentId, MedicalRecordsRequest request) {
+     public MedicalRecordDTO createMedicalRecord(Long parentId, MedicalRecordsRequest request) {
         Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
         if (studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+
         StudentEntity student = studentOpt.get();
         if (!student.getParent().getUserId().equals(parentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
+
         if (medicalRecordsRepository.findMedicalRecordByStudent_Id(request.getStudentId()).isPresent()) {
-            throw new RuntimeException("Medical record already exist");
+            throw new RuntimeException("Medical record already exists");
         }
 
         MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
@@ -87,16 +124,29 @@ public class ParentService {
         medicalRecord.setNote(request.getNote());
         medicalRecord.setLastUpdate(LocalDateTime.now());
 
-        medicalRecord.setVaccineHistories(new ArrayList<>());
-
+        List<VaccineHistoryEntity> vaccineHistories = new ArrayList<>();
         for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
             VaccineHistoryEntity vaccineHistory = new VaccineHistoryEntity();
-            vaccineHistory.setVaccineName(vaccineHistoryRequest.getVaccineName());
+
+            VaccineName rawName = VaccineName.valueOf(vaccineHistoryRequest.getVaccineName());
+            if (rawName == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name must not be null or blank");
+            }
+
+            try {
+                vaccineHistory.setVaccineName(rawName);
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            }
+
             vaccineHistory.setNote(vaccineHistoryRequest.getNote());
             vaccineHistory.setMedicalRecord(medicalRecord);
-            medicalRecord.getVaccineHistories().add(vaccineHistory);
+            vaccineHistories.add(vaccineHistory);
         }
+
+        medicalRecord.setVaccineHistories(vaccineHistories);
         medicalRecordsRepository.save(medicalRecord);
+
         MedicalRecordDTO medicalRecordDTO = modelMapper.map(medicalRecord, MedicalRecordDTO.class);
         List<VaccineHistoryDTO> vaccineHistoryDTOList = medicalRecord.getVaccineHistories()
                 .stream()
@@ -112,10 +162,12 @@ public class ParentService {
         if (studentOpt.isEmpty() || !studentOpt.get().getParent().getUserId().equals(parentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
+
         Optional<MedicalRecordEntity> recordOpt = medicalRecordsRepository
                 .findMedicalRecordByStudent_Id(request.getStudentId());
         if (recordOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical record not found");
+
         MedicalRecordEntity medicalRecord = recordOpt.get();
         medicalRecord.setAllergies(request.getAllergies());
         medicalRecord.setChronicDisease(request.getChronicDisease());
@@ -125,12 +177,25 @@ public class ParentService {
         medicalRecord.setWeight(request.getWeight());
         medicalRecord.setHeight(request.getHeight());
         medicalRecord.setNote(request.getNote());
+        medicalRecord.setLastUpdate(LocalDateTime.now());
 
+        // Xóa danh sách cũ và thêm mới hoàn toàn
         medicalRecord.getVaccineHistories().clear();
 
         for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
             VaccineHistoryEntity vaccineHistoryEntity = new VaccineHistoryEntity();
-            vaccineHistoryEntity.setVaccineName(vaccineHistoryRequest.getVaccineName());
+
+            VaccineName rawName = VaccineName.valueOf(vaccineHistoryRequest.getVaccineName());
+            if (rawName == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name must not be null or blank");
+            }
+
+            try {
+                vaccineHistoryEntity.setVaccineName(rawName);
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            }
+
             vaccineHistoryEntity.setNote(vaccineHistoryRequest.getNote());
             vaccineHistoryEntity.setMedicalRecord(medicalRecord);
             medicalRecord.getVaccineHistories().add(vaccineHistoryEntity);
@@ -139,7 +204,7 @@ public class ParentService {
         medicalRecordsRepository.save(medicalRecord);
         return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
     }
-
+    
     public List<MedicalRecordDTO> getAllMedicalRecordByParentId(Long parentId) {
         List<MedicalRecordEntity> medicalRecordList = medicalRecordsRepository
                 .findMedicalRecordByStudent_Parent_UserId(parentId);
