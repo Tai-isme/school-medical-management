@@ -297,7 +297,7 @@ public class AdminService {
         return healthCheckProgramDTOList;
     }
 
-    public HealthCheckProgramDTO getHealthCheckProgramById(long adminId, Long id) {
+    public HealthCheckProgramDTO getHealthCheckProgramById(Long id) {
         Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
         if (healthCheckProgramOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
@@ -305,18 +305,12 @@ public class AdminService {
         return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
     }
 
-    public void deleteHealthCheckProgram(Long id, long adminId) {
-        UserEntity admin = userRepository.findUserByUserId(adminId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+    public void deleteHealthCheckProgram(Long id) {
         Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
         if (healthCheckProgramOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
 
         HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
-
-        if (!healthCheckProgramEntity.getAdmin().getUserId().equals(admin.getUserId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to delete this program");
-        }
 
         if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED
                 || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING) {
@@ -361,17 +355,13 @@ public class AdminService {
         return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
     }
 
-    public VaccineProgramDTO updateVaccineProgram(VaccineProgramRequest request, long adminId, long id) {
-        UserEntity admin = userRepository.findUserByUserId(adminId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+    public VaccineProgramDTO updateVaccineProgram(VaccineProgramRequest request, long id) {
         Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository.findVaccineProgramByVaccineId(id);
         if (existingProgramOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
         }
+
         VaccineProgramEntity existingProgram = existingProgramOpt.get();
-        if (!existingProgram.getAdmin().getUserId().equals(admin.getUserId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to update this program");
-        }
 
         if (existingProgram.getStatus() == VaccineProgramStatus.COMPLETED
                 || existingProgram.getStatus() == VaccineProgramStatus.ON_GOING) {
@@ -457,10 +447,7 @@ public class AdminService {
         }
     }
 
-    public List<VaccineProgramDTO> getAllVaccineProgram(long adminId) {
-        // UserEntity admin = userRepository.findUserByUserId(adminId)
-        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin
-        // not found"));
+    public List<VaccineProgramDTO> getAllVaccineProgram() {
         List<VaccineProgramEntity> vaccineProgramEntitieList = vaccineProgramRepository.findAll();
         if (vaccineProgramEntitieList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine programs found");
@@ -602,7 +589,8 @@ public class AdminService {
                     String parentAddress = row.getCell(9).getStringCellValue();
 
                     // class
-                    Optional<ClassEntity> classOpt = classRepository.findByClassNameAndTeacherName(className, teacherName);
+                    Optional<ClassEntity> classOpt = classRepository.findByClassNameAndTeacherName(className,
+                            teacherName);
                     ClassEntity classEntity;
                     if (classOpt.isPresent()) {
                         classEntity = classOpt.get();
@@ -636,7 +624,7 @@ public class AdminService {
                                     studentName, dob, gender, relationship, classEntity, parent);
                     StudentEntity student;
                     if (studentOpt.isPresent()) {
-                        student = studentOpt.get(); 
+                        student = studentOpt.get();
                     } else {
                         student = new StudentEntity();
                         student.setFullName(studentName);

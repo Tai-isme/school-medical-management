@@ -98,15 +98,13 @@ public class AdminController {
 
     @GetMapping("/health-check-program/{id}")
     public ResponseEntity<HealthCheckProgramDTO> getAllHealthCheckProgramById(@PathVariable Long id) {
-        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        HealthCheckProgramDTO healthCheckProgramDTO = adminService.getHealthCheckProgramById(Long.parseLong(adminId), id);
+        HealthCheckProgramDTO healthCheckProgramDTO = adminService.getHealthCheckProgramById(id);
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 
     @DeleteMapping("/health-check-program/{id}")
     public ResponseEntity<Void> deleteHealthCheckProgram(@PathVariable Long id) {
-        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        adminService.deleteHealthCheckProgram(Long.parseLong(adminId), id);
+        adminService.deleteHealthCheckProgram(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -120,16 +118,13 @@ public class AdminController {
     @PutMapping("/vaccine-program/{vaccineProgramId}")
     public ResponseEntity<VaccineProgramDTO> updateVaccineProgram(@RequestBody VaccineProgramRequest request,
             @PathVariable long vaccineProgramId) {
-        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgram(request, Long.parseLong(adminId),
-                vaccineProgramId);
+        VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgram(request, vaccineProgramId);
         return ResponseEntity.ok(vaccineProgramDTO);
     }
 
     @GetMapping("/vaccine-program")
     public ResponseEntity<List<VaccineProgramDTO>> getAllVaccineProgram() {
-        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<VaccineProgramDTO> vaccineProgramDTOList = adminService.getAllVaccineProgram(Long.parseLong(adminId));
+        List<VaccineProgramDTO> vaccineProgramDTOList = adminService.getAllVaccineProgram();
         return ResponseEntity.ok(vaccineProgramDTOList);
     }
 
