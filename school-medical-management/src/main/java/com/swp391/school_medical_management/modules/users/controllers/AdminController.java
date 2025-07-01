@@ -99,8 +99,7 @@ public class AdminController {
     @GetMapping("/health-check-program/{id}")
     public ResponseEntity<HealthCheckProgramDTO> getAllHealthCheckProgramById(@PathVariable Long id) {
         String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        HealthCheckProgramDTO healthCheckProgramDTO = adminService.getHealthCheckProgramById(Long.parseLong(adminId),
-                id);
+        HealthCheckProgramDTO healthCheckProgramDTO = adminService.getHealthCheckProgramById(Long.parseLong(adminId), id);
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 

@@ -7,10 +7,6 @@ import com.swp391.school_medical_management.modules.users.entities.StudentEntity
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.cglib.core.Local;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

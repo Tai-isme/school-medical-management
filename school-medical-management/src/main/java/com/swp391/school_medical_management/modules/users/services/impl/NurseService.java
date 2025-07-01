@@ -336,9 +336,7 @@ public class NurseService {
         return healthCheckFormDTOList;
     }
 
-    public long countHealthCheckForm() {
-        return healthCheckFormRepository.countByStatusAndCommitFalse(HealthCheckFormStatus.DRAFT);
-    }
+  
 
     public Map<String, Long> countDraftForm() {
         long vaccineForm = vaccineFormRepository.countByStatusAndCommitFalse(VaccineFormStatus.DRAFT);

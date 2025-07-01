@@ -158,8 +158,9 @@ public class AdminService {
                         "The last health check program is not COMPLETED.");
             }
         }
-        
-        // kiểm tra có chương trình nào vẫn còn hiệu lực vào thời điểm bắt đầu chương trình mới
+
+        // kiểm tra có chương trình nào vẫn còn hiệu lực vào thời điểm bắt đầu chương
+        // trình mới
         List<HealthCheckProgramEntity> overlappingPrograms = healthCheckProgramRepository
                 .findByEndDateAfter(request.getStartDate());
 
@@ -600,7 +601,7 @@ public class AdminService {
                     String parentAddress = row.getCell(9).getStringCellValue();
 
                     // class
-                    Optional<ClassEntity> classOpt = classRepository.findByClassName(className);
+                    Optional<ClassEntity> classOpt = classRepository.findByClassNameAndTeacherName(className, teacherName);
                     ClassEntity classEntity;
                     if (classOpt.isPresent()) {
                         classEntity = classOpt.get();
@@ -629,13 +630,21 @@ public class AdminService {
                     }
 
                     // student
-                    StudentEntity student = new StudentEntity();
-                    student.setFullName(studentName);
-                    student.setDob(dob);
-                    student.setGender(gender);
-                    student.setRelationship(relationship);
-                    student.setClassEntity(classEntity);
-                    student.setParent(parent);
+                    Optional<StudentEntity> studentOpt = studentRepository
+                            .findByFullNameAndDobAndGenderAndRelationshipAndClassEntityAndParent(
+                                    studentName, dob, gender, relationship, classEntity, parent);
+                    StudentEntity student;
+                    if (studentOpt.isPresent()) {
+                        student = studentOpt.get(); 
+                    } else {
+                        student = new StudentEntity();
+                        student.setFullName(studentName);
+                        student.setDob(dob);
+                        student.setGender(gender);
+                        student.setRelationship(relationship);
+                        student.setClassEntity(classEntity);
+                        student.setParent(parent);
+                    }
 
                     studentRepository.save(student);
                 } catch (Exception e) {
