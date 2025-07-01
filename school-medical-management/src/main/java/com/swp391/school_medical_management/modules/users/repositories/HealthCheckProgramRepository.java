@@ -1,5 +1,6 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,4 +20,9 @@ public interface HealthCheckProgramRepository extends JpaRepository<HealthCheckP
     long countByStatusIn(List<HealthCheckProgramStatus> statuses);
 
     Optional<HealthCheckProgramEntity> findTopByStatusOrderByEndDateDesc(HealthCheckProgramStatus status);
+
+    Optional<HealthCheckProgramEntity> findTopByStartDateLessThanOrderByStartDateDesc(LocalDate startDate);
+
+    List<HealthCheckProgramEntity> findByEndDateAfter(LocalDate startDate);
+
 }
