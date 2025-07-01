@@ -38,6 +38,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.MedicalR
 import com.swp391.school_medical_management.modules.users.dtos.response.ParticipationDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormStatsDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
@@ -744,5 +745,12 @@ public class AdminService {
                     healthCheck.getCommittedCount(), healthCheck.getTotalSent()));
         }
         return participationDTO;
+    }
+
+    public VaccineFormStatsDTO getFormStatsByProgram(Long vaccineProgramId) {
+        long total = vaccineFormRepository.countByVaccineProgram_VaccineId(vaccineProgramId);
+        long committed = vaccineFormRepository.countByVaccineProgram_VaccineIdAndCommitTrue(vaccineProgramId);
+
+        return new VaccineFormStatsDTO(total, committed);
     }
 }

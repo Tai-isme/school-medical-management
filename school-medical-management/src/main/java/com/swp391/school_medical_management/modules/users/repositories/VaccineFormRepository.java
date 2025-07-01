@@ -9,8 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
 
 public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Long> {
@@ -37,4 +37,9 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
       WHERE vf.vaccineProgram.vaccineId = :vaccineId
       """)
   ParticipationRateRaw getParticipationRateByVaccineId(@Param("vaccineId") Long vaccineId);
+
+
+  Long countByVaccineProgram_VaccineId(Long vaccineProgramId);
+
+  Long countByVaccineProgram_VaccineIdAndCommitTrue(Long vaccineProgramId);
 }

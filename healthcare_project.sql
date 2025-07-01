@@ -27,28 +27,21 @@ CREATE TABLE `blog` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `title` varchar(255) DEFAULT NULL,
   `slug` varchar(255) DEFAULT NULL,
-  `category` varchar(255) DEFAULT NULL,
-  `content` text,
+  `category` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
+  `thumbnail_url` varchar(255) DEFAULT NULL,
   `user_id` int DEFAULT NULL,
+  `image_path` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug` (`slug`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `blog_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO `blog` (`id`, `title`, `slug`, `category`, `content`, `created_at`, `updated_at`, `user_id`) VALUES
-(1,	'Giới thiệu hệ thống y tế học đường',	'gioi-thieu-he-thong-y-te-hoc-duong',	'Y tế học đường',	'Nội dung bài viết về hệ thống y tế học đường...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	1),
-(2,	'Tác động của dinh dưỡng đến học sinh',	'tac-dong-cua-dinh-duong-den-hoc-sinh',	'Dinh dưỡng',	'Bài viết nói về vai trò của dinh dưỡng đối với học sinh...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	2),
-(3,	'Cách phòng tránh bệnh theo mùa',	'cach-phong-tranh-benh-theo-mua',	'Sức khỏe',	'Một số lưu ý giúp phòng tránh bệnh theo mùa...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	1),
-(4,	'Tiêm chủng định kỳ trong trường học',	'tiem-chung-dinh-ky-trong-truong-hoc',	'Tiêm chủng',	'Tại sao tiêm chủng là quan trọng trong môi trường học đường...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	3),
-(5,	'Lịch khám sức khỏe định kỳ năm 2025',	'lich-kham-suc-khoe-dinh-ky-nam-2025',	'Khám sức khỏe',	'Chi tiết lịch khám sức khỏe định kỳ năm học 2025...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	2),
-(6,	'Tầm quan trọng của giấc ngủ với học sinh',	'tam-quan-trong-cua-giac-ngu-voi-hoc-sinh',	'Sức khỏe học đường',	'Giấc ngủ ảnh hưởng như thế nào đến học tập và phát triển của trẻ...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	1),
-(7,	'Hướng dẫn sơ cứu cơ bản',	'huong-dan-so-cuu-co-ban',	'Kỹ năng y tế',	'Những kỹ năng sơ cứu cần thiết cho giáo viên và học sinh...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	3),
-(8,	'Vai trò của y tá trường học',	'vai-tro-cua-y-ta-truong-hoc',	'Y tế học đường',	'Bài viết về công việc và trách nhiệm của y tá trong trường học...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	2),
-(9,	'Cách xử lý khi học sinh bị dị ứng',	'cach-xu-ly-khi-hoc-sinh-bi-di-ung',	'An toàn trường học',	'Nhận biết và xử lý các trường hợp dị ứng ở học sinh...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	1),
-(10,	'Ứng dụng công nghệ trong quản lý y tế học đường',	'ung-dung-cong-nghe-trong-quan-ly-y-te-hoc-duong',	'Công nghệ y tế',	'Phân tích cách công nghệ hỗ trợ công tác quản lý y tế học đường...',	'2025-06-23 13:53:55',	'2025-06-23 13:53:55',	2);
+INSERT INTO `blog` (`id`, `title`, `slug`, `category`, `content`, `created_at`, `updated_at`, `thumbnail_url`, `user_id`, `image_path`) VALUES
+(20,	'123',	'123',	'123',	'123',	'2025-07-01 14:44:53',	'2025-07-01 14:44:53',	NULL,	54,	'anh.jpg');
 
 DROP TABLE IF EXISTS `class`;
 CREATE TABLE `class` (
@@ -132,7 +125,6 @@ INSERT INTO `feedback` (`feedback_id`, `satisfaction`, `comment`, `created_at`, 
 (37,	'SATISFIED',	'Mọi thứ diễn ra ổn định.',	'2025-06-01 14:00:00',	47,	9,	NULL,	240,	NULL,	'NOT_REPLIED'),
 (38,	'UNSATISFIED',	'Chậm xử lý thắc mắc.',	'2025-06-01 14:10:00',	48,	9,	NULL,	241,	'Chúng tôi sẽ cải thiện tốc độ.',	'REPLIED'),
 (39,	'SATISFIED',	'Bé được chăm sóc tốt.',	'2025-06-01 14:20:00',	49,	9,	NULL,	242,	NULL,	'NOT_REPLIED'),
-(40,	'UNSATISFIED',	'Không được thông báo kết quả.',	'2025-06-01 14:30:00',	50,	9,	NULL,	243,	'Đã gửi lại đầy đủ kết quả.',	'REPLIED'),
 (41,	'SATISFIED',	'Cảm ơn nhà trường đã tiêm đúng lịch.',	'2025-06-01 08:00:00',	11,	9,	3,	NULL,	NULL,	'REPLIED'),
 (42,	'UNSATISFIED',	'Sau tiêm bé hơi sốt, cần tư vấn thêm.',	'2025-06-02 08:00:00',	12,	9,	4,	NULL,	NULL,	'NOT_REPLIED'),
 (43,	'SATISFIED',	'Không có phản ứng, rất tốt.',	'2025-06-03 08:00:00',	13,	9,	5,	NULL,	NULL,	'REPLIED'),
@@ -171,8 +163,7 @@ INSERT INTO `feedback` (`feedback_id`, `satisfaction`, `comment`, `created_at`, 
 (76,	'UNSATISFIED',	'Mong nhận báo cáo tiêm.',	'2025-07-06 08:00:00',	46,	9,	38,	NULL,	NULL,	'NOT_REPLIED'),
 (77,	'SATISFIED',	'Không có phản ứng nào đáng lo.',	'2025-07-07 08:00:00',	47,	9,	39,	NULL,	NULL,	'REPLIED'),
 (78,	'UNSATISFIED',	'Phụ huynh cần gọi lại xác nhận.',	'2025-07-08 08:00:00',	48,	9,	40,	NULL,	NULL,	'NOT_REPLIED'),
-(79,	'SATISFIED',	'Rất an tâm.',	'2025-07-09 08:00:00',	49,	9,	41,	NULL,	NULL,	'REPLIED'),
-(80,	'UNSATISFIED',	'Bé đau nhẹ khi sờ vào.',	'2025-07-10 08:00:00',	50,	9,	42,	NULL,	NULL,	'NOT_REPLIED');
+(79,	'SATISFIED',	'Rất an tâm.',	'2025-07-09 08:00:00',	49,	9,	41,	NULL,	NULL,	'REPLIED');
 
 DROP TABLE IF EXISTS `health_check_form`;
 CREATE TABLE `health_check_form` (
@@ -236,8 +227,7 @@ INSERT INTO `health_check_form` (`health_check_form_id`, `health_check_id`, `stu
 (1039,	9,	339,	46,	'2025-06-08',	'Bé ăn uống kém',	0,	'SENT'),
 (1040,	9,	340,	47,	'2025-06-08',	'Cần bổ sung vitamin',	1,	'DRAFT'),
 (1041,	9,	341,	48,	'2025-06-08',	'Không có vấn đề gì',	0,	'SENT'),
-(1042,	9,	342,	49,	'2025-06-09',	'Tiêm phòng đầy đủ',	1,	'DRAFT'),
-(1043,	9,	343,	50,	'2025-06-10',	'Khỏe mạnh',	0,	'SENT');
+(1042,	9,	342,	49,	'2025-06-09',	'Tiêm phòng đầy đủ',	1,	'DRAFT');
 
 DROP TABLE IF EXISTS `health_check_program`;
 CREATE TABLE `health_check_program` (
@@ -315,8 +305,7 @@ INSERT INTO `health_check_result` (`health_result_id`, `diagnosis`, `level`, `no
 (239,	'Chán ăn',	'AVERAGE',	'Khuyến khích vận động nhẹ',	1039),
 (240,	'Khỏe mạnh',	'GOOD',	'Không vấn đề gì',	1040),
 (241,	'Đầy bụng khó tiêu',	'FAIR',	'Nên ăn uống điều độ',	1041),
-(242,	'Viêm lợi',	'AVERAGE',	'Cần khám nha sĩ',	1042),
-(243,	'Bình thường',	'GOOD',	'Không có ghi chú thêm',	1043);
+(242,	'Viêm lợi',	'AVERAGE',	'Cần khám nha sĩ',	1042);
 
 DROP TABLE IF EXISTS `medical_event`;
 CREATE TABLE `medical_event` (
@@ -337,11 +326,9 @@ INSERT INTO `medical_event` (`event_id`, `type_event`, `date`, `description`, `s
 (6,	'Ngất xỉu trong lớp',	'2025-06-17',	'Học sinh ngất xỉu khi đang học môn Thể dục, đã được sơ cứu và chuyển đến phòng y tế.',	209,	9),
 (7,	'Ngất xỉu trong lớp',	'2025-06-17',	'Học sinh ngất xỉu khi đang học môn Thể dục, đã được sơ cứu và chuyển đến phòng y tế.',	216,	9),
 (8,	'Ngất xỉu trong lớp',	'2025-06-17',	'Học sinh ngất xỉu khi đang học môn Thể dục, đã được sơ cứu và chuyển đến phòng y tế.',	226,	9),
-(51,	'Té ngã',	'2025-06-01',	'Ngã ở cầu thang',	204,	9),
 (52,	'Sốt',	'2025-06-01',	'Sốt cao trên 39 độ',	205,	9),
 (53,	'Ngất xỉu trong lớp',	'2025-06-01',	'Mất ý thức tạm thời',	206,	2),
 (54,	'Té ngã',	'2025-06-02',	'Ngã trong sân trường',	207,	9),
-(55,	'Sốt',	'2025-06-02',	'Sốt nhẹ',	204,	9),
 (56,	'Sốt',	'2025-06-02',	'Sốt do thời tiết',	209,	1),
 (57,	'Té ngã',	'2025-06-03',	'Vấp ngã khi chơi thể thao',	300,	9),
 (58,	'Ngất xỉu trong lớp',	'2025-06-03',	'Chóng mặt rồi ngất',	299,	9),
@@ -365,10 +352,7 @@ INSERT INTO `medical_event` (`event_id`, `type_event`, `date`, `description`, `s
 (76,	'Khám da liễu',	'2025-06-12',	'Phát hiện nổi mẩn ở tay',	315,	9),
 (77,	'Tư vấn sức khỏe',	'2025-06-13',	'Tư vấn dinh dưỡng',	316,	9),
 (78,	'Khám tổng quát',	'2025-06-14',	'Kiểm tra chỉ số BMI',	317,	9),
-(79,	'Khám tai',	'2025-06-15',	'Bé nghe không rõ',	318,	9),
-(80,	'té',	'2025-06-28',	'không sao',	204,	51),
-(81,	'Đau Bụng',	'2025-06-28',	'Uống thuốc rồi',	204,	51),
-(82,	'123',	'2025-06-30',	'dr',	204,	51);
+(79,	'Khám tai',	'2025-06-15',	'Bé nghe không rõ',	318,	9);
 
 DROP TABLE IF EXISTS `medical_record`;
 CREATE TABLE `medical_record` (
@@ -431,8 +415,7 @@ INSERT INTO `medical_record` (`record_id`, `student_id`, `allergies`, `chronic_d
 (47,	340,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	28.4,	131,	'2025-06-23 14:07:29',	'Bình thường'),
 (48,	341,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	29.9,	134.5,	'2025-06-23 14:07:29',	'Phát triển tốt'),
 (49,	342,	'Không',	'Không',	'Không',	'10/10',	'Bình thường',	26.5,	128,	'2025-06-23 14:07:29',	'Khám định kỳ'),
-(50,	343,	'Không',	'Không',	'Không',	'10/10',	'Tốt',	27.7,	130,	'2025-06-23 14:07:29',	'Bình thường'),
-(51,	204,	'Cá',	'Không có',	'Không có',	'11/10',	'Bình Thường',	30,	100,	'2025-06-28 23:49:09',	'none');
+(52,	345,	'Dị ứng hải sản',	'Không',	'Đã từng điều trị viêm họng năm 2022',	'Trái: 9/10, Phải: 10/10',	'Bình thường',	35,	135,	'2025-07-01 22:08:08',	'Sức khỏe ổn định. Cần theo dõi dị ứng khi ăn bán trú.');
 
 DROP TABLE IF EXISTS `medical_request`;
 CREATE TABLE `medical_request` (
@@ -453,7 +436,7 @@ CREATE TABLE `medical_request` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `medical_request` (`request_id`, `request_name`, `date`, `note`, `status`, `student_id`, `parent_id`, `reason_rejected`) VALUES
-(150792,	'Yêu cầu cấp phát thuốc',	'2025-06-18',	'Học sinh bị sốt nhẹ, cần uống thuốc theo đơn',	'PROCESSING',	209,	1,	NULL),
+(150792,	'Yêu cầu cấp phát thuốc',	'2025-06-18',	'Học sinh bị sốt nhẹ, cần uống thuốc theo đơn',	'SUBMITTED',	209,	1,	NULL),
 (150793,	'Yêu cầu phát thuốc',	'2025-06-10',	'Bé ho và chảy mũi',	'PROCESSING',	304,	11,	NULL),
 (150794,	'Khám tai mũi họng',	'2025-06-11',	'Có dấu hiệu viêm mũi',	'SUBMITTED',	305,	12,	NULL),
 (150795,	'Khám sốt nhẹ',	'2025-06-12',	'Bé bị sốt nhẹ từ tối qua',	'COMPLETED',	306,	13,	NULL),
@@ -468,8 +451,7 @@ INSERT INTO `medical_request` (`request_id`, `request_name`, `date`, `note`, `st
 (150804,	'Kiểm tra tai',	'2025-06-18',	'Đau tai trái',	'COMPLETED',	315,	22,	NULL),
 (150805,	'Yêu cầu thuốc tiêu hóa',	'2025-06-19',	'Khó tiêu sau ăn',	'SUBMITTED',	316,	23,	NULL),
 (150806,	'Cấp thuốc dị ứng',	'2025-06-19',	'Nổi mẩn ở tay',	'PROCESSING',	317,	24,	NULL),
-(150807,	'Khám da liễu',	'2025-06-20',	'Mụn đỏ vùng mặt',	'COMPLETED',	318,	25,	NULL),
-(150809,	'ddd',	'2025-09-30',	'ssss',	'PROCESSING',	204,	51,	NULL);
+(150807,	'Khám da liễu',	'2025-06-20',	'Mụn đỏ vùng mặt',	'COMPLETED',	318,	25,	NULL);
 
 DROP TABLE IF EXISTS `medical_request_detail`;
 CREATE TABLE `medical_request_detail` (
@@ -500,8 +482,7 @@ INSERT INTO `medical_request_detail` (`detail_id`, `medicine_name`, `dosage`, `t
 (150807,	'Thuốc nhỏ tai Otipax',	'2 giọt',	'3 lần/ngày',	150804),
 (150808,	'Thuốc tiêu hóa Enterogermina',	'1 ống',	'Sáng sau ăn',	150805),
 (150809,	'Viên dị ứng Telfast',	'1 viên',	'Tối sau ăn',	150806),
-(150810,	'Kem bôi trị viêm da Fucicort',	'Bôi mỏng',	'2 lần/ngày',	150807),
-(150812,	'dd',	'1 viên',	'Sau ăn sáng từ 9h-9h30',	150809);
+(150810,	'Kem bôi trị viêm da Fucicort',	'Bôi mỏng',	'2 lần/ngày',	150807);
 
 DROP TABLE IF EXISTS `notification`;
 CREATE TABLE `notification` (
@@ -625,7 +606,8 @@ INSERT INTO `refresh_token` (`id`, `refresh_token`, `expiry_date`, `created_at`,
 (9,	'8574a965-59a8-4ba8-ba9c-f81500d234ac',	'2025-06-30 07:51:32',	'2025-06-07 21:34:25',	'2025-06-23 07:51:32',	8),
 (10,	'62046d5f-4c4f-4566-a458-f4652a931302',	'2025-06-25 16:06:04',	'2025-06-07 21:34:51',	'2025-06-18 16:06:04',	9),
 (11,	'a555b1fd-5ac5-4c30-bfb2-77c7a1bfc488',	'2025-06-25 19:42:21',	'2025-06-07 21:35:16',	'2025-06-18 19:42:21',	10),
-(12,	'8d428185-285c-4142-a887-c52314eb4d4e',	'2025-07-07 09:47:07',	'2025-06-24 08:53:44',	'2025-06-30 09:47:07',	51);
+(17,	'940ffd33-defa-4be1-af8a-61cb70eab77b',	'2025-07-08 17:18:12',	'2025-07-01 14:04:38',	'2025-07-01 17:18:12',	54),
+(18,	'1f7dbbf0-5080-464c-adc5-059d41d4bb5b',	'2025-07-08 21:47:21',	'2025-07-01 19:43:07',	'2025-07-01 21:47:22',	55);
 
 DROP TABLE IF EXISTS `student`;
 CREATE TABLE `student` (
@@ -645,7 +627,6 @@ CREATE TABLE `student` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `student` (`student_id`, `avatar_url`, `student_name`, `dob`, `gender`, `relationship`, `class_id`, `parent_id`) VALUES
-(204,	NULL,	'Nguyễn Văn 1',	'2012-01-01',	'Nam',	'Con trai',	1,	51),
 (205,	NULL,	'Trần Thị 2',	'2011-09-15',	'Nữ',	'Con gái',	1,	7),
 (206,	NULL,	'Lê Hoàng 3',	'2012-03-22',	'Nam',	'Con trai',	2,	2),
 (207,	NULL,	'Phạm Minh 4',	'2011-12-10',	'Nam',	'Con trai',	1,	9),
@@ -784,7 +765,7 @@ INSERT INTO `student` (`student_id`, `avatar_url`, `student_name`, `dob`, `gende
 (340,	NULL,	'Ngô Hà Vy',	'2015-06-30',	'Nữ',	'Con gái',	4,	47),
 (341,	NULL,	'Vũ Phương Anh',	'2016-05-11',	'Nữ',	'Con gái',	4,	48),
 (342,	NULL,	'Mai Khánh Chi',	'2013-07-08',	'Nữ',	'Con gái',	4,	49),
-(343,	NULL,	'Bùi Ngọc Hân',	'2014-11-27',	'Nữ',	'Con gái',	4,	51);
+(345,	NULL,	'123',	'2012-01-01',	'Nam',	'Con trai',	NULL,	55);
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
@@ -851,8 +832,8 @@ INSERT INTO `users` (`user_id`, `full_name`, `email`, `password`, `phone`, `addr
 (48,	'Nguyễn Văn A38',	'parent38@example.com',	NULL,	'0900000038',	'Hà Nội',	'PARENT',	CONVERT(b'0', UNSIGNED)),
 (49,	'Nguyễn Văn A39',	'parent39@example.com',	NULL,	'0900000039',	'Hà Nội',	'PARENT',	CONVERT(b'0', UNSIGNED)),
 (50,	'Nguyễn Văn A40',	'parent40@example.com',	NULL,	'0900000040',	'Hà Nội',	'PARENT',	CONVERT(b'0', UNSIGNED)),
-(51,	'Thinh Trieu',	'thinhbo17032004@gmail.com',	NULL,	'9396661123',	'297 Chu Van An',	'ADMIN',	CONVERT(b'0', UNSIGNED)),
-(53,	'THINH',	'thinhtpse182101@fpt.edu.vn',	NULL,	NULL,	NULL,	'ADMIN',	CONVERT(b'0', UNSIGNED));
+(54,	'123',	'se182101trieuphuthinh@gmail.com',	NULL,	NULL,	NULL,	'PARENT',	CONVERT(b'1', UNSIGNED)),
+(55,	'Thinh Trieu',	'thinhbo17032004@gmail.com',	NULL,	'9396661123',	'297 Chu Van An',	'PARENT',	CONVERT(b'1', UNSIGNED));
 
 DROP TABLE IF EXISTS `vaccine_form`;
 CREATE TABLE `vaccine_form` (
@@ -915,13 +896,12 @@ INSERT INTO `vaccine_form` (`vaccine_form_id`, `vaccine_id`, `student_id`, `pare
 (338,	2,	339,	46,	'2025-07-06',	'Không đồng ý tiêm',	0,	'DRAFT'),
 (339,	2,	340,	47,	'2025-07-07',	'Mong sắp xếp lịch phù hợp',	0,	'DRAFT'),
 (340,	2,	341,	48,	'2025-07-08',	'Đã liên hệ y tế',	1,	'SENT'),
-(341,	2,	342,	49,	'2025-07-09',	'Gửi nhầm mã số học sinh',	0,	'DRAFT'),
-(342,	2,	343,	50,	'2025-07-10',	'Xác nhận đúng form',	1,	'SENT');
+(341,	2,	342,	49,	'2025-07-09',	'Gửi nhầm mã số học sinh',	0,	'DRAFT');
 
 DROP TABLE IF EXISTS `vaccine_history`;
 CREATE TABLE `vaccine_history` (
   `vaccine_history_id` int NOT NULL AUTO_INCREMENT,
-  `vaccine_name` varchar(100) DEFAULT NULL,
+  `vaccine_name` varchar(50) DEFAULT NULL,
   `note` varchar(255) DEFAULT NULL,
   `record_id` int DEFAULT NULL,
   `vaccine_id` int DEFAULT NULL,
@@ -929,54 +909,53 @@ CREATE TABLE `vaccine_history` (
   KEY `record_id` (`record_id`),
   KEY `fk_vaccine_history_vaccine_program` (`vaccine_id`),
   CONSTRAINT `fk_vaccine_history_vaccine_program` FOREIGN KEY (`vaccine_id`) REFERENCES `vaccine_program` (`vaccine_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `vaccine_history_ibfk_1` FOREIGN KEY (`record_id`) REFERENCES `medical_record` (`record_id`) ON DELETE CASCADE
+  CONSTRAINT `vaccine_history_ibfk_1` FOREIGN KEY (`record_id`) REFERENCES `medical_record` (`record_id`) ON DELETE CASCADE,
+  CONSTRAINT `chk_vaccine_name` CHECK (((`vaccine_name` in (_utf8mb4'HEPATITIS_A',_utf8mb4'HEPATITIS_B',_utf8mb4'INFLUENZA',_utf8mb4'CHICKENPOX',_utf8mb4'JAPANESE_ENCEPHALITIS',_utf8mb4'POLIO',_utf8mb4'DIPHTHERIA',_utf8mb4'PERTUSSIS',_utf8mb4'TETANUS_HEPATITIS_B',_utf8mb4'HIB',_utf8mb4'HPV')) or (`vaccine_name` is null)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `vaccine_history` (`vaccine_history_id`, `vaccine_name`, `note`, `record_id`, `vaccine_id`) VALUES
-(13,	'Hepatitis B',	'First dose at 12 months',	7,	NULL),
-(14,	'Hepatitis B',	'Completed 3-dose series',	7,	NULL),
-(17,	'Hepatitis B',	'Chương trình vaccine tại trường!',	7,	1),
-(58,	'Viêm gan B',	'Mũi 1 đã tiêm',	11,	NULL),
-(59,	'Viêm gan B',	'Mũi 1 đã tiêm',	12,	NULL),
-(60,	'Viêm gan B',	'Mũi 1 đã tiêm',	13,	NULL),
-(61,	'Viêm gan B',	'Mũi 1 đã tiêm',	14,	NULL),
-(62,	'Viêm gan B',	'Mũi 1 đã tiêm',	15,	NULL),
-(63,	'BCG',	'Tiêm phòng lao',	16,	NULL),
-(64,	'BCG',	'Tiêm phòng lao',	17,	NULL),
-(65,	'BCG',	'Tiêm phòng lao',	18,	NULL),
-(66,	'BCG',	'Tiêm phòng lao',	19,	NULL),
-(67,	'BCG',	'Tiêm phòng lao',	20,	NULL),
-(68,	'DPT',	'Mũi 1 đã tiêm',	21,	NULL),
-(69,	'DPT',	'Mũi 1 đã tiêm',	22,	NULL),
-(70,	'DPT',	'Mũi 1 đã tiêm',	23,	NULL),
-(71,	'DPT',	'Mũi 2 đã tiêm',	24,	NULL),
-(72,	'DPT',	'Mũi 2 đã tiêm',	25,	NULL),
-(73,	'Bại liệt',	'Đã tiêm Sabin',	26,	NULL),
-(74,	'Bại liệt',	'Đã tiêm Sabin',	27,	NULL),
-(75,	'Bại liệt',	'Đã tiêm Sabin',	28,	NULL),
-(76,	'Bại liệt',	'Đã tiêm Sabin',	29,	NULL),
-(77,	'Bại liệt',	'Đã tiêm Sabin',	30,	NULL),
-(78,	'Sởi',	'Mũi 1 đã tiêm',	31,	NULL),
-(79,	'Sởi',	'Mũi 1 đã tiêm',	32,	NULL),
-(80,	'Sởi',	'Mũi 1 đã tiêm',	33,	NULL),
-(81,	'Sởi',	'Mũi 2 đã tiêm',	34,	NULL),
-(82,	'Sởi',	'Mũi 2 đã tiêm',	35,	NULL),
-(83,	'Rubella',	'Mũi đầu tiên',	36,	NULL),
-(84,	'Rubella',	'Mũi đầu tiên',	37,	NULL),
-(85,	'Rubella',	'Mũi đầu tiên',	38,	NULL),
-(86,	'Rubella',	'Mũi thứ hai',	39,	NULL),
-(87,	'Rubella',	'Mũi thứ hai',	40,	NULL),
-(88,	'Cúm mùa',	'Tiêm đầu năm',	41,	NULL),
-(89,	'Cúm mùa',	'Tiêm đầu năm',	42,	NULL),
-(90,	'Cúm mùa',	'Tiêm đầu năm',	43,	NULL),
-(91,	'Cúm mùa',	'Tiêm đầu năm',	44,	NULL),
-(92,	'Cúm mùa',	'Tiêm đầu năm',	45,	NULL),
-(93,	'COVID-19',	'Mũi 1 đã tiêm',	46,	NULL),
-(94,	'COVID-19',	'Mũi 1 đã tiêm',	47,	NULL),
-(95,	'COVID-19',	'Mũi 2 đã tiêm',	48,	NULL),
-(96,	'COVID-19',	'Mũi 2 đã tiêm',	49,	NULL),
-(97,	'COVID-19',	'Đã tiêm đầy đủ',	50,	NULL),
-(100,	'Covid-19',	'Bệnh viện Sài Gòn',	51,	NULL);
+(1,	'HEPATITIS_A',	'First dose',	10,	NULL),
+(2,	'HEPATITIS_B',	'Birth dose',	11,	NULL),
+(3,	'INFLUENZA',	'Seasonal',	12,	NULL),
+(4,	'CHICKENPOX',	'Initial shot',	13,	NULL),
+(5,	'JAPANESE_ENCEPHALITIS',	'Booster shot',	14,	NULL),
+(6,	'POLIO',	'Oral vaccine',	15,	NULL),
+(7,	'DIPHTHERIA',	'DTP combo',	16,	NULL),
+(8,	'PERTUSSIS',	'DTP combo',	17,	NULL),
+(9,	'TETANUS_HEPATITIS_B',	'Combo vaccine',	18,	NULL),
+(10,	'HIB',	'Pediatric dose',	19,	NULL),
+(11,	'HPV',	'Teen vaccine',	20,	NULL),
+(12,	'HEPATITIS_B',	'2nd dose',	21,	NULL),
+(13,	'INFLUENZA',	'Winter',	22,	NULL),
+(14,	'CHICKENPOX',	'Follow-up',	23,	NULL),
+(15,	'HEPATITIS_A',	'Before travel',	24,	NULL),
+(16,	'JAPANESE_ENCEPHALITIS',	'2nd booster',	25,	NULL),
+(17,	'POLIO',	'IPV vaccine',	26,	NULL),
+(18,	'DIPHTHERIA',	'Preschool',	27,	NULL),
+(19,	'PERTUSSIS',	'Booster',	28,	NULL),
+(20,	'TETANUS_HEPATITIS_B',	'Work requirement',	29,	NULL),
+(21,	'HIB',	'Routine',	30,	NULL),
+(22,	'HEPATITIS_B',	'Follow-up',	31,	NULL),
+(23,	'INFLUENZA',	'Campaign',	32,	NULL),
+(24,	'CHICKENPOX',	'Optional',	33,	NULL),
+(25,	'HEPATITIS_A',	'Childhood',	34,	NULL),
+(26,	'JAPANESE_ENCEPHALITIS',	'High risk',	35,	NULL),
+(27,	'POLIO',	'Campaign dose',	36,	NULL),
+(28,	'DIPHTHERIA',	'Emergency shot',	37,	NULL),
+(29,	'PERTUSSIS',	'Teen booster',	38,	NULL),
+(30,	'TETANUS_HEPATITIS_B',	'6-in-1',	39,	NULL),
+(31,	'HPV',	'9-14 years',	40,	NULL),
+(32,	'HEPATITIS_B',	'Extra dose',	41,	NULL),
+(33,	'INFLUENZA',	'Pregnancy',	42,	NULL),
+(34,	'CHICKENPOX',	'School entry',	43,	NULL),
+(35,	'HIB',	'Preschool',	44,	NULL),
+(36,	'POLIO',	'School requirement',	45,	NULL),
+(37,	'DIPHTHERIA',	'Td booster',	46,	NULL),
+(38,	'TETANUS_HEPATITIS_B',	'Primary school',	47,	NULL),
+(39,	'HEPATITIS_A',	'Food handlers',	48,	NULL),
+(40,	'HPV',	'Catch-up',	49,	NULL),
+(63,	'HEPATITIS_A',	'Tiêm lúc 2 tháng tuổi',	52,	NULL),
+(64,	'HPV',	'Tiêm lúc 9 tuổi',	52,	NULL);
 
 DROP TABLE IF EXISTS `vaccine_program`;
 CREATE TABLE `vaccine_program` (
@@ -1051,7 +1030,6 @@ INSERT INTO `vaccine_result` (`vaccine_result_id`, `status_health`, `result_note
 (38,	'Bình thường',	'Có phản ứng nhẹ',	'Sưng nhẹ',	'2025-06-23 14:51:39',	338),
 (39,	'Tốt',	'Không có dấu hiệu gì',	'Không phản ứng',	'2025-06-23 14:51:39',	339),
 (40,	'Tốt',	'Không sốt, chơi bình thường',	'Không phản ứng',	'2025-06-23 14:51:39',	340),
-(41,	'Bình thường',	'Theo dõi tại nhà',	'Sốt nhẹ',	'2025-06-23 14:51:39',	341),
-(42,	'Tốt',	'Không phản ứng',	'Không phản ứng',	'2025-06-23 14:51:39',	342);
+(41,	'Bình thường',	'Theo dõi tại nhà',	'Sốt nhẹ',	'2025-06-23 14:51:39',	341);
 
--- 2025-06-30 08:25:23 UTC
+-- 2025-07-01 15:45:36 UTC
