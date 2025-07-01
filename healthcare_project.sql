@@ -607,7 +607,7 @@ INSERT INTO `refresh_token` (`id`, `refresh_token`, `expiry_date`, `created_at`,
 (10,	'62046d5f-4c4f-4566-a458-f4652a931302',	'2025-06-25 16:06:04',	'2025-06-07 21:34:51',	'2025-06-18 16:06:04',	9),
 (11,	'a555b1fd-5ac5-4c30-bfb2-77c7a1bfc488',	'2025-06-25 19:42:21',	'2025-06-07 21:35:16',	'2025-06-18 19:42:21',	10),
 (17,	'940ffd33-defa-4be1-af8a-61cb70eab77b',	'2025-07-08 17:18:12',	'2025-07-01 14:04:38',	'2025-07-01 17:18:12',	54),
-(18,	'1f7dbbf0-5080-464c-adc5-059d41d4bb5b',	'2025-07-08 21:47:21',	'2025-07-01 19:43:07',	'2025-07-01 21:47:22',	55);
+(18,	'10045a21-3762-4104-be01-fae4369a215e',	'2025-07-08 23:08:22',	'2025-07-01 19:43:07',	'2025-07-01 23:08:22',	55);
 
 DROP TABLE IF EXISTS `student`;
 CREATE TABLE `student` (
@@ -901,7 +901,7 @@ INSERT INTO `vaccine_form` (`vaccine_form_id`, `vaccine_id`, `student_id`, `pare
 DROP TABLE IF EXISTS `vaccine_history`;
 CREATE TABLE `vaccine_history` (
   `vaccine_history_id` int NOT NULL AUTO_INCREMENT,
-  `vaccine_name` varchar(50) DEFAULT NULL,
+  `vaccine_name` varchar(100) DEFAULT NULL,
   `note` varchar(255) DEFAULT NULL,
   `record_id` int DEFAULT NULL,
   `vaccine_id` int DEFAULT NULL,
@@ -910,52 +910,50 @@ CREATE TABLE `vaccine_history` (
   KEY `fk_vaccine_history_vaccine_program` (`vaccine_id`),
   CONSTRAINT `fk_vaccine_history_vaccine_program` FOREIGN KEY (`vaccine_id`) REFERENCES `vaccine_program` (`vaccine_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `vaccine_history_ibfk_1` FOREIGN KEY (`record_id`) REFERENCES `medical_record` (`record_id`) ON DELETE CASCADE,
-  CONSTRAINT `chk_vaccine_name` CHECK (((`vaccine_name` in (_utf8mb4'HEPATITIS_A',_utf8mb4'HEPATITIS_B',_utf8mb4'INFLUENZA',_utf8mb4'CHICKENPOX',_utf8mb4'JAPANESE_ENCEPHALITIS',_utf8mb4'POLIO',_utf8mb4'DIPHTHERIA',_utf8mb4'PERTUSSIS',_utf8mb4'TETANUS_HEPATITIS_B',_utf8mb4'HIB',_utf8mb4'HPV')) or (`vaccine_name` is null)))
+  CONSTRAINT `chk_vaccine_name_valid` CHECK ((`vaccine_name` in (_utf8mb4'Viêm gan A',_utf8mb4'Viêm gan B',_utf8mb4'Cúm mùa',_utf8mb4'Thủy đậu',_utf8mb4'Viêm não Nhật Bản',_utf8mb4'Bại liệt',_utf8mb4'Bạch hầu',_utf8mb4'Ho gà',_utf8mb4'Uốn ván, viêm gan B',_utf8mb4'Hib',_utf8mb4'HPV')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `vaccine_history` (`vaccine_history_id`, `vaccine_name`, `note`, `record_id`, `vaccine_id`) VALUES
-(1,	'HEPATITIS_A',	'First dose',	10,	NULL),
-(2,	'HEPATITIS_B',	'Birth dose',	11,	NULL),
-(3,	'INFLUENZA',	'Seasonal',	12,	NULL),
-(4,	'CHICKENPOX',	'Initial shot',	13,	NULL),
-(5,	'JAPANESE_ENCEPHALITIS',	'Booster shot',	14,	NULL),
-(6,	'POLIO',	'Oral vaccine',	15,	NULL),
-(7,	'DIPHTHERIA',	'DTP combo',	16,	NULL),
-(8,	'PERTUSSIS',	'DTP combo',	17,	NULL),
-(9,	'TETANUS_HEPATITIS_B',	'Combo vaccine',	18,	NULL),
-(10,	'HIB',	'Pediatric dose',	19,	NULL),
-(11,	'HPV',	'Teen vaccine',	20,	NULL),
-(12,	'HEPATITIS_B',	'2nd dose',	21,	NULL),
-(13,	'INFLUENZA',	'Winter',	22,	NULL),
-(14,	'CHICKENPOX',	'Follow-up',	23,	NULL),
-(15,	'HEPATITIS_A',	'Before travel',	24,	NULL),
-(16,	'JAPANESE_ENCEPHALITIS',	'2nd booster',	25,	NULL),
-(17,	'POLIO',	'IPV vaccine',	26,	NULL),
-(18,	'DIPHTHERIA',	'Preschool',	27,	NULL),
-(19,	'PERTUSSIS',	'Booster',	28,	NULL),
-(20,	'TETANUS_HEPATITIS_B',	'Work requirement',	29,	NULL),
-(21,	'HIB',	'Routine',	30,	NULL),
-(22,	'HEPATITIS_B',	'Follow-up',	31,	NULL),
-(23,	'INFLUENZA',	'Campaign',	32,	NULL),
-(24,	'CHICKENPOX',	'Optional',	33,	NULL),
-(25,	'HEPATITIS_A',	'Childhood',	34,	NULL),
-(26,	'JAPANESE_ENCEPHALITIS',	'High risk',	35,	NULL),
-(27,	'POLIO',	'Campaign dose',	36,	NULL),
-(28,	'DIPHTHERIA',	'Emergency shot',	37,	NULL),
-(29,	'PERTUSSIS',	'Teen booster',	38,	NULL),
-(30,	'TETANUS_HEPATITIS_B',	'6-in-1',	39,	NULL),
-(31,	'HPV',	'9-14 years',	40,	NULL),
-(32,	'HEPATITIS_B',	'Extra dose',	41,	NULL),
-(33,	'INFLUENZA',	'Pregnancy',	42,	NULL),
-(34,	'CHICKENPOX',	'School entry',	43,	NULL),
-(35,	'HIB',	'Preschool',	44,	NULL),
-(36,	'POLIO',	'School requirement',	45,	NULL),
-(37,	'DIPHTHERIA',	'Td booster',	46,	NULL),
-(38,	'TETANUS_HEPATITIS_B',	'Primary school',	47,	NULL),
-(39,	'HEPATITIS_A',	'Food handlers',	48,	NULL),
-(40,	'HPV',	'Catch-up',	49,	NULL),
-(63,	'HEPATITIS_A',	'Tiêm lúc 2 tháng tuổi',	52,	NULL),
-(64,	'HPV',	'Tiêm lúc 9 tuổi',	52,	NULL);
+(44,	'Viêm gan A',	'Tiêm mũi 1',	10,	NULL),
+(45,	'Cúm mùa',	'Mũi 2',	11,	NULL),
+(46,	'HPV',	'Đã tiêm đủ',	12,	NULL),
+(199,	'Thủy đậu',	'Tiêm lúc 2 tuổi',	13,	NULL),
+(200,	'Viêm não Nhật Bản',	'Đã tiêm đủ 3 mũi',	14,	NULL),
+(201,	'Bại liệt',	'Uống vắc xin lần 1',	15,	NULL),
+(202,	'Bạch hầu',	'Tiêm nhắc lại năm 2022',	16,	NULL),
+(203,	'Ho gà',	'Tiêm mũi đầu tiên',	17,	NULL),
+(204,	'Uốn ván, viêm gan B',	'Tiêm sau chấn thương',	18,	NULL),
+(205,	'Hib',	'Tiêm phòng bệnh Hib',	19,	NULL),
+(206,	'Viêm gan B',	'Tiêm mũi 3',	20,	NULL),
+(207,	'Viêm gan A',	'Tiêm trước nhập học',	21,	NULL),
+(208,	'HPV',	'Mũi đầu tiên',	22,	NULL),
+(209,	'Cúm mùa',	'Tiêm mỗi năm',	23,	NULL),
+(210,	'Viêm não Nhật Bản',	'Nhắc lại sau 1 năm',	24,	NULL),
+(211,	'Thủy đậu',	'Tiêm nhắc lúc 6 tuổi',	25,	NULL),
+(212,	'Bại liệt',	'Tiêm đủ 2 mũi',	26,	NULL),
+(213,	'Bạch hầu',	'Tiêm định kỳ',	27,	NULL),
+(214,	'Ho gà',	'Tiêm mũi 2',	28,	NULL),
+(215,	'Uốn ván, viêm gan B',	'Mũi cuối',	29,	NULL),
+(216,	'Hib',	'Mũi đầu lúc 2 tháng',	30,	NULL),
+(217,	'Viêm gan B',	'Tiêm mũi 2',	31,	NULL),
+(218,	'HPV',	'Mũi thứ 2',	32,	NULL),
+(219,	'Cúm mùa',	'Tiêm định kỳ mỗi đông',	33,	NULL),
+(220,	'Viêm gan A',	'Đủ 2 mũi',	34,	NULL),
+(221,	'Viêm não Nhật Bản',	'Mũi 1',	35,	NULL),
+(222,	'Bại liệt',	'Tiêm nhỏ miệng',	36,	NULL),
+(223,	'Thủy đậu',	'Đủ liều cơ bản',	37,	NULL),
+(224,	'Bạch hầu',	'Đã tiêm mũi 3',	38,	NULL),
+(225,	'Ho gà',	'Tiêm khi 4 tháng tuổi',	39,	NULL),
+(226,	'Uốn ván, viêm gan B',	'Tiêm định kỳ',	40,	NULL),
+(227,	'Hib',	'Hoàn thành lộ trình',	41,	NULL),
+(228,	'Viêm gan B',	'Mũi tiêm lúc sinh',	42,	NULL),
+(229,	'HPV',	'Tiêm đủ 2 mũi',	43,	NULL),
+(230,	'Cúm mùa',	'Mũi định kỳ 2025',	44,	NULL),
+(231,	'Viêm gan A',	'Đã tiêm năm ngoái',	45,	NULL),
+(232,	'Thủy đậu',	'Đã từng mắc, không cần tiêm',	46,	NULL),
+(233,	'Bại liệt',	'Tiêm khi 6 tháng tuổi',	47,	NULL),
+(234,	'Viêm não Nhật Bản',	'Mũi tiêm ở phường',	48,	NULL),
+(235,	'Ho gà',	'Tiêm đủ mũi',	49,	NULL);
 
 DROP TABLE IF EXISTS `vaccine_program`;
 CREATE TABLE `vaccine_program` (
@@ -1032,4 +1030,4 @@ INSERT INTO `vaccine_result` (`vaccine_result_id`, `status_health`, `result_note
 (40,	'Tốt',	'Không sốt, chơi bình thường',	'Không phản ứng',	'2025-06-23 14:51:39',	340),
 (41,	'Bình thường',	'Theo dõi tại nhà',	'Sốt nhẹ',	'2025-06-23 14:51:39',	341);
 
--- 2025-07-01 15:45:36 UTC
+-- 2025-07-01 16:37:40 UTC
