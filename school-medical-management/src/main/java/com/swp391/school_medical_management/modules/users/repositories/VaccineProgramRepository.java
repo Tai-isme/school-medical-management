@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 
@@ -21,4 +22,12 @@ public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEn
     Optional<VaccineProgramEntity> findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus status);
 
     Optional<VaccineProgramEntity> findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(LocalDate date);
+
+    public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Long> {
+    
+    Long countByVaccineProgram_VaccineId(Long vaccineProgramId);
+
+    Long countByVaccineProgram_VaccineIdAndCommitTrue(Long vaccineProgramId);
+}
+
 }
