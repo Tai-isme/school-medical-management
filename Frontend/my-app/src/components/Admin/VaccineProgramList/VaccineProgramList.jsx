@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, Row, Col, Tag, Modal, Descriptions, Form, Input, DatePicker, message } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
 
 const VaccineProgramList = () => {
-  const [programs, setPrograms] = useState([]); // đổi thành mảng
+  const [programs, setPrograms] = useState([]);
   const [detailVisible, setDetailVisible] = useState(false);
   const [createVisible, setCreateVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [program, setProgram] = useState(null); // chương trình đang xem chi tiết
+  const [program, setProgram] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(""); // Tìm kiếm theo tên
+  const [filterDate, setFilterDate] = useState(null); // Thêm state lọc ngày
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     fetchProgram();
@@ -19,14 +22,14 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/admin/vaccine-program", // API trả về danh sách
+        "http://localhost:8080/api/admin/vaccine-program",
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      setPrograms(res.data); // lưu mảng chương trình
+      setPrograms(res.data);
     } catch (error) {
       setPrograms([]);
     }
@@ -61,6 +64,80 @@ const VaccineProgramList = () => {
     }
   };
 
+  const handleUpdate = async (values) => {
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `http://localhost:8080/api/admin/vaccine-program/${program.vaccineId}`,
+        {
+          vaccineName: values.vaccineName,
+          manufacture: values.manufacture,
+          description: values.description,
+          vaccineDate: values.vaccineDate.format("YYYY-MM-DD"),
+          note: values.note,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      message.success("Cập nhật chương trình thành công!");
+      setCreateVisible(false);
+      setEditMode(false);
+      fetchProgram();
+    } catch (error) {
+      message.error("Cập nhật chương trình thất bại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    Modal.confirm({
+      title: "Bạn có chắc muốn xóa chương trình này?",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: async () => {
+        const token = localStorage.getItem("token");
+        try {
+          await axios.delete(`http://localhost:8080/api/admin/vaccine-program/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          message.success("Xóa thành công!");
+          fetchProgram();
+        } catch {
+          message.error("Xóa thất bại!");
+        }
+      },
+    });
+  };
+
+  // Lọc danh sách theo tên chương trình và ngày tiêm
+  const filteredPrograms = programs.filter((program) => {
+    const matchName = program.vaccineName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchDate = filterDate
+      ? dayjs(program.vaccineDate).isSame(filterDate, "day")
+      : true;
+    return matchName && matchDate;
+  });
+
+  // Thêm hàm lấy màu theo trạng thái
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "NOT_STARTED":
+        return "default";
+      case "ON_GOING":
+        return "blue";
+      case "COMPLETED":
+        return "green";
+      default:
+        return "default";
+    }
+  };
+
   if (!programs.length) return <div>Đang tải...</div>;
 
   return (
@@ -70,24 +147,42 @@ const VaccineProgramList = () => {
           <span style={{ color: "#52c41a", marginRight: 8 }}>🛡️</span>
           Quản Lý Chương Trình Tiêm Chủng
         </h2>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          style={{ background: "#21ba45", border: "none" }}
-          onClick={() => setCreateVisible(true)}
-        >
-          Lên lịch tiêm chủng
-        </Button>
+        <div style={{ display: "flex", gap: 12 }}>
+          <Input
+            placeholder="Tìm kiếm tên chương trình..."
+            prefix={<SearchOutlined />}
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            allowClear
+            style={{ width: 220, background: "#fff" }}
+          />
+          <DatePicker
+            placeholder="Lọc theo ngày tiêm"
+            value={filterDate}
+            onChange={setFilterDate}
+            allowClear
+            style={{ width: 170 }}
+            format="YYYY-MM-DD"
+          />
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            style={{ background: "#21ba45", border: "none" }}
+            onClick={() => setCreateVisible(true)}
+          >
+            Lên lịch tiêm chủng
+          </Button>
+        </div>
       </div>
-      {programs.map((program) => (
+      {filteredPrograms.map((program) => (
         <Card
           key={program.vaccineId}
           style={{
             background: "#f6fcf7",
             borderRadius: 10,
             border: "1px solid #e6f4ea",
-            width: "calc(100vw - 260px)", // kéo dài hết bên phải, trừ sidebar
-            minWidth: 1200, // tăng minWidth nếu muốn
+            width: "calc(100vw - 260px)",
+            minWidth: 1200,
             margin: "0 auto",
             transition: "width 0.2s",
             marginBottom: 16,
@@ -104,7 +199,9 @@ const VaccineProgramList = () => {
                 Ngày tiêm: {program.vaccineDate}
               </div>
             </div>
-            <Tag color="blue" style={{ fontSize: 14, marginTop: 4 }}>{program.status}</Tag>
+            <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
+              {program.status}
+            </Tag>
           </div>
           <Row gutter={32} style={{ margin: "24px 0" }}>
             <Col span={12}>
@@ -120,16 +217,42 @@ const VaccineProgramList = () => {
               </div>
             </Col>
           </Row>
-          <div style={{ display: "flex", gap: 12 }}>
-            <Button onClick={() => {
-              setDetailVisible(true);
-              setProgram(program); // set chương trình đang xem chi tiết
-            }}>
-              Xem chi tiết
-            </Button>
-            <Button type="primary" style={{ background: "#21ba45", border: "none" }}>
-              Gửi thông báo
-            </Button>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <Button onClick={() => {
+                setDetailVisible(true);
+                setProgram(program);
+              }}>
+                Xem chi tiết
+              </Button>
+              <Button
+                type="primary"
+                style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
+              >
+                Gửi thông báo
+              </Button>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+              {program.status === "NOT_STARTED" && (
+                <Button
+                  type="default"
+                  onClick={() => {
+                    setProgram(program);
+                    setEditMode(true);
+                    setCreateVisible(true);
+                  }}
+                >
+                  Sửa
+                </Button>
+              )}
+              <Button
+                danger
+                type="primary"
+                onClick={() => handleDelete(program.vaccineId)}
+              >
+                Xóa
+              </Button>
+            </div>
           </div>
         </Card>
       ))}
@@ -149,19 +272,41 @@ const VaccineProgramList = () => {
             <Descriptions.Item label="Tên vaccine">{program.vaccineName}</Descriptions.Item>
             <Descriptions.Item label="Mô tả">{program.description}</Descriptions.Item>
             <Descriptions.Item label="Ngày tiêm">{program.vaccineDate}</Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">{program.status}</Descriptions.Item>
+            <Descriptions.Item label="Trạng thái">
+              <Tag color={getStatusColor(program.status)} style={{ fontSize: 14 }}>
+                {program.status}
+              </Tag>
+            </Descriptions.Item>
             <Descriptions.Item label="Ghi chú">{program.note}</Descriptions.Item>
           </Descriptions>
         )}
       </Modal>
       <Modal
-        title="Lên lịch tiêm chủng"
+        title={editMode ? "Sửa chương trình tiêm chủng" : "Lên lịch tiêm chủng"}
         open={createVisible}
-        onCancel={() => setCreateVisible(false)}
+        onCancel={() => {
+          setCreateVisible(false);
+          setEditMode(false);
+          setProgram(null);
+        }}
         footer={null}
         destroyOnClose
       >
-        <Form layout="vertical" onFinish={handleCreate}>
+        <Form
+          layout="vertical"
+          onFinish={editMode ? handleUpdate : handleCreate}
+          initialValues={
+            editMode && program
+              ? {
+                  vaccineName: program.vaccineName,
+                  manufacture: program.manufacture,
+                  description: program.description,
+                  vaccineDate: dayjs(program.vaccineDate),
+                  note: program.note,
+                }
+              : {}
+          }
+        >
           <Form.Item label="Tên vaccine" name="vaccineName" rules={[{ required: true, message: "Nhập tên vaccine" }]}>
             <Input />
           </Form.Item>
@@ -179,7 +324,7 @@ const VaccineProgramList = () => {
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} style={{ width: "100%" }}>
-              Tạo chương trình
+              {editMode ? "Cập nhật" : "Tạo chương trình"}
             </Button>
           </Form.Item>
         </Form>

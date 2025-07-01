@@ -148,7 +148,7 @@ const AccountManagement = () => {
       await axios.post(
         "http://localhost:8080/api/admin/create-nurses-account",
         {
-          fullName: values.fullName,
+          name: values.fullName,
           email: values.email,
           newPassword: values.password, // Đổi thành newPassword nếu backend yêu cầu
           phone: values.phone,
