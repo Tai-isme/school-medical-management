@@ -13,6 +13,7 @@ import Navbar from "./components/Layout/Navbar/Navbar";
 import '@fontsource/poppins/400.css';
 import '@fontsource/poppins/600.css';
 import '@fontsource/roboto/400.css';
+import Footer from './components/Layout/Footer/Footer';
 
 function App() {
   const [role, setRole] = useState(localStorage.getItem("role"));
@@ -49,6 +50,7 @@ function App() {
         <Route path="/health-check" element={<HealthCheckResultPage />} />
         <Route path="/dashboard" element={<ProtectedRoute />} />
       </Routes>
+      {(!role || role === "PARENT") && <Footer />}
     </Router>
   ); 
 }

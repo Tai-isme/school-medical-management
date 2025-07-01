@@ -15,7 +15,7 @@ const RequestTable = () => {
     const fetchRequests = async () => {
       try {
         const token = localStorage.getItem('token'); // nếu cần token
-        const res = await axios.get('http://localhost:8080/api/parent/medical-request', {
+        const res = await axios.get('http://localhost:8080/api/parent/medical-request', { // LẤY TẤT CẢ ĐƠN THUỐC
           headers: { Authorization: `Bearer ${token}` },
         });
         setData(res.data);
@@ -32,7 +32,7 @@ const RequestTable = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:8080/api/parent/medical-request/by-request/${requestId}`,
+        `http://localhost:8080/api/parent/medical-request/by-request/${requestId}`, // XEM CHI TIẾT
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setDetailData(res.data);
@@ -46,7 +46,7 @@ const RequestTable = () => {
     const token = localStorage.getItem('token'); // nếu cần token
     console.log('Deleting request with ID:', requestId);
     try {
-      await axios.delete(`http://localhost:8080/api/parent/medical-request/${requestId}`, {
+      await axios.delete(`http://localhost:8080/api/parent/medical-request/${requestId}`, { //DELETE request
         headers: { Authorization: `Bearer ${token}` },
       });
       setData((prevData) => prevData.filter((item) => item.requestId !== requestId));
@@ -83,7 +83,7 @@ const RequestTable = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-                                align: 'center',
+      align: 'center',
       render: (status) => (
         <span
           style={{
@@ -94,7 +94,7 @@ const RequestTable = () => {
                 ? "#1976d2"
                 : status === "PROCESSING"
                 ? "#ff9800"
-                : status === "CANCLE"
+                : status === "CANCELLED"
                 ? "#f44336"
                 : "#888",
             color: "#fff",
@@ -114,7 +114,7 @@ const RequestTable = () => {
             ? "Chờ duyệt"
             : status === "PROCESSING"
             ? "Đang xử lý"
-            : status === "CANCLE"
+            : status === "CANCLE" || status === "CANCELLED"
             ? "Bị từ chối"
             : status}
         </span>
@@ -140,16 +140,18 @@ const RequestTable = () => {
       align: 'center', // căn giữa
       render: (_, record) => (
         <div>
-          {record.status !== "COMPLETED" && record.status !== "PROCESSING" && (
-            <Popconfirm
-              title="Bạn có chắc chắn muốn xóa đơn thuốc này?"
-              onConfirm={handleDeleteRequest(record.requestId)}
-              okText="Xóa"
-              cancelText="Hủy"
-            >
-              <a style={{ color: 'red', cursor: 'pointer' }}>Xóa</a>
-            </Popconfirm>
-          )}
+          {record.status !== "COMPLETED" &&
+            record.status !== "PROCESSING" &&
+            record.status !== "CANCELLED" && (
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xóa đơn thuốc này?"
+                onConfirm={handleDeleteRequest(record.requestId)}
+                okText="Xóa"
+                cancelText="Hủy"
+              >
+                <a style={{ color: 'red', cursor: 'pointer' }}>Xóa</a>
+              </Popconfirm>
+            )}
         </div>
       ),
     },

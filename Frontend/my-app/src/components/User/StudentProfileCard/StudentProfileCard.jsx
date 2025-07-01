@@ -5,6 +5,7 @@ import axios from 'axios';
 import StudentInfoCard from '../../../common/StudentInfoCard';
 import { Button, Modal, Input, Form, Table } from 'antd'; // Import Button and Modal from antd
 import MedicalRecordModal from './MedicalRecordModal'; // Import MedicalRecordModal component
+import { faHouse } from '@fortawesome/free-solid-svg-icons'; // Thêm dòng này vào đầu file
 
 
 const StudentProfile = () => {
@@ -160,8 +161,46 @@ const StudentProfile = () => {
 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
   return (
-    <div className="student-profile-container">
-      <h1 className="main-title" style={{marginTop: '0px'}}>Hồ sơ học sinh</h1>
+    <div className="student-profile-container" style={{ position: "relative" }}>
+      {/* Nút Home ở góc trên trái */}
+      <div style={{ position: "absolute", top: 16, left: 32, display: "flex", alignItems: "center", zIndex: 10 }}>
+        <button
+          onClick={() => window.location.href = '/'}
+          style={{
+            background: "#e3f2fd",
+            border: "none",
+            borderRadius: "50%",
+            width: 40,
+            height: 40,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 8px #1976d220",
+            cursor: "pointer",
+            marginRight: 8
+          }}
+          title="Về trang chủ"
+        >
+          <FontAwesomeIcon icon={faHouse} style={{ color: "#1976d2", fontSize: 22 }} />
+        </button>
+        <span
+          style={{
+            color: "#1976d2",
+            fontWeight: 500,
+            fontSize: 15,
+            background: "#e3f2fd",
+            borderRadius: 8,
+            padding: "4px 14px",
+            cursor: "pointer"
+          }}
+          onClick={() => window.location.href = '/'}
+          title="Về trang chủ"
+        >
+          Về trang chủ
+        </span>
+      </div>
+        
+      <h1 className="main-title" style={{ margin: '0px 0px 20px 0px', fontSize: '24px'  }}>Hồ sơ học sinh</h1>
 
       <div className="tabs">
         <button
@@ -221,7 +260,7 @@ const StudentProfile = () => {
             <>
               {activeTab === 'general' && (
                 <>
-                  <h2>Hồ sơ sức khỏe</h2>
+                  <h2 style={{margin: '0px 0px 20px 0px'}}>Hồ sơ sức khỏe</h2>
                   <div className="info-grid">
                     <div className="info-row">
                       <label>Thị giác</label>

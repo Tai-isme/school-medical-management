@@ -33,12 +33,42 @@ export default function MedicalHistory({ studentId }) {
   if (loading) return <div>Đang tải...</div>;
 
   return (
-    <div style={{ background: "#fff", borderRadius: 8, padding: 16, minHeight: 100 }}>
-      <div style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}>Theo dõi bệnh, sự cố y tế</div>
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: 16,
+        padding: 20,
+        minHeight: 100,
+        fontFamily: "Segoe UI, Arial, sans-serif",
+      }}
+    >
+      <div
+        style={{
+          fontWeight: "bold",
+          fontSize: 16,
+          marginBottom: 8,
+        }}
+      >
+        Theo dõi bệnh, sự cố y tế
+      </div>
       {events.length === 0 && <div>Không có dữ liệu</div>}
       {events.map((e, idx) => (
-        <div key={e.eventId || idx} style={{ marginBottom: 12, borderBottom: "1px solid #eee", paddingBottom: 8 }}>
-          <div style={{ fontWeight: "bold", color: "#ff9800" }}>⚡ {e.typeEvent}</div>
+        <div
+          key={e.eventId || idx}
+          style={{
+            marginBottom: 12,
+            borderBottom: "1px solid #eee",
+            paddingBottom: 8,
+          }}
+        >
+          <div
+            style={{
+              fontWeight: "bold",
+              color: "#ff9800",
+            }}
+          >
+            ⚡ {e.typeEvent}
+          </div>
           <div>Ngày xảy ra: {e.date}</div>
           <div>Mô tả: {e.description}</div>
           <div>Học sinh: {e.studentName}</div>

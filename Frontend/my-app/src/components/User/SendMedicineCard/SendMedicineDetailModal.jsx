@@ -17,7 +17,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
     {loading ? (
       <Spin />
     ) : detailData ? (
-      <div>
+      <div style={{ background: "#f6fbff", borderRadius: 12, padding: 24 }}>
         <div style={{ marginBottom: 12 }}>
           <b>Mã đơn thuốc:</b> {detailData.requestId}
         </div>
@@ -41,7 +41,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
                   ? "#1976d2"
                   : detailData.status === "PROCESSING"
                   ? "#ff9800"
-                  : detailData.status === "CANCLE"
+                  : detailData.status === "CANCLE" || detailData.status === "CANCELLED"
                   ? "#f44336"
                   : "#888",
               color: "#fff",
@@ -61,7 +61,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
               ? "Chờ duyệt"
               : detailData.status === "PROCESSING"
               ? "Đang xử lý"
-              : detailData.status === "CANCLE"
+              : detailData.status === "CANCLE" || detailData.status === "CANCELLED"
               ? "Bị từ chối"
               : detailData.status}
           </span>
@@ -72,7 +72,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
         <div style={{ margin: "16px 0 8px", fontWeight: "bold" }}>Chi tiết đơn thuốc:</div>
         {detailData.medicalRequestDetailDTO?.map((item, idx) => (
           <div key={item.detailId || idx} style={{
-            background: "#f6fbff",
+            background: "#e3f2fd",
             borderRadius: 8,
             padding: 12,
             marginBottom: 10

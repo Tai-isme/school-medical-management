@@ -4,12 +4,17 @@ import { faNotesMedical, faHouseMedical, faSuitcaseMedical, faHouseMedicalCircle
 import './MedicalInfoCards.css';
 
 const MedicalInfoCards = (props) => {
+  const handleCardClick = (path) => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (props.onCardClick) props.onCardClick(path);
+  };
+
   return (
     <div className="medical-info-container">
-      <h1 className="main-title" style={{marginTop: '0px'}}>Thông tin Y tế học đường</h1>
+      <h1 className="main-title-medical-info-container" style={{margin: '0px 0px 40px 0px', fontSize: '36px'}}>Thông tin Y tế học đường</h1>
       <div className="cards-grid">
         {/* Card 1: Gửi thuốc */}
-        <div className="info-card" onClick={() => props.onCardClick('/instruction-form')} style={{ cursor: 'pointer' }}>
+        <div className="info-card" onClick={() => handleCardClick('/instruction-form')} style={{ cursor: 'pointer' }}>
           <div className="card-icon-wrapper">
             <FontAwesomeIcon icon={faNotesMedical} style={{ fontSize: '32px', color: '#64b5f6' }} />
           </div>
@@ -18,7 +23,7 @@ const MedicalInfoCards = (props) => {
         </div>
 
         {/* Card 2: Quản lý hồ sơ */}
-        <div className="info-card" onClick={() => props.onCardClick('/student-profile')} style={{ cursor: 'pointer' }}>
+        <div className="info-card" onClick={() => handleCardClick('/student-profile')} style={{ cursor: 'pointer' }}>
           <div className="card-icon-wrapper">
             <FontAwesomeIcon icon={faHouseMedical} style={{ fontSize: '32px', color: '#64b5f6' }} />
           </div>
@@ -27,7 +32,7 @@ const MedicalInfoCards = (props) => {
         </div>
 
         {/* Card 3: Sự kiện y tế */}
-        <div className="info-card" onClick={() => props.onCardClick('/medical-incident')} style={{ cursor: 'pointer' }}>
+        <div className="info-card" onClick={() => handleCardClick('/medical-incident')} style={{ cursor: 'pointer' }}>
           <div className="card-icon-wrapper">
             <FontAwesomeIcon icon={faSuitcaseMedical} style={{ fontSize: '32px', color: '#64b5f6' }} />
           </div>
@@ -36,7 +41,7 @@ const MedicalInfoCards = (props) => {
         </div>
 
         {/* Card 4: Xác nhận yêu cầu */}
-        <div className="info-card" onClick={() => props.onCardClick('/notification')} style={{ cursor: 'pointer' }}>
+        <div className="info-card" onClick={() => handleCardClick('/notification')} style={{ cursor: 'pointer' }}>
           <div className="card-icon-wrapper">
             <FontAwesomeIcon icon={faHouseMedicalCircleExclamation} style={{ fontSize: '32px', color: '#64b5f6' }} />
           </div>
@@ -45,7 +50,7 @@ const MedicalInfoCards = (props) => {
         </div>
 
         {/* Card 5: Kiểm tra kết quả vaccin */}
-        <div className="info-card" onClick={() => props.onCardClick('/vaccine-result')} style={{ cursor: 'pointer' }}>
+        <div className="info-card" onClick={() => handleCardClick('/vaccine-result')} style={{ cursor: 'pointer' }}>
           <div className="card-icon-wrapper">
             <FontAwesomeIcon icon={faSyringe} style={{ fontSize: '32px', color: '#64b5f6' }} />
           </div>
@@ -54,7 +59,7 @@ const MedicalInfoCards = (props) => {
         </div>
 
         {/* Card 6: Kiểm tra sức khỏe */}
-        <div className="info-card" onClick={() => props.onCardClick('/health-check')} style={{ cursor: 'pointer' }}>
+        <div className="info-card" onClick={() => handleCardClick('/health-check')} style={{ cursor: 'pointer' }}>
           <div className="card-icon-wrapper">
             <FontAwesomeIcon icon={faStethoscope} style={{ fontSize: '32px', color: '#64b5f6' }} />
           </div>

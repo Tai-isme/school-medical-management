@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import './InstructionForm.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faCaretDown } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faCaretDown, faHouse } from '@fortawesome/free-solid-svg-icons';
 import MedicalRequestDetail from "./SendMedicineCardDetails";
 import StudentInfoCard from '../../../common/StudentInfoCard';
+import { message } from 'antd';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function InstructionForm({ onShowHistory }) {
   // Lấy students từ localStorage
@@ -100,16 +103,66 @@ setPurpose('');
   setNote('');
   setUsageTime('');
   setMedicines([{ name: '', quantity: '', usage: '' }]);
-      alert('Đơn hướng dẫn đã được gửi!');
+      message.success('Đơn thuốc đã được gửi thành công!');
+      toast.success('Đơn thuốc đã được gửi thành công!'); // Thêm thông báo thành công
     } catch (error) {
-      // Không reset state, chỉ hiện thông báo lỗi
-      alert(error.message);
+      let errorMsg = 'Có lỗi xảy ra!';
+      if (error && error.message) {
+        try {
+          // Nếu response trả về dạng JSON có message
+          const errObj = JSON.parse(error.message);
+          if (errObj.message) errorMsg = errObj.message;
+        } catch {
+          // Nếu không phải JSON thì lấy message gốc
+          errorMsg = error.message;
+        }
+      }
+      message.error(errorMsg);
+      toast.error(errorMsg);
     }
   };
 
 
   return (
-    <div className="instruction-form-container">
+    <div className="instruction-form-container" style={{ position: "relative" }}>
+      {/* Nút Home ở góc trên trái */}
+      <div style={{ position: "absolute", top: 16, left: 32, display: "flex", alignItems: "center", zIndex: 10 }}>
+        <button
+          onClick={() => window.location.href = '/'}
+          style={{
+            background: "#e3f2fd",
+            border: "none",
+            borderRadius: "50%",
+            width: 40,
+            height: 40,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 8px #1976d220",
+            cursor: "pointer",
+            marginRight: 8
+          }}
+          title="Về trang chủ"
+        >
+          <FontAwesomeIcon icon={faHouse} style={{ color: "#1976d2", fontSize: 22 }} />
+        </button>
+        <span
+          style={{
+            color: "#1976d2",
+            fontWeight: 500,
+            fontSize: 15,
+            background: "#e3f2fd",
+            borderRadius: 8,
+            padding: "4px 14px",
+            cursor: "pointer"
+          }}
+          onClick={() => window.location.href = '/'}
+          title="Về trang chủ"
+        >
+          Về trang chủ
+        </span>
+      </div>
+
       {/* Tabs */}
       <h2 style={{ textAlign: 'center', marginBottom: '20px' , marginTop: '0px' }}>Gửi đơn thuốc</h2>
       <div className="tabs" style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: 0 }}>
@@ -277,6 +330,17 @@ setPurpose('');
       {activeTab === 'history' && (
         <MedicalRequestDetail/>
       )}
+      <ToastContainer
+  position="bottom-right" // Thêm dòng này
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop={false}
+  closeOnClick
+  rtl={false}
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+/>
     </div>
   );
 };

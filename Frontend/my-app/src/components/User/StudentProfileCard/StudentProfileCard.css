@@ -133,6 +133,8 @@
   background-color: #f8fcff;
   padding: 25px;
   text-align: left;
+  height: 600px; /* Sử dụng height thay cho min-height */
+  /* overflow-y: auto; Thêm thanh cuộn nếu nội dung vượt quá */
 }
 
 .right-panel h2 {

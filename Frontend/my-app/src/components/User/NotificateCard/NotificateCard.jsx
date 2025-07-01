@@ -3,6 +3,8 @@ import axios from "axios";
 import NotificationsList from "./NotificationsList";
 import "./NotificateCard.css";
 import StudentInfoCard from "../../../common/StudentInfoCard";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHouse } from '@fortawesome/free-solid-svg-icons';
 
 const Notifications = () => {
   const students = JSON.parse(localStorage.getItem("students") || "[]");
@@ -83,8 +85,45 @@ const Notifications = () => {
   
 
   return (
-    <div className="notifications-container">
-      <h1 className="main-title" style={{marginTop: '0px'}}>Các thông báo</h1>
+    <div className="notifications-container" style={{ position: "relative" }}>
+      {/* Nút Home ở góc trên trái */}
+      <div style={{ position: "absolute", top: 16, left: 32, display: "flex", alignItems: "center", zIndex: 10 }}>
+        <button
+          onClick={() => window.location.href = '/'}
+          style={{
+            background: "#e3f2fd",
+            border: "none",
+            borderRadius: "50%",
+            width: 40,
+            height: 40,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 8px #1976d220",
+            cursor: "pointer",
+            marginRight: 8
+          }}
+          title="Về trang chủ"
+        >
+          <FontAwesomeIcon icon={faHouse} style={{ color: "#1976d2", fontSize: 22 }} />
+        </button>
+        <span
+          style={{
+            color: "#1976d2",
+            fontWeight: 500,
+            fontSize: 15,
+            background: "#e3f2fd",
+            borderRadius: 8,
+            padding: "4px 14px",
+            cursor: "pointer"
+          }}
+          onClick={() => window.location.href = '/'}
+          title="Về trang chủ"
+        >
+          Về trang chủ
+        </span>
+      </div>
+      <h1 className="main-title" style={{ margin: '0px 0px 20px 0px', fontSize: '24px'  }}>Các thông báo</h1>
       <div className="notifications-content">
         {/* Left Section: Student Overview */}
         <div className="left-panel">

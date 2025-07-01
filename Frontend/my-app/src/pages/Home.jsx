@@ -22,8 +22,8 @@ function Home() {
 
   return (
     <div>
-      <MedicalInfoCards onCardClick={handleCardClick} />
       <Slider />
+      <MedicalInfoCards onCardClick={handleCardClick} />
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
     </div>
     
