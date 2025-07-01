@@ -17,6 +17,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.checkerframework.checker.units.qual.A;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,7 +34,6 @@ import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO
 import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventStatDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.ParticipationDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
@@ -73,6 +74,8 @@ import com.swp391.school_medical_management.service.PasswordService;
 
 @Service
 public class AdminService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AdminService.class);
 
     @Autowired
     private HealthCheckProgramRepository healthCheckProgramRepository;
@@ -135,13 +138,38 @@ public class AdminService {
         Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository
                 .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
 
+        if (request.getStartDate().isAfter(request.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date must be before end date");
+        }
+
         if (existingProgramOpt.isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check program with name '"
                     + request.getHealthCheckName() + "' already exists and not started.");
         }
 
-        if (request.getStartDate().isAfter(request.getEndDate()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date must be before end date");
+        // kiểm tra chương trình gần nhất trước đó có COMPLETED chưa
+        Optional<HealthCheckProgramEntity> lastProgramOpt = healthCheckProgramRepository
+                .findTopByStartDateLessThanOrderByStartDateDesc(request.getStartDate());
+
+        if (lastProgramOpt.isPresent()) {
+            HealthCheckProgramEntity last = lastProgramOpt.get();
+            if (!HealthCheckProgramStatus.COMPLETED.equals(last.getStatus())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "The last health check program is not COMPLETED.");
+            }
+        }
+        
+        // kiểm tra có chương trình nào vẫn còn hiệu lực vào thời điểm bắt đầu chương trình mới
+        List<HealthCheckProgramEntity> overlappingPrograms = healthCheckProgramRepository
+                .findByEndDateAfter(request.getStartDate());
+
+        boolean hasUncompleted = overlappingPrograms.stream()
+                .anyMatch(p -> !HealthCheckProgramStatus.COMPLETED.equals(p.getStatus()));
+
+        if (hasUncompleted) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Another health check program is still active and not COMPLETED.");
+        }
 
         HealthCheckProgramEntity healthCheckProgramEntity = new HealthCheckProgramEntity();
         healthCheckProgramEntity.setHealthCheckName(request.getHealthCheckName());
@@ -303,6 +331,16 @@ public class AdminService {
 
         Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository
                 .findByVaccineNameAndStatus(request.getVaccineName(), VaccineProgramStatus.NOT_STARTED);
+
+        Optional<VaccineProgramEntity> lastVaccineProgramOpt = vaccineProgramRepository
+                .findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(request.getVaccineDate());
+        if (lastVaccineProgramOpt.isPresent()) {
+            VaccineProgramEntity lastVaccineProgramEntity = lastVaccineProgramOpt.get();
+            logger.info(lastVaccineProgramEntity.getVaccineName() + " " + lastVaccineProgramEntity.getStatus());
+            if (!VaccineProgramStatus.COMPLETED.equals(lastVaccineProgramEntity.getStatus())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Last vaccine is not COMPLETED!");
+            }
+        }
 
         if (existingProgramOpt.isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -501,8 +539,6 @@ public class AdminService {
                         + "\nPassword: " + password);
         return modelMapper.map(user, UserDTO.class);
     }
-
-
 
     public List<UserDTO> getAllAccounts() {
         List<UserEntity> userEntities = userRepository.findAll();

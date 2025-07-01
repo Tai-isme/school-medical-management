@@ -1,5 +1,6 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,4 +20,5 @@ public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEn
 
     Optional<VaccineProgramEntity> findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus status);
 
+    Optional<VaccineProgramEntity> findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(LocalDate date);
 }
