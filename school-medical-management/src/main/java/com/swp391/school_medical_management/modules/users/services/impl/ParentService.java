@@ -25,6 +25,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.VaccineHi
 import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
@@ -32,6 +33,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.MedicalR
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
@@ -465,6 +467,38 @@ public class ParentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         VaccineFormDTO vaccineFormDTO = modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
         return vaccineFormDTO;
+    }
+
+    public List<HealthCheckResultDTO> getHealthCheckResults(Long studentId) {
+        List<HealthCheckResultEntity> healthCheckResultList = healthCheckResultRepository
+                .findByHealthCheckFormEntity_Student_Id(studentId);
+        if (healthCheckResultList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check result not found");
+
+        List<HealthCheckResultDTO> healthCheckResultDTOList = healthCheckResultList.stream().map(entity -> {
+            HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
+            HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
+            dto.setHealthCheckFormId(form.getId());
+            dto.setStudentId(form.getStudent().getId());
+            return dto;
+        }).collect(Collectors.toList());
+
+        return healthCheckResultDTOList;
+    }
+
+    public List<VaccineResultDTO> getVaccineResults(Long studentId) {
+        List<VaccineResultEntity> vaccineResultList = vaccineResultRepository.findByVaccineFormEntity_Student_Id(studentId);
+        if (vaccineResultList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not found");
+
+        List<VaccineResultDTO> vaccineResultDTOList = vaccineResultList.stream().map(entity -> {
+            VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
+            VaccineFormEntity form = entity.getVaccineFormEntity();
+            dto.setVaccineFormId(form.getId());
+            dto.setStudentId(form.getStudent().getId());
+            return dto;
+        }).collect(Collectors.toList());
+        return vaccineResultDTOList;
     }
 
     public void commitHealthCheckForm(Long parentId, Long healthCheckFormId, CommitHealthCheckFormRequest request) {
