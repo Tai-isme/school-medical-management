@@ -471,6 +471,11 @@ public class AdminService {
         if (vaccineProgramOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
         VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
+        if (vaccineProgramEntity.getStatus() == VaccineProgramStatus.COMPLETED
+                || vaccineProgramEntity.getStatus() == VaccineProgramStatus.ON_GOING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot delete 'COMPLETED' or 'ON_GOING' program");
+        }
         vaccineProgramRepository.delete(vaccineProgramEntity);
     }
 
