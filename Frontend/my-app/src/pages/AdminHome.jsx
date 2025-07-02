@@ -14,11 +14,12 @@ import Dashboard from "../components/Admin/Dashboard/Dashboard";
 import FeedbackList from "../components/Admin/FeedBack/FeedbackList";
 
 import BlogAdminPage from "../components/Admin/BlogManagement/BlogAdminPage";
-
+import AccountInfo from "../components/Admin/Sidebar/AccountInfo";
+import ChangePasswordForm from "../components/Admin/Sidebar/ChangePasswordForm";
 import "./AdminHome.css"; // Import your CSS file for styling
 
 export default function AdminHome() {
-  const [selectedMenu, setSelectedMenu] = useState(null);
+  const [selectedMenu, setSelectedMenu] = useState("1"); // <-- Đặt mặc định là "1"
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
 
@@ -72,6 +73,10 @@ export default function AdminHome() {
         {selectedMenu === "8" && <FeedbackList />}
 
         {selectedMenu === "9" && <BlogAdminPage />}
+
+        {selectedMenu === "account-info" && <AccountInfo />}
+
+        {selectedMenu === "changepass" && <ChangePasswordForm />}
 
         {/* {selectedMenu === "logout"} */}
       </div>

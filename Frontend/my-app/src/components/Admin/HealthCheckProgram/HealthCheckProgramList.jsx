@@ -15,6 +15,9 @@ const HealthCheckProgramList = () => {
   const [filterDate, setFilterDate] = useState(null); // Thêm state lọc ngày
   const [editMode, setEditMode] = useState(false);
   const [filterStatus, setFilterStatus] = useState(""); // Thêm state này
+  const [resultVisible, setResultVisible] = useState(false);
+  const [resultData, setResultData] = useState([]);
+  const [resultLoading, setResultLoading] = useState(false);
 
   useEffect(() => {
     fetchProgram();
@@ -126,6 +129,23 @@ const HealthCheckProgramList = () => {
     });
   };
 
+  const handleUpdateStatus = async (id, status) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.patch(
+        `http://localhost:8080/api/admin/health-check-program/${id}?status=${status}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      message.success("Cập nhật trạng thái thành công!");
+      fetchProgram();
+    } catch (error) {
+      message.error("Cập nhật trạng thái thất bại!");
+    }
+  };
+
   // Lọc danh sách theo tên chương trình và ngày tiêm
   const filteredPrograms = programs.filter((program) => {
     const matchName = program.name?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -163,6 +183,25 @@ const HealthCheckProgramList = () => {
         return "Đã hoàn thành";
       default:
         return status;
+    }
+  };
+
+  const handleViewResult = async (programId) => {
+    setResultLoading(true);
+    setResultVisible(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        "http://localhost:8080/api/admin/health-check-results-status-by-program",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Lọc kết quả theo programId
+      const filtered = res.data.filter(item => item.programId === programId);
+      setResultData(filtered);
+    } catch (err) {
+      setResultData([]);
+    } finally {
+      setResultLoading(false);
     }
   };
 
@@ -241,9 +280,16 @@ const HealthCheckProgramList = () => {
                 Ngày kết thúc: {program.endDate}
               </div>
             </div>
-            <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
-              {getStatusText(program.status)}
-            </Tag>
+            <Select
+              value={program.status}
+              style={{ width: 160 }}
+              onChange={status => handleUpdateStatus(program.id, status)}
+              options={[
+                { value: "NOT_STARTED", label: "Chưa bắt đầu" },
+                { value: "ON_GOING", label: "Đang diễn ra" },
+                { value: "COMPLETED", label: "Đã hoàn thành" },
+              ]}
+            />
           </div>
           <Row gutter={32} style={{ margin: "24px 0" }}>
             <Col span={12}>
@@ -270,8 +316,9 @@ const HealthCheckProgramList = () => {
               <Button
                 type="primary"
                 style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
+                onClick={() => handleViewResult(program.id)}
               >
-                Gửi thông báo
+                Xem kết quả
               </Button>
             </div>
             <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
@@ -371,6 +418,31 @@ const HealthCheckProgramList = () => {
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title="Kết quả khám định kỳ"
+        open={resultVisible}
+        onCancel={() => setResultVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setResultVisible(false)}>
+            Đóng
+          </Button>,
+        ]}
+      >
+        {resultLoading ? (
+          <div>Đang tải...</div>
+        ) : resultData.length === 0 ? (
+          <div>Không có dữ liệu kết quả cho chương trình này.</div>
+        ) : (
+          <Descriptions column={1} bordered size="small">
+            {resultData.map((item, idx) => (
+              <React.Fragment key={idx}>
+                <Descriptions.Item label="Trạng thái sức khỏe">{item.statusHealth}</Descriptions.Item>
+                <Descriptions.Item label="Số lượng">{item.count}</Descriptions.Item>
+              </React.Fragment>
+            ))}
+          </Descriptions>
+        )}
       </Modal>
     </div>
   );

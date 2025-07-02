@@ -15,6 +15,9 @@ const VaccineProgramList = () => {
   const [filterDate, setFilterDate] = useState(null); // Thêm state lọc ngày
   const [editMode, setEditMode] = useState(false);
   const [filterStatus, setFilterStatus] = useState(""); // Thêm state này
+  const [resultVisible, setResultVisible] = useState(false);
+  const [resultData, setResultData] = useState([]);
+  const [resultLoading, setResultLoading] = useState(false);
 
   useEffect(() => {
     fetchProgram();
@@ -96,7 +99,7 @@ const VaccineProgramList = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (programId) => {
     Modal.confirm({
       title: "Bạn có chắc muốn xóa chương trình này?",
       okText: "Xóa",
@@ -105,7 +108,7 @@ const VaccineProgramList = () => {
       onOk: async () => {
         const token = localStorage.getItem("token");
         try {
-          await axios.delete(`http://localhost:8080/api/admin/vaccine-program/${id}`, {
+          await axios.delete(`http://localhost:8080/api/admin/vaccine-program/${programId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           message.success("Xóa thành công!");
@@ -115,6 +118,42 @@ const VaccineProgramList = () => {
         }
       },
     });
+  };
+
+  const handleViewResult = async (programId) => {
+    setResultLoading(true);
+    setResultVisible(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        "http://localhost:8080/api/admin/vaccine-results-status-by-program",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Lọc kết quả theo programId
+      const filtered = res.data.filter(item => item.programId === programId);
+      setResultData(filtered);
+    } catch (err) {
+      setResultData([]);
+    } finally {
+      setResultLoading(false);
+    }
+  };
+
+  const handleUpdateStatus = async (vaccineId, status) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.patch(
+        `http://localhost:8080/api/admin/vaccine-program/${vaccineId}?status=${status}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      message.success("Cập nhật trạng thái thành công!");
+      fetchProgram();
+    } catch (error) {
+      message.error("Cập nhật trạng thái thất bại!");
+    }
   };
 
   // Lọc danh sách theo tên chương trình và ngày tiêm
@@ -260,6 +299,7 @@ const VaccineProgramList = () => {
               <Button
                 type="primary"
                 style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
+                onClick={() => handleViewResult(program.vaccineId)}
               >
                 Xem kết quả
               </Button>
@@ -286,6 +326,16 @@ const VaccineProgramList = () => {
               </Button>
             </div>
           </div>
+          <Select
+            value={program.status}
+            style={{ width: 160, marginTop: 4 }}
+            onChange={status => handleUpdateStatus(program.vaccineId, status)}
+            options={[
+              { value: "NOT_STARTED", label: "Chưa bắt đầu" },
+              { value: "ON_GOING", label: "Đang diễn ra" },
+              { value: "COMPLETED", label: "Đã hoàn thành" },
+            ]}
+          />
         </Card>
       ))}
       <Modal
@@ -360,6 +410,31 @@ const VaccineProgramList = () => {
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title="Kết quả tiêm chủng"
+        open={resultVisible}
+        onCancel={() => setResultVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setResultVisible(false)}>
+            Đóng
+          </Button>,
+        ]}
+      >
+        {resultLoading ? (
+          <div>Đang tải...</div>
+        ) : resultData.length === 0 ? (
+          <div>Không có dữ liệu kết quả cho chương trình này.</div>
+        ) : (
+          <Descriptions column={1} bordered size="small">
+            {resultData.map((item, idx) => (
+              <React.Fragment key={idx}>
+                <Descriptions.Item label="Trạng thái sức khỏe">{item.statusHealth}</Descriptions.Item>
+                <Descriptions.Item label="Số lượng">{item.count}</Descriptions.Item>
+              </React.Fragment>
+            ))}
+          </Descriptions>
+        )}
       </Modal>
     </div>
   );

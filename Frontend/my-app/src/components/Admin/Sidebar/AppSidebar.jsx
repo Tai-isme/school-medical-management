@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Menu, Avatar, Dropdown } from "antd";
 import {
   HomeOutlined,
@@ -19,6 +19,8 @@ import "./AppSidebar.css";
 const { SubMenu } = Menu;
 
 const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
+  const [selectedClassId, setSelectedClassId] = useState(null);
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
   const navigate = useNavigate();
 
   // Lấy thông tin user từ localStorage
@@ -56,14 +58,19 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
   // Xử lý chọn menu trong dropdown user info
   const handleUserMenuClick = ({ key }) => {
     if (key === "info") {
-      // Điều hướng đến trang thông tin tài khoản
-      navigate("/account-info");
+      onMenuSelect("account-info");
     } else if (key === "changepass") {
-      // Điều hướng đến trang đổi mật khẩu
-      navigate("/change-password");
+      onMenuSelect("changepass"); // Không dùng navigate!
     } else if (key === "logout") {
       handleLogout();
     }
+  };
+
+  const handleMenuSelect = (key) => {
+    console.log("Menu selected:", key);
+    onMenuSelect(key);
+    setSelectedClassId(null);
+    setSelectedStudentId(null);
   };
 
   const userMenu = (
@@ -116,7 +123,9 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
         mode="inline"
         theme="light"
         selectedKeys={[selectedMenu]}
-        onClick={({ key }) => onMenuSelect(key)}
+        onClick={({ key }) => {
+          onMenuSelect(key); // Luôn gọi cho mọi key
+        }}
         style={{ flex: 1, borderRight: 0, minHeight: 0 }}
       >
         
