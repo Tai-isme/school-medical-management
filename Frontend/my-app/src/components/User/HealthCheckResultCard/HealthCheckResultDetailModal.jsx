@@ -1,26 +1,85 @@
 import React from 'react';
-import { Modal } from 'antd';
+import { Modal, Spin } from 'antd';
 
-const HealthCheckResultDetailModal = ({ open, onClose, data }) => (
+const labelStyle = {
+  fontWeight: 600,
+  color: '#1976d2',
+  minWidth: 120,
+  display: 'inline-block',
+  marginBottom: 4,
+};
+
+const valueStyle = {
+  color: '#222',
+  fontWeight: 500,
+  marginLeft: 8,
+  wordBreak: 'break-word',
+};
+
+const sectionStyle = {
+  marginBottom: 12,
+  display: 'flex',
+  alignItems: 'flex-start',
+};
+
+const HealthCheckResultDetailModal = ({ open, onClose, data, loading }) => (
   <Modal
     open={open}
-    title={data?.checkName || 'Chi tiết khám sức khỏe'}
+    title={
+      <div style={{ textAlign: 'center', fontWeight: 700, fontSize: 22, color: '#1976d2', letterSpacing: 1 }}>
+        {data?.checkName || 'Chi tiết khám sức khỏe'}
+      </div>
+    }
     onCancel={onClose}
     footer={null}
+    centered
+    bodyStyle={{
+      padding: 32,
+      background: '#f8fbff',
+      borderRadius: 16,
+      minHeight: 320,
+    }}
+    width={480}
   >
-    {data && (
-      <div style={{ fontSize: 16, color: '#333' }}>
-        <div><b>Ngày:</b> {data.date || '---'}</div>
-        <div><b>Kết quả:</b> {data.result || 'Không có kết quả.'}</div>
-        <div><b>Ghi chú:</b> {data.note || 'Không có ghi chú.'}</div>
-        {data.place && <div><b>Địa điểm:</b> {data.place}</div>}
-        {data.doctor && <div><b>Bác sĩ:</b> {data.doctor}</div>}
-        <div>
-          <b>Trạng thái:</b>{' '}
-          <span style={{ color: '#43a047', fontWeight: 600 }}>Hoàn thành</span>
+    {loading ? (
+      <div style={{ textAlign: "center", padding: 48 }}><Spin size="large" /></div>
+    ) : data ? (
+      <div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Chương trình:</span>
+          <span style={valueStyle}>{data.checkName || "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Ngày:</span>
+          <span style={valueStyle}>{data.date || "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Trạng thái:</span>
+          <span style={{
+            ...valueStyle,
+            color: data.status === "DONE" ? "#43a047" : "#fbc02d"
+          }}>
+            {data.healthCheckProgram.status || "---"}
+          </span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Mô tả:</span>
+          <span style={valueStyle}>{data.description || "Không có mô tả."}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Chẩn đoán:</span>
+          <span style={valueStyle}>{data.diagnosis || "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Mức độ:</span>
+          <span style={valueStyle}>{data.level || "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Ghi chú:</span>
+          <span style={valueStyle}>{data.note || "---"}</span>
         </div>
       </div>
-    )}
+    ) : null}
   </Modal>
 );
 

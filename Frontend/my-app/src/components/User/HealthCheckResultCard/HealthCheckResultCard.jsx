@@ -17,6 +17,7 @@ const HealthCheckResultCard = () => {
   const [filterDate, setFilterDate] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
     const studentsData = JSON.parse(localStorage.getItem('students')) || [];
@@ -28,36 +29,70 @@ const HealthCheckResultCard = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (selectedStudentId) {
-      fetchVaccineHistory(selectedStudentId);
-    }
-  }, [selectedStudentId]);
-
-  const fetchVaccineHistory = async (studentId) => {
+  // Sửa hàm fetch thành gọi API mới
+  const fetchHealthCheckHistory = async (studentId) => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `http://localhost:8080/api/parent/medical-records/${studentId}`,
+        `http://localhost:8080/api/parent/health-check-forms/student/${studentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
-      setVaccineHistory(data.vaccineHistories || []);
+      setVaccineHistory(Array.isArray(data) ? data : []);
     } catch (err) {
       setVaccineHistory([]);
     }
   };
 
-  // Lọc dữ liệu theo tên vaccine và ngày
+  useEffect(() => {
+    if (selectedStudentId) {
+      fetchHealthCheckHistory(selectedStudentId);
+    }
+  }, [selectedStudentId]);
+
+  // Lọc dữ liệu theo tên chương trình và ngày
   const filteredHistory = vaccineHistory.filter(item => {
-    const matchName = item.vaccineName?.toLowerCase().includes(filterName.toLowerCase());
-    const matchDate = filterDate ? item.date === filterDate : true;
-    return matchName && matchDate;
+    const programName = item.healthCheckProgram?.name || "";
+    const checkDate = item.healthCheckProgram?.endDate || "";
+    const matchName = programName.toLowerCase().includes(filterName.toLowerCase());
+    const matchDate = filterDate ? checkDate === filterDate : true;
+    const matchStatus = item.status === "COMPLETED"; // chỉ lấy trạng thái COMPLETED
+    return matchName && matchDate && matchStatus;
   });
 
   // const vaccineColumns = [...]; // Không dùng Table nữa
 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
+
+  // Hàm lấy chi tiết kết quả khám sức khỏe
+  const handleShowDetail = async (item) => {
+    setModalLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(
+        `http://localhost:8080/api/parent/health-check-result/form/${item.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) throw new Error("Không lấy được dữ liệu chi tiết.");
+      const data = await res.json();
+      setModalData({
+        ...item,
+        ...data,
+        checkName: item.healthCheckProgram?.name,
+        date: item.healthCheckProgram?.endDate,
+        status: item.status,
+        description: item.healthCheckProgram?.description,
+        note: data.note,
+        diagnosis: data.diagnosis,
+        level: data.level,
+      });
+      setModalOpen(true);
+    } catch (err) {
+      alert("Không lấy được chi tiết kết quả khám sức khỏe.");
+    } finally {
+      setModalLoading(false);
+    }
+  };
 
   return (
     <div className="student-profile-container" style={{ position: "relative" }}>
@@ -112,7 +147,7 @@ const HealthCheckResultCard = () => {
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
               <div style={{ display: 'flex', gap: 12, width: '100%', maxWidth: 600 }}>
                 <Input
-                  placeholder="Lọc theo tên vaccine"
+                  placeholder="Lọc theo tên chương trình"
                   value={filterName}
                   onChange={e => setFilterName(e.target.value)}
                   allowClear
@@ -128,90 +163,80 @@ const HealthCheckResultCard = () => {
               </div>
             </div>
 
-            {filteredHistory.length === 0 ? (
-              <div style={{textAlign: 'center', color: '#888', marginTop: 32}}>
-                Không có dữ liệu phù hợp.
-              </div>
-            ) : (
-              <>
-                {/* Inline style for hover effect */}
-                <style>{`
-                  .vaccine-history-item {
-                    background: #fff;
-                    border-radius: 10px;
-                    box-shadow: 0 2px 8px rgba(25,118,210,0.07);
-                    padding: 20px;
-                    margin-bottom: 8px;
-                    cursor: pointer;
-                    transition: border 0.2s, background 0.2s;
-                    width: 100%;
-                    min-width: 0;
-                    align-self: stretch;
-                    box-sizing: border-box;
-                    display: block;
-                    border: 1px solid #e3f2fd;
-                  }
-                  .vaccine-history-item.selected {
-                    border: 2px solid #1976d2;
-                  }
-                  .vaccine-history-item:hover {
-                    background: #e8f5e9;
-                  }
-                `}</style>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 16,
-                  width: '100%',
-                  alignItems: 'stretch',
-                }}>
-                  {filteredHistory.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="vaccine-history-item"
-                      onClick={() => {
-                        setModalData(item);
-                        setModalOpen(true);
-                      }}
-                    >
-                      {/* Dòng 1: Tên chương trình */}
-                      <div style={{
-                        fontWeight: 600,
-                        fontSize: 18,
-                        color: '#1976d2',
-                        marginBottom: 8,
-                      }}>
-                        {item.vaccineName}
-                      </div>
-                      {/* Dòng 2: Ngày và Trạng thái */}
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%',
-                        fontSize: 15,
-                        color: '#888',
-                      }}>
-                        <div>
-                          Ngày: <span style={{color: '#1976d2', fontWeight: 500}}>{item.date || '---'}</span>
-                        </div>
-                        <div>
-                          Trạng thái: <span style={{color: '#43a047', fontWeight: 600}}>Hoàn thành</span>
-                        </div>
-                      </div>
-                      {/* Chi tiết khi mở rộng */}
-                      {openDetailIdx === idx && (
-                        <div style={{marginTop: 16, fontSize: 16, color: '#333'}}>
-                          <div><b>Mô tả:</b> {item.note || 'Không có mô tả.'}</div>
-                          {item.place && <div><b>Địa điểm:</b> {item.place}</div>}
-                          {item.doctor && <div><b>Bác sĩ:</b> {item.doctor}</div>}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
+              width: '100%',
+              alignItems: 'stretch',
+            }}>
+              <style>{`
+                .health-history-item {
+                  background: #fff;
+                  border-radius: 10px;
+                  box-shadow: 0 2px 8px rgba(25,118,210,0.07);
+                  padding: 20px;
+                  margin-bottom: 8px;
+                  cursor: pointer;
+                  transition: border 0.2s, background 0.2s;
+                  width: 100%;
+                  min-width: 0;
+                  align-self: stretch;
+                  box-sizing: border-box;
+                  display: block;
+                  border: 1px solid #e3f2fd;
+                }
+                .health-history-item.selected {
+                  border: 2px solid #1976d2;
+                }
+                .health-history-item:hover {
+                  background: #e8f5e9;
+                }
+              `}</style>
+              {filteredHistory.length === 0 ? (
+                <div style={{textAlign: 'center', color: '#888', marginTop: 32}}>
+                  Không có dữ liệu phù hợp.
                 </div>
-              </>
-            )}
+              ) : (
+                filteredHistory.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="health-history-item"
+                    onClick={() => handleShowDetail(item)}
+                  >
+                    <div style={{
+                      fontWeight: 600,
+                      fontSize: 18,
+                      color: '#1976d2',
+                      marginBottom: 8,
+                    }}>
+                      {item.healthCheckProgram?.name || "---"}
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      width: '100%',
+                      fontSize: 15,
+                      color: '#888',
+                    }}>
+                      <div>
+                        Ngày: <span style={{color: '#1976d2', fontWeight: 500}}>{item.healthCheckProgram?.endDate || '---'}</span>
+                      </div>
+                      <div>
+                        Trạng thái: <span style={{color: '#43a047', fontWeight: 600}}>{item.healthCheckProgram.status || '---'}</span>
+                      </div>
+                    </div>
+                    
+                    {item.note && (
+                      <div style={{marginTop: 4, color: "#888", fontSize: 13}}>
+                        Ghi chú: {item.note}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -219,6 +244,7 @@ const HealthCheckResultCard = () => {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         data={modalData}
+        loading={modalLoading}
       />
     </div>
   );
