@@ -25,9 +25,7 @@ public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEn
 
     public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Long> {
     
-    Long countByVaccineProgram_VaccineId(Long vaccineProgramId);
-
-    Long countByVaccineProgram_VaccineIdAndCommitTrue(Long vaccineProgramId);
+    
 }
 
 }

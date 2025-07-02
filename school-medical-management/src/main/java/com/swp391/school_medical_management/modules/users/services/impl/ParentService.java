@@ -25,6 +25,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.VaccineHi
 import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
@@ -32,6 +33,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.MedicalR
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity;
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
@@ -98,7 +100,7 @@ public class ParentService {
     @Autowired
     private MedicalEventRepository medicalEventRepository;
 
-     public MedicalRecordDTO createMedicalRecord(Long parentId, MedicalRecordsRequest request) {
+    public MedicalRecordDTO createMedicalRecord(Long parentId, MedicalRecordsRequest request) {
         Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
         if (studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
@@ -204,7 +206,7 @@ public class ParentService {
         medicalRecordsRepository.save(medicalRecord);
         return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
     }
-    
+
     public List<MedicalRecordDTO> getAllMedicalRecordByParentId(Long parentId) {
         List<MedicalRecordEntity> medicalRecordList = medicalRecordsRepository
                 .findMedicalRecordByStudent_Parent_UserId(parentId);
@@ -605,4 +607,39 @@ public class ParentService {
         }
         return allFormsByStudentDTO;
     }
+
+    public HealthCheckResultDTO getHealthCheckResultByFormId(Long formId) {
+        Optional<HealthCheckResultEntity> healthCheckResultOpt = healthCheckResultRepository
+                .findByHealthCheckFormEntity_Id(formId);
+
+        if (healthCheckResultOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Health check result not found for formId: " + formId);
+
+        HealthCheckResultEntity entity = healthCheckResultOpt.get();
+        HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
+
+        HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
+        dto.setHealthCheckFormId(form.getId());
+        dto.setStudentId(form.getStudent().getId());
+
+        return dto;
+    }
+
+    public VaccineResultDTO getVaccineResultByFormId(Long formId) {
+        Optional<VaccineResultEntity> vaccineResultOpt = vaccineResultRepository.findByVaccineFormEntity_Id(formId);
+
+        if (vaccineResultOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not found for formId: " + formId);
+
+        VaccineResultEntity entity = vaccineResultOpt.get();
+        VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
+
+        VaccineFormEntity form = entity.getVaccineFormEntity();
+        dto.setVaccineFormId(form.getId());
+        dto.setStudentId(form.getStudent().getId());
+
+        return dto;
+    }
+
 }

@@ -48,6 +48,7 @@ public class ParentController {
 
     @Autowired
     private NurseService nurseService;
+
     /**
      * Medical record for a student.
      * 
@@ -227,7 +228,6 @@ public class ParentController {
         return ResponseEntity.ok(allFormsByStudentDTOList);
     }
 
-
     @GetMapping("/health-check-result/{healCheckResultId}")
     public ResponseEntity<HealthCheckResultDTO> getHealthCheckResult(@PathVariable Long healCheckResultId) {
         HealthCheckResultDTO healthCheckResultDTO = nurseService.getHealthCheckResult(healCheckResultId);
@@ -238,6 +238,18 @@ public class ParentController {
     public ResponseEntity<VaccineResultDTO> getVaccineResult(@PathVariable Long vaccineResultId) {
         VaccineResultDTO vaccineResultDTO = nurseService.getVaccineResult(vaccineResultId);
         return ResponseEntity.ok(vaccineResultDTO);
+    }
+
+    @GetMapping("/health-check-result/form/{formId}")
+    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResultByFormId(@PathVariable Long formId) {
+        HealthCheckResultDTO dto = parentService.getHealthCheckResultByFormId(formId);
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/vaccine-result/form/{formId}")
+    public ResponseEntity<VaccineResultDTO> getVaccineResultByFormId(@PathVariable Long formId) {
+        VaccineResultDTO dto = parentService.getVaccineResultByFormId(formId);
+        return ResponseEntity.ok(dto);
     }
 
 }
