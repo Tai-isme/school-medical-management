@@ -148,9 +148,9 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
         <Menu.Item key="7" icon={<AlertOutlined />}>
           Sự cố y tế
         </Menu.Item>
-        <Menu.Item key="8" icon={<CommentOutlined />}>
+        {/* <Menu.Item key="8" icon={<CommentOutlined />}>
           Phản hồi
-        </Menu.Item>
+        </Menu.Item> */}
         <Menu.Item key="9" icon={<CommentOutlined />}>
           Blog
         </Menu.Item>
