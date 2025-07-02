@@ -124,12 +124,14 @@ const AccountManagement = () => {
         <div className="account-action-cell">
           <Button
             className="account-action-btn"
+            size="small"
             onClick={() => handleEditAccount(record)}
           >
             Sửa
           </Button>
           <Button
             className="account-action-btn danger"
+            size="small"
             onClick={() => handleDisableAccount(record)}
           >
             Vô hiệu hóa
@@ -201,11 +203,10 @@ const AccountManagement = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:8080/api/admin/accounts/${editingAccount.userId}`,
+        "http://localhost:8080/api/auth/update-profile",
         {
           fullName: values.fullName,
           email: values.email,
-          password: values.password,
           phone: values.phone,
           address: values.address,
         },

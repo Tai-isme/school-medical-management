@@ -86,9 +86,9 @@
 
 .account-action-cell {
   display: flex;
+  gap: 6px;
   justify-content: center;
   align-items: center;
-  gap: 10px;
   background: #f6faff;
   border-radius: 8px;
   padding: 4px 0;
@@ -100,7 +100,10 @@
   color: #1476d1;
   font-weight: 600;
   border-radius: 5px;
-  padding: 2px 12px;
+  padding: 0 8px;
+  font-size: 13px;
+  height: 28px;
+  min-width: 60px;
   transition: background 0.2s, color 0.2s;
 }
 
@@ -110,12 +113,16 @@
 }
 
 .account-action-btn.danger {
-  background: #fff1f0;
-  color: #ff4d4f;
-  font-weight: 700;
+  background: #fff !important;
+  color: #ff4d4f !important;
+  border: 1.5px solid #ff4d4f !important;
+  box-shadow: none !important;
+  font-weight: 500;
+  transition: 0.2s;
 }
 
-.account-action-btn.danger:hover {
-  background: #ffa39e;
-  color: #a8071a;
+.account-action-btn.danger:hover, .account-action-btn.danger:focus {
+  background: #fff0f0 !important;
+  color: #d9363e !important;
+  border-color: #d9363e !important;
 }

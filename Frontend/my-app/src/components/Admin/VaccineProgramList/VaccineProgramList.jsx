@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, Row, Col, Tag, Modal, Descriptions, Form, Input, DatePicker, message } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { Select } from "antd"; // Thêm dòng này
 import axios from "axios";
 import dayjs from "dayjs";
 
@@ -13,6 +14,7 @@ const VaccineProgramList = () => {
   const [searchTerm, setSearchTerm] = useState(""); // Tìm kiếm theo tên
   const [filterDate, setFilterDate] = useState(null); // Thêm state lọc ngày
   const [editMode, setEditMode] = useState(false);
+  const [filterStatus, setFilterStatus] = useState(""); // Thêm state này
 
   useEffect(() => {
     fetchProgram();
@@ -121,7 +123,10 @@ const VaccineProgramList = () => {
     const matchDate = filterDate
       ? dayjs(program.vaccineDate).isSame(filterDate, "day")
       : true;
-    return matchName && matchDate;
+    const matchStatus = filterStatus
+      ? program.status === filterStatus
+      : true;
+    return matchName && matchDate && matchStatus;
   });
 
   // Thêm hàm lấy màu theo trạng thái
@@ -135,6 +140,20 @@ const VaccineProgramList = () => {
         return "green";
       default:
         return "default";
+    }
+  };
+
+  // Hàm ánh xạ trạng thái sang tiếng Việt
+  const getStatusText = (status) => {
+    switch (status) {
+      case "NOT_STARTED":
+        return "Chưa bắt đầu";
+      case "ON_GOING":
+        return "Đang diễn ra";
+      case "COMPLETED":
+        return "Đã hoàn thành";
+      default:
+        return status;
     }
   };
 
@@ -163,6 +182,19 @@ const VaccineProgramList = () => {
             allowClear
             style={{ width: 170 }}
             format="YYYY-MM-DD"
+          />
+          <Select
+            placeholder="Lọc theo trạng thái"
+            value={filterStatus}
+            onChange={setFilterStatus}
+            allowClear
+            style={{ width: 170 }}
+            options={[
+              { value: "", label: "Tất cả trạng thái" },
+              { value: "NOT_STARTED", label: "Chưa bắt đầu" },
+              { value: "ON_GOING", label: "Đang diễn ra" },
+              { value: "COMPLETED", label: "Đã hoàn thành" },
+            ]}
           />
           <Button
             type="primary"
@@ -200,7 +232,7 @@ const VaccineProgramList = () => {
               </div>
             </div>
             <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
-              {program.status}
+              {getStatusText(program.status)}
             </Tag>
           </div>
           <Row gutter={32} style={{ margin: "24px 0" }}>
@@ -229,7 +261,7 @@ const VaccineProgramList = () => {
                 type="primary"
                 style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
               >
-                Gửi thông báo
+                Xem kết quả
               </Button>
             </div>
             <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
@@ -274,7 +306,7 @@ const VaccineProgramList = () => {
             <Descriptions.Item label="Ngày tiêm">{program.vaccineDate}</Descriptions.Item>
             <Descriptions.Item label="Trạng thái">
               <Tag color={getStatusColor(program.status)} style={{ fontSize: 14 }}>
-                {program.status}
+                {getStatusText(program.status)}
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Ghi chú">{program.note}</Descriptions.Item>
