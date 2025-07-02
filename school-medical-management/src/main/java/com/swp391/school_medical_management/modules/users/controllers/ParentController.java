@@ -228,12 +228,6 @@ public class ParentController {
         return ResponseEntity.ok(allFormsByStudentDTOList);
     }
 
-    @GetMapping("/vaccine-result/{studentId}")
-    public ResponseEntity<List<VaccineResultDTO>> getVaccineResult(@PathVariable Long studentId) {
-        List<VaccineResultDTO> vaccineResultDTOs = parentService.getVaccineResults(studentId);
-        return ResponseEntity.ok(vaccineResultDTOs);
-    }
-
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<HealthCheckResultDTO>> getHealthCheckResultsByStudent(@PathVariable Long studentId) {
         List<HealthCheckResultDTO> resultList = parentService.getHealthCheckResults(studentId);
