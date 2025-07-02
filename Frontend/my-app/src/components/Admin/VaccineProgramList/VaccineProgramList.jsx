@@ -276,9 +276,17 @@ const VaccineProgramList = () => {
                 Ngày tiêm: {program.vaccineDate}
               </div>
             </div>
-            <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
-              {getStatusText(program.status)}
-            </Tag>
+            <Select
+              value={program.status}
+              style={{ width: 160, marginTop: 4, fontWeight: 600, color: getStatusColor(program.status) === "blue" ? "#1890ff" : getStatusColor(program.status) === "green" ? "#21ba45" : "#595959" }}
+              onChange={status => handleUpdateStatus(program.vaccineId, status)}
+              options={[
+                { value: "NOT_STARTED", label: "Chưa bắt đầu" },
+                { value: "ON_GOING", label: "Đang diễn ra" },
+                { value: "COMPLETED", label: "Đã hoàn thành" },
+              ]}
+              dropdownStyle={{ minWidth: 160 }}
+            />
           </div>
           <Row gutter={32} style={{ margin: "24px 0" }}>
             <Col span={12}>
@@ -332,16 +340,6 @@ const VaccineProgramList = () => {
               </Button>
             </div>
           </div>
-          <Select
-            value={program.status}
-            style={{ width: 160, marginTop: 4 }}
-            onChange={status => handleUpdateStatus(program.vaccineId, status)}
-            options={[
-              { value: "NOT_STARTED", label: "Chưa bắt đầu" },
-              { value: "ON_GOING", label: "Đang diễn ra" },
-              { value: "COMPLETED", label: "Đã hoàn thành" },
-            ]}
-          />
         </Card>
       ))}
       <Modal
