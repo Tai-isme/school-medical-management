@@ -29,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
@@ -537,6 +538,33 @@ public class AdminService {
         return userEntities.stream()
                 .map(user -> modelMapper.map(user, UserDTO.class))
                 .collect(Collectors.toList());
+    }
+
+    public UserDTO updateAccount(long userId, UpdateProfileRequest request) {
+        UserEntity user = userRepository.findUserByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        user.setFullName(request.getFullName());
+        if (!user.getEmail().equals(request.getEmail())) {
+            boolean emailExists = userRepository.existsByEmail(request.getEmail());
+            if (emailExists) {
+                throw new RuntimeException("Email already in use");
+            }
+            user.setEmail(request.getEmail());
+        }
+
+        if (!user.getPhone().equals(request.getPhone())) {
+            boolean phoneExists = userRepository.existsByPhone(request.getPhone());
+            if (phoneExists) {
+                throw new RuntimeException("Phone already in use");
+            }
+            user.setPhone(request.getPhone());
+        }
+        user.setAddress(request.getAddress());
+
+        userRepository.save(user);
+        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+        return userDTO;
     }
 
     public void deleteAccount(Long userId, String token) {

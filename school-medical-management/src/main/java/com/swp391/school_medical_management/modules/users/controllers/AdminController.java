@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
@@ -57,6 +58,12 @@ public class AdminController {
     public ResponseEntity<List<UserDTO>> getAllAccounts() {
         List<UserDTO> userList = adminService.getAllAccounts();
         return ResponseEntity.ok(userList);
+    }
+
+    @PutMapping("/account/{userId}")
+    public ResponseEntity<UserDTO> updateAccount(@PathVariable long userId, @RequestBody UpdateProfileRequest request) {
+        UserDTO userDTO = adminService.updateAccount(userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
     }
 
     @DeleteMapping("/accounts/{id}")
