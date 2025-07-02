@@ -23,6 +23,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRe
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequestDetailRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineHistoryRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
@@ -31,6 +32,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.MedicalR
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
@@ -62,7 +64,6 @@ import com.swp391.school_medical_management.modules.users.repositories.StudentRe
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
-
 
 @Service
 public class ParentService {
@@ -596,8 +597,14 @@ public class ParentService {
 
         List<MedicalEventDTO> medicalEventDTOList = medicalEventEntitieList
                 .stream()
-                .map(medicalEventEntitie -> modelMapper
-                        .map(medicalEventEntitie, MedicalEventDTO.class))
+                .map(event -> {
+                    MedicalEventDTO dto = modelMapper.map(event, MedicalEventDTO.class);
+                    dto.setStudentDTO(modelMapper.map(event.getStudent(), StudentDTO.class));
+                    dto.setParentDTO(modelMapper.map(event.getStudent().getParent(), UserDTO.class));
+                    dto.setNurseDTO(modelMapper.map(event.getNurse(), UserDTO.class));
+                    dto.setClassDTO(modelMapper.map(event.getStudent().getClassEntity(), ClassDTO.class));
+                    return dto;
+                })
                 .collect(Collectors
                         .toList());
         return medicalEventDTOList;
@@ -615,7 +622,7 @@ public class ParentService {
         AllFormsByStudentDTO allFormsByStudentDTO = new AllFormsByStudentDTO();
         List<HealthCheckFormDTO> healthCheckForms = getAllHealthCheckForm(parentId, studentId);
         if (!healthCheckForms.isEmpty()) {
-            allFormsByStudentDTO.setHealthCheckForms(Collections.<HealthCheckFormDTO>emptyList());
+            allFormsByStudentDTO.setHealthCheckForms(healthCheckForms);
         } else {
             allFormsByStudentDTO.setHealthCheckForms(Collections.emptyList());
         }
