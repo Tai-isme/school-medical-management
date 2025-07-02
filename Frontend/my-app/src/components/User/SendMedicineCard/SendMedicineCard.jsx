@@ -122,6 +122,22 @@ setPurpose('');
     }
   };
 
+  // Nếu đang dùng ở SendMedicineCardDetails.jsx hoặc file render bảng
+const getStatusText = (status) => {
+  switch (status) {
+    case "PROCESSING":
+      return "Chờ duyệt";
+    case "SUBMITTED":
+      return "Đã duyệt";
+    case "COMPLETED":
+      return "Đã cho uống";
+    case "CANCELLED":
+      return "Bị từ chối";
+    default:
+      return status;
+  }
+};
+
 
   return (
     <div className="instruction-form-container" style={{ position: "relative" }}>

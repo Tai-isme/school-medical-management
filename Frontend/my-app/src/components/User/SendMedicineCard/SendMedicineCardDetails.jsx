@@ -84,41 +84,41 @@ const RequestTable = () => {
       dataIndex: "status",
       key: "status",
       align: 'center',
-      render: (status) => (
-        <span
-          style={{
-            background:
-              status === "COMPLETED"
-                ? "#4caf50"
-                : status === "SUBMITTED"
-                ? "#1976d2"
-                : status === "PROCESSING"
-                ? "#ff9800"
-                : status === "CANCELLED"
-                ? "#f44336"
-                : "#888",
-            color: "#fff",
-            padding: "4px 0",
-            borderRadius: 6,
-            fontWeight: "bold",
-            fontSize: 14,
-            letterSpacing: 1,
-            display: "inline-block",
-            minWidth: 130,
-            textAlign: "center"
-          }}
-        >
-          {status === "COMPLETED"
-            ? "Hoàn thành"
-            : status === "SUBMITTED"
-            ? "Chờ duyệt"
-            : status === "PROCESSING"
-            ? "Đang xử lý"
-            : status === "CANCLE" || status === "CANCELLED"
-            ? "Bị từ chối"
-            : status}
-        </span>
-      ),
+      render: (status) => {
+        let color = "#888";
+        let text = status;
+        if (status === "PROCESSING") {
+          color = "#ff9800";
+          text = "Chờ duyệt";
+        } else if (status === "SUBMITTED") {
+          color = "#1976d2";
+          text = "Đã duyệt";
+        } else if (status === "COMPLETED") {
+          color = "#4caf50";
+          text = "Đã cho uống";
+        } else if (status === "CANCELLED" || status === "CANCLE") {
+          color = "#f44336";
+          text = "Bị từ chối";
+        }
+        return (
+          <span
+            style={{
+              background: color,
+              color: "#fff",
+              padding: "4px 0",
+              borderRadius: 6,
+              fontWeight: "bold",
+              fontSize: 14,
+              letterSpacing: 1,
+              display: "inline-block",
+              minWidth: 130,
+              textAlign: "center"
+            }}
+          >
+            {text}
+          </span>
+        );
+      },
     },
     {
       title: 'Xem chi tiết đơn thuốc',
@@ -140,18 +140,16 @@ const RequestTable = () => {
       align: 'center', // căn giữa
       render: (_, record) => (
         <div>
-          {record.status !== "COMPLETED" &&
-            record.status !== "PROCESSING" &&
-            record.status !== "CANCELLED" && (
-              <Popconfirm
-                title="Bạn có chắc chắn muốn xóa đơn thuốc này?"
-                onConfirm={handleDeleteRequest(record.requestId)}
-                okText="Xóa"
-                cancelText="Hủy"
-              >
-                <a style={{ color: 'red', cursor: 'pointer' }}>Xóa</a>
-              </Popconfirm>
-            )}
+          {record.status === "PROCESSING" && (
+            <Popconfirm
+              title="Bạn có chắc chắn muốn xóa đơn thuốc này?"
+              onConfirm={handleDeleteRequest(record.requestId)}
+              okText="Xóa"
+              cancelText="Hủy"
+            >
+              <a style={{ color: 'red', cursor: 'pointer' }}>Xóa</a>
+            </Popconfirm>
+          )}
         </div>
       ),
     },

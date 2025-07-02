@@ -154,7 +154,7 @@ const VaccineResultCard = () => {
                   value={filterDate ? dayjs(filterDate) : null}
                   onChange={date => setFilterDate(date ? date.format('YYYY-MM-DD') : '')}
                   allowClear
-                  style={{ width: 160 }}
+                  style={{ width: 200 }}
                   format="YYYY-MM-DD"
                 />
               </div>
@@ -223,7 +223,12 @@ const VaccineResultCard = () => {
                           Ngày: <span style={{color: '#1976d2', fontWeight: 500}}>{item.vaccineProgram?.vaccineDate || '---'}</span>
                         </div>
                         <div>
-                          Trạng thái: <span style={{color: '#43a047', fontWeight: 600}}>{item.vaccineProgram?.status || '---'}</span>
+                          Trạng thái:{" "}
+                          <span style={{ color: '#43a047', fontWeight: 600 }}>
+                            {item.vaccineProgram?.status === "COMPLETED"
+                              ? "Đã hoàn thành"
+                              : item.vaccineProgram?.status || "---"}
+                          </span>
                         </div>
                       </div>
                       {/* {item.vaccineProgram?.description && (
