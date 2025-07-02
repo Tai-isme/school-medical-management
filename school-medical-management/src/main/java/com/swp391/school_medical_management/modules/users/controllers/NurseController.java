@@ -153,9 +153,9 @@ public class NurseController {
     }
 
     @PostMapping("/health-check-result")
-    public ResponseEntity<HealthCheckResultDTO> createHealthCheckResult(@RequestBody HealthCheckResultRequest request) {
-        HealthCheckResultDTO healthCheckResultDTO = nurseService.createHealthCheckResult(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(healthCheckResultDTO);
+    public ResponseEntity<List<HealthCheckResultDTO>> createDefaultHealthCheckResultsForAllCommittedForms() {
+        List<HealthCheckResultDTO> healthCheckResultDTOList = nurseService.createDefaultHealthCheckResultsForAllCommittedForms();
+        return ResponseEntity.status(HttpStatus.CREATED).body(healthCheckResultDTOList);
     }
 
     @PutMapping("/health-check-result/{healCheckResultId}")
@@ -184,9 +184,9 @@ public class NurseController {
     }
 
     @PostMapping("/vaccine-result")
-    public ResponseEntity<VaccineResultDTO> createVaccineResult(@RequestBody VaccineResultRequest request) {
-        VaccineResultDTO vaccineResultDTO = nurseService.createVaccineResult(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(vaccineResultDTO);
+    public ResponseEntity<List<VaccineResultDTO>> createVaccineResult() {
+        List<VaccineResultDTO> vaccineResultDTOList = nurseService.createDefaultVaccineResultsForAllCommittedForms();
+        return ResponseEntity.status(HttpStatus.CREATED).body(vaccineResultDTOList);
     }
 
     @PutMapping("/vaccine-result/{vaccineResultId}")

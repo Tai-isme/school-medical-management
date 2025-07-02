@@ -336,8 +336,6 @@ public class NurseService {
         return healthCheckFormDTOList;
     }
 
-  
-
     public Map<String, Long> countDraftForm() {
         long vaccineForm = vaccineFormRepository.countByStatusAndCommitFalse(VaccineFormStatus.DRAFT);
         long healthCheckForm = healthCheckFormRepository.countByStatusAndCommitFalse(HealthCheckFormStatus.DRAFT);
@@ -544,6 +542,12 @@ public class NurseService {
                             + healthCheckFormEntity.getStudent().getId());
         }
 
+        Long studentId = healthCheckFormEntity.getStudent().getId();
+        MedicalRecordEntity medicalRecordEntity = medicalRecordsRepository
+                .findMedicalRecordByStudent_Id(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Not found medical record by student"));
+
         HealthCheckResultEntity healthCheckResultEntity = new HealthCheckResultEntity();
         healthCheckResultEntity.setDiagnosis(request.getDiagnosis());
         healthCheckResultEntity.setLevel(HealthCheckResultEntity.Level.valueOf(request.getLevel().toUpperCase()));
@@ -557,6 +561,32 @@ public class NurseService {
         healthCheckResultDTO.setStudentId(healthCheckFormDTO.getStudentId());
 
         return healthCheckResultDTO;
+    }
+
+    public List<HealthCheckResultDTO> createDefaultHealthCheckResultsForAllCommittedForms() {
+        List<HealthCheckFormEntity> committedForms = healthCheckFormRepository.findByCommitTrue();
+        List<HealthCheckResultDTO> resultList = new ArrayList<>();
+
+        for (HealthCheckFormEntity form : committedForms) {
+            boolean exists = healthCheckResultRepository.findByHealthCheckFormEntity(form).isPresent();
+            if (exists)
+                continue;
+
+            HealthCheckResultRequest defaultRequest = new HealthCheckResultRequest();
+            defaultRequest.setDiagnosis("GOOD");
+            defaultRequest.setLevel("GOOD");
+            defaultRequest.setNote("No problem");
+            defaultRequest.setHealthCheckFormId(form.getId());
+
+            try {
+                HealthCheckResultDTO resultDTO = createHealthCheckResult(defaultRequest);
+                resultList.add(resultDTO);
+            } catch (ResponseStatusException ex) {
+                System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " + ex.getReason());
+            }
+        }
+
+        return resultList;
     }
 
     public HealthCheckResultDTO updateHealthCheckResult(Long healCheckResultId, HealthCheckResultRequest request) {
@@ -691,6 +721,32 @@ public class NurseService {
         vaccineResultDTO.setVaccineFormId(vaccineFormEntity.getId());
         vaccineResultDTO.setStudentId(studentId);
         return vaccineResultDTO;
+    }
+
+    public List<VaccineResultDTO> createDefaultVaccineResultsForAllCommittedForms() {
+        List<VaccineFormEntity> committedForms = vaccineFormRepository.findByCommitTrue();
+        List<VaccineResultDTO> resultList = new ArrayList<>();
+
+        for (VaccineFormEntity form : committedForms) {
+            boolean exists = vaccineResultRepository.findByVaccineFormEntity(form).isPresent();
+            if (exists)
+                continue;
+
+            VaccineResultRequest defaultRequest = new VaccineResultRequest();
+            defaultRequest.setReaction("No reaction");
+            defaultRequest.setStatusHealth("GOOD");
+            defaultRequest.setResultNote("No problem");
+            defaultRequest.setVaccineFormId(form.getId());
+
+            try {
+                VaccineResultDTO resultDTO = createVaccineResult(defaultRequest);
+                resultList.add(resultDTO);
+            } catch (ResponseStatusException ex) {
+                System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " + ex.getReason());
+            }
+        }
+
+        return resultList;
     }
 
     public VaccineResultDTO updateVaccineResult(Long vaccineResultId, VaccineResultRequest request) {
