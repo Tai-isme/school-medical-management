@@ -62,6 +62,7 @@ import com.swp391.school_medical_management.modules.users.repositories.UserRepos
 import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
 
+
 @Service
 public class ParentService {
 
@@ -487,7 +488,8 @@ public class ParentService {
     }
 
     public List<VaccineResultDTO> getVaccineResults(Long studentId) {
-        List<VaccineResultEntity> vaccineResultList = vaccineResultRepository.findByVaccineFormEntity_Student_Id(studentId);
+        List<VaccineResultEntity> vaccineResultList = vaccineResultRepository
+                .findByVaccineFormEntity_Student_Id(studentId);
         if (vaccineResultList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not found");
 
@@ -612,7 +614,7 @@ public class ParentService {
         AllFormsByStudentDTO allFormsByStudentDTO = new AllFormsByStudentDTO();
         List<HealthCheckFormDTO> healthCheckForms = getAllHealthCheckForm(parentId, studentId);
         if (!healthCheckForms.isEmpty()) {
-            allFormsByStudentDTO.setHealthCheckForms(healthCheckForms);
+            allFormsByStudentDTO.setHealthCheckForms(Collections.<HealthCheckFormDTO>emptyList());
         } else {
             allFormsByStudentDTO.setHealthCheckForms(Collections.emptyList());
         }
@@ -625,4 +627,39 @@ public class ParentService {
         }
         return allFormsByStudentDTO;
     }
+
+    public HealthCheckResultDTO getHealthCheckResultByFormId(Long formId) {
+        Optional<HealthCheckResultEntity> healthCheckResultOpt = healthCheckResultRepository
+                .findByHealthCheckFormEntity_Id(formId);
+
+        if (healthCheckResultOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Health check result not found for formId: " + formId);
+
+        HealthCheckResultEntity entity = healthCheckResultOpt.get();
+        HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
+
+        HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
+        dto.setHealthCheckFormId(form.getId());
+        dto.setStudentId(form.getStudent().getId());
+
+        return dto;
+    }
+
+    public VaccineResultDTO getVaccineResultByFormId(Long formId) {
+        Optional<VaccineResultEntity> vaccineResultOpt = vaccineResultRepository.findByVaccineFormEntity_Id(formId);
+
+        if (vaccineResultOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not found for formId: " + formId);
+
+        VaccineResultEntity entity = vaccineResultOpt.get();
+        VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
+
+        VaccineFormEntity form = entity.getVaccineFormEntity();
+        dto.setVaccineFormId(form.getId());
+        dto.setStudentId(form.getStudent().getId());
+
+        return dto;
+    }
+
 }
