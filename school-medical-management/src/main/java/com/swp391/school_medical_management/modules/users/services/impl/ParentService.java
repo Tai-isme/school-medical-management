@@ -339,6 +339,10 @@ public class ParentService {
                 .collect(Collectors.toList());
         MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequest, MedicalRequestDTO.class);
         medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+        if (medicalRequest.getStudent() != null) {
+            StudentDTO studentDTO = modelMapper.map(medicalRequest.getStudent(), StudentDTO.class);
+            medicalRequestDTO.setStudentDTO(studentDTO);
+        }
         return medicalRequestDTO;
     }
 
