@@ -4,6 +4,7 @@ import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Select } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
+import Swal from "sweetalert2";
 
 const HealthCheckProgramList = () => {
   const [programs, setPrograms] = useState([]);
@@ -108,26 +109,33 @@ const HealthCheckProgramList = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    Modal.confirm({
+  const handleDelete = async (programId) => {
+    const result = await Swal.fire({
       title: "Bạn có chắc muốn xóa chương trình này?",
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk: async () => {
-        const token = localStorage.getItem("token");
-        try {
-          await axios.delete(`http://localhost:8080/api/admin/health-check-program/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          message.success("Xóa thành công!");
-          fetchProgram();
-        } catch {
-          message.error("Xóa thất bại!");
-        }
-      },
+      text: "Hành động này không thể hoàn tác!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
     });
+
+    if (result.isConfirmed) {
+      const token = localStorage.getItem("token");
+      try {
+        await axios.delete(`http://localhost:8080/api/admin/health-check-program/${programId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        await Swal.fire("Đã xóa!", "Chương trình đã được xóa thành công.", "success");
+        fetchProgram();
+      } catch {
+        Swal.fire("Lỗi", "Xóa thất bại!", "error");
+      }
+    }
   };
+
+  
 
   const handleUpdateStatus = async (id, status) => {
     const token = localStorage.getItem("token");

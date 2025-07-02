@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Table, Button, message, Input, Row, Col, Select, Modal, Form } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined, SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
+import Swal from "sweetalert2";
+
 import "./AccountManagement.css";
 
 const AccountManagement = () => {
@@ -238,8 +240,51 @@ const AccountManagement = () => {
   };
 
   const handleDisableAccount = async (record) => {
-    // TODO: Gọi API để vô hiệu hóa tài khoản
-    message.info(`Vô hiệu hóa tài khoản: ${record.fullName}`);
+    const result = await Swal.fire({
+      title: "Xác nhận vô hiệu hóa",
+      text: `Bạn có chắc chắn muốn vô hiệu hóa tài khoản "${record.fullName}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Vô hiệu hóa",
+      cancelButtonText: "Hủy",
+    });
+
+    if (result.isConfirmed) {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire("Lỗi", "Không tìm thấy token. Vui lòng đăng nhập lại.", "error");
+        return;
+      }
+      try {
+        await axios.patch(
+          `http://localhost:8080/api/auth/update-account-status/${record.userId}/false`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        Swal.fire("Thành công", `Đã vô hiệu hóa tài khoản: ${record.fullName}`, "success");
+        // Reload danh sách tài khoản
+        const response = await axios.get("http://localhost:8080/api/admin/accounts", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const responseData = response.data.map((item) => ({
+          userId: item.id,
+          fullName: item.fullName,
+          email: item.email,
+          password: item.password,
+          phone: item.phone,
+          address: item.address,
+          role: item.role.toLowerCase(),
+        }));
+        setAccounts(responseData);
+      } catch (err) {
+        Swal.fire("Lỗi", "Vô hiệu hóa tài khoản thất bại!", "error");
+        console.error(err);
+      }
+    }
   };
 
   return (
@@ -410,6 +455,9 @@ const AccountManagement = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Nút test modal */}
+      <Button onClick={() => Modal.confirm({ title: "Test", content: "Test modal" })}>Test Modal</Button>
     </div>
   );
 };
