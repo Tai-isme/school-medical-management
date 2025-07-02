@@ -202,16 +202,23 @@ const VaccineProgramList = () => {
     }
   };
 
-  if (!programs.length) return <div>Đang tải...</div>;
-
   return (
     <div style={{ padding: 24, marginLeft: 220, transition: "margin 0.2s", maxWidth: "100vw" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>
+      {/* Header, filter, nút luôn hiển thị */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: 16,
+          justifyContent: "space-between",
+          width: "100%",
+        }}
+      >
+        <h2 style={{ margin: 0, flex: 1, fontWeight: 700, whiteSpace: "nowrap" }}>
           <span style={{ color: "#52c41a", marginRight: 8 }}>🛡️</span>
           Quản Lý Chương Trình Tiêm Chủng
         </h2>
-        <div style={{ display: "flex", gap: 12 }}>
+        <div style={{ display: "flex", gap: 12, marginLeft: 24 }}>
           <Input
             placeholder="Tìm kiếm tên chương trình..."
             prefix={<SearchOutlined />}
@@ -251,97 +258,106 @@ const VaccineProgramList = () => {
           </Button>
         </div>
       </div>
-      {filteredPrograms.map((program) => (
-        <Card
-          key={program.vaccineId}
-          style={{
-            background: "#f6fcf7",
-            borderRadius: 10,
-            border: "1px solid #e6f4ea",
-            width: "calc(100vw - 260px)",
-            minWidth: 1200,
-            margin: "0 auto",
-            transition: "width 0.2s",
-            marginBottom: 16,
-          }}
-          bodyStyle={{ padding: 24 }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{program.vaccineName}</div>
-              <div style={{ color: "#555", marginBottom: 2 }}>
-                Mô tả: {program.description}
-              </div>
-              <div style={{ color: "#555", marginBottom: 8 }}>
-                Ngày tiêm: {program.vaccineDate}
-              </div>
-            </div>
-            <Select
-              value={program.status}
-              style={{ width: 160, marginTop: 4, fontWeight: 600, color: getStatusColor(program.status) === "blue" ? "#1890ff" : getStatusColor(program.status) === "green" ? "#21ba45" : "#595959" }}
-              onChange={status => handleUpdateStatus(program.vaccineId, status)}
-              options={[
-                { value: "NOT_STARTED", label: "Chưa bắt đầu" },
-                { value: "ON_GOING", label: "Đang diễn ra" },
-                { value: "COMPLETED", label: "Đã hoàn thành" },
-              ]}
-              dropdownStyle={{ minWidth: 160 }}
-            />
+      {/* Danh sách chương trình hoặc thông báo rỗng */}
+      <div style={{ minHeight: 350 }}>
+        {filteredPrograms.length === 0 ? (
+          <div style={{ textAlign: "center", color: "#888", marginTop: 48, fontSize: 18 }}>
+            Không có chương trình tiêm chủng nào.
           </div>
-          <Row gutter={32} style={{ margin: "24px 0" }}>
-            <Col span={12}>
-              <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
-                <div style={{ color: "#1890ff", fontWeight: 700, fontSize: 32 }}>{program.totalStudents}</div>
-                <div style={{ color: "#888", fontWeight: 500 }}>Tổng học sinh</div>
+        ) : (
+          filteredPrograms.map((program) => (
+            <Card
+              key={program.vaccineId}
+              style={{
+                background: "#f6fcf7",
+                borderRadius: 10,
+                border: "1px solid #e6f4ea",
+                width: "calc(100vw - 260px)",
+                minWidth: 1200,
+                margin: "0 auto",
+                transition: "width 0.2s",
+                marginBottom: 16,
+              }}
+              bodyStyle={{ padding: 24 }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{program.vaccineName}</div>
+                  <div style={{ color: "#555", marginBottom: 2 }}>
+                    Mô tả: {program.description}
+                  </div>
+                  <div style={{ color: "#555", marginBottom: 8 }}>
+                    Ngày tiêm: {program.vaccineDate}
+                  </div>
+                </div>
+                <Select
+                  value={program.status}
+                  style={{ width: 160, marginTop: 4, fontWeight: 600, color: getStatusColor(program.status) === "blue" ? "#1890ff" : getStatusColor(program.status) === "green" ? "#21ba45" : "#595959" }}
+                  onChange={status => handleUpdateStatus(program.vaccineId, status)}
+                  options={[
+                    { value: "NOT_STARTED", label: "Chưa bắt đầu" },
+                    { value: "ON_GOING", label: "Đang diễn ra" },
+                    { value: "COMPLETED", label: "Đã hoàn thành" },
+                  ]}
+                  dropdownStyle={{ minWidth: 160 }}
+                />
               </div>
-            </Col>
-            <Col span={12}>
-              <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
-                <div style={{ color: "#21ba45", fontWeight: 700, fontSize: 32 }}>{program.confirmed}</div>
-                <div style={{ color: "#888", fontWeight: 500 }}>Đã xác nhận</div>
-              </div>
-            </Col>
-          </Row>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <Button onClick={() => {
-                setDetailVisible(true);
-                setProgram(program);
-              }}>
-                Xem chi tiết
-              </Button>
-              <Button
-                type="primary"
-                style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
-                onClick={() => handleViewResult(program.vaccineId)}
-              >
-                Xem kết quả
-              </Button>
-            </div>
-            <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-              {program.status === "NOT_STARTED" && (
-                <Button
-                  type="default"
-                  onClick={() => {
+              <Row gutter={32} style={{ margin: "24px 0" }}>
+                <Col span={12}>
+                  <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
+                    <div style={{ color: "#1890ff", fontWeight: 700, fontSize: 32 }}>{program.totalStudents}</div>
+                    <div style={{ color: "#888", fontWeight: 500 }}>Tổng học sinh</div>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
+                    <div style={{ color: "#21ba45", fontWeight: 700, fontSize: 32 }}>{program.confirmed}</div>
+                    <div style={{ color: "#888", fontWeight: 500 }}>Đã xác nhận</div>
+                  </div>
+                </Col>
+              </Row>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <Button onClick={() => {
+                    setDetailVisible(true);
                     setProgram(program);
-                    setEditMode(true);
-                    setCreateVisible(true);
-                  }}
-                >
-                  Sửa
-                </Button>
-              )}
-              <Button
-                danger
-                type="primary"
-                onClick={() => handleDelete(program.vaccineId)}
-              >
-                Xóa
-              </Button>
-            </div>
-          </div>
-        </Card>
-      ))}
+                  }}>
+                    Xem chi tiết
+                  </Button>
+                  <Button
+                    type="primary"
+                    style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
+                    onClick={() => handleViewResult(program.vaccineId)}
+                  >
+                    Xem kết quả
+                  </Button>
+                </div>
+                <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+                  {program.status === "NOT_STARTED" && (
+                    <Button
+                      type="default"
+                      onClick={() => {
+                        setProgram(program);
+                        setEditMode(true);
+                        setCreateVisible(true);
+                      }}
+                    >
+                      Sửa
+                    </Button>
+                  )}
+                  <Button
+                    danger
+                    type="primary"
+                    onClick={() => handleDelete(program.vaccineId)}
+                  >
+                    Xóa
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
       <Modal
         title="Chi tiết chương trình tiêm chủng"
         open={detailVisible}
