@@ -62,6 +62,7 @@ import com.swp391.school_medical_management.modules.users.repositories.UserRepos
 import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
 
+
 @Service
 public class ParentService {
 
@@ -487,7 +488,8 @@ public class ParentService {
     }
 
     public List<VaccineResultDTO> getVaccineResults(Long studentId) {
-        List<VaccineResultEntity> vaccineResultList = vaccineResultRepository.findByVaccineFormEntity_Student_Id(studentId);
+        List<VaccineResultEntity> vaccineResultList = vaccineResultRepository
+                .findByVaccineFormEntity_Student_Id(studentId);
         if (vaccineResultList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not found");
 
@@ -612,7 +614,7 @@ public class ParentService {
         AllFormsByStudentDTO allFormsByStudentDTO = new AllFormsByStudentDTO();
         List<HealthCheckFormDTO> healthCheckForms = getAllHealthCheckForm(parentId, studentId);
         if (!healthCheckForms.isEmpty()) {
-            allFormsByStudentDTO.setHealthCheckForms(healthCheckForms);
+            allFormsByStudentDTO.setHealthCheckForms(Collections.<HealthCheckFormDTO>emptyList());
         } else {
             allFormsByStudentDTO.setHealthCheckForms(Collections.emptyList());
         }

@@ -228,24 +228,16 @@ public class ParentController {
         return ResponseEntity.ok(allFormsByStudentDTOList);
     }
 
-<<<<<<< HEAD
-    @GetMapping("/health-check-result/{healCheckResultId}")
-    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResult(@PathVariable Long healCheckResultId) {
-        HealthCheckResultDTO healthCheckResultDTO = nurseService.getHealthCheckResult(healCheckResultId);
-        return ResponseEntity.ok(healthCheckResultDTO);
-=======
-
-    @GetMapping("/health-check-result/{studentId}")
-    public ResponseEntity<List<HealthCheckResultDTO>> getHealthCheckResult(@PathVariable Long studentId) {
-        List<HealthCheckResultDTO> healthCheckResultDTOs = parentService.getHealthCheckResults(studentId);
-        return ResponseEntity.ok(healthCheckResultDTOs);
->>>>>>> 909e3953aa42d45480cac12b9e9075e916ad85fa
-    }
-
     @GetMapping("/vaccine-result/{studentId}")
     public ResponseEntity<List<VaccineResultDTO>> getVaccineResult(@PathVariable Long studentId) {
         List<VaccineResultDTO> vaccineResultDTOs = parentService.getVaccineResults(studentId);
         return ResponseEntity.ok(vaccineResultDTOs);
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<List<HealthCheckResultDTO>> getHealthCheckResultsByStudent(@PathVariable Long studentId) {
+        List<HealthCheckResultDTO> resultList = parentService.getHealthCheckResults(studentId);
+        return ResponseEntity.ok(resultList);
     }
 
     @GetMapping("/health-check-result/form/{formId}")
@@ -259,5 +251,18 @@ public class ParentController {
         VaccineResultDTO dto = parentService.getVaccineResultByFormId(formId);
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/health-check-result/{healCheckResultId}")
+    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResultByResultID(@PathVariable Long healCheckResultId) {
+        HealthCheckResultDTO healthCheckResultDTO = nurseService.getHealthCheckResult(healCheckResultId);
+        return ResponseEntity.ok(healthCheckResultDTO);
+    }
+
+    @GetMapping("/vaccine-result/{vaccineResultId}")
+    public ResponseEntity<VaccineResultDTO> getVaccineResultByResultID(@PathVariable Long vaccineResultId) {
+        VaccineResultDTO vaccineResultDTO = nurseService.getVaccineResult(vaccineResultId);
+        return ResponseEntity.ok(vaccineResultDTO);
+    }
+
 
 }
