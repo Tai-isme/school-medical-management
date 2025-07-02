@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
@@ -57,6 +58,12 @@ public class AdminController {
     public ResponseEntity<List<UserDTO>> getAllAccounts() {
         List<UserDTO> userList = adminService.getAllAccounts();
         return ResponseEntity.ok(userList);
+    }
+
+    @PutMapping("/account/{userId}")
+    public ResponseEntity<UserDTO> updateAccount(@PathVariable long userId, @RequestBody UpdateProfileRequest request) {
+        UserDTO userDTO = adminService.updateAccount(userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
     }
 
     @DeleteMapping("/accounts/{id}")
@@ -98,16 +105,13 @@ public class AdminController {
 
     @GetMapping("/health-check-program/{id}")
     public ResponseEntity<HealthCheckProgramDTO> getAllHealthCheckProgramById(@PathVariable Long id) {
-        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        HealthCheckProgramDTO healthCheckProgramDTO = adminService.getHealthCheckProgramById(Long.parseLong(adminId),
-                id);
+        HealthCheckProgramDTO healthCheckProgramDTO = adminService.getHealthCheckProgramById(id);
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 
     @DeleteMapping("/health-check-program/{id}")
     public ResponseEntity<Void> deleteHealthCheckProgram(@PathVariable Long id) {
-        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        adminService.deleteHealthCheckProgram(Long.parseLong(adminId), id);
+        adminService.deleteHealthCheckProgram(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -121,16 +125,13 @@ public class AdminController {
     @PutMapping("/vaccine-program/{vaccineProgramId}")
     public ResponseEntity<VaccineProgramDTO> updateVaccineProgram(@RequestBody VaccineProgramRequest request,
             @PathVariable long vaccineProgramId) {
-        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgram(request, Long.parseLong(adminId),
-                vaccineProgramId);
+        VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgram(request, vaccineProgramId);
         return ResponseEntity.ok(vaccineProgramDTO);
     }
 
     @GetMapping("/vaccine-program")
     public ResponseEntity<List<VaccineProgramDTO>> getAllVaccineProgram() {
-        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<VaccineProgramDTO> vaccineProgramDTOList = adminService.getAllVaccineProgram(Long.parseLong(adminId));
+        List<VaccineProgramDTO> vaccineProgramDTOList = adminService.getAllVaccineProgram();
         return ResponseEntity.ok(vaccineProgramDTOList);
     }
 

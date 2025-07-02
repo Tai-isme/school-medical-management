@@ -121,10 +121,21 @@ public class AuthService {
     public void updateProfile(Long userId, UpdateProfileRequest request) {
         UserEntity user = userRepository.findUserByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-
         user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
+        if (!user.getEmail().equals(request.getEmail())) {
+            boolean emailExists = userRepository.existsByEmail(request.getEmail());
+            if (emailExists) {
+                throw new RuntimeException("Email already in use");
+            }
+            user.setEmail(request.getEmail());
+        }
+        if (!user.getPhone().equals(request.getPhone())) {
+            boolean phoneExists = userRepository.existsByPhone(request.getPhone());
+            if (phoneExists) {
+                throw new RuntimeException("Phone already in use");
+            }
+            user.setPhone(request.getPhone());
+        }
         user.setAddress(request.getAddress());
 
         userRepository.save(user);

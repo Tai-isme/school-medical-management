@@ -17,8 +17,12 @@ public interface HealthCheckResultRepository extends JpaRepository<HealthCheckRe
 
     List<HealthCheckResultEntity> findAll();
 
+<<<<<<< HEAD
     Optional<HealthCheckResultEntity> findByHealthCheckFormEntity_Id(Long formId);
 
+=======
+    List<HealthCheckResultEntity> findByHealthCheckFormEntity_Student_Id(Long studentId);
+>>>>>>> 909e3953aa42d45480cac12b9e9075e916ad85fa
 
     @Query("""
                 SELECT

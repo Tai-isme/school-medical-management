@@ -419,18 +419,11 @@ public class ParentService {
         StudentEntity studentEntity = studentOpt.get();
         List<HealthCheckFormEntity> healthCheckFormEntities = healthCHeckFormRepository
                 .findAllByStudentAndStatus(studentEntity, HealthCheckFormStatus.SENT);
-        if (healthCheckFormEntities.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
-        for (HealthCheckFormEntity healthCheckFormEntity : healthCheckFormEntities) {
-            if (!healthCheckFormEntity.getParent().getUserId().equals(parentId))
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Access denied");
-        }
-        List<HealthCheckFormDTO> healthCheckFormDTOs = healthCheckFormEntities
-                .stream()
-                .map(healthCheckFormEntity -> modelMapper
-                        .map(healthCheckFormEntity, HealthCheckFormDTO.class))
-                .collect(Collectors
-                        .toList());
+
+        List<HealthCheckFormDTO> healthCheckFormDTOs = healthCheckFormEntities.stream()
+                .filter(form -> form.getParent().getUserId().equals(parentId))
+                .map(form -> modelMapper.map(form, HealthCheckFormDTO.class))
+                .collect(Collectors.toList());
         return healthCheckFormDTOs;
     }
 
@@ -441,18 +434,11 @@ public class ParentService {
         StudentEntity studentEntity = studentOpt.get();
         List<VaccineFormEntity> vaccineFormEntities = vaccineFormRepository.findAllByStudentAndStatus(studentEntity,
                 VaccineFormStatus.SENT);
-        if (vaccineFormEntities.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
-        for (VaccineFormEntity vaccineFormEntity : vaccineFormEntities) {
-            if (!vaccineFormEntity.getParent().getUserId().equals(parentId))
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Access denied");
-        }
-        List<VaccineFormDTO> vaccineFormDTOs = vaccineFormEntities
-                .stream()
-                .map(vaccineFormEntity -> modelMapper
-                        .map(vaccineFormEntity, VaccineFormDTO.class))
-                .collect(Collectors
-                        .toList());
+
+        List<VaccineFormDTO> vaccineFormDTOs = vaccineFormEntities.stream()
+                .filter(form -> form.getStudent().getParent().getUserId().equals(parentId))
+                .map(vaccineFormEntity -> modelMapper.map(vaccineFormEntity, VaccineFormDTO.class))
+                .collect(Collectors.toList());
         return vaccineFormDTOs;
     }
 
@@ -481,6 +467,38 @@ public class ParentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         VaccineFormDTO vaccineFormDTO = modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
         return vaccineFormDTO;
+    }
+
+    public List<HealthCheckResultDTO> getHealthCheckResults(Long studentId) {
+        List<HealthCheckResultEntity> healthCheckResultList = healthCheckResultRepository
+                .findByHealthCheckFormEntity_Student_Id(studentId);
+        if (healthCheckResultList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check result not found");
+
+        List<HealthCheckResultDTO> healthCheckResultDTOList = healthCheckResultList.stream().map(entity -> {
+            HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
+            HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
+            dto.setHealthCheckFormId(form.getId());
+            dto.setStudentId(form.getStudent().getId());
+            return dto;
+        }).collect(Collectors.toList());
+
+        return healthCheckResultDTOList;
+    }
+
+    public List<VaccineResultDTO> getVaccineResults(Long studentId) {
+        List<VaccineResultEntity> vaccineResultList = vaccineResultRepository.findByVaccineFormEntity_Student_Id(studentId);
+        if (vaccineResultList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not found");
+
+        List<VaccineResultDTO> vaccineResultDTOList = vaccineResultList.stream().map(entity -> {
+            VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
+            VaccineFormEntity form = entity.getVaccineFormEntity();
+            dto.setVaccineFormId(form.getId());
+            dto.setStudentId(form.getStudent().getId());
+            return dto;
+        }).collect(Collectors.toList());
+        return vaccineResultDTOList;
     }
 
     public void commitHealthCheckForm(Long parentId, Long healthCheckFormId, CommitHealthCheckFormRequest request) {

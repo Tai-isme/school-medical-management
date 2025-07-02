@@ -29,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
@@ -159,8 +160,9 @@ public class AdminService {
                         "The last health check program is not COMPLETED.");
             }
         }
-        
-        // kiểm tra có chương trình nào vẫn còn hiệu lực vào thời điểm bắt đầu chương trình mới
+
+        // kiểm tra có chương trình nào vẫn còn hiệu lực vào thời điểm bắt đầu chương
+        // trình mới
         List<HealthCheckProgramEntity> overlappingPrograms = healthCheckProgramRepository
                 .findByEndDateAfter(request.getStartDate());
 
@@ -296,7 +298,7 @@ public class AdminService {
         return healthCheckProgramDTOList;
     }
 
-    public HealthCheckProgramDTO getHealthCheckProgramById(long adminId, Long id) {
+    public HealthCheckProgramDTO getHealthCheckProgramById(Long id) {
         Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
         if (healthCheckProgramOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
@@ -304,18 +306,12 @@ public class AdminService {
         return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
     }
 
-    public void deleteHealthCheckProgram(Long id, long adminId) {
-        UserEntity admin = userRepository.findUserByUserId(adminId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+    public void deleteHealthCheckProgram(Long id) {
         Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
         if (healthCheckProgramOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
 
         HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
-
-        if (!healthCheckProgramEntity.getAdmin().getUserId().equals(admin.getUserId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to delete this program");
-        }
 
         if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED
                 || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING) {
@@ -360,17 +356,13 @@ public class AdminService {
         return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
     }
 
-    public VaccineProgramDTO updateVaccineProgram(VaccineProgramRequest request, long adminId, long id) {
-        UserEntity admin = userRepository.findUserByUserId(adminId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+    public VaccineProgramDTO updateVaccineProgram(VaccineProgramRequest request, long id) {
         Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository.findVaccineProgramByVaccineId(id);
         if (existingProgramOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
         }
+
         VaccineProgramEntity existingProgram = existingProgramOpt.get();
-        if (!existingProgram.getAdmin().getUserId().equals(admin.getUserId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to update this program");
-        }
 
         if (existingProgram.getStatus() == VaccineProgramStatus.COMPLETED
                 || existingProgram.getStatus() == VaccineProgramStatus.ON_GOING) {
@@ -456,10 +448,7 @@ public class AdminService {
         }
     }
 
-    public List<VaccineProgramDTO> getAllVaccineProgram(long adminId) {
-        // UserEntity admin = userRepository.findUserByUserId(adminId)
-        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin
-        // not found"));
+    public List<VaccineProgramDTO> getAllVaccineProgram() {
         List<VaccineProgramEntity> vaccineProgramEntitieList = vaccineProgramRepository.findAll();
         if (vaccineProgramEntitieList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine programs found");
@@ -551,6 +540,33 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+    public UserDTO updateAccount(long userId, UpdateProfileRequest request) {
+        UserEntity user = userRepository.findUserByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+        user.setFullName(request.getFullName());
+        if (!user.getEmail().equals(request.getEmail())) {
+            boolean emailExists = userRepository.existsByEmail(request.getEmail());
+            if (emailExists) {
+                throw new RuntimeException("Email already in use");
+            }
+            user.setEmail(request.getEmail());
+        }
+
+        if (!user.getPhone().equals(request.getPhone())) {
+            boolean phoneExists = userRepository.existsByPhone(request.getPhone());
+            if (phoneExists) {
+                throw new RuntimeException("Phone already in use");
+            }
+            user.setPhone(request.getPhone());
+        }
+        user.setAddress(request.getAddress());
+
+        userRepository.save(user);
+        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+        return userDTO;
+    }
+
     public void deleteAccount(Long userId, String token) {
         Optional<UserEntity> userOpt = userRepository.findUserByUserId(userId);
         if (userOpt.isEmpty()) {
@@ -601,7 +617,8 @@ public class AdminService {
                     String parentAddress = row.getCell(9).getStringCellValue();
 
                     // class
-                    Optional<ClassEntity> classOpt = classRepository.findByClassName(className);
+                    Optional<ClassEntity> classOpt = classRepository.findByClassNameAndTeacherName(className,
+                            teacherName);
                     ClassEntity classEntity;
                     if (classOpt.isPresent()) {
                         classEntity = classOpt.get();
@@ -630,13 +647,21 @@ public class AdminService {
                     }
 
                     // student
-                    StudentEntity student = new StudentEntity();
-                    student.setFullName(studentName);
-                    student.setDob(dob);
-                    student.setGender(gender);
-                    student.setRelationship(relationship);
-                    student.setClassEntity(classEntity);
-                    student.setParent(parent);
+                    Optional<StudentEntity> studentOpt = studentRepository
+                            .findByFullNameAndDobAndGenderAndRelationshipAndClassEntityAndParent(
+                                    studentName, dob, gender, relationship, classEntity, parent);
+                    StudentEntity student;
+                    if (studentOpt.isPresent()) {
+                        student = studentOpt.get();
+                    } else {
+                        student = new StudentEntity();
+                        student.setFullName(studentName);
+                        student.setDob(dob);
+                        student.setGender(gender);
+                        student.setRelationship(relationship);
+                        student.setClassEntity(classEntity);
+                        student.setParent(parent);
+                    }
 
                     studentRepository.save(student);
                 } catch (Exception e) {
