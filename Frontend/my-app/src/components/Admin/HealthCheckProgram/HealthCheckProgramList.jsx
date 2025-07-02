@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, Row, Col, Tag, Modal, Descriptions, Form, Input, DatePicker, message } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Select } from "antd"; // Thêm dòng này
+import { Select } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 
@@ -11,10 +11,10 @@ const HealthCheckProgramList = () => {
   const [createVisible, setCreateVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [program, setProgram] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(""); // Tìm kiếm theo tên
-  const [filterDate, setFilterDate] = useState(null); // Thêm state lọc ngày
+  const [searchTerm, setSearchTerm] = useState(""); 
+  const [filterDate, setFilterDate] = useState(null);
   const [editMode, setEditMode] = useState(false);
-  const [filterStatus, setFilterStatus] = useState(""); // Thêm state này
+  const [filterStatus, setFilterStatus] = useState("");
   const [resultVisible, setResultVisible] = useState(false);
   const [resultData, setResultData] = useState([]);
   const [resultLoading, setResultLoading] = useState(false);
