@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import { Button } from "antd";
+import { PlusOutlined, FileExcelOutlined, UploadOutlined } from "@ant-design/icons";
 import StudentList from "./StudentList";
 import StudentProfileCard from "./StudentProfileCard";
 import EmergencyContact from "./EmergencyContact";
@@ -6,40 +8,114 @@ import MedicalHistory from "./MedicalHistory";
 
 export default function MedicalDashboard() {
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  // Handler mẫu cho các nút
+  const handleAddStudent = () => {
+    // Mở modal/thực hiện chức năng thêm học sinh
+    // ...
+  };
+
+  const handleDownloadTemplate = () => {
+    const link = document.createElement('a');
+    link.href = '/student_template.xlsx';
+    link.download = 'student_template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImportExcel = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const token = localStorage.getItem("token"); // Nếu cần token
+      const response = await fetch("http://localhost:8080/api/admin/student/import-excel", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Import thất bại!");
+      // Xử lý kết quả thành công
+      alert("Import thành công!");
+    } catch (err) {
+      alert("Import thất bại!");
+    } finally {
+      setUploading(false);
+      e.target.value = ""; // Reset input để chọn lại file nếu cần
+    }
+  };
 
   return (
     <div
       style={{
         minHeight: "100vh",
         width: "100%",
-        marginLeft: 220, // hoặc đúng bằng chiều rộng sidebar của bạn
+        marginLeft: 240, // đúng với width sidebar
         background: "#f4f8fb",
         fontFamily: "Segoe UI, Arial, sans-serif",
         overflowX: "hidden",
+        padding: 0, // Xóa padding ngoài cùng
       }}
     >
-      <h2
-        style={{
-          textAlign: "left",
-          fontWeight: "bold",
-          fontSize: 24,
-          margin: "0 0 0px 32px",
-          letterSpacing: 1,
-          color: "#1976d2",
-        }}
-      >
-        Quản lý hồ sơ học sinh
-      </h2>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: 0, padding: 0 }}>
+        <h2
+          style={{
+            textAlign: "left",
+            fontWeight: "bold",
+            fontSize: 24,
+            margin: "0 0 0px 32px",
+            letterSpacing: 1,
+            color: "#1976d2",
+          }}
+        >
+          Quản lý hồ sơ học sinh
+        </h2>
+        <div style={{ marginRight: 32, display: "flex", gap: 12, marginTop: 12, marginBottom: 10 }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAddStudent}
+          >
+            Thêm học sinh
+          </Button>
+          <Button
+            icon={<FileExcelOutlined />}
+            onClick={handleDownloadTemplate}
+          >
+            Lấy biểu mẫu
+          </Button>
+          <Button
+            icon={<UploadOutlined />}
+            onClick={handleImportExcel}
+            loading={uploading}
+          >
+            Import Excel
+          </Button>
+        </div>
+      </div>
       <div
         style={{
           display: "flex",
           height: "calc(100vh - 64px)",
-          gap: 32,
-          padding: 24,
+          gap: 14,
+          padding: 0, // Xóa padding ngoài cùng
+          margin: 0,  // Xóa margin ngoài cùng
           boxSizing: "border-box",
         }}
       >
-        {/* Danh sách học sinh */}
+        {/* Cột trái */}
         <div
           style={{
             flex: 2,
@@ -49,58 +125,42 @@ export default function MedicalDashboard() {
             minWidth: 340,
             maxWidth: 420,
             padding: 0,
-            height: "100%",
-            maxHeight: "calc(100vh - 120px)", // Giảm chiều cao tối đa
-            overflowY: "auto",                // Cho phép cuộn bên trong
+            // height: "100%",
+            // maxHeight: "calc(100vh - 120px)",
+            // overflowY: "auto",
+            margin: 0, // Xóa margin
           }}
         >
           <StudentList
-            onSelect={setSelectedStudent}
+            onSelect={student => setSelectedStudent(student)}
             selectedId={selectedStudent?.id}
-            onFirstStudentLoaded={(student) => {
+            onFirstStudentLoaded={student => {
               if (!selectedStudent && student) setSelectedStudent(student);
             }}
           />
         </div>
 
-        {/* Hồ sơ học sinh */}
-        <div
-          style={{
-            flex: 3,
-            border: "none",
-            borderRadius: 16,
-            background: "#fff",
-            boxShadow: "0 2px 16px #0001",
-            minWidth: 600,
-            maxWidth: 800,
-            padding: 0,
-            margin: "0 0 0 0",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "center",
-            height: "100%",
-          }}
-        >
-          <div style={{ width: "100%", height: "100%" }}>
+        {/* Cột giữa */}
+        
+          <div >
             <StudentProfileCard
               studentId={selectedStudent?.id}
               studentInfo={selectedStudent}
             />
           </div>
-        </div>
 
-        {/* Thông tin phụ huynh & lịch sử y tế */}
+        {/* Cột phải */}
         <div
           style={{
             flex: 2,
             display: "flex",
             flexDirection: "column",
-            height: "100%",
+            height: "910px",
             minWidth: 340,
             maxWidth: 420,
-            gap: 24,
-            maxHeight: "calc(100vh - 120px)", // Giảm chiều cao tối đa
-            overflowY: "auto",                // Cho phép cuộn bên trong
+            gap: 10,
+            overflowY: "auto",
+            margin: 0, // Xóa margin
           }}
         >
           <div
@@ -131,6 +191,13 @@ export default function MedicalDashboard() {
           </div>
         </div>
       </div>
+      <input
+        type="file"
+        accept=".xlsx,.xls"
+        style={{ display: "none" }}
+        ref={fileInputRef}
+        onChange={handleFileChange}
+      />
     </div>
   );
 }

@@ -37,7 +37,7 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `http://localhost:8080/api/nurse/medical-records/${studentId}`,
+          `http://localhost:8080/api/admin/medical-records/${studentId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -70,7 +70,7 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
   };
 
   return (
-    <div style={{ background: "#fff", borderRadius: 8, padding: 16, minHeight: 180, width: "700px"}}>
+    <div style={{ background: "#fff", borderRadius: 8, padding: "8px", minHeight: 180, width: "800px"}}>
       <div style={{ display: "flex", alignItems: "center", gap: 32, marginBottom: 16, minHeight: 120, height: 120 }}>
         <img
           src="./logo512.png"
@@ -105,10 +105,10 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
         style={{
           background: "#f8fafd",
           borderRadius: 8,
-          marginTop: 8,
+          // marginTop: 8,
           padding: 16,
           border: "1px solid #e0e0e0",
-          maxWidth: 700,
+          maxWidth: 768,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
@@ -147,51 +147,51 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
             style={{
               background: "#f9fbfd",
               borderRadius: 8,
-              padding: 24,
+              padding: "0px",
               width: "100%",
               boxSizing: "border-box",
               maxWidth: 700,
               margin: "0 auto"
             }}
           >
-            <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 22, marginBottom: 24 }}>
+            <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 22, margin: "0px 0px 8px 0px"  }}>
               Thông tin học sinh
             </div>
             <div style={{ display: "flex", gap: 20, marginBottom: 18 }}>
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <label style={{ marginBottom: 6 }}>Thị giác <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} value={safeRecord.vision || ""} readOnly />
+                <label style={{ marginBottom: 8, fontSize: 18 }}>Thị giác <span style={{ color: "red" }}>*</span></label>
+                <input style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18 }} value={safeRecord.vision || ""} readOnly />
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <label style={{ marginBottom: 6 }}>Thính lực <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} value={safeRecord.hearing || ""} readOnly />
+                <label style={{ marginBottom: 8, fontSize: 18 }}>Thính lực <span style={{ color: "red" }}>*</span></label>
+                <input style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18 }} value={safeRecord.hearing || ""} readOnly />
               </div>
             </div>
             <div style={{ display: "flex", gap: 20, marginBottom: 18 }}>
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <label style={{ marginBottom: 6 }}>Cân nặng <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} value={safeRecord.weight || ""} readOnly />
+                <label style={{ marginBottom: 8, fontSize: 18 }}>Cân nặng <span style={{ color: "red" }}>*</span></label>
+                <input style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18 }} value={safeRecord.weight || ""} readOnly />
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <label style={{ marginBottom: 6 }}>Chiều cao <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16 }} value={safeRecord.height || ""} readOnly />
+                <label style={{ marginBottom: 8, fontSize: 18 }}>Chiều cao <span style={{ color: "red" }}>*</span></label>
+                <input style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18 }} value={safeRecord.height || ""} readOnly />
               </div>
             </div>
             <div style={{ marginBottom: 18 }}>
-              <label style={{ marginBottom: 6, display: "block" }}>Bị dị ứng với các loại nào</label>
-              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} value={safeRecord.allergies || ""} readOnly />
+              <label style={{ marginBottom: 8, display: "block", fontSize: 18 }}>Bị dị ứng với các loại nào</label>
+              <textarea style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18, minHeight: 40 }} value={safeRecord.allergies || ""} readOnly />
             </div>
             <div style={{ marginBottom: 18 }}>
-              <label style={{ marginBottom: 6, display: "block" }}>Bệnh mãn tính</label>
-              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} value={safeRecord.chronicDisease || ""} readOnly />
+              <label style={{ marginBottom: 8, display: "block", fontSize: 18 }}>Bệnh mãn tính</label>
+              <textarea style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18, minHeight: 40 }} value={safeRecord.chronicDisease || ""} readOnly />
             </div>
             <div style={{ marginBottom: 18 }}>
-              <label style={{ marginBottom: 6, display: "block" }}>Lịch sử điều trị</label>
-              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} value={safeRecord.treatmentHistory || ""} readOnly />
+              <label style={{ marginBottom: 8, display: "block", fontSize: 18 }}>Lịch sử điều trị</label>
+              <textarea style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18, minHeight: 40 }} value={safeRecord.treatmentHistory || ""} readOnly />
             </div>
             <div>
-              <label style={{ marginBottom: 6, display: "block" }}>Ghi chú</label>
-              <textarea style={{ width: "100%", padding: 8, borderRadius: 5, border: "1px solid #ccc", fontSize: 16, minHeight: 40 }} value={safeRecord.note || ""} readOnly />
+              <label style={{ marginBottom: 8, display: "block", fontSize: 18 }}>Ghi chú</label>
+              <textarea style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18, minHeight: 40 }} value={safeRecord.note || ""} readOnly />
             </div>
           </div>
         )}
