@@ -70,7 +70,7 @@ export default function AdminHome() {
 
         {selectedMenu === "7" && <MedicalIncidentList />}
 
-        {selectedMenu === "8" && <FeedbackList />}
+        {/* {selectedMenu === "8" && <FeedbackList />} */}
 
         {selectedMenu === "9" && <BlogAdminPage />}
 
