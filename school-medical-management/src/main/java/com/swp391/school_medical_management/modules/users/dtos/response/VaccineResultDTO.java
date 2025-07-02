@@ -16,5 +16,5 @@ public class VaccineResultDTO {
     private String reaction;
     private LocalDateTime createdAt;
     private Long vaccineFormId;
-    private Long studentId;
+    private StudentDTO studentDTO;
 }

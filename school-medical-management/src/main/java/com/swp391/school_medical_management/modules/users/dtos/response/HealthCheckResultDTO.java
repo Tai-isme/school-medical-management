@@ -13,5 +13,5 @@ public class HealthCheckResultDTO {
     private String level;
     private String note;
     private Long healthCheckFormId;
-    private Long studentId;
+    private StudentDTO studentDTO;
 }

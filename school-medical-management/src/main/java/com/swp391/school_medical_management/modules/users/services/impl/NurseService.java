@@ -558,7 +558,8 @@ public class NurseService {
         HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,
                 HealthCheckResultDTO.class);
         healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
-        healthCheckResultDTO.setStudentId(healthCheckFormDTO.getStudentId());
+        healthCheckResultDTO.setStudentDTO(
+                modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
 
         return healthCheckResultDTO;
     }
@@ -620,7 +621,7 @@ public class NurseService {
         HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,
                 HealthCheckResultDTO.class);
         healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
-        healthCheckResultDTO.setStudentId(healthCheckFormDTO.getStudentId());
+        healthCheckResultDTO.setStudentDTO(modelMapper.map(healthCheckResultEntity.getHealthCheckFormEntity().getStudent(), StudentDTO.class));
 
         return healthCheckResultDTO;
     }
@@ -639,7 +640,8 @@ public class NurseService {
         HealthCheckFormDTO healthCheckFormDTO = modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
 
         healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
-        healthCheckResultDTO.setStudentId(healthCheckFormDTO.getStudentId());
+        healthCheckResultDTO.setStudentDTO(
+                modelMapper.map(healthCheckResultEntity.getHealthCheckFormEntity().getStudent(), StudentDTO.class));
 
         return healthCheckResultDTO;
     }
@@ -652,7 +654,8 @@ public class NurseService {
                 .stream()
                 .map(healthCheckResultEntity -> {
                     HealthCheckResultDTO dto = modelMapper.map(healthCheckResultEntity, HealthCheckResultDTO.class);
-                    dto.setStudentId(healthCheckResultEntity.getHealthCheckFormEntity().getStudent().getId());
+                    dto.setStudentDTO(modelMapper.map(healthCheckResultEntity.getHealthCheckFormEntity().getStudent(),
+                            StudentDTO.class));
                     dto.setHealthCheckFormId(healthCheckResultEntity.getHealthCheckFormEntity().getId());
                     return dto;
                 }).collect(Collectors.toList());
@@ -719,7 +722,7 @@ public class NurseService {
 
         VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
         vaccineResultDTO.setVaccineFormId(vaccineFormEntity.getId());
-        vaccineResultDTO.setStudentId(studentId);
+        vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
         return vaccineResultDTO;
     }
 
@@ -777,7 +780,7 @@ public class NurseService {
 
         VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
         vaccineResultDTO.setVaccineFormId(vaccineFormDTO.getId());
-        vaccineResultDTO.setStudentId(vaccineFormDTO.getStudentId());
+        vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
 
         return vaccineResultDTO;
     }
@@ -793,7 +796,7 @@ public class NurseService {
         VaccineFormDTO vaccineFormDTO = modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
 
         vaccineResultDTO.setVaccineFormId(vaccineFormDTO.getId());
-        vaccineResultDTO.setStudentId(vaccineFormDTO.getStudentId());
+        vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
 
         return vaccineResultDTO;
     }
@@ -806,7 +809,7 @@ public class NurseService {
                 .stream()
                 .map(vaccineResultEntity -> {
                     VaccineResultDTO dto = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
-                    dto.setStudentId(vaccineResultEntity.getVaccineFormEntity().getStudent().getId());
+                    dto.setStudentDTO(modelMapper.map(vaccineResultEntity.getVaccineFormEntity().getStudent(), StudentDTO.class));
                     dto.setVaccineFormId(vaccineResultEntity.getVaccineFormEntity().getId());
                     return dto;
                 }).collect(Collectors.toList());
