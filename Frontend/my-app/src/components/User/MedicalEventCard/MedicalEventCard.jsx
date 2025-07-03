@@ -26,10 +26,10 @@ const columns = [
     render: (text) => new Date(text).toLocaleDateString("vi-VN"), // Định dạng ngày tháng VN
   },
   {
-    title: "ID Y tá",
-    dataIndex: "nurseId",
-    key: "nurseId",
-    minWidth: 150, // Đặt chiều rộng tối thiểu cho cột
+    title: "Y tá phụ trách",
+    key: "nurseDTO",
+    minWidth: 150,
+    render: (_, record) => record.nurseDTO?.fullName || "Không rõ",
   },
   {
     title: "Mô tả",

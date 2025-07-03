@@ -56,7 +56,7 @@ const HealthCheckResultCard = () => {
     const checkDate = item.healthCheckProgram?.endDate || "";
     const matchName = programName.toLowerCase().includes(filterName.toLowerCase());
     const matchDate = filterDate ? checkDate === filterDate : true;
-    const matchStatus = item.status === "COMPLETED"; // chỉ lấy trạng thái COMPLETED
+    const matchStatus = item.healthCheckProgram.status === "COMPLETED"; // chỉ lấy trạng thái COMPLETED
     return matchName && matchDate && matchStatus;
   });
 
@@ -157,7 +157,7 @@ const HealthCheckResultCard = () => {
                   value={filterDate ? dayjs(filterDate) : null}
                   onChange={date => setFilterDate(date ? date.format('YYYY-MM-DD') : '')}
                   allowClear
-                  style={{ width: 160 }}
+                  style={{ width: 200 }}
                   format="YYYY-MM-DD"
                 />
               </div>
@@ -224,7 +224,12 @@ const HealthCheckResultCard = () => {
                         Ngày: <span style={{color: '#1976d2', fontWeight: 500}}>{item.healthCheckProgram?.endDate || '---'}</span>
                       </div>
                       <div>
-                        Trạng thái: <span style={{color: '#43a047', fontWeight: 600}}>{item.healthCheckProgram.status || '---'}</span>
+                        Trạng thái:{" "}
+                        <span style={{color: '#43a047', fontWeight: 600}}>
+                          {item.healthCheckProgram.status === "COMPLETED"
+                            ? "Đã hoàn thành"
+                            : item.healthCheckProgram.status || "---"}
+                        </span>
                       </div>
                     </div>
                     

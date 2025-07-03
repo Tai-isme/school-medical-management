@@ -116,7 +116,7 @@ export default function StudentInfoCard({ onChange }) {
         Mã số: {selectedStudent?.id || "--"}
       </Text>
       <Text type="secondary" style={{ fontSize: 16, marginBottom: 8 }}>
-        Lớp: {selectedStudent?.className || selectedStudent?.classID || "--"}
+        {/* Lớp: {selectedStudent?.className || selectedStudent?.classID || "--"} */}
       </Text>
       <Text type="secondary" style={{ fontSize: 16 }}>
         Giới tính: {selectedStudent?.gender || "--"}

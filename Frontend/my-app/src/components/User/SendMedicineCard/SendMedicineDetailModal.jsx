@@ -65,6 +65,11 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
               ? "Bị từ chối"
               : detailData.status}
           </span>
+          {detailData.reason && (
+            <div style={{ color: "#f44336", fontWeight: 500, marginTop: 4 }}>
+              Lý do: {detailData.reason}
+            </div>
+          )}
         </div>
         <div style={{ marginBottom: 12 }}>
           <b>Mã học sinh:</b> {detailData.studentId}
@@ -77,7 +82,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
             padding: 12,
             marginBottom: 10
           }}>
-            <div><b>Mục đích gửi thuốc:</b> {item.medicineName}</div>
+            <div><b>Tên thuốc:</b> {item.medicineName}</div>
             <div><b>Liều lượng:</b> {item.dosage}</div>
             <div><b>Thời gian:</b> {item.time}</div>
           </div>
