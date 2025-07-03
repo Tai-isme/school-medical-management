@@ -19,6 +19,7 @@ const AccountManagement = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const [editingAccount, setEditingAccount] = useState(null);
+  const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -70,6 +71,7 @@ const AccountManagement = () => {
       (filterRole === "" || acc.role === filterRole)
   );
 
+  // Định nghĩa columns, loại bỏ cột "Hành động" nếu không phải admin
   const columns = [
     { title: "Mã", dataIndex: "userId", key: "userId", align: "center" },
     {
@@ -118,29 +120,34 @@ const AccountManagement = () => {
       align: "center",
       sorter: (a, b) => a.role.localeCompare(b.role),
     },
-    {
-      title: "Hành động",
-      key: "action",
-      align: "center",
-      render: (_, record) => (
-        <div className="account-action-cell">
-          <Button
-            className="account-action-btn"
-            size="small"
-            onClick={() => handleEditAccount(record)}
-          >
-            Sửa
-          </Button>
-          <Button
-            className="account-action-btn danger"
-            size="small"
-            onClick={() => handleDisableAccount(record)}
-          >
-            Vô hiệu hóa
-          </Button>
-        </div>
-      ),
-    },
+    // Chỉ thêm cột hành động nếu là ADMIN
+    ...(userRole === "ADMIN"
+      ? [
+          {
+            title: "Hành động",
+            key: "action",
+            align: "center",
+            render: (_, record) => (
+              <div className="account-action-cell">
+                <Button
+                  className="account-action-btn"
+                  size="small"
+                  onClick={() => handleEditAccount(record)}
+                >
+                  Sửa
+                </Button>
+                <Button
+                  className="account-action-btn danger"
+                  size="small"
+                  onClick={() => handleDisableAccount(record)}
+                >
+                  Vô hiệu hóa
+                </Button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   // Hàm tạo tài khoản Nurse
@@ -291,12 +298,15 @@ const AccountManagement = () => {
     <div className="account-container">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <h2 style={{ margin: 0 }}>Quản lý tài khoản</h2>
-        <Button
-          type="primary"
-          onClick={() => setCreateModalVisible(true)}
-        >
-          Tạo tài khoản Nurse
-        </Button>
+        {/* Chỉ hiển thị nút tạo tài khoản Nurse nếu là ADMIN */}
+        {userRole === "ADMIN" && (
+          <Button
+            type="primary"
+            onClick={() => setCreateModalVisible(true)}
+          >
+            Tạo tài khoản Nurse
+          </Button>
+        )}
       </div>
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col>

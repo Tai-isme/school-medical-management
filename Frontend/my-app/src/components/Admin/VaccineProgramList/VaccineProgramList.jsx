@@ -19,6 +19,10 @@ const VaccineProgramList = () => {
   const [resultVisible, setResultVisible] = useState(false);
   const [resultData, setResultData] = useState([]);
   const [resultLoading, setResultLoading] = useState(false);
+  const [createResultVisible, setCreateResultVisible] = useState(false);
+  const [createResultLoading, setCreateResultLoading] = useState(false);
+  const [resultForm] = Form.useForm();
+  const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
 
   useEffect(() => {
     fetchProgram();
@@ -162,6 +166,34 @@ const VaccineProgramList = () => {
     }
   };
 
+  const handleCreateResult = async (values) => {
+    setCreateResultLoading(true);
+    const token = localStorage.getItem("token");
+    try {
+      await axios.post(
+        "http://localhost:8080/api/nurse/vaccine-result",
+        {
+          statusHealth: values.statusHealth,
+          resultNote: values.resultNote,
+          reaction: values.reaction,
+          createdAt: new Date().toISOString(),
+          vaccineFormId: program.vaccineId, // hoặc trường phù hợp với backend
+          // Thêm các trường khác nếu cần
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      message.success("Tạo kết quả thành công!");
+      setCreateResultVisible(false);
+      resultForm.resetFields();
+    } catch (error) {
+      message.error("Tạo kết quả thất bại!");
+    } finally {
+      setCreateResultLoading(false);
+    }
+  };
+
   // Lọc danh sách theo tên chương trình và ngày tiêm
   const filteredPrograms = programs.filter((program) => {
     const matchName = program.vaccineName?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -248,14 +280,17 @@ const VaccineProgramList = () => {
               { value: "COMPLETED", label: "Đã hoàn thành" },
             ]}
           />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            style={{ background: "#21ba45", border: "none" }}
-            onClick={() => setCreateVisible(true)}
-          >
-            Lên lịch tiêm chủng
-          </Button>
+          {/* Ẩn nút lên lịch tiêm chủng nếu là NURSE */}
+          {userRole === "ADMIN" && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              style={{ background: "#21ba45", border: "none" }}
+              onClick={() => setCreateVisible(true)}
+            >
+              Lên lịch tiêm chủng
+            </Button>
+          )}
         </div>
       </div>
       {/* Danh sách chương trình hoặc thông báo rỗng */}
@@ -290,17 +325,34 @@ const VaccineProgramList = () => {
                     Ngày tiêm: {program.vaccineDate}
                   </div>
                 </div>
-                <Select
-                  value={program.status}
-                  style={{ width: 160, marginTop: 4, fontWeight: 600, color: getStatusColor(program.status) === "blue" ? "#1890ff" : getStatusColor(program.status) === "green" ? "#21ba45" : "#595959" }}
-                  onChange={status => handleUpdateStatus(program.vaccineId, status)}
-                  options={[
-                    { value: "NOT_STARTED", label: "Chưa bắt đầu" },
-                    { value: "ON_GOING", label: "Đang diễn ra" },
-                    { value: "COMPLETED", label: "Đã hoàn thành" },
-                  ]}
-                  dropdownStyle={{ minWidth: 160 }}
-                />
+                {/* Nếu là ADMIN thì cho phép chỉnh trạng thái, nếu là NURSE thì chỉ hiển thị Tag */}
+                {userRole === "ADMIN" ? (
+                  <Select
+                    value={program.status}
+                    style={{
+                      width: 160,
+                      marginTop: 4,
+                      fontWeight: 600,
+                      color:
+                        program.status === "ON_GOING"
+                          ? "#1890ff"
+                          : program.status === "COMPLETED"
+                          ? "#21ba45"
+                          : "#595959",
+                    }}
+                    onChange={status => handleUpdateStatus(program.vaccineId, status)}
+                    options={[
+                      { value: "NOT_STARTED", label: <span style={{ color: "#595959" }}>Chưa bắt đầu</span> },
+                      { value: "ON_GOING", label: <span style={{ color: "#1890ff" }}>Đang diễn ra</span> },
+                      { value: "COMPLETED", label: <span style={{ color: "#21ba45" }}>Đã hoàn thành</span> },
+                    ]}
+                    dropdownStyle={{ minWidth: 160 }}
+                  />
+                ) : (
+                  <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
+                    {getStatusText(program.status)}
+                  </Tag>
+                )}
               </div>
               <Row gutter={32} style={{ margin: "24px 0" }}>
                 <Col span={12}>
@@ -326,33 +378,39 @@ const VaccineProgramList = () => {
                   </Button>
                   <Button
                     type="primary"
-                    style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
-                    onClick={() => handleViewResult(program.vaccineId)}
+                    style={{ background: "#1890ff", border: "none", marginLeft: 8 }}
+                    onClick={() => {
+                      setProgram(program);
+                      setCreateResultVisible(true);
+                    }}
                   >
-                    Xem kết quả
+                    Tạo kết quả
                   </Button>
                 </div>
-                <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-                  {program.status === "NOT_STARTED" && (
+                {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
+                {userRole === "ADMIN" && (
+                  <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+                    {program.status === "NOT_STARTED" && (
+                      <Button
+                        type="default"
+                        onClick={() => {
+                          setProgram(program);
+                          setEditMode(true);
+                          setCreateVisible(true);
+                        }}
+                      >
+                        Sửa
+                      </Button>
+                    )}
                     <Button
-                      type="default"
-                      onClick={() => {
-                        setProgram(program);
-                        setEditMode(true);
-                        setCreateVisible(true);
-                      }}
+                      danger
+                      type="primary"
+                      onClick={() => handleDelete(program.vaccineId)}
                     >
-                      Sửa
+                      Xóa
                     </Button>
-                  )}
-                  <Button
-                    danger
-                    type="primary"
-                    onClick={() => handleDelete(program.vaccineId)}
-                  >
-                    Xóa
-                  </Button>
-                </div>
+                  </div>
+                )}
               </div>
             </Card>
           ))
@@ -455,6 +513,53 @@ const VaccineProgramList = () => {
             ))}
           </Descriptions>
         )}
+      </Modal>
+      <Modal
+        title="Tạo kết quả tiêm chủng"
+        open={createResultVisible}
+        onCancel={() => {
+          setCreateResultVisible(false);
+          resultForm.resetFields();
+        }}
+        footer={null}
+        destroyOnClose
+      >
+        <Form
+          form={resultForm}
+          layout="vertical"
+          onFinish={handleCreateResult}
+        >
+          <Form.Item
+            label="Tình trạng sức khỏe"
+            name="statusHealth"
+            rules={[{ required: true, message: "Nhập tình trạng sức khỏe" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Phản ứng"
+            name="reaction"
+            rules={[{ required: true, message: "Nhập phản ứng" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Ghi chú kết quả"
+            name="resultNote"
+          >
+            <Input.TextArea rows={2} />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={createResultLoading}
+              style={{ width: "100%" }}
+            >
+              Tạo kết quả
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

@@ -19,6 +19,7 @@ const HealthCheckProgramList = () => {
   const [resultVisible, setResultVisible] = useState(false);
   const [resultData, setResultData] = useState([]);
   const [resultLoading, setResultLoading] = useState(false);
+  const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
 
   useEffect(() => {
     fetchProgram();
@@ -252,14 +253,17 @@ const HealthCheckProgramList = () => {
               { value: "COMPLETED", label: "Đã hoàn thành" },
             ]}
           />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            style={{ background: "#21ba45", border: "none" }}
-            onClick={() => setCreateVisible(true)}
-          >
-            Lên lịch khám định kỳ
-          </Button>
+          {/* Ẩn nút lên lịch nếu là NURSE */}
+          {userRole === "ADMIN" && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              style={{ background: "#21ba45", border: "none" }}
+              onClick={() => setCreateVisible(true)}
+            >
+              Lên lịch khám định kỳ
+            </Button>
+          )}
         </div>
       </div>
       {filteredPrograms.map((program) => (
@@ -288,16 +292,23 @@ const HealthCheckProgramList = () => {
                 Ngày kết thúc: {program.endDate}
               </div>
             </div>
-            <Select
-              value={program.status}
-              style={{ width: 160 }}
-              onChange={status => handleUpdateStatus(program.id, status)}
-              options={[
-                { value: "NOT_STARTED", label: "Chưa bắt đầu" },
-                { value: "ON_GOING", label: "Đang diễn ra" },
-                { value: "COMPLETED", label: "Đã hoàn thành" },
-              ]}
-            />
+            {/* Nếu là ADMIN thì cho phép chỉnh trạng thái, nếu là NURSE thì chỉ hiển thị Tag */}
+            {userRole === "ADMIN" ? (
+              <Select
+                value={program.status}
+                style={{ width: 160 }}
+                onChange={status => handleUpdateStatus(program.id, status)}
+                options={[
+                  { value: "NOT_STARTED", label: "Chưa bắt đầu" },
+                  { value: "ON_GOING", label: "Đang diễn ra" },
+                  { value: "COMPLETED", label: "Đã hoàn thành" },
+                ]}
+              />
+            ) : (
+              <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
+                {getStatusText(program.status)}
+              </Tag>
+            )}
           </div>
           <Row gutter={32} style={{ margin: "24px 0" }}>
             <Col span={12}>
@@ -329,27 +340,30 @@ const HealthCheckProgramList = () => {
                 Xem kết quả
               </Button>
             </div>
-            <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-              {program.status === "NOT_STARTED" && (
+            {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
+            {userRole === "ADMIN" && (
+              <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+                {program.status === "NOT_STARTED" && (
+                  <Button
+                    type="default"
+                    onClick={() => {
+                      setProgram(program);
+                      setEditMode(true);
+                      setCreateVisible(true);
+                    }}
+                  >
+                    Sửa
+                  </Button>
+                )}
                 <Button
-                  type="default"
-                  onClick={() => {
-                    setProgram(program);
-                    setEditMode(true);
-                    setCreateVisible(true);
-                  }}
+                  danger
+                  type="primary"
+                  onClick={() => handleDelete(program.id)}
                 >
-                  Sửa
+                  Xóa
                 </Button>
-              )}
-              <Button
-                danger
-                type="primary"
-                onClick={() => handleDelete(program.id)}
-              >
-                Xóa
-              </Button>
-            </div>
+              </div>
+            )}
           </div>
         </Card>
       ))}
