@@ -64,69 +64,48 @@ const AccountManagement = () => {
   };
 
   // Lọc dữ liệu theo họ tên, email và vai trò
-  const filteredAccounts = accounts.filter(
-    (acc) =>
+  const filteredAccounts = accounts.filter((acc) => {
+    // Nếu role của người dùng là "NURSE", loại bỏ các tài khoản có role là "ADMIN"
+    if (userRole === "NURSE" && acc.role === "admin") {
+      return false;
+    }
+    return (
       acc.fullName.toLowerCase().includes(searchName.toLowerCase()) &&
       acc.email.toLowerCase().includes(searchEmail.toLowerCase()) &&
       (filterRole === "" || acc.role === filterRole)
-  );
+    );
+  });
 
   // Định nghĩa columns, loại bỏ cột "Hành động" nếu không phải admin
   const columns = [
-    { title: "Mã", dataIndex: "userId", key: "userId", align: "center" },
+    { title: "Mã", dataIndex: "userId", key: "userId", align: "center", width: 80, ellipsis: true },
     {
       title: "Họ và tên",
       dataIndex: "fullName",
       key: "fullName",
       align: "center",
+      width: 200,
+      ellipsis: true,
     },
-    { title: "Email", dataIndex: "email", key: "email", align: "center" },
-    {
-      title: "Mật khẩu",
-      key: "password",
-      align: "center",
-      render: (_, record) => (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-          }}
-        >
-          <span>
-            {visiblePasswords[record.userId] ? record.password : "••••••••"}
-          </span>
-          <Button
-            type="text"
-            icon={
-              visiblePasswords[record.userId] ? (
-                <EyeInvisibleOutlined />
-              ) : (
-                <EyeOutlined />
-              )
-            }
-            onClick={() => togglePasswordVisibility(record.userId)}
-          />
-        </div>
-      ),
-    },
-    { title: "SĐT", dataIndex: "phone", key: "phone", align: "center" },
-    { title: "Địa chỉ", dataIndex: "address", key: "address", align: "center" },
+    { title: "Email", dataIndex: "email", key: "email", align: "center", width: 250, ellipsis: true },
+    { title: "SĐT", dataIndex: "phone", key: "phone", align: "center", width: 150, ellipsis: true },
+    { title: "Địa chỉ", dataIndex: "address", key: "address", align: "center", width: 200, ellipsis: true },
     {
       title: "Vai trò",
       dataIndex: "role",
       key: "role",
       align: "center",
+      width: 120,
+      ellipsis: true,
       sorter: (a, b) => a.role.localeCompare(b.role),
     },
-    // Chỉ thêm cột hành động nếu là ADMIN
     ...(userRole === "ADMIN"
       ? [
           {
             title: "Hành động",
             key: "action",
             align: "center",
+            width: 150,
             render: (_, record) => (
               <div className="account-action-cell">
                 <Button
@@ -348,7 +327,7 @@ const AccountManagement = () => {
         columns={columns}
         rowKey="userId"
         bordered
-        pagination={{ pageSize: 8 }}
+        pagination={{ pageSize: 12 }} // Hiển thị tối đa 10 dòng mỗi trang
       />
 
       {/* Modal tạo tài khoản Nurse */}
@@ -465,9 +444,6 @@ const AccountManagement = () => {
           </Form.Item>
         </Form>
       </Modal>
-
-      {/* Nút test modal */}
-      <Button onClick={() => Modal.confirm({ title: "Test", content: "Test modal" })}>Test Modal</Button>
     </div>
   );
 };
