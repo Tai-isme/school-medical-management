@@ -327,7 +327,7 @@ const AccountManagement = () => {
         columns={columns}
         rowKey="userId"
         bordered
-        pagination={{ pageSize: 12 }} // Hiển thị tối đa 10 dòng mỗi trang
+        pagination={{ pageSize: 11 }} // Hiển thị tối đa 10 dòng mỗi trang
       />
 
       {/* Modal tạo tài khoản Nurse */}

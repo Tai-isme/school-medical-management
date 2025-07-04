@@ -123,6 +123,22 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
         />
       ),
     },
+    {
+      title: "Xóa",
+      key: "action",
+      align: "center",
+      render: (_, record, idx) => (
+        <Button
+          danger
+          type="link"
+          onClick={() => {
+            setVaccineHistories(prev => prev.filter((_, i) => i !== idx));
+          }}
+        >
+          Xóa
+        </Button>
+      ),
+    },
   ];
 
   return (
@@ -271,14 +287,14 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                 pagination={false}
                 rowKey={(record) => record.key || record.vaccineName + record.note}
                 columns={vaccineTableColumns}
-                style={{ width: 660 }}
+                style={{ width: 690 }}
               />
               <Button type="primary" style={{ marginTop: 16 }} onClick={handleAddVaccine}>
                 + Thêm mới vaccin
               </Button>
-              <div style={{ marginTop: 20, color: "#d84315", fontStyle: "italic", fontWeight: 500 }}>
+              {/* <div style={{ marginTop: 20, color: "#d84315", fontStyle: "italic", fontWeight: 500 }}>
                 Quý phụ huynh vui lòng nhập đầy đủ các vaccin mà học sinh đã tiêm vì thông tin vaccin sau khi khai báo sẽ không được chỉnh sửa
-              </div>
+              </div> */}
               <div style={{ display: "flex", justifyContent: "center", marginTop: 40 }}>
                 <Button
                   type="primary"
