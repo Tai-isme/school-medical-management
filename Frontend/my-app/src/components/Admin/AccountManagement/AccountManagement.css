@@ -108,8 +108,9 @@
 }
 
 .account-action-btn:hover {
-  background: #bae7ff;
-  color: #095cb5;
+  filter: brightness(1.15);
+  box-shadow: 0 2px 8px rgba(82, 196, 26, 0.15); /* hiệu ứng bóng nhẹ */
+  transition: all 0.2s;
 }
 
 .account-action-btn.danger {
@@ -125,6 +126,14 @@
   background: #fff0f0 !important;
   color: #d9363e !important;
   border-color: #d9363e !important;
+}
+
+.account-action-btn.danger:hover {
+  background: #ff7875 !important;
+  color: #fff !important;
+  border-color: #ff7875 !important;
+  filter: none;
+  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.15);
 }
 
 .ant-table-cell {

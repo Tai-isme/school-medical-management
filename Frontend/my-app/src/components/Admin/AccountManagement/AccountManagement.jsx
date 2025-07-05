@@ -44,6 +44,7 @@ const AccountManagement = () => {
           phone: item.phone,
           address: item.address,
           role: item.role.toLowerCase(),
+          active: item.active, // Thêm trường active để xác định trạng thái tài khoản
         }));
 
         setAccounts(responseData);
@@ -111,17 +112,31 @@ const AccountManagement = () => {
                 <Button
                   className="account-action-btn"
                   size="small"
+                  type="primary" // Đổi màu nút Sửa thành primary (xanh dương)
                   onClick={() => handleEditAccount(record)}
                 >
                   Sửa
                 </Button>
-                <Button
-                  className="account-action-btn danger"
-                  size="small"
-                  onClick={() => handleDisableAccount(record)}
-                >
-                  Vô hiệu hóa
-                </Button>
+                {record.active ? (
+                  <Button
+                    className="account-action-btn danger"
+                    size="small"
+                    style={{ marginLeft: 8 }}
+                    danger
+                    onClick={() => handleDisableAccount(record)}
+                  >
+                    Vô hiệu hóa
+                  </Button>
+                ) : (
+                  <Button
+                    className="account-action-btn"
+                    size="small"
+                    style={{ marginLeft: 8, background: "#52c41a", color: "#fff", border: "none" }} // Xanh lá cây
+                    onClick={() => handleEnableAccount(record)}
+                  >
+                    Kích hoạt lại
+                  </Button>
+                )}
               </div>
             ),
           },
@@ -164,6 +179,7 @@ const AccountManagement = () => {
         phone: item.phone,
         address: item.address,
         role: item.role.toLowerCase(),
+        active: item.active, // Thêm trường active để xác định trạng thái tài khoản
       }));
       setAccounts(responseData);
     } catch (err) {
@@ -216,6 +232,7 @@ const AccountManagement = () => {
         phone: item.phone,
         address: item.address,
         role: item.role.toLowerCase(),
+        active: item.active, // Thêm trường active để xác định trạng thái tài khoản
       }));
       setAccounts(responseData);
     } catch (err) {
@@ -264,10 +281,60 @@ const AccountManagement = () => {
           phone: item.phone,
           address: item.address,
           role: item.role.toLowerCase(),
+          active: item.active, // Thêm trường active để xác định trạng thái tài khoản
         }));
         setAccounts(responseData);
       } catch (err) {
         Swal.fire("Lỗi", "Vô hiệu hóa tài khoản thất bại!", "error");
+        console.error(err);
+      }
+    }
+  };
+
+  const handleEnableAccount = async (record) => {
+    const result = await Swal.fire({
+      title: "Xác nhận kích hoạt lại",
+      text: `Bạn có chắc chắn muốn kích hoạt lại tài khoản "${record.fullName}"?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Kích hoạt lại",
+      cancelButtonText: "Hủy",
+    });
+
+    if (result.isConfirmed) {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        Swal.fire("Lỗi", "Không tìm thấy token. Vui lòng đăng nhập lại.", "error");
+        return;
+      }
+      try {
+        await axios.patch(
+          `http://localhost:8080/api/auth/update-account-status/${record.userId}/true`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        Swal.fire("Thành công", `Đã kích hoạt lại tài khoản: ${record.fullName}`, "success");
+        // Reload danh sách tài khoản
+        const response = await axios.get("http://localhost:8080/api/admin/accounts", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const responseData = response.data.map((item) => ({
+          userId: item.id,
+          fullName: item.fullName,
+          email: item.email,
+          password: item.password,
+          phone: item.phone,
+          address: item.address,
+          role: item.role.toLowerCase(),
+          active: item.active,
+        }));
+        setAccounts(responseData);
+      } catch (err) {
+        Swal.fire("Lỗi", "Kích hoạt lại tài khoản thất bại!", "error");
         console.error(err);
       }
     }

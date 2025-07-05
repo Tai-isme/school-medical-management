@@ -2,35 +2,31 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function StudentList({ onSelect, selectedId, onFirstStudentLoaded }) {
-  const [students, setStudents] = useState([]);
+  const [classList, setClassList] = useState([]); // [{className, students, ...}]
   const [loading, setLoading] = useState(true);
   const [nameFilter, setNameFilter] = useState("");
   const [selectedClass, setSelectedClass] = useState(""); // className
-  const [classList, setClassList] = useState([]);
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `http://localhost:8080/api/nurse/students`,
+          `http://localhost:8080/api/nurse/studentsss`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        setStudents(res.data);
-        // Lấy danh sách lớp duy nhất
-        const classes = Array.from(
-          new Set(res.data.map(s => s.classDTO?.className).filter(Boolean))
-        );
-        setClassList(classes);
-        if (onFirstStudentLoaded && res.data.length > 0) {
-          onFirstStudentLoaded(res.data[0]);
+        setClassList(res.data || []);
+        // Gọi callback với học sinh đầu tiên nếu có
+        if (onFirstStudentLoaded) {
+          const firstStudent = res.data?.find(cls => cls.students?.length > 0)?.students[0];
+          if (firstStudent) onFirstStudentLoaded(firstStudent);
         }
       } catch (err) {
-        setStudents([]);
+        setClassList([]);
       } finally {
         setLoading(false);
       }
@@ -38,11 +34,17 @@ export default function StudentList({ onSelect, selectedId, onFirstStudentLoaded
     fetchStudents();
   }, []);
 
-  // Lọc học sinh theo lớp đã chọn và tên
+  // Lấy danh sách tên lớp
+  const classNames = classList.map(cls => cls.className).filter(Boolean);
+
+  // Lấy danh sách học sinh theo lớp đã chọn
+  const students = selectedClass
+    ? (classList.find(cls => cls.className === selectedClass)?.students || [])
+    : classList.flatMap(cls => cls.students || []);
+
+  // Lọc học sinh theo tên
   const filteredStudents = students.filter(
-    (s) =>
-      (selectedClass === "" || s.classDTO?.className === selectedClass) &&
-      s.fullName?.toLowerCase().includes(nameFilter.toLowerCase())
+    (s) => s.fullName?.toLowerCase().includes(nameFilter.toLowerCase())
   );
 
   if (loading) return <div>Đang tải...</div>;
@@ -66,7 +68,7 @@ export default function StudentList({ onSelect, selectedId, onFirstStudentLoaded
       }}>
         <div style={{ fontWeight: "bold", marginBottom: 8, textAlign: "center" }}>Lớp</div>
         <div>
-          {classList.map((cls) => (
+          {classNames.map((cls) => (
             <div
               key={cls}
               onClick={() => setSelectedClass(cls)}
