@@ -27,6 +27,8 @@ import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEv
 import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
@@ -230,6 +232,11 @@ public class NurseController {
     @GetMapping("/students")
     public ResponseEntity<List<StudentDTO>> getAllStudent() {
         return ResponseEntity.ok(nurseService.getAllStudent());
+    }
+    
+    @GetMapping("/studentsss")
+    public ResponseEntity<List<ClassStudentDTO>> getAllStudenttt() {
+        return ResponseEntity.ok(nurseService.getAllStudenttt());
     }
 
     // Lọc ra nhưng học sinh chưa từng tiêm loại vaccine name history đó hoặc chưa

@@ -24,6 +24,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMed
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
@@ -57,6 +58,7 @@ import com.swp391.school_medical_management.modules.users.entities.VaccineHistor
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
 import com.swp391.school_medical_management.modules.users.repositories.BlogRepository;
+import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
 import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
@@ -97,6 +99,8 @@ public class NurseService {
     @Autowired
     private MedicalEventRepository medicalEventRepository;
 
+    @Autowired
+    private ClassRepository classRepository;
     @Autowired
     private HealthCheckResultRepository healthCheckResultRepository;
 
@@ -843,6 +847,36 @@ public class NurseService {
             return dto;
         }).collect(Collectors.toList());
         return studentDTOList;
+    }
+
+    public List<ClassStudentDTO> getAllStudenttt() {
+        List<ClassEntity> classList = classRepository.findAll();
+
+        if (classList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No classes found");
+        }
+        List<ClassStudentDTO> classDTOList = new ArrayList<>();
+        for (ClassEntity classEntity : classList){
+            List<StudentEntity> students = studentRepository.findByClassEntity(classEntity);
+
+            List<StudentDTO> studentDTOs;
+            if (students.isEmpty()) {
+                studentDTOs = new ArrayList<>();
+            }else{
+                studentDTOs = students.stream()
+            .map(student -> modelMapper.map(student, StudentDTO.class))
+            .collect(Collectors.toList());
+            }
+            
+            ClassStudentDTO classDTO = modelMapper.map(classEntity, ClassStudentDTO.class);
+            classDTO.setStudents(studentDTOs);
+            
+            classDTOList.add(classDTO);
+        }
+
+        return classDTOList;
+
+
     }
 
     public void replyToFeedback(Integer feedbackId, String response) {
