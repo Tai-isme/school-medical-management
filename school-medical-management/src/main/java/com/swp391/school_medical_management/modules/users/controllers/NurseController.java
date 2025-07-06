@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,7 +26,6 @@ import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEv
 import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
@@ -229,13 +227,13 @@ public class NurseController {
         return ResponseEntity.ok(nurseService.getFeedbacksForNurse(nurseId));
     }
 
-    @GetMapping("/students")
-    public ResponseEntity<List<StudentDTO>> getAllStudent() {
-        return ResponseEntity.ok(nurseService.getAllStudent());
-    }
+    // @GetMapping("/students")
+    // public ResponseEntity<List<StudentDTO>> getAllStudent() {
+    //     return ResponseEntity.ok(nurseService.getAllStudent());
+    // }
     
-    @GetMapping("/studentsss")
-    public ResponseEntity<List<ClassStudentDTO>> getAllStudenttt() {
+    @GetMapping("/students")
+    public ResponseEntity<List<ClassStudentDTO>> getAllStudent() {
         return ResponseEntity.ok(nurseService.getAllStudenttt());
     }
 
