@@ -44,5 +44,7 @@ public class MedicalRecordsRequest {
     @Size(max = 500, message = "Note must be at most 500 characters")
     private String note;
 
+    private Byte createBy;
+
     private List<VaccineHistoryRequest> vaccineHistories;
 }

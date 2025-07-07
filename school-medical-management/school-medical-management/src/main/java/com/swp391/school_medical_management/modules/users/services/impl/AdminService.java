@@ -356,17 +356,33 @@ public class AdminService {
                             + "' already exists and not started.");
         }
 
-        VaccineProgramEntity vaccineProgramEntity = new VaccineProgramEntity();
-        vaccineProgramEntity.setVaccineName(vaccineNameEntity);
-        vaccineProgramEntity.setDescription(request.getDescription());
-        vaccineProgramEntity.setManufacture(request.getManufacture());
-        vaccineProgramEntity.setVaccineDate(request.getVaccineDate());
-        vaccineProgramEntity.setNote(request.getNote());
-        vaccineProgramEntity.setStatus(VaccineProgramStatus.NOT_STARTED);
-        vaccineProgramEntity.setAdmin(admin);
+        VaccineProgramEntity entity = new VaccineProgramEntity();
+        entity.setVaccineName(vaccineNameEntity);
+        entity.setDescription(request.getDescription());
+        entity.setVaccineDate(request.getVaccineDate());
+        entity.setNote(request.getNote());
+        entity.setStatus(VaccineProgramStatus.NOT_STARTED);
+        entity.setAdmin(admin);
 
-        vaccineProgramRepository.save(vaccineProgramEntity);
-        return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
+        vaccineProgramRepository.save(entity);
+
+        VaccineNameDTO vaccineNameDTO = new VaccineNameDTO();
+        vaccineNameDTO.setId(vaccineNameEntity.getVaccineNameId());
+        vaccineNameDTO.setVaccineName(vaccineNameEntity.getVaccineName());
+        vaccineNameDTO.setManufacture(vaccineNameEntity.getManufacture());
+        vaccineNameDTO.setUrl(vaccineNameEntity.getUrl());
+        vaccineNameDTO.setNote(vaccineNameEntity.getNote());
+
+        VaccineProgramDTO dto = new VaccineProgramDTO();
+        dto.setVaccineId(entity.getVaccineId());
+        dto.setVaccineName(vaccineNameDTO);
+        dto.setDescription(entity.getDescription());
+        dto.setVaccineDate(entity.getVaccineDate());
+        dto.setStatus(entity.getStatus().name());
+        dto.setNote(entity.getNote());
+
+        return dto;
+
     }
 
     public VaccineProgramDTO updateVaccineProgram(VaccineProgramRequest request, long id) {

@@ -1,6 +1,16 @@
 package com.swp391.school_medical_management.modules.users.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +37,18 @@ public class HealthCheckResultEntity {
     public enum Level {
         GOOD, FAIR, AVERAGE, POOR
     }
+
+    @Column(name = "vision", length = 50)
+    private String vision;
+
+    @Column(name = "hearing", length = 50)
+    private String hearing;
+
+    @Column(name = "weight", length = 50)
+    private double weight;
+
+    @Column(name = "height", length = 50)
+    private double height;
 
     @Column(name = "note", length = 255)
     private String note;

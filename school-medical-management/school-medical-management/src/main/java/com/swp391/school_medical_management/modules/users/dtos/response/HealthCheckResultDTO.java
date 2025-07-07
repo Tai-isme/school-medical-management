@@ -12,6 +12,10 @@ public class HealthCheckResultDTO {
     private String diagnosis;
     private String level;
     private String note;
+    private String vision;
+    private String hearing;
+    private double weight;
+    private double height;
     private Long healthCheckFormId;
     private Long studentId;
 }

@@ -8,7 +8,6 @@ import lombok.Data;
 public class VaccineProgramRequest {
     private Long vaccineNameId;
     private String description;
-    private String manufacture;
     private LocalDate vaccineDate;
     private String note;
 }

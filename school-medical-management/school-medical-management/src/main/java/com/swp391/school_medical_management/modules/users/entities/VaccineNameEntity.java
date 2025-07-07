@@ -26,5 +26,7 @@ public class VaccineNameEntity {
 
     private String manufacture;
 
+    private String url;
+
     private String note;
 }

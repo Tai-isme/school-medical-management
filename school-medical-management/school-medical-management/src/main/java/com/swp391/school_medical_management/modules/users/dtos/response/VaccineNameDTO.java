@@ -11,5 +11,6 @@ public class VaccineNameDTO {
     private Long id;
     private String vaccineName;
     private String manufacture;
+    private String url;
     private String note;
 }

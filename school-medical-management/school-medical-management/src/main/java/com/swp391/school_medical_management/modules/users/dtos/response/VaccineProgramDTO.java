@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VaccineProgramDTO {
     private long vaccineId;
-    private String vaccineName;
+    private VaccineNameDTO vaccineName;
     private String description;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate vaccineDate;
