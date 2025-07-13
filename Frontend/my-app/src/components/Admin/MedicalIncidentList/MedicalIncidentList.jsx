@@ -17,7 +17,7 @@ const MedicalIncidentList = () => {
   const [studentList, setStudentList] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const pageSize = 5;
+  const pageSize = 3;
 
   // Tải danh sách sự kiện y tế từ API
   useEffect(() => {

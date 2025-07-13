@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Row, Col, Tag, Modal, Descriptions, Form, Input, DatePicker, message } from "antd";
+import { Button, Card, Row, Col, Tag, Modal, Descriptions, Form, Input, DatePicker, message, Pagination } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Select } from "antd";
 import axios from "axios";
@@ -19,6 +19,8 @@ const HealthCheckProgramList = () => {
   const [resultVisible, setResultVisible] = useState(false);
   const [resultData, setResultData] = useState([]);
   const [resultLoading, setResultLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 3; // Số chương trình mỗi trang
   const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
 
   useEffect(() => {
@@ -214,6 +216,9 @@ const HealthCheckProgramList = () => {
     }
   };
 
+  // Lọc và phân trang
+  const pagedPrograms = filteredPrograms.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   if (!programs.length) return <div>Đang tải...</div>;
 
   return (
@@ -266,7 +271,7 @@ const HealthCheckProgramList = () => {
           )}
         </div>
       </div>
-      {filteredPrograms.map((program) => (
+      {pagedPrograms.map((program) => (
         <Card
           key={program.id}
           style={{
@@ -367,6 +372,15 @@ const HealthCheckProgramList = () => {
           </div>
         </Card>
       ))}
+      <div style={{ marginTop: 24, textAlign: "center" }}>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={filteredPrograms.length}
+          onChange={setCurrentPage}
+          showSizeChanger={false}
+        />
+      </div>
       <Modal
         title="Chi tiết chương trình tiêm chủng"
         open={detailVisible}

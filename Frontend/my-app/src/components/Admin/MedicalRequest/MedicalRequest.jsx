@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Button, Tag, Modal, Row, Col, Card, Empty, message, DatePicker } from "antd";
+import { Tabs, Button, Tag, Modal, Row, Col, Card, Empty, message, DatePicker, Pagination } from "antd";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
@@ -34,11 +34,17 @@ const MedicalRequest = () => {
   const [activeStatus, setActiveStatus] = useState("PROCESSING");
   const [searchTerm, setSearchTerm] = useState(""); // Thêm state tìm kiếm
   const [dateRange, setDateRange] = useState([null, null]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8); // Số lượng card mỗi trang
 
   // Gọi API lấy tất cả khi đổi tab hoặc lần đầu
   useEffect(() => {
     fetchRequests();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeStatus, searchTerm, dateRange]);
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -132,82 +138,109 @@ const MedicalRequest = () => {
     const filteredRequests = getFilteredRequests();
     if (loading) return <div>Đang tải...</div>;
     if (filteredRequests.length === 0) return <Empty description="Không có dữ liệu" />;
+
+    // Phân trang
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = startIdx + pageSize;
+    const pageData = filteredRequests.slice(startIdx, endIdx);
+
     return (
-      <Row gutter={[16, 16]}>
-        {filteredRequests.map((record) => (
-          <Col xs={24} sm={12} md={8} lg={6} key={record.requestId}>
-            <Card
-              className={
-                record.status === "PROCESSING"
-                  ? "card-processing"
-                  : record.status === "SUBMITTED"
-                  ? "card-submitted"
-                  : record.status === "COMPLETED"
-                  ? "card-completed"
-                  : record.status === "CANCELLED"
-                  ? "card-cancelled"
-                  : ""
-              }
-              title={
-                <span>
-                  <Tag color={colorMap[record.status]}>
-                    {statusMap[record.status]}
-                  </Tag>
-                  <span style={{ marginLeft: 8 }}>#{record.requestId}</span>
-                </span>
-              }
-              bordered
-              extra={
-                <Button type="link" onClick={() => handleViewDetail(record)}>
-                  Xem chi tiết
-                </Button>
-              }
-              style={{ minHeight: 220 }}
-            >
-              {/* Chỉ giữ lại 3 thông tin */}
-              <p style={{ fontWeight: 700, fontSize: 16, color: "#1476d1", marginBottom: 8 }}>
-                {record.requestName}
-              </p>
-              <p>
-                <strong>Ngày gửi:</strong> {dayjs(record.date).format("DD/MM/YYYY")}
-              </p>
-              <p>
-                <strong>Học sinh:</strong> {record.studentDTO?.fullName || "Không rõ"}
-              </p>
-              <div style={{ marginTop: 12 }}>
-                {record.status === "PROCESSING" && (
-                  <>
+      <>
+        <Row gutter={[16, 16]}>
+          {pageData.map((record) => (
+            <Col xs={24} sm={12} md={8} lg={6} key={record.requestId}>
+              <Card
+                className={
+                  record.status === "PROCESSING"
+                    ? "card-processing"
+                    : record.status === "SUBMITTED"
+                    ? "card-submitted"
+                    : record.status === "COMPLETED"
+                    ? "card-completed"
+                    : record.status === "CANCELLED"
+                    ? "card-cancelled"
+                    : ""
+                }
+                title={
+                  <span>
+                    <Tag color={colorMap[record.status]}>
+                      {statusMap[record.status]}
+                    </Tag>
+                    <span style={{ marginLeft: 8 }}>#{record.requestId}</span>
+                  </span>
+                }
+                bordered
+                extra={
+                  <Button type="link" onClick={() => handleViewDetail(record)}>
+                    Xem chi tiết
+                  </Button>
+                }
+                style={{ minHeight: 220 }}
+              >
+                {/* Chỉ giữ lại 3 thông tin */}
+                <p style={{ fontWeight: 700, fontSize: 16, color: "#1476d1", marginBottom: 8 }}>
+                  {record.requestName}
+                </p>
+                <p>
+                  <strong>Ngày gửi:</strong> {dayjs(record.date).format("DD/MM/YYYY")}
+                </p>
+                <p>
+                  <strong>Học sinh:</strong> {record.studentDTO?.fullName || "Không rõ"}
+                </p>
+                <div style={{ marginTop: 12 }}>
+                  {record.status === "PROCESSING" && (
+                    <>
+                      <Button
+                        type="primary"
+                        size="small"
+                        onClick={() => handleApprove(record.requestId)}
+                        style={{ marginRight: 8 }}
+                      >
+                        Duyệt
+                      </Button>
+                      <Button
+                        danger
+                        size="small"
+                        onClick={() => handleReject(record.requestId)}
+                      >
+                        Từ chối
+                      </Button>
+                    </>
+                  )}
+                  {record.status === "SUBMITTED" && (
                     <Button
                       type="primary"
                       size="small"
-                      onClick={() => handleApprove(record.requestId)}
-                      style={{ marginRight: 8 }}
+                      onClick={() => handleGiveMedicine(record.requestId)}
                     >
-                      Duyệt
+                      Cho uống thuốc
                     </Button>
-                    <Button
-                      danger
-                      size="small"
-                      onClick={() => handleReject(record.requestId)}
-                    >
-                      Từ chối
+                  )}
+                  {record.status === "COMPLETED" && (
+                    <Button type="default" size="small" disabled style={{ color: "#1890ff", borderColor: "#1890ff" }}>
+                      Đã cho uống
                     </Button>
-                  </>
-                )}
-                {record.status === "SUBMITTED" && (
-                  <Button
-                    type="primary"
-                    size="small"
-                    onClick={() => handleGiveMedicine(record.requestId)}
-                  >
-                    Cho uống thuốc
-                  </Button>
-                )}
-              </div>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+                  )}
+                  {record.status === "CANCELLED" && (
+                    <Button type="default" size="small" disabled style={{ color: "#ff4d4f", borderColor: "#ff4d4f" }}>
+                      Đã từ chối
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+        <div style={{ marginTop: 24, textAlign: "center" }}>
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={filteredRequests.length}
+            onChange={setCurrentPage}
+            showSizeChanger={false}
+          />
+        </div>
+      </>
     );
   };
 
