@@ -556,7 +556,7 @@ public class NurseService {
 
         HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,
                 HealthCheckResultDTO.class);
-        healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
+        healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO);
         healthCheckResultDTO.setStudentDTO(
                 modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
 
@@ -619,7 +619,7 @@ public class NurseService {
 
         HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,
                 HealthCheckResultDTO.class);
-        healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
+        healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO);
         healthCheckResultDTO.setStudentDTO(
                 modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
 
@@ -639,7 +639,7 @@ public class NurseService {
         HealthCheckFormEntity healthCheckFormEntity = healthCheckResultEntity.getHealthCheckFormEntity();
         HealthCheckFormDTO healthCheckFormDTO = modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
 
-        healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
+        healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO);
         healthCheckResultDTO.setStudentDTO(
                 modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
 
@@ -656,7 +656,9 @@ public class NurseService {
                     HealthCheckResultDTO dto = modelMapper.map(healthCheckResultEntity, HealthCheckResultDTO.class);
                     dto.setStudentDTO(modelMapper.map(healthCheckResultEntity.getHealthCheckFormEntity().getStudent(),
                             StudentDTO.class));
-                    dto.setHealthCheckFormId(healthCheckResultEntity.getHealthCheckFormEntity().getId());
+                dto.setHealthCheckFormId(
+                    modelMapper.map(healthCheckResultEntity.getHealthCheckFormEntity(), HealthCheckFormDTO.class)
+                );
                     return dto;
                 }).collect(Collectors.toList());
 

@@ -499,7 +499,7 @@ public class ParentService {
         List<HealthCheckResultDTO> healthCheckResultDTOList = healthCheckResultList.stream().map(entity -> {
             HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
             HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
-            dto.setHealthCheckFormId(form.getId());
+            dto.setHealthCheckFormId(modelMapper.map(form, HealthCheckFormDTO.class));
             dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
             return dto;
         }).collect(Collectors.toList());
@@ -660,7 +660,7 @@ public class ParentService {
         HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
 
         HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
-        dto.setHealthCheckFormId(form.getId());
+        dto.setHealthCheckFormId(modelMapper.map(form, HealthCheckFormDTO.class));
         dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
 
         return dto;
