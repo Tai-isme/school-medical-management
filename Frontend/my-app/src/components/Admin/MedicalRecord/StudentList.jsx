@@ -12,7 +12,7 @@ export default function StudentList({ onSelect, selectedId, onFirstStudentLoaded
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `http://localhost:8080/api/nurse/studentsss`,
+          `http://localhost:8080/api/nurse/students`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

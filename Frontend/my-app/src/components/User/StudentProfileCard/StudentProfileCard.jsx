@@ -370,7 +370,13 @@ const StudentProfile = () => {
                   <h2 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: 24 }}>Các loại vaccin đã tiêm</h2>
                   <Table
                     columns={vaccineColumns}
-                    dataSource={vaccineHistory.map((item, idx) => ({ ...item, key: idx }))}
+                    dataSource={vaccineHistory.map((item, idx) => ({
+                      ...item,
+                      vaccineName: typeof item.vaccineName === 'object'
+                        ? item.vaccineName.vaccineName // Lấy tên vaccin từ object
+                        : item.vaccineName,
+                      key: idx
+                    }))}
                     pagination={{ pageSize: 5 }}
                     bordered
                     style={{ background: '#fff', borderRadius: 8 }}

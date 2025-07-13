@@ -13,18 +13,18 @@ const VaccineNotificationModalContent = ({
 }) => (
   <div>
     <p>
-      Quý Phụ Huynh không đăng ký (<b>{notification.vaccineProgram?.vaccineName}</b>) cho con vui lòng bỏ qua khảo sát này.
+      Quý Phụ Huynh không đăng ký (<b>{notification.vaccineProgram?.vaccineName.vaccineName}</b>) cho con vui lòng bỏ qua khảo sát này.
       <br />
       <br />
       Kính gửi quý Phụ Huynh,
       <br />
-      Nhà trường kính gửi quý Phụ huynh <b>XÁC NHẬN MIỄN TRỪ TRÁCH NHIỆM CHO HỌC SINH THAM GIA ({notification.vaccineProgram?.vaccineName})</b>
+      Nhà trường kính gửi quý Phụ huynh <b>XÁC NHẬN MIỄN TRỪ TRÁCH NHIỆM CHO HỌC SINH THAM GIA ({notification.vaccineProgram?.vaccineName.vaccineName})</b>
       <br />
       Văn bản quan trọng này có thể ảnh hưởng tới quyền lợi và nghĩa vụ của quý phụ huynh.
     </p>
     <ol>
       <li>
-        Khi tôi đồng ý cho con tôi tham gia (<b>{notification.vaccineProgram?.vaccineName}</b>) được tổ chức vào ngày {notification.formDate} tại trường TH, THCS & THPT Vinschool (cơ sở Grand Park), nếu con tôi đủ điều kiện được tiêm, tôi đồng ý với đơn xác nhận này, miễn trừ trách nhiệm pháp lý và các giả định rủi ro.
+        Khi tôi đồng ý cho con tôi tham gia (<b>{notification.vaccineProgram?.vaccineName.vaccineName.vaccineName}</b>) được tổ chức vào ngày {notification.formDate} tại trường TH, THCS & THPT Vinschool (cơ sở Grand Park), nếu con tôi đủ điều kiện được tiêm, tôi đồng ý với đơn xác nhận này, miễn trừ trách nhiệm pháp lý và các giả định rủi ro.
       </li>
       <li>
         Tôi đã đọc và tìm hiểu các thông tin liên quan tới loại vắc xin được sử dụng cho học sinh trước khi đồng ý xác nhận cho con tiêm vắc xin tại trường

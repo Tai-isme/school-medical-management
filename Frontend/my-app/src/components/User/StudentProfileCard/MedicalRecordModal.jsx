@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Input, Button, Table, Form, ConfigProvider, Typography, message } from "antd"; // Import Typography
+import { Modal, Input, Button, Table, Form, ConfigProvider, Typography, message, Select } from "antd"; // Import Typography
 import axios from "axios";
 
 const { Text } = Typography; // Sử dụng Text để có thể style chữ
@@ -16,6 +16,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
   const [vaccineHistories, setVaccineHistories] = useState(
     () => (initialValues?.vaccineHistories || []).map(v => ({ ...v }))
   );
+  const [vaccineOptions, setVaccineOptions] = useState([]);
 
   const handleAddVaccine = () => {
     setVaccineHistories(prev => [...prev, { vaccineName: "", note: "", key: Date.now() }]);
@@ -39,6 +40,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
       weight: Number(values.weight) || 0,
       height: Number(values.height) || 0,
       note: values.note || "",
+      createBy: "0",
       vaccineHistories: vaccineHistories.length > 0 ? vaccineHistories : [],
     };
 
@@ -87,6 +89,20 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
     }
   }, [initialValues, open, form]);
 
+  useEffect(() => {
+    if (open) {
+      axios.get('http://localhost:8080/api/parent/get=all-VaccineName', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      }).then(res => {
+        setVaccineOptions(res.data || []);
+      });
+    }
+  }, [open]);
+
+  const handleRemoveVaccine = (idx) => {
+    setVaccineHistories(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const vaccineTableColumns = [
     {
       title: (
@@ -95,13 +111,14 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
           <Text type="secondary" style={{ marginLeft: 4, fontWeight: 'normal' }}>(nếu có)</Text>
         </>
       ),
-      dataIndex: "vaccineName",
+      dataIndex: "vaccineNameId",
       render: (text, record, idx) => (
-        <Input
+        <Select
           value={text}
-          onChange={e => handleVaccineChange(e.target.value, idx, "vaccineName")}
-          placeholder="Bạch hầu, Ho gà, Uốn ván,..."
+          onChange={value => handleVaccineChange(value, idx, "vaccineNameId")}
+          placeholder="Chọn vaccin"
           style={{ width: 150 }}
+          options={vaccineOptions.map(v => ({ label: v, value: v }))}
         />
       ),
     },
@@ -186,10 +203,21 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                   name="vision"
                   style={{ flex: 1 }}
                   validateTrigger="onBlur"
-                  rules={[{ required: true, message: 'Vui lòng nhập thị giác' }]}
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập thị giác' },
+                    {
+                      validator: (_, value) => {
+                        // Chấp nhận định dạng x/10 với x từ 1 đến 10
+                        if (!value) return Promise.resolve();
+                        const match = value.match(/^([1-9]|10)\/10$/);
+                        if (match) return Promise.resolve();
+                        return Promise.reject('Thị giác phải có định dạng từ 1/10 đến 10/10');
+                      }
+                    }
+                  ]}
                 >
                   <Input
-                    placeholder="Vd: 10/10, Cận 3 độ, Viễn 2 độ,..."
+                    placeholder="Vd: 10/10"
                     onFocus={() => form.setFields([{ name: 'vision', errors: [] }])}
                   />
                 </Form.Item>
@@ -282,13 +310,74 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
               <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 20, marginBottom: 16 }}>
                 Các loại vaccin đã tiêm
               </div>
-              <Table
-                dataSource={vaccineHistories}
-                pagination={false}
-                rowKey={(record) => record.key || record.vaccineName + record.note}
-                columns={vaccineTableColumns}
-                style={{ width: 690 }}
-              />
+              <div style={{ display: 'flex', gap: 16, marginBottom: 8, fontWeight: 500, background: '#e3f2fd', borderRadius: 6, padding: '8px 0', color: '#1976d2' }}>
+                <div style={{ flex: 2, textAlign: 'left', paddingLeft: 8 }}>Tên Vaccin (nếu có)</div>
+                <div style={{ flex: 3, textAlign: 'left', paddingLeft: 8 }}>Mô tả (nếu có)</div>
+                <div style={{ width: 60, textAlign: 'center' }}>Xóa</div>
+              </div>
+              {vaccineHistories.map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
+                  <Form.Item
+                    name={['vaccineHistories', idx, 'vaccineName']}
+                    style={{ flex: 2, marginBottom: 0 }}
+                    rules={[
+                      { required: true, message: 'Chọn loại vaccin' },
+                      {
+                        validator: (_, value) => {
+                          // Lấy id vaccine đang chọn
+                          const currentId = typeof value === 'object' ? value.id : value;
+                          // Kiểm tra có trùng với vaccine khác không
+                          const duplicate = vaccineHistories.some(
+                            (v, i) =>
+                              i !== idx &&
+                              (typeof v.vaccineName === 'object' ? v.vaccineName.id : v.vaccineName) === currentId
+                          );
+                          return duplicate
+                            ? Promise.reject('Không được chọn trùng loại vaccin!')
+                            : Promise.resolve();
+                        }
+                      }
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Chọn vaccin"
+                      optionFilterProp="children"
+                      value={
+                        typeof item.vaccineName === 'object'
+                          ? item.vaccineName.id
+                          : item.vaccineName // nếu là id
+                      }
+                      onChange={value => {
+                        const selectedVac = vaccineOptions.find(v => v.id === value);
+                        handleVaccineChange(selectedVac, idx, 'vaccineName'); // lưu object nếu cần hiển thị
+                        handleVaccineChange(selectedVac.id, idx, 'vaccineNameId'); // lưu id để gửi backend
+                      }}
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().includes(input.toLowerCase())
+                      }
+                    >
+                      {vaccineOptions.map(vac => (
+                        <Select.Option key={vac.id} value={vac.id}>
+                          {vac.vaccineName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                  <Form.Item
+                    name={['vaccineHistories', idx, 'note']}
+                    style={{ flex: 3, marginBottom: 0 }}
+                  >
+                    <Input
+                      placeholder="Mô tả"
+                      value={item.note}
+                      onChange={e => handleVaccineChange(e.target.value, idx, 'note')}
+                    />
+                  </Form.Item>
+                  {/* Nút xóa */}
+                  <Button danger onClick={() => handleRemoveVaccine(idx)}>Xóa</Button>
+                </div>
+              ))}
               <Button type="primary" style={{ marginTop: 16 }} onClick={handleAddVaccine}>
                 + Thêm mới vaccin
               </Button>
