@@ -78,6 +78,22 @@ const HealthCheckResultDetailModal = ({ open, onClose, data, loading }) => (
           <span style={labelStyle}>Ghi chú:</span>
           <span style={valueStyle}>{data.note || "---"}</span>
         </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Thị lực:</span>
+          <span style={valueStyle}>{data.vision || "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Thính lực:</span>
+          <span style={valueStyle}>{data.hearing || "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Cân nặng:</span>
+          <span style={valueStyle}>{data.weight != null ? `${data.weight} kg` : "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Chiều cao:</span>
+          <span style={valueStyle}>{data.height != null ? `${data.height} cm` : "---"}</span>
+        </div>
       </div>
     ) : null}
   </Modal>

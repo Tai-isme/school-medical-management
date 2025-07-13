@@ -105,7 +105,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                 >
                   {notification.type === 'healthcheck'
                     ? `Khảo sát sức khỏe: ${notification.healthCheckProgram?.name || ''}`
-                    : `Tiêm phòng: ${notification.vaccineProgram?.vaccineName || ''}`}
+                    : `Tiêm phòng: ${notification.vaccineProgram?.vaccineName.vaccineName || ''}`}
                 </p>
               </div>
               <div className="notification-info-row-bottom">

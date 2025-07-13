@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './InstructionForm.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faCaretDown, faHouse } from '@fortawesome/free-solid-svg-icons';
@@ -7,6 +7,7 @@ import StudentInfoCard from '../../../common/StudentInfoCard';
 import { message } from 'antd';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Swal from 'sweetalert2';
 
 export default function InstructionForm({ onShowHistory }) {
   // Lấy students từ localStorage
@@ -30,6 +31,7 @@ export default function InstructionForm({ onShowHistory }) {
   const [usageTime, setUsageTime] = useState(''); // Thêm state cho thời gian sử dụng thuốc
   const [dateError, setDateError] = useState('');
   const [activeTab, setActiveTab] = useState('create'); // 'create' hoặc 'history'
+  const [editingId, setEditingId] = useState(null);
   const usageTimeOptions = [
   "Sau ăn sáng từ 9h-9h30",
   "Trước ăn trưa: 10h30-11h",
@@ -61,6 +63,17 @@ const handleAddMedicine = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const result = await Swal.fire({
+      title: 'Xác nhận gửi đơn thuốc?',
+      text: 'Bạn có chắc chắn muốn gửi đơn thuốc này?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Gửi',
+      cancelButtonText: 'Hủy',
+    });
+
+    if (!result.isConfirmed) return;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const selectedDate = new Date(usageTime);
@@ -86,34 +99,45 @@ const handleAddMedicine = () => {
     };
 
     try {
-      const token = localStorage.getItem("token"); // nếu cần token
-      const response = await fetch("http://localhost:8080/api/parent/medical-request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}` // nếu API cần xác thực
-        },
-        body: JSON.stringify(payload)
-      });
+      const token = localStorage.getItem("token");
+      let response;
+      if (editingId) {
+        response = await fetch(`http://localhost:8080/api/parent/medical-request/${editingId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        response = await fetch("http://localhost:8080/api/parent/medical-request", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+      }
 
-      if (!response.ok) throw new Error("Bạn chỉ có thể gửi đơn thuốc cho học sinh của mình khi đơn thuốc trước đã hoàn thành!");
+      if (!response.ok) throw new Error("Có lỗi khi gửi đơn thuốc!");
 
-      setActiveTab('history'); // Chuyển sang tab lịch sử gửi đơn thuốc
-setPurpose('');
-  setNote('');
-  setUsageTime('');
-  setMedicines([{ name: '', quantity: '', usage: '' }]);
-      message.success('Đơn thuốc đã được gửi thành công!');
-      toast.success('Đơn thuốc đã được gửi thành công!'); // Thêm thông báo thành công
+      setActiveTab('history');
+      setPurpose('');
+      setNote('');
+      setUsageTime('');
+      setMedicines([{ name: '', quantity: '', usage: '' }]);
+      setEditingId(null); // Reset sau khi gửi
+      message.success(editingId ? 'Đã cập nhật đơn thuốc!' : 'Đơn thuốc đã được gửi thành công!');
+      toast.success(editingId ? 'Đã cập nhật đơn thuốc!' : 'Đơn thuốc đã được gửi thành công!');
     } catch (error) {
       let errorMsg = 'Có lỗi xảy ra!';
       if (error && error.message) {
         try {
-          // Nếu response trả về dạng JSON có message
           const errObj = JSON.parse(error.message);
           if (errObj.message) errorMsg = errObj.message;
         } catch {
-          // Nếu không phải JSON thì lấy message gốc
           errorMsg = error.message;
         }
       }
@@ -138,6 +162,28 @@ const getStatusText = (status) => {
   }
 };
 
+useEffect(() => {
+  const handleEdit = (e) => {
+    const req = e.detail;
+    setPurpose(req.requestName || '');
+    setNote(req.note || '');
+    setUsageTime(req.date || '');
+    setMedicines(
+        req.medicalRequestDetailDTO && Array.isArray(req.medicalRequestDetailDTO)
+        ? req.medicalRequestDetailDTO.map(item => ({
+            name: item.medicineName,
+            quantity: item.dosage,
+            usage: item.time
+          }))
+        : [{ name: '', quantity: '', usage: '' }]
+    );
+    setSelectedStudentId(req.studentDTO?.id || '');
+    setActiveTab('create');
+    setEditingId(req.requestId);
+  };
+  window.addEventListener('edit-medicine-request', handleEdit);
+  return () => window.removeEventListener('edit-medicine-request', handleEdit);
+}, []);
 
   return (
     <div className="instruction-form-container" style={{ position: "relative" }}>
@@ -335,7 +381,7 @@ const getStatusText = (status) => {
               </div>
               <div className="submit-btn-wrapper">
                 <button type="submit" className="submit-btn">
-                  Xác nhận gửi
+                  {editingId ? "Cập nhật" : "Xác nhận gửi"}
                 </button>
               </div>
             </div>

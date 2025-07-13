@@ -65,14 +65,14 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
               ? "Bị từ chối"
               : detailData.status}
           </span>
-          {detailData.reason && (
+          {(detailData.status === "CANCLE" || detailData.status === "CANCELLED") && (
             <div style={{ color: "#f44336", fontWeight: 500, marginTop: 4 }}>
-              Lý do: {detailData.reason}
+              Lý do: {detailData.reason ?? ""}
             </div>
           )}
         </div>
         <div style={{ marginBottom: 12 }}>
-          <b>Mã học sinh:</b> {detailData.studentId}
+          <b>Học sinh nhận thuốc:</b> {detailData.studentDTO.fullName}
         </div>
         <div style={{ margin: "16px 0 8px", fontWeight: "bold" }}>Chi tiết đơn thuốc:</div>
         {detailData.medicalRequestDetailDTO?.map((item, idx) => (

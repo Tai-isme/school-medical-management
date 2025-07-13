@@ -3,6 +3,7 @@ import { Table, Tag, Space, Modal, Spin, Popconfirm } from 'antd';
 import axios from 'axios';
 import { max } from 'moment/moment';
 import SendMedicineDetailModal from './SendMedicineDetailModal';
+import Swal from 'sweetalert2';
 // --- Sample Data ---
 // In a real application, this data would come from an API call
 const RequestTable = () => {
@@ -10,6 +11,7 @@ const RequestTable = () => {
   const [detailVisible, setDetailVisible] = useState(false);
   const [detailData, setDetailData] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [editingRequest, setEditingRequest] = useState(null);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -53,6 +55,12 @@ const RequestTable = () => {
     } catch (err) {
       console.error('Error deleting request:', err);
     }
+  };
+
+  const handleEditRequest = (record) => {
+    setEditingRequest(record);
+    // Có thể dùng context, hoặc truyền qua props để mở form chỉnh sửa ở InstructionForm
+    window.dispatchEvent(new CustomEvent('edit-medicine-request', { detail: record }));
   };
 
   // --- Column Definitions ---
@@ -137,18 +145,45 @@ const RequestTable = () => {
     {
       title: 'Xóa đơn thuốc',
       key: 'action',
-      align: 'center', // căn giữa
+      align: 'center',
       render: (_, record) => (
         <div>
           {record.status === "PROCESSING" && (
-            <Popconfirm
-              title="Bạn có chắc chắn muốn xóa đơn thuốc này?"
-              onConfirm={handleDeleteRequest(record.requestId)}
-              okText="Xóa"
-              cancelText="Hủy"
+            <a
+              style={{ color: 'red', cursor: 'pointer' }}
+              onClick={async () => {
+                const result = await Swal.fire({
+                  title: 'Bạn có chắc chắn muốn xóa đơn thuốc này?',
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonText: 'Xóa',
+                  cancelButtonText: 'Hủy',
+                });
+                if (result.isConfirmed) {
+                  await handleDeleteRequest(record.requestId)();
+                  Swal.fire('Đã xóa!', 'Đơn thuốc đã được xóa.', 'success');
+                }
+              }}
             >
-              <a style={{ color: 'red', cursor: 'pointer' }}>Xóa</a>
-            </Popconfirm>
+              Xóa
+            </a>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: 'Chỉnh sửa',
+      key: 'edit',
+      align: 'center',
+      render: (_, record) => (
+        <div>
+          {record.status === "PROCESSING" && (
+            <a
+              style={{ color: '#1976d2', cursor: 'pointer', marginLeft: 8 }}
+              onClick={() => handleEditRequest(record)}
+            >
+              Chỉnh sửa
+            </a>
           )}
         </div>
       ),
