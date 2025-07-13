@@ -30,6 +30,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.MedicalE
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
@@ -312,9 +313,27 @@ public class ParentService {
         List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findByParent(parent);
         if (medicalRequestEntityList.isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found medical request");
-        List<MedicalRequestDTO> medicalRequestDTOList = medicalRequestEntityList.stream()
-                .map(medicalRequestEntity -> modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class))
-                .collect(Collectors.toList());
+
+        List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
+        for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
+            MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+
+            // Map chi tiết đơn thuốc
+            List<MedicalRequestDetailDTO> detailDTOs = medicalRequestEntity.getMedicalRequestDetailEntities()
+                    .stream()
+                    .map(detail -> modelMapper.map(detail, MedicalRequestDetailDTO.class))
+                    .collect(Collectors.toList());
+            medicalRequestDTO.setMedicalRequestDetailDTO(detailDTOs);
+
+            // Map student nếu cần
+            // if (medicalRequestEntity.getStudent() != null) {
+            // StudentDTO studentDTO = modelMapper.map(medicalRequestEntity.getStudent(),
+            // StudentDTO.class);
+            // medicalRequestDTO.setStudentDTO(studentDTO);
+            // }
+
+            medicalRequestDTOList.add(medicalRequestDTO);
+        }
         return medicalRequestDTOList;
     }
 
@@ -334,6 +353,10 @@ public class ParentService {
                 .collect(Collectors.toList());
         MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequest, MedicalRequestDTO.class);
         medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+        if (medicalRequest.getStudent() != null) {
+            StudentDTO studentDTO = modelMapper.map(medicalRequest.getStudent(), StudentDTO.class);
+            medicalRequestDTO.setStudentDTO(studentDTO);
+        }
         return medicalRequestDTO;
     }
 
