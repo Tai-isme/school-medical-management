@@ -216,7 +216,7 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
                     fontSize: 16,
                     fontFamily: "inherit"
                   }}
-                  value={v.vaccineName || ""}
+                  value={v.vaccineName.vaccineName || ""}
                   readOnly
                 />
                 <input
