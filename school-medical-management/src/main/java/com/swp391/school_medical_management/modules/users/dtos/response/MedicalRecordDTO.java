@@ -26,7 +26,6 @@ public class MedicalRecordDTO {
     private Double height;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdate;
-    private Byte createBy;
     private String note;
     private List<VaccineHistoryDTO> vaccineHistories;
 }

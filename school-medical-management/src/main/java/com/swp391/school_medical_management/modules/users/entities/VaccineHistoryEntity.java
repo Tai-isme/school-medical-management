@@ -32,8 +32,10 @@ public class VaccineHistoryEntity {
     @JoinColumn(name = "record_id", referencedColumnName = "record_id")
     private MedicalRecordEntity medicalRecord;
 
+    @Column(name = "create_by")
+    private Byte createBy;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vaccine_name_id", referencedColumnName = "vaccine_name_id")
     private VaccineNameEntity vaccineNameEntity;
 }
-

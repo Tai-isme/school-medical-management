@@ -142,7 +142,7 @@ public class ParentService {
             vaccineHistory.setVaccineNameEntity(vaccineNameEntity);
             vaccineHistory.setNote(vaccineHistoryRequest.getNote());
             vaccineHistory.setMedicalRecord(medicalRecord);
-
+            vaccineHistory.setCreateBy((byte) 0);
             vaccineHistories.add(vaccineHistory);
         }
 
@@ -194,6 +194,7 @@ public class ParentService {
             vaccineHistoryEntity.setVaccineNameEntity(vaccineNameEntity);
             vaccineHistoryEntity.setNote(vaccineHistoryRequest.getNote());
             vaccineHistoryEntity.setMedicalRecord(medicalRecord);
+            vaccineHistoryEntity.setCreateBy((byte) 0);
 
             medicalRecord.getVaccineHistories().add(vaccineHistoryEntity);
         }
@@ -227,6 +228,7 @@ public class ParentService {
                     VaccineHistoryDTO dto = new VaccineHistoryDTO();
                     dto.setId(vaccineHistory.getId() != null ? vaccineHistory.getId().longValue() : null);
                     dto.setNote(vaccineHistory.getNote());
+                    dto.setCreateBy(vaccineHistory.getCreateBy());
                     dto.setVaccineName(modelMapper.map(
                             vaccineHistory.getVaccineNameEntity(), VaccineNameDTO.class));
                     return dto;
