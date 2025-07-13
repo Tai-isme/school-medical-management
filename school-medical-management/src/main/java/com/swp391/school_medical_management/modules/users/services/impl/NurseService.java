@@ -673,6 +673,7 @@ public class NurseService {
     }
 
     public VaccineResultDTO createVaccineResult(VaccineResultRequest request) {
+
         Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(request.getVaccineFormId());
         if (vaccineFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
@@ -721,7 +722,7 @@ public class NurseService {
         vaccineHistoryRepository.save(history);
 
         VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
-        vaccineResultDTO.setVaccineFormId(vaccineFormEntity.getId());
+        vaccineResultDTO.setVaccineFormDTO(modelMapper.map(vaccineFormEntity, VaccineFormDTO.class));
         vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
         return vaccineResultDTO;
     }
@@ -779,7 +780,7 @@ public class NurseService {
         vaccineResultRepository.save(vaccineResultEntity);
 
         VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
-        vaccineResultDTO.setVaccineFormId(vaccineFormDTO.getId());
+        vaccineResultDTO.setVaccineFormDTO(modelMapper.map(vaccineFormEntity, VaccineFormDTO.class));
         vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
 
         return vaccineResultDTO;
@@ -793,9 +794,8 @@ public class NurseService {
         VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
 
         VaccineFormEntity vaccineFormEntity = vaccineResultEntity.getVaccineFormEntity();
-        VaccineFormDTO vaccineFormDTO = modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
 
-        vaccineResultDTO.setVaccineFormId(vaccineFormDTO.getId());
+        vaccineResultDTO.setVaccineFormDTO(modelMapper.map(vaccineFormEntity, VaccineFormDTO.class));
         vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
 
         return vaccineResultDTO;
@@ -805,15 +805,17 @@ public class NurseService {
         List<VaccineResultEntity> vaccineResultEntityList = vaccineResultRepository.findAll();
         if (vaccineResultEntityList.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine result found");
-        List<VaccineResultDTO> vaccineResultDTOList = vaccineResultEntityList
-                .stream()
-                .map(vaccineResultEntity -> {
-                    VaccineResultDTO dto = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
-                    dto.setStudentDTO(
-                            modelMapper.map(vaccineResultEntity.getVaccineFormEntity().getStudent(), StudentDTO.class));
-                    dto.setVaccineFormId(vaccineResultEntity.getVaccineFormEntity().getId());
-                    return dto;
-                }).collect(Collectors.toList());
+
+        List<VaccineResultDTO> vaccineResultDTOList = new ArrayList<>();
+
+        for (VaccineResultEntity entity : vaccineResultEntityList) {
+            VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
+
+            dto.setStudentDTO(modelMapper.map(entity.getVaccineFormEntity().getStudent(), StudentDTO.class));
+            dto.setVaccineFormDTO(modelMapper.map(entity.getVaccineFormEntity(), VaccineFormDTO.class));
+
+            vaccineResultDTOList.add(dto);
+        }
 
         return vaccineResultDTOList;
     }

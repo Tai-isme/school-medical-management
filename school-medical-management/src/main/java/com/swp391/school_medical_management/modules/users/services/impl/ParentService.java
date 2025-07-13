@@ -516,7 +516,7 @@ public class ParentService {
         List<VaccineResultDTO> vaccineResultDTOList = vaccineResultList.stream().map(entity -> {
             VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
             VaccineFormEntity form = entity.getVaccineFormEntity();
-            dto.setVaccineFormId(form.getId());
+            dto.setVaccineFormDTO(modelMapper.map(form, VaccineFormDTO.class));
             dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
             return dto;
         }).collect(Collectors.toList());
@@ -676,7 +676,7 @@ public class ParentService {
         VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
 
         VaccineFormEntity form = entity.getVaccineFormEntity();
-        dto.setVaccineFormId(form.getId());
+        dto.setVaccineFormDTO(modelMapper.map(form, VaccineFormDTO.class));
         dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
 
         return dto;
