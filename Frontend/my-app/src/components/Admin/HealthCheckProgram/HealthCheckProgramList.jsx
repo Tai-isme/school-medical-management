@@ -5,7 +5,7 @@ import { Select } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
-import CreateHealthCheckResultModal from "./CreateHealthCheckResultModal";
+
 
 const HealthCheckProgramList = () => {
   const [programs, setPrograms] = useState([]);
@@ -679,14 +679,7 @@ const HealthCheckProgramList = () => {
           </Descriptions>
         )}
       </Modal>
-      <CreateHealthCheckResultModal
-        open={createResultVisible}
-        onCancel={() => setCreateResultVisible(false)}
-        students={studentsForResult}
-        onChange={handleResultChange}
-        onOk={() => {/* Gửi dữ liệu lên backend */}}
-        loading={loading}
-      />
+      
     </div>
   );
 };
