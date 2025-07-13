@@ -17,5 +17,5 @@ public class HealthCheckResultDTO {
     private double weight;
     private double height;
     private Long healthCheckFormId;
-    private Long studentId;
+    private StudentDTO studentDTO;
 }

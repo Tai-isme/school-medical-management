@@ -500,7 +500,7 @@ public class ParentService {
             HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
             HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
             dto.setHealthCheckFormId(form.getId());
-            dto.setStudentId(form.getStudent().getId());
+            dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
             return dto;
         }).collect(Collectors.toList());
 
@@ -517,7 +517,7 @@ public class ParentService {
             VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
             VaccineFormEntity form = entity.getVaccineFormEntity();
             dto.setVaccineFormId(form.getId());
-            dto.setStudentId(form.getStudent().getId());
+            dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
             return dto;
         }).collect(Collectors.toList());
         return vaccineResultDTOList;
@@ -661,7 +661,7 @@ public class ParentService {
 
         HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
         dto.setHealthCheckFormId(form.getId());
-        dto.setStudentId(form.getStudent().getId());
+        dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
 
         return dto;
     }
@@ -677,7 +677,7 @@ public class ParentService {
 
         VaccineFormEntity form = entity.getVaccineFormEntity();
         dto.setVaccineFormId(form.getId());
-        dto.setStudentId(form.getStudent().getId());
+        dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
 
         return dto;
     }

@@ -27,6 +27,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEv
 import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
@@ -47,7 +48,7 @@ import jakarta.validation.Valid;
 @Validated
 @RestController
 @RequestMapping("api/nurse")
-//@PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
+// @PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
 public class NurseController {
 
     @Autowired
@@ -72,7 +73,8 @@ public class NurseController {
     }
 
     @PutMapping("/medical-request/{requestId}/status")
-    public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId, @RequestBody @Valid UpdateMedicalRequestStatus request) {
+    public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId,
+            @RequestBody @Valid UpdateMedicalRequestStatus request) {
         MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, request);
         return ResponseEntity.ok(medicalRequestDTO);
     }
@@ -153,9 +155,10 @@ public class NurseController {
     }
 
     @PostMapping("/health-check-result")
-    public ResponseEntity<HealthCheckResultDTO> createHealthCheckResult(@RequestBody HealthCheckResultRequest request) {
-        HealthCheckResultDTO healthCheckResultDTO = nurseService.createHealthCheckResult(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(healthCheckResultDTO);
+    public ResponseEntity<List<HealthCheckResultDTO>> createDefaultHealthCheckResultsForAllCommittedForms() {
+        List<HealthCheckResultDTO> healthCheckResultDTOList = nurseService
+                .createDefaultHealthCheckResultsForAllCommittedForms();
+        return ResponseEntity.status(HttpStatus.CREATED).body(healthCheckResultDTOList);
     }
 
     @PutMapping("/health-check-result/{healCheckResultId}")
@@ -184,9 +187,9 @@ public class NurseController {
     }
 
     @PostMapping("/vaccine-result")
-    public ResponseEntity<VaccineResultDTO> createVaccineResult(@RequestBody VaccineResultRequest request) {
-        VaccineResultDTO vaccineResultDTO = nurseService.createVaccineResult(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(vaccineResultDTO);
+    public ResponseEntity<List<VaccineResultDTO>> createVaccineResult() {
+        List<VaccineResultDTO> vaccineResultDTOList = nurseService.createDefaultVaccineResultsForAllCommittedForms();
+        return ResponseEntity.status(HttpStatus.CREATED).body(vaccineResultDTOList);
     }
 
     @PutMapping("/vaccine-result/{vaccineResultId}")
@@ -227,9 +230,14 @@ public class NurseController {
         return ResponseEntity.ok(nurseService.getFeedbacksForNurse(nurseId));
     }
 
+    // @GetMapping("/students")
+    // public ResponseEntity<List<StudentDTO>> getAllStudent() {
+    // return ResponseEntity.ok(nurseService.getAllStudent());
+    // }
+
     @GetMapping("/students")
-    public ResponseEntity<List<StudentDTO>> getAllStudent() {
-        return ResponseEntity.ok(nurseService.getAllStudent());
+    public ResponseEntity<List<ClassStudentDTO>> getAllStudent() {
+        return ResponseEntity.ok(nurseService.getAllStudenttt());
     }
 
     // Lọc ra nhưng học sinh chưa từng tiêm loại vaccine name history đó hoặc chưa

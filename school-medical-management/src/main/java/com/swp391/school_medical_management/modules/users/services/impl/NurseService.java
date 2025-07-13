@@ -24,6 +24,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMed
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
@@ -57,6 +58,7 @@ import com.swp391.school_medical_management.modules.users.entities.VaccineNameEn
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
 import com.swp391.school_medical_management.modules.users.repositories.BlogRepository;
+import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
 import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
@@ -99,6 +101,9 @@ public class NurseService {
 
     @Autowired
     private HealthCheckResultRepository healthCheckResultRepository;
+
+    @Autowired
+    private ClassRepository classRepository;
 
     @Autowired
     private VaccineResultRepository vaccineResultRepository;
@@ -552,9 +557,36 @@ public class NurseService {
         HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,
                 HealthCheckResultDTO.class);
         healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
-        healthCheckResultDTO.setStudentId(healthCheckFormDTO.getStudentId());
+        healthCheckResultDTO.setStudentDTO(
+                modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
 
         return healthCheckResultDTO;
+    }
+
+    public List<HealthCheckResultDTO> createDefaultHealthCheckResultsForAllCommittedForms() {
+        List<HealthCheckFormEntity> committedForms = healthCheckFormRepository.findByCommitTrue();
+        List<HealthCheckResultDTO> resultList = new ArrayList<>();
+
+        for (HealthCheckFormEntity form : committedForms) {
+            boolean exists = healthCheckResultRepository.findByHealthCheckFormEntity(form).isPresent();
+            if (exists)
+                continue;
+
+            HealthCheckResultRequest defaultRequest = new HealthCheckResultRequest();
+            defaultRequest.setDiagnosis("GOOD");
+            defaultRequest.setLevel("GOOD");
+            defaultRequest.setNote("No problem");
+            defaultRequest.setHealthCheckFormId(form.getId());
+
+            try {
+                HealthCheckResultDTO resultDTO = createHealthCheckResult(defaultRequest);
+                resultList.add(resultDTO);
+            } catch (ResponseStatusException ex) {
+                System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " + ex.getReason());
+            }
+        }
+
+        return resultList;
     }
 
     public HealthCheckResultDTO updateHealthCheckResult(Long healCheckResultId, HealthCheckResultRequest request) {
@@ -588,7 +620,8 @@ public class NurseService {
         HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,
                 HealthCheckResultDTO.class);
         healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
-        healthCheckResultDTO.setStudentId(healthCheckFormDTO.getStudentId());
+        healthCheckResultDTO.setStudentDTO(
+                modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
 
         return healthCheckResultDTO;
     }
@@ -607,7 +640,8 @@ public class NurseService {
         HealthCheckFormDTO healthCheckFormDTO = modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
 
         healthCheckResultDTO.setHealthCheckFormId(healthCheckFormDTO.getId());
-        healthCheckResultDTO.setStudentId(healthCheckFormDTO.getStudentId());
+        healthCheckResultDTO.setStudentDTO(
+                modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
 
         return healthCheckResultDTO;
     }
@@ -620,7 +654,8 @@ public class NurseService {
                 .stream()
                 .map(healthCheckResultEntity -> {
                     HealthCheckResultDTO dto = modelMapper.map(healthCheckResultEntity, HealthCheckResultDTO.class);
-                    dto.setStudentId(healthCheckResultEntity.getHealthCheckFormEntity().getStudent().getId());
+                    dto.setStudentDTO(modelMapper.map(healthCheckResultEntity.getHealthCheckFormEntity().getStudent(),
+                            StudentDTO.class));
                     dto.setHealthCheckFormId(healthCheckResultEntity.getHealthCheckFormEntity().getId());
                     return dto;
                 }).collect(Collectors.toList());
@@ -687,8 +722,34 @@ public class NurseService {
 
         VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
         vaccineResultDTO.setVaccineFormId(vaccineFormEntity.getId());
-        vaccineResultDTO.setStudentId(studentId);
+        vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
         return vaccineResultDTO;
+    }
+
+    public List<VaccineResultDTO> createDefaultVaccineResultsForAllCommittedForms() {
+        List<VaccineFormEntity> committedForms = vaccineFormRepository.findByCommitTrue();
+        List<VaccineResultDTO> resultList = new ArrayList<>();
+
+        for (VaccineFormEntity form : committedForms) {
+            boolean exists = vaccineResultRepository.findByVaccineFormEntity(form).isPresent();
+            if (exists)
+                continue;
+
+            VaccineResultRequest defaultRequest = new VaccineResultRequest();
+            defaultRequest.setReaction("No reaction");
+            defaultRequest.setStatusHealth("GOOD");
+            defaultRequest.setResultNote("No problem");
+            defaultRequest.setVaccineFormId(form.getId());
+
+            try {
+                VaccineResultDTO resultDTO = createVaccineResult(defaultRequest);
+                resultList.add(resultDTO);
+            } catch (ResponseStatusException ex) {
+                System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " + ex.getReason());
+            }
+        }
+
+        return resultList;
     }
 
     public VaccineResultDTO updateVaccineResult(Long vaccineResultId, VaccineResultRequest request) {
@@ -719,7 +780,7 @@ public class NurseService {
 
         VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
         vaccineResultDTO.setVaccineFormId(vaccineFormDTO.getId());
-        vaccineResultDTO.setStudentId(vaccineFormDTO.getStudentId());
+        vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
 
         return vaccineResultDTO;
     }
@@ -735,7 +796,7 @@ public class NurseService {
         VaccineFormDTO vaccineFormDTO = modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
 
         vaccineResultDTO.setVaccineFormId(vaccineFormDTO.getId());
-        vaccineResultDTO.setStudentId(vaccineFormDTO.getStudentId());
+        vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
 
         return vaccineResultDTO;
     }
@@ -748,7 +809,8 @@ public class NurseService {
                 .stream()
                 .map(vaccineResultEntity -> {
                     VaccineResultDTO dto = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
-                    dto.setStudentId(vaccineResultEntity.getVaccineFormEntity().getStudent().getId());
+                    dto.setStudentDTO(
+                            modelMapper.map(vaccineResultEntity.getVaccineFormEntity().getStudent(), StudentDTO.class));
                     dto.setVaccineFormId(vaccineResultEntity.getVaccineFormEntity().getId());
                     return dto;
                 }).collect(Collectors.toList());
@@ -808,21 +870,49 @@ public class NurseService {
     }
 
     public List<StudentDTO> getStudentsNotVaccinated(Long vaccineProgramId, Long vaccineNameId) {
-    List<StudentEntity> students;
+        List<StudentEntity> students;
 
-    if (vaccineProgramId != null) {
-        students = studentRepository.findStudentsNeverVaccinatedByProgramId(vaccineProgramId);
-    } else if (vaccineNameId != null) {
-        students = studentRepository.findStudentsNeverVaccinatedByVaccineNameId(vaccineNameId);
-    } else {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing filter condition");
+        if (vaccineProgramId != null) {
+            students = studentRepository.findStudentsNeverVaccinatedByProgramId(vaccineProgramId);
+        } else if (vaccineNameId != null) {
+            students = studentRepository.findStudentsNeverVaccinatedByVaccineNameId(vaccineNameId);
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing filter condition");
+        }
+
+        return students.stream()
+                .map(s -> modelMapper.map(s, StudentDTO.class))
+                .collect(Collectors.toList());
     }
 
-    return students.stream()
-            .map(s -> modelMapper.map(s, StudentDTO.class))
-            .collect(Collectors.toList());
-}
+    public List<ClassStudentDTO> getAllStudenttt() {
+        List<ClassEntity> classList = classRepository.findAll();
 
+        if (classList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No classes found");
+        }
+        List<ClassStudentDTO> classDTOList = new ArrayList<>();
+        for (ClassEntity classEntity : classList) {
+            List<StudentEntity> students = studentRepository.findByClassEntity(classEntity);
+
+            List<StudentDTO> studentDTOs;
+            if (students.isEmpty()) {
+                studentDTOs = new ArrayList<>();
+            } else {
+                studentDTOs = students.stream()
+                        .map(student -> modelMapper.map(student, StudentDTO.class))
+                        .collect(Collectors.toList());
+            }
+
+            ClassStudentDTO classDTO = modelMapper.map(classEntity, ClassStudentDTO.class);
+            classDTO.setStudents(studentDTOs);
+
+            classDTOList.add(classDTO);
+        }
+
+        return classDTOList;
+
+    }
 
     private String toSlug(String title) {
         return title.toLowerCase()
