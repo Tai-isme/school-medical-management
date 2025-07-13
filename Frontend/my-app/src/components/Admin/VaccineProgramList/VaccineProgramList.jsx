@@ -42,6 +42,8 @@ const VaccineProgramList = () => {
   const [showResultPage, setShowResultPage] = useState(false);
   const [resultPageData, setResultPageData] = useState([]);
   const [resultPageLoading, setResultPageLoading] = useState(false);
+  const [resultTablePage, setResultTablePage] = useState(1);
+  const [resultTablePageSize, setResultTablePageSize] = useState(8); // Số dòng mỗi trang
   const pageSize = 3; // Số chương trình mỗi trang
   const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
 
@@ -245,15 +247,15 @@ const VaccineProgramList = () => {
           resultNote: values.resultNote,
           reaction: values.reaction,
           createdAt: new Date().toISOString(),
-          vaccineFormId: program.vaccineId, // hoặc trường phù hợp với backend
+          vaccineFormId: program.vaccineId,
           // Thêm các trường khác nếu cần
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      message.success("Tạo kết quả thành công!");
-      setCreateResultVisible(false);
+      message.success(`Tạo kết quả cho vaccine ID ${program.vaccineId} thành công!`);
+    setCreateResultVisible(false);
       resultForm.resetFields();
     } catch (error) {
       message.error("Tạo kết quả thất bại!");
@@ -261,6 +263,50 @@ const VaccineProgramList = () => {
       setCreateResultLoading(false);
     }
   };
+
+  const handleCreateProgramResult = async (program) => {
+  const token = localStorage.getItem("token");
+  try {
+    await axios.post(
+      "http://localhost:8080/api/nurse/vaccine-result",
+      {
+        statusHealth: "Tốt",
+        resultNote: "",
+        reaction: "",
+        createdAt: new Date().toISOString(),
+        vaccineFormDTO: {
+          id: program.vaccineFormId || program.id || program.vaccineId,
+          studentId: program.studentId,
+          parentId: program.parentId,
+          formDate: program.formDate,
+          note: program.note || "",
+          commit: true,
+          status: program.status || "",
+          vaccineProgram: program.vaccineProgram || {},
+        },
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    Swal.fire({
+      icon: "success",
+      title: "Thành công!",
+      text: "Tạo chương trình tiêm chủng thành công!",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+    // Gọi lại fetchNurseResults() nếu cần
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Thất bại!",
+      text: "Tạo chương trình tiêm chủng thất bại!",
+    });
+  }
+};
 
   // Lọc danh sách theo tên chương trình và ngày tiêm
   const filteredPrograms = programs.filter((program) => {
@@ -363,6 +409,11 @@ const VaccineProgramList = () => {
       key: "count",
     },
   ];
+
+  const pagedNurseResults = nurseResults.slice(
+    (resultTablePage - 1) * resultTablePageSize,
+    resultTablePage * resultTablePageSize
+  );
 
   return (
     <div
@@ -631,6 +682,13 @@ const VaccineProgramList = () => {
                               }}
                             >
                               Xem chi tiết
+                            </Button>
+                            <Button
+                              type="primary"
+                              style={{ marginLeft: 8, background: "#1890ff", border: "none" }}
+                              onClick={() => handleCreateProgramResult(program)}
+                            >
+                              Tạo kết quả
                             </Button>
                             {/* Đã xóa nút Tạo kết quả */}
                           </div>
@@ -960,128 +1018,87 @@ const VaccineProgramList = () => {
             key: "result",
             label: "Kết quả chương trình",
             children: (
-              <div>
-                {!showResultPage ? (
-                  <Row gutter={32} style={{ marginTop: 24 }}>
-                    <Col span={8}>
-                      <Card
-                        hoverable
-                        style={{
-                          textAlign: "center",
-                          border: "1px solid #e6f4ea",
-                          borderRadius: 10,
-                        }}
-                        onClick={() => setCreateResultVisible(true)}
-                      >
-                        <div
-                          style={{
-                            fontSize: 40,
-                            color: "#1890ff",
-                            marginBottom: 12,
-                          }}
-                        >
-                          <PlusOutlined />
-                        </div>
-                        <div
-                          style={{
-                            fontWeight: 700,
-                            fontSize: 20,
-                            marginBottom: 8,
-                          }}
-                        >
-                          Tạo kết quả
-                        </div>
-                        <div style={{ color: "#888" }}>
-                          Nhập kết quả tiêm chủng mới cho học sinh
-                        </div>
-                      </Card>
-                    </Col>
-                    <Col span={8}>
-                      <Card
-                        hoverable
-                        style={{
-                          textAlign: "center",
-                          border: "1px solid #e6f4ea",
-                          borderRadius: 10,
-                        }}
-                        onClick={handleShowResultPage}
-                      >
-                        <div
-                          style={{
-                            fontSize: 40,
-                            color: "#21ba45",
-                            marginBottom: 12,
-                          }}
-                        >
-                          <SearchOutlined />
-                        </div>
-                        <div
-                          style={{
-                            fontWeight: 700,
-                            fontSize: 20,
-                            marginBottom: 8,
-                          }}
-                        >
-                          Xem kết quả
-                        </div>
-                        <div style={{ color: "#888" }}>
-                          Xem danh sách kết quả tiêm chủng đã nhập
-                        </div>
-                      </Card>
-                    </Col>
-                  </Row>
-                ) : (
-                  <div style={{ marginTop: 24 }}>
-                    <Button
-                      onClick={() => setShowResultPage(false)}
-                      style={{ marginBottom: 16 }}
-                    >
-                      Quay lại
-                    </Button>
-                    {/* Hiển thị table với dữ liệu cứng để test */}
-                    <div
-                      style={{
-                        background: "#fff",
-                        borderRadius: 10,
-                        padding: 24,
-                        minWidth: 1200,
-                        maxWidth: "calc(100vw - 260px)", // 260px là sidebar
-                        margin: "0 auto",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                        overflowX: "auto",
-                      }}
-                    >
-                      <Table
-                        columns={[
-                          { title: "ID kết quả", dataIndex: "vaccineResultId", key: "vaccineResultId" },
-                          { title: "Tên học sinh", dataIndex: ["studentDTO", "fullName"], key: "studentName" },
-                          { title: "Ngày sinh", dataIndex: ["studentDTO", "dob"], key: "dob" },
-                          { title: "Giới tính", dataIndex: ["studentDTO", "gender"], key: "gender" },
-                          { title: "Mối quan hệ", dataIndex: ["studentDTO", "relationship"], key: "relationship" },
-                          { title: "Tên lớp", dataIndex: ["studentDTO", "classDTO", "className"], key: "className" },
-                          { title: "Giáo viên chủ nhiệm", dataIndex: ["studentDTO", "classDTO", "teacherName"], key: "teacherName" },
-                          { title: "Số lượng lớp", dataIndex: ["studentDTO", "classDTO", "quantity"], key: "quantity" },
-                          { title: "Tên phụ huynh", dataIndex: ["studentDTO", "userDTO", "fullName"], key: "parentName" },
-                          { title: "Email phụ huynh", dataIndex: ["studentDTO", "userDTO", "email"], key: "parentEmail" },
-                          { title: "SĐT phụ huynh", dataIndex: ["studentDTO", "userDTO", "phone"], key: "parentPhone" },
-                          { title: "Địa chỉ phụ huynh", dataIndex: ["studentDTO", "userDTO", "address"], key: "parentAddress" },
-                          { title: "Vai trò phụ huynh", dataIndex: ["studentDTO", "userDTO", "role"], key: "parentRole" },
-                          { title: "ID chương trình", dataIndex: "vaccineFormId", key: "vaccineFormId" },
-                          { title: "Tình trạng sức khỏe", dataIndex: "statusHealth", key: "statusHealth" },
-                          { title: "Phản ứng", dataIndex: "reaction", key: "reaction" },
-                          { title: "Ghi chú", dataIndex: "resultNote", key: "resultNote" },
-                          { title: "Ngày tạo", dataIndex: "createdAt", key: "createdAt" },
-                        ]}
-                        dataSource={nurseResults}
-                        loading={nurseResultsLoading}
-                        rowKey="vaccineResultId"
-                        pagination={false}
-                        bordered
-                        style={{ minWidth: 900 }}
-                      />
-                    </div>
-                  </div>
-                )}
+              <div style={{ marginTop: 24 }}>
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: 10,
+                    padding: 24,
+                    minWidth: 1200,
+                    maxWidth: "calc(100vw - 260px)",
+                    margin: "0 auto",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                    overflowX: "auto",
+                  }}
+                >
+                  <Table
+                    columns={[
+                      { title: "ID kết quả", dataIndex: "vaccineResultId", key: "vaccineResultId" },
+                      { title: "Tên chương trình", dataIndex: ["vaccineFormDTO", "vaccineProgram", "vaccineName", "vaccineName"], key: "programName" },
+                      { 
+                        title: "Học sinh & Lớp", 
+                        key: "studentAndClass",
+                        render: (_, record) => (
+                          <div>
+                            <div><b>{record.studentDTO?.fullName}</b></div>
+                            <div style={{ color: "#888" }}>{record.studentDTO?.classDTO?.className}</div>
+                          </div>
+                        )
+                      },
+                      { title: "Giới tính", dataIndex: ["studentDTO", "gender"], key: "gender" },
+                      { title: "Ghi chú phiếu", dataIndex: ["vaccineFormDTO", "note"], key: "formNotes" },
+                      { title: "Ngày tiêm", dataIndex: ["vaccineFormDTO", "vaccineProgram", "vaccineDate"], key: "programDate" },
+                      { title: "Trạng thái chương trình", dataIndex: ["vaccineFormDTO", "vaccineProgram", "status"], key: "programStatus", render: (status) => {
+                        let color = "#595959";
+                        if (status === "ON_GOING") color = "#1890ff";
+                        else if (status === "COMPLETED") color = "#21ba45";
+                        else if (status === "NOT_STARTED") color = "#faad14";
+                        return (
+                          <span style={{
+                            fontWeight: 600,
+                            color,
+                            fontSize: 13,
+                            textTransform: "uppercase",
+                            letterSpacing: 0.5,
+                            whiteSpace: "nowrap",
+                            padding: "2px 8px",
+                            borderRadius: 4,
+                            background: "#f6f6f6",
+                            display: "inline-block",
+                          }}>
+                            {status === "ON_GOING"
+                              ? "Đang diễn ra"
+                              : status === "COMPLETED"
+                              ? "Đã hoàn thành"
+                              : status === "NOT_STARTED"
+                              ? "Chưa bắt đầu"
+                              : status}
+                          </span>
+                        );
+                      } },
+                      { title: "Tình trạng sức khỏe", dataIndex: "statusHealth", key: "statusHealth" },
+                      { title: "Phản ứng", dataIndex: "reaction", key: "reaction" },
+                      { title: "Ghi chú kết quả", dataIndex: "resultNote", key: "resultNote" },
+                      { title: "Ngày tạo", dataIndex: "createdAt", key: "createdAt" },
+                    ]}
+                    dataSource={pagedNurseResults}
+                    loading={nurseResultsLoading}
+                    rowKey="vaccineResultId"
+                    bordered
+                    style={{ minWidth: 900 }}
+                    pagination={{
+                      current: resultTablePage,
+                      pageSize: resultTablePageSize,
+                      total: nurseResults.length,
+                      showSizeChanger: true,
+                      pageSizeOptions: ["5", "10", "20", "50"],
+                      onChange: (page, pageSize) => {
+                        setResultTablePage(page);
+                        setResultTablePageSize(pageSize);
+                      },
+                    }}
+                  />
+                </div>
               </div>
             ),
           },
