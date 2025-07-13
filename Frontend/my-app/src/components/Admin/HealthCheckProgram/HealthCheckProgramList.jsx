@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Row, Col, Tag, Modal, Descriptions, Form, Input, DatePicker, message, Pagination } from "antd";
+import { Button, Card, Row, Col, Tag, Modal, Descriptions, Form, Input, DatePicker, message, Pagination, Tabs, Table } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Select } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
+
 
 const HealthCheckProgramList = () => {
   const [programs, setPrograms] = useState([]);
@@ -20,11 +21,19 @@ const HealthCheckProgramList = () => {
   const [resultData, setResultData] = useState([]);
   const [resultLoading, setResultLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [studentsForResult, setStudentsForResult] = useState([]);
+  const [createResultVisible, setCreateResultVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState("program");
+  const [healthCheckResults, setHealthCheckResults] = useState([]);
+  const [healthCheckResultsLoading, setHealthCheckResultsLoading] = useState(false);
+  const [showResultPage, setShowResultPage] = useState(false);
+  const [selectedProgramId, setSelectedProgramId] = useState(null);
   const pageSize = 3; // Số chương trình mỗi trang
   const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
 
   useEffect(() => {
     fetchProgram();
+    fetchHealthCheckResults();
   }, []);
 
   const fetchProgram = async () => {
@@ -44,6 +53,22 @@ const HealthCheckProgramList = () => {
     }
   };
 
+  const fetchHealthCheckResults = async () => {
+    setHealthCheckResultsLoading(true);
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(
+        "http://localhost:8080/api/nurse/health-check-result",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setHealthCheckResults(res.data);
+    } catch {
+      setHealthCheckResults([]);
+    } finally {
+      setHealthCheckResultsLoading(false);
+    }
+  };
+
   const handleCreate = async (values) => {
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -58,9 +83,10 @@ const HealthCheckProgramList = () => {
           note: values.note,
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers:
+            {
+              Authorization: `Bearer ${token}`,
+            },
         }
       );
       message.success("Tạo chương trình sức khỏe thành công!");
@@ -81,6 +107,40 @@ const HealthCheckProgramList = () => {
       setLoading(false);
     }
   };
+
+  const handleCreateResult = async (programId) => {
+  // const token = localStorage.getItem("token");
+  // const res = await axios.get("http://localhost:8080/api/nurse/health-check-result", {
+  //   headers: { Authorization: `Bearer ${token}` }
+  // });
+
+  // // Lọc kết quả theo chương trình
+  // const filtered = res.data.filter(item =>
+  //   item.healthCheckFormDTO?.healthCheckProgram?.id === programId
+  // );
+
+  // // Map dữ liệu cho bảng nhập liệu
+  // setStudentsForResult(filtered.map(item => ({
+  //   studentId: item.studentDTO?.id,
+  //   studentName: item.studentDTO?.fullName,
+  //   diagnosis: item.diagnosis || "",
+  //   level: item.level || "",
+  //   note: item.note || "",
+  //   vision: item.vision || "",
+  //   hearing: item.hearing || "",
+  //   weight: item.weight || "",
+  //   height: item.height || ""
+  // })));
+
+  // setCreateResultVisible(true);
+};
+
+  const handleResultChange = (value, idx, field) => {
+  setStudentsForResult(prev =>
+    prev.map((item, i) => i === idx ? { ...item, [field]: value } : item)
+  );
+};
+  
 
   const handleUpdate = async (values) => {
     setLoading(true);
@@ -223,238 +283,377 @@ const HealthCheckProgramList = () => {
 
   return (
     <div style={{ padding: 24, marginLeft: 220, transition: "margin 0.2s", maxWidth: "100vw" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>
-          <span style={{ color: "#52c41a", marginRight: 8 }}>🛡️</span>
-          Quản Lý Chương Trình Khám Định Kỳ
-        </h2>
-        <div style={{ display: "flex", gap: 12 }}>
-          <Input
-            placeholder="Tìm kiếm tên chương trình..."
-            prefix={<SearchOutlined />}
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            allowClear
-            style={{ width: 220, background: "#fff" }}
-          />
-          <DatePicker
-            placeholder="Lọc theo ngày khám"
-            value={filterDate}
-            onChange={setFilterDate}
-            allowClear
-            style={{ width: 170 }}
-            format="YYYY-MM-DD"
-          />
-          <Select
-            placeholder="Lọc theo trạng thái"
-            value={filterStatus}
-            onChange={setFilterStatus}
-            allowClear
-            style={{ width: 170 }}
-            options={[
-              { value: "", label: "Tất cả trạng thái" },
-              { value: "NOT_STARTED", label: "Chưa bắt đầu" },
-              { value: "ON_GOING", label: "Đang diễn ra" },
-              { value: "COMPLETED", label: "Đã hoàn thành" },
-            ]}
-          />
-          {/* Ẩn nút lên lịch nếu là NURSE */}
-          {userRole === "ADMIN" && (
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              style={{ background: "#21ba45", border: "none" }}
-              onClick={() => setCreateVisible(true)}
-            >
-              Lên lịch khám định kỳ
-            </Button>
-          )}
-        </div>
-      </div>
-      {pagedPrograms.map((program) => (
-        <Card
-          key={program.id}
-          style={{
-            background: "#f6fcf7",
-            borderRadius: 10,
-            border: "1px solid #e6f4ea",
-            width: "calc(100vw - 260px)",
-            minWidth: 1200,
-            margin: "0 auto",
-            transition: "width 0.2s",
-            marginBottom: 16,
-          }}
-          bodyStyle={{ padding: 24 }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{program.name}</div>
-              <div style={{ color: "#555", marginBottom: 2 }}>
-                Mô tả: {program.description}
-              </div>
-              <div style={{ color: "#555", marginBottom: 8 }}>
-                Ngày bắt đầu: {program.startDate} <br />
-                Ngày kết thúc: {program.endDate}
-              </div>
-            </div>
-            {/* Nếu là ADMIN thì cho phép chỉnh trạng thái, nếu là NURSE thì chỉ hiển thị Tag */}
-            {userRole === "ADMIN" ? (
-              <Select
-                value={program.status}
-                style={{ width: 160 }}
-                onChange={status => handleUpdateStatus(program.id, status)}
-                options={[
-                  { value: "NOT_STARTED", label: "Chưa bắt đầu" },
-                  { value: "ON_GOING", label: "Đang diễn ra" },
-                  { value: "COMPLETED", label: "Đã hoàn thành" },
-                ]}
-              />
-            ) : (
-              <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
-                {getStatusText(program.status)}
-              </Tag>
-            )}
-          </div>
-          <Row gutter={32} style={{ margin: "24px 0" }}>
-            <Col span={12}>
-              <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
-                <div style={{ color: "#1890ff", fontWeight: 700, fontSize: 32 }}>{program.totalStudents}</div>
-                <div style={{ color: "#888", fontWeight: 500 }}>Tổng học sinh</div>
-              </div>
-            </Col>
-            <Col span={12}>
-              <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
-                <div style={{ color: "#21ba45", fontWeight: 700, fontSize: 32 }}>{program.confirmed}</div>
-                <div style={{ color: "#888", fontWeight: 500 }}>Đã xác nhận</div>
-              </div>
-            </Col>
-          </Row>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <Button onClick={() => {
-                setDetailVisible(true);
-                setProgram(program);
-              }}>
-                Xem chi tiết
-              </Button>
-              <Button
-                type="primary"
-                style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
-                onClick={() => handleViewResult(program.id)}
-              >
-                Xem kết quả
-              </Button>
-            </div>
-            {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
-            {userRole === "ADMIN" && (
-              <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-                {program.status === "NOT_STARTED" && (
-                  <Button
-                    type="default"
-                    onClick={() => {
-                      setProgram(program);
-                      setEditMode(true);
-                      setCreateVisible(true);
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={[
+          {
+            key: "program",
+            label: "Chương trình khám định kỳ",
+            children: (
+              <React.Fragment>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <h2 style={{ margin: 0 }}>
+                    <span style={{ color: "#52c41a", marginRight: 8 }}>🛡️</span>
+                    Quản Lý Chương Trình Khám Định Kỳ
+                  </h2>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <Input
+                      placeholder="Tìm kiếm tên chương trình..."
+                      prefix={<SearchOutlined />}
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      allowClear
+                      style={{ width: 220, background: "#fff" }}
+                    />
+                    <DatePicker
+                      placeholder="Lọc theo ngày khám"
+                      value={filterDate}
+                      onChange={setFilterDate}
+                      allowClear
+                      style={{ width: 170 }}
+                      format="YYYY-MM-DD"
+                    />
+                    <Select
+                      placeholder="Lọc theo trạng thái"
+                      value={filterStatus}
+                      onChange={setFilterStatus}
+                      allowClear
+                      style={{ width: 170 }}
+                      options={[
+                        { value: "", label: "Tất cả trạng thái" },
+                        { value: "NOT_STARTED", label: "Chưa bắt đầu" },
+                        { value: "ON_GOING", label: "Đang diễn ra" },
+                        { value: "COMPLETED", label: "Đã hoàn thành" },
+                      ]}
+                    />
+                    {/* Ẩn nút lên lịch nếu là NURSE */}
+                    {userRole === "ADMIN" && (
+                      <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        style={{ background: "#21ba45", border: "none" }}
+                        onClick={() => setCreateVisible(true)}
+                      >
+                        Lên lịch khám định kỳ
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                {pagedPrograms.map((program) => (
+                  <Card
+                    key={program.id}
+                    style={{
+                      background: "#f6fcf7",
+                      borderRadius: 10,
+                      border: "1px solid #e6f4ea",
+                      width: "calc(100vw - 260px)",
+                      minWidth: 1200,
+                      margin: "0 auto",
+                      transition: "width 0.2s",
+                      marginBottom: 16,
                     }}
+                    bodyStyle={{ padding: 24 }}
                   >
-                    Sửa
-                  </Button>
-                )}
-                <Button
-                  danger
-                  type="primary"
-                  onClick={() => handleDelete(program.id)}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{program.name}</div>
+                        <div style={{ color: "#555", marginBottom: 2 }}>
+                          Mô tả: {program.description}
+                        </div>
+                        <div style={{ color: "#555", marginBottom: 8 }}>
+                          Ngày bắt đầu: {program.startDate} <br />
+                          Ngày kết thúc: {program.endDate}
+                        </div>
+                      </div>
+                      {/* Nếu là ADMIN thì cho phép chỉnh trạng thái, nếu là NURSE thì chỉ hiển thị Tag */}
+                      {userRole === "ADMIN" ? (
+                        <Select
+                          value={program.status}
+                          style={{ width: 160 }}
+                          onChange={status => handleUpdateStatus(program.id, status)}
+                          options={[
+                            { value: "NOT_STARTED", label: "Chưa bắt đầu" },
+                            { value: "ON_GOING", label: "Đang diễn ra" },
+                            { value: "COMPLETED", label: "Đã hoàn thành" },
+                          ]}
+                        />
+                      ) : (
+                        <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
+                          {getStatusText(program.status)}
+                        </Tag>
+                      )}
+                    </div>
+                    <Row gutter={32} style={{ margin: "24px 0" }}>
+                      <Col span={12}>
+                        <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
+                          <div style={{ color: "#1890ff", fontWeight: 700, fontSize: 32 }}>{program.totalStudents}</div>
+                          <div style={{ color: "#888", fontWeight: 500 }}>Tổng học sinh</div>
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
+                          <div style={{ color: "#21ba45", fontWeight: 700, fontSize: 32 }}>{program.confirmed}</div>
+                          <div style={{ color: "#888", fontWeight: 500 }}>Đã xác nhận</div>
+                        </div>
+                      </Col>
+                    </Row>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <Button onClick={() => {
+                          setDetailVisible(true);
+                          setProgram(program);
+                        }}>
+                          Xem chi tiết
+                        </Button>
+                        <Button
+                          type="primary"
+                          style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
+                          onClick={() => {
+                            setActiveTab("result");
+                            setShowResultPage(true);
+                            setSelectedProgramId(program.id); // Lưu lại id chương trình đang xem
+                          }}
+                        >
+                          Xem kết quả
+                        </Button>
+                        <Button
+                          type="default"
+                          style={{ marginLeft: 8, background: "#1976d2", color: "#fff", border: "none" }}
+                          onClick={() => handleCreateResult(program.id)}
+                        >
+                          Tạo kết quả
+                        </Button>
+                      </div>
+                      {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
+                      {userRole === "ADMIN" && (
+                        <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+                          {program.status === "NOT_STARTED" && (
+                            <Button
+                              type="default"
+                              onClick={() => {
+                                setProgram(program);
+                                setEditMode(true);
+                                setCreateVisible(true);
+                              }}
+                            >
+                              Sửa
+                            </Button>
+                          )}
+                          <Button
+                            danger
+                            type="primary"
+                            onClick={() => handleDelete(program.id)}
+                          >
+                            Xóa
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+                <div style={{ marginTop: 24, textAlign: "center" }}>
+                  <Pagination
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={filteredPrograms.length}
+                    onChange={setCurrentPage}
+                    showSizeChanger={false}
+                  />
+                </div>
+                <Modal
+                  title="Chi tiết chương trình tiêm chủng"
+                  open={detailVisible}
+                  onCancel={() => setDetailVisible(false)}
+                  footer={[
+                    <Button key="close" onClick={() => setDetailVisible(false)}>
+                      Đóng
+                    </Button>,
+                  ]}
                 >
-                  Xóa
-                </Button>
+                  {program && (
+                    <Descriptions column={1} bordered size="small">
+                      <Descriptions.Item label="ID">{program.id}</Descriptions.Item>
+                      <Descriptions.Item label="Tên chương trình">{program.name}</Descriptions.Item>
+                      <Descriptions.Item label="Mô tả">{program.description}</Descriptions.Item>
+                      <Descriptions.Item label="Ngày bắt đầu">{program.startDate}</Descriptions.Item>
+                      <Descriptions.Item label="Ngày kết thúc">{program.endDate}</Descriptions.Item>
+                      <Descriptions.Item label="Trạng thái">
+                        <Tag color={getStatusColor(program.status)} style={{ fontSize: 14 }}>
+                          {getStatusText(program.status)}
+                        </Tag>
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Ghi chú">{program.note}</Descriptions.Item>
+                    </Descriptions>
+                  )}
+                </Modal>
+                <Modal
+                  title={editMode ? "Sửa chương trình tiêm chủng" : "Lên lịch khám định kỳ"}
+                  open={createVisible}
+                  onCancel={() => {
+                    setCreateVisible(false);
+                    setEditMode(false);
+                    setProgram(null);
+                  }}
+                  footer={null}
+                  destroyOnClose
+                >
+                  <Form
+                    layout="vertical"
+                    onFinish={editMode ? handleUpdate : handleCreate}
+                    initialValues={
+                      editMode && program
+                        ? {
+                            name: program.name,
+                            description: program.description,
+                            startDate: dayjs(program.startDate),
+                            endDate: dayjs(program.endDate),
+                            note: program.note,
+                          }
+                        : {}
+                    }
+                  >
+                    <Form.Item label="Tên chương trình" name="name" rules={[{ required: true, message: "Nhập tên chương trình" }]}>
+                      <Input />
+                    </Form.Item>
+                    <Form.Item label="Mô tả" name="description">
+                      <Input.TextArea rows={2} />
+                    </Form.Item>
+                    <Form.Item label="Ngày bắt đầu" name="startDate" rules={[{ required: true, message: "Chọn ngày bắt đầu" }]}>
+                      <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
+                    </Form.Item>
+                    <Form.Item label="Ngày kết thúc" name="endDate" rules={[{ required: true, message: "Chọn ngày kết thúc" }]}>
+                      <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
+                    </Form.Item>
+                    <Form.Item label="Ghi chú" name="note">
+                      <Input.TextArea rows={2} />
+                    </Form.Item>
+                    <Form.Item>
+                      <Button type="primary" htmlType="submit" loading={loading} style={{ width: "100%" }}>
+                        {editMode ? "Cập nhật" : "Tạo chương trình"}
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </Modal>
+              </React.Fragment>
+            ),
+          },
+          {
+            key: "result",
+            label: "Kết quả chương trình",
+            children: (
+              <div>
+                {!showResultPage ? (
+                  <Row gutter={32} justify="center" style={{ marginTop: 24 }}>
+                    <Col span={8}>
+                      <Card
+                        hoverable
+                        style={{
+                          textAlign: "center",
+                          border: "1px solid #e6f4ea",
+                          borderRadius: 16,
+                          minHeight: 220,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          boxShadow: "0 2px 8px rgba(33,186,69,0.08)",
+                        }}
+                        onClick={() => setCreateResultVisible(true)}
+                      >
+                        <div style={{ fontSize: 48, color: "#1890ff", marginBottom: 16 }}>
+                          <PlusOutlined />
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: 24, marginBottom: 8 }}>
+                          Tạo kết quả
+                        </div>
+                        <div style={{ color: "#888", fontSize: 16 }}>
+                          Nhập kết quả khám định kỳ mới cho học sinh
+                        </div>
+                      </Card>
+                    </Col>
+                    <Col span={8}>
+                      <Card
+                        hoverable
+                        style={{
+                          textAlign: "center",
+                          border: "1px solid #e6f4ea",
+                          borderRadius: 16,
+                          minHeight: 220,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          boxShadow: "0 2px 8px rgba(33,186,69,0.08)",
+                        }}
+                        onClick={() => setShowResultPage(true)}
+                      >
+                        <div style={{ fontSize: 48, color: "#21ba45", marginBottom: 16 }}>
+                          <SearchOutlined />
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: 24, marginBottom: 8 }}>
+                          Xem kết quả
+                        </div>
+                        <div style={{ color: "#888", fontSize: 16 }}>
+                          Xem danh sách kết quả khám định kỳ đã nhập
+                        </div>
+                      </Card>
+                    </Col>
+                  </Row>
+                ) : (
+                  <div style={{ marginTop: 24 }}>
+                    <Button onClick={() => setShowResultPage(false)} style={{ marginBottom: 16 }}>
+                      Quay lại
+                    </Button>
+                    <div
+                      style={{
+                        background: "#fff",
+                        borderRadius: 10,
+                        padding: 24,
+                        minWidth: 1200,
+                        maxWidth: "calc(100vw - 260px)",
+                        margin: "0 auto",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                        overflowX: "auto",
+                      }}
+                    >
+                      <Table
+                        columns={[
+                          { title: "ID kết quả", dataIndex: "healthCheckResultId", key: "healthCheckResultId" },
+                          { title: "Tên học sinh", dataIndex: ["studentDTO", "fullName"], key: "studentName" },
+                          { title: "Ngày sinh", dataIndex: ["studentDTO", "dob"], key: "dob" },
+                          { title: "Giới tính", dataIndex: ["studentDTO", "gender"], key: "gender" },
+                          { title: "Tên lớp", dataIndex: ["studentDTO", "classDTO", "className"], key: "className" },
+                          { title: "Giáo viên chủ nhiệm", dataIndex: ["studentDTO", "classDTO", "teacherName"], key: "teacherName" },
+                          { title: "Tình trạng", dataIndex: "diagnosis", key: "diagnosis" },
+                          { title: "Cấp độ", dataIndex: "level", key: "level" },
+                          { title: "Ghi chú", dataIndex: "note", key: "note" },
+                          { title: "Thị lực", dataIndex: "vision", key: "vision" },
+                          { title: "Thính lực", dataIndex: "hearing", key: "hearing" },
+                          { title: "Cân nặng", dataIndex: "weight", key: "weight" },
+                          { title: "Chiều cao", dataIndex: "height", key: "height" },
+                          { title: "Ngày tạo", dataIndex: "createdAt", key: "createdAt" },
+                        ]}
+                        dataSource={
+                          healthCheckResults.filter(
+                            item =>
+                              item.healthCheckFormDTO &&
+                              item.healthCheckFormDTO.healthCheckProgram &&
+                              item.healthCheckFormDTO.healthCheckProgram.id === selectedProgramId
+                          )
+                        }
+                        loading={healthCheckResultsLoading}
+                        rowKey="healthCheckResultId"
+                        pagination={false}
+                        bordered
+                        style={{ minWidth: 900 }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </Card>
-      ))}
-      <div style={{ marginTop: 24, textAlign: "center" }}>
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          total={filteredPrograms.length}
-          onChange={setCurrentPage}
-          showSizeChanger={false}
-        />
-      </div>
-      <Modal
-        title="Chi tiết chương trình tiêm chủng"
-        open={detailVisible}
-        onCancel={() => setDetailVisible(false)}
-        footer={[
-          <Button key="close" onClick={() => setDetailVisible(false)}>
-            Đóng
-          </Button>,
+            ),
+          },
         ]}
-      >
-        {program && (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="ID">{program.id}</Descriptions.Item>
-            <Descriptions.Item label="Tên chương trình">{program.name}</Descriptions.Item>
-            <Descriptions.Item label="Mô tả">{program.description}</Descriptions.Item>
-            <Descriptions.Item label="Ngày bắt đầu">{program.startDate}</Descriptions.Item>
-            <Descriptions.Item label="Ngày kết thúc">{program.endDate}</Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">
-              <Tag color={getStatusColor(program.status)} style={{ fontSize: 14 }}>
-                {getStatusText(program.status)}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Ghi chú">{program.note}</Descriptions.Item>
-          </Descriptions>
-        )}
-      </Modal>
-      <Modal
-        title={editMode ? "Sửa chương trình tiêm chủng" : "Lên lịch khám định kỳ"}
-        open={createVisible}
-        onCancel={() => {
-          setCreateVisible(false);
-          setEditMode(false);
-          setProgram(null);
-        }}
-        footer={null}
-        destroyOnClose
-      >
-        <Form
-          layout="vertical"
-          onFinish={editMode ? handleUpdate : handleCreate}
-          initialValues={
-            editMode && program
-              ? {
-                  name: program.name,
-                  description: program.description,
-                  startDate: dayjs(program.startDate),
-                  endDate: dayjs(program.endDate),
-                  note: program.note,
-                }
-              : {}
-          }
-        >
-          <Form.Item label="Tên chương trình" name="name" rules={[{ required: true, message: "Nhập tên chương trình" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item label="Mô tả" name="description">
-            <Input.TextArea rows={2} />
-          </Form.Item>
-          <Form.Item label="Ngày bắt đầu" name="startDate" rules={[{ required: true, message: "Chọn ngày bắt đầu" }]}>
-            <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
-          </Form.Item>
-          <Form.Item label="Ngày kết thúc" name="endDate" rules={[{ required: true, message: "Chọn ngày kết thúc" }]}>
-            <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
-          </Form.Item>
-          <Form.Item label="Ghi chú" name="note">
-            <Input.TextArea rows={2} />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} style={{ width: "100%" }}>
-              {editMode ? "Cập nhật" : "Tạo chương trình"}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+      />
       <Modal
         title="Kết quả khám định kỳ"
         open={resultVisible}
@@ -480,6 +679,7 @@ const HealthCheckProgramList = () => {
           </Descriptions>
         )}
       </Modal>
+      
     </div>
   );
 };
