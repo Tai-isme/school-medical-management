@@ -901,9 +901,18 @@ public class NurseService {
             if (students.isEmpty()) {
                 studentDTOs = new ArrayList<>();
             } else {
-                studentDTOs = students.stream()
-                        .map(student -> modelMapper.map(student, StudentDTO.class))
-                        .collect(Collectors.toList());
+                studentDTOs = students.stream().map(student -> {
+                    StudentDTO dto = modelMapper.map(student, StudentDTO.class);
+                    if (student.getClassEntity() != null) {
+                        ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
+                        dto.setClassDTO(classDTO);
+                    }
+                    if (student.getParent() != null) {
+                        UserDTO userDTO = modelMapper.map(student.getParent(), UserDTO.class);
+                        dto.setUserDTO(userDTO);
+                    }
+                    return dto;
+                }).collect(Collectors.toList());
             }
 
             ClassStudentDTO classDTO = modelMapper.map(classEntity, ClassStudentDTO.class);
