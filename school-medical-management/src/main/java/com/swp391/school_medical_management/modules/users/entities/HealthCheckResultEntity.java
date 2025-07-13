@@ -45,10 +45,10 @@ public class HealthCheckResultEntity {
     private String hearing;
 
     @Column(name = "weight", length = 50)
-    private double weight;
+    private Double weight;
 
     @Column(name = "height", length = 50)
-    private double height;
+    private Double height;
 
     @Column(name = "note", length = 255)
     private String note;

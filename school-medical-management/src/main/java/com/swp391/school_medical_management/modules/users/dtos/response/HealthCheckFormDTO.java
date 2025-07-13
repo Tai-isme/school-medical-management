@@ -13,7 +13,6 @@ public class HealthCheckFormDTO {
     private Long id;
     private Long studentId;
     private Long parentId;
-    private Long nurseId;
     private LocalDate formDate;
     private String notes;
     private Boolean commit;

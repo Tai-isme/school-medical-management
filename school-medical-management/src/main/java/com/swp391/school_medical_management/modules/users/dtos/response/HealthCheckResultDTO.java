@@ -14,8 +14,8 @@ public class HealthCheckResultDTO {
     private String note;
     private String vision;
     private String hearing;
-    private double weight;
-    private double height;
+    private Double weight;
+    private Double height;
     private HealthCheckFormDTO healthCheckFormDTO;
     private StudentDTO studentDTO;
 }

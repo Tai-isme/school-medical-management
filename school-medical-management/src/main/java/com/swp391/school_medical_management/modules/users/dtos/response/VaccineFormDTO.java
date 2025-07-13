@@ -13,9 +13,8 @@ public class VaccineFormDTO {
     private Long id;
     private Long studentId;
     private Long parentId;
-    private Long nurseId;
     private LocalDate formDate;
-    private String notes;
+    private String note;
     private Boolean commit;
     private String status;
     private VaccineProgramDTO vaccineProgram;
