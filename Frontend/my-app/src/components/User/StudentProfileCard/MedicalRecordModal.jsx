@@ -324,9 +324,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                       { required: true, message: 'Chọn loại vaccin' },
                       {
                         validator: (_, value) => {
-                          // Lấy id vaccine đang chọn
                           const currentId = typeof value === 'object' ? value.id : value;
-                          // Kiểm tra có trùng với vaccine khác không
                           const duplicate = vaccineHistories.some(
                             (v, i) =>
                               i !== idx &&
@@ -366,16 +364,21 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                   </Form.Item>
                   <Form.Item
                     name={['vaccineHistories', idx, 'note']}
-                    style={{ flex: 3, marginBottom: 0 }}
+                    style={{ flex: 3, marginBottom: 0, minWidth: 200, maxWidth: 350 }}
                   >
-                    <Input
+                    <Input.TextArea
                       placeholder="Mô tả"
                       value={item.note}
                       onChange={e => handleVaccineChange(e.target.value, idx, 'note')}
+                      autoSize={{ minRows: 1, maxRows: 3 }}
+                      style={{ width: "100%" }}
                     />
                   </Form.Item>
-                  {/* Nút xóa */}
-                  <Button danger onClick={() => handleRemoveVaccine(idx)}>Xóa</Button>
+                  <div style={{ width: 60, textAlign: "center" }}>
+                    {(!editMode || item.createBy !== 1) ? (
+                      <Button danger onClick={() => handleRemoveVaccine(idx)}>Xóa</Button>
+                    ) : null}
+                  </div>
                 </div>
               ))}
               <Button type="primary" style={{ marginTop: 16 }} onClick={handleAddVaccine}>
