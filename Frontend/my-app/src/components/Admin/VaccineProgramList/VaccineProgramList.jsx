@@ -51,10 +51,16 @@ const VaccineProgramList = () => {
   const [addVaccineLoading, setAddVaccineLoading] = useState(false);
   const [addVaccineForm] = Form.useForm();
 
+  // Thêm state để lưu kết quả của nurse
+  const [nurseResults, setNurseResults] = useState([]);
+  const [nurseResultsLoading, setNurseResultsLoading] = useState(false);
+
   useEffect(() => {
     fetchProgram();
     // Lấy danh sách vaccine khi load trang
     fetchVaccineList();
+    // Lấy kết quả của nurse khi load trang
+    fetchNurseResults();
   }, []);
 
   const fetchProgram = async () => {
@@ -86,6 +92,22 @@ const VaccineProgramList = () => {
       setVaccineList(res.data);
     } catch {
       setVaccineList([]);
+    }
+  };
+
+  const fetchNurseResults = async () => {
+    setNurseResultsLoading(true);
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(
+        "http://localhost:8080/api/nurse/vaccine-result",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNurseResults(res.data);
+    } catch {
+      setNurseResults([]);
+    } finally {
+      setNurseResultsLoading(false);
     }
   };
 
@@ -299,18 +321,8 @@ const VaccineProgramList = () => {
   const handleShowResultPage = async () => {
     setResultPageLoading(true);
     setShowResultPage(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        "http://localhost:8080/api/admin/vaccine-results-status-by-program",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setResultPageData(res.data);
-    } catch (err) {
-      setResultPageData([]);
-    } finally {
-      setResultPageLoading(false);
-    }
+    await fetchNurseResults();
+    setResultPageLoading(false);
   };
 
   const testResultData = [
@@ -1040,8 +1052,29 @@ const VaccineProgramList = () => {
                       }}
                     >
                       <Table
-                        columns={resultColumns}
-                        dataSource={testResultData}
+                        columns={[
+                          { title: "ID kết quả", dataIndex: "vaccineResultId", key: "vaccineResultId" },
+                          { title: "Tên học sinh", dataIndex: ["studentDTO", "fullName"], key: "studentName" },
+                          { title: "Ngày sinh", dataIndex: ["studentDTO", "dob"], key: "dob" },
+                          { title: "Giới tính", dataIndex: ["studentDTO", "gender"], key: "gender" },
+                          { title: "Mối quan hệ", dataIndex: ["studentDTO", "relationship"], key: "relationship" },
+                          { title: "Tên lớp", dataIndex: ["studentDTO", "classDTO", "className"], key: "className" },
+                          { title: "Giáo viên chủ nhiệm", dataIndex: ["studentDTO", "classDTO", "teacherName"], key: "teacherName" },
+                          { title: "Số lượng lớp", dataIndex: ["studentDTO", "classDTO", "quantity"], key: "quantity" },
+                          { title: "Tên phụ huynh", dataIndex: ["studentDTO", "userDTO", "fullName"], key: "parentName" },
+                          { title: "Email phụ huynh", dataIndex: ["studentDTO", "userDTO", "email"], key: "parentEmail" },
+                          { title: "SĐT phụ huynh", dataIndex: ["studentDTO", "userDTO", "phone"], key: "parentPhone" },
+                          { title: "Địa chỉ phụ huynh", dataIndex: ["studentDTO", "userDTO", "address"], key: "parentAddress" },
+                          { title: "Vai trò phụ huynh", dataIndex: ["studentDTO", "userDTO", "role"], key: "parentRole" },
+                          { title: "ID chương trình", dataIndex: "vaccineFormId", key: "vaccineFormId" },
+                          { title: "Tình trạng sức khỏe", dataIndex: "statusHealth", key: "statusHealth" },
+                          { title: "Phản ứng", dataIndex: "reaction", key: "reaction" },
+                          { title: "Ghi chú", dataIndex: "resultNote", key: "resultNote" },
+                          { title: "Ngày tạo", dataIndex: "createdAt", key: "createdAt" },
+                        ]}
+                        dataSource={nurseResults}
+                        loading={nurseResultsLoading}
+                        rowKey="vaccineResultId"
                         pagination={false}
                         bordered
                         style={{ minWidth: 900 }}
