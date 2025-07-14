@@ -53,7 +53,7 @@ const VaccineResultCard = () => {
   const filteredHistory = vaccineHistory.filter(item => {
     const vaccineName = item.vaccineProgram?.vaccineName || "";
     const vaccineDate = item.vaccineProgram?.vaccineDate || "";
-    const matchName = vaccineName.toLowerCase().includes(filterName.toLowerCase());
+    const matchName = vaccineName.vaccineName.toLowerCase().includes(filterName.toLowerCase());
     const matchDate = filterDate ? vaccineDate === filterDate : true;
     const matchStatus = item.vaccineProgram?.status === "COMPLETED";
     return matchName && matchDate && matchStatus;
@@ -209,7 +209,7 @@ const VaccineResultCard = () => {
                         color: '#1976d2',
                         marginBottom: 8,
                       }}>
-                        {item.vaccineProgram?.vaccineName || "---"}
+                        {item.vaccineProgram?.vaccineName?.vaccineName || "---"} {/* Access vaccineName.vaccineName */}
                       </div>
                       <div style={{
                         display: 'flex',
@@ -231,16 +231,18 @@ const VaccineResultCard = () => {
                           </span>
                         </div>
                       </div>
-                      {/* {item.vaccineProgram?.description && (
-                        <div style={{marginTop: 8, color: "#555", fontSize: 14}}>
-                          {item.vaccineProgram.description}
+                      {item.vaccineProgram?.vaccineName?.url && (
+                        <div style={{ marginTop: 8 }}>
+                          {/* <a
+                            href={`https://${item.vaccineProgram.vaccineName.url}`} // Ensure the URL is absolute
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#1890ff', textDecoration: 'underline' }}
+                          >
+                            Xem thêm thông tin về vắc xin
+                          </a> */}
                         </div>
                       )}
-                      {item.vaccineProgram?.note && (
-                        <div style={{marginTop: 4, color: "#888", fontSize: 13}}>
-                          Ghi chú: {item.vaccineProgram.note}
-                        </div>
-                      )} */}
                     </div>
                   ))}
                   <VaccineHistoryDetailModal
