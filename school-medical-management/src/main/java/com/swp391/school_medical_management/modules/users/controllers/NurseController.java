@@ -372,11 +372,17 @@ public class NurseController {
     }
 
 
-    @GetMapping("/create-health-check-result/{programId}")
-    public ResponseEntity<List<HealthCheckResultDTO>> createResultsByProgram(@PathVariable Long programId) {
-        List<HealthCheckResultDTO> results = nurseService
-                .createDefaultHealthCheckResultsByProgramId(programId);
-        return ResponseEntity.ok(results);
+    // @PostMapping("/create-default-by-program/{programId}")
+    // public ResponseEntity<List<HealthCheckResultDTO>> createResultsByProgram(@PathVariable Long programId) {
+    //     List<HealthCheckResultDTO> results = nurseService
+    //             .createDefaultHealthCheckResultsByProgramId(programId);
+    //     return ResponseEntity.ok(results);
+    // }
+
+    @PostMapping("/create-healthCheckResult-byProgram-/{programId}")
+    public ResponseEntity<List<HealthCheckResultDTO>> createResultsByProgramId(@PathVariable Long programId) {
+        List<HealthCheckResultDTO> createdResults = nurseService.createResultsByProgramId(programId);
+        return ResponseEntity.ok(createdResults);
     }
 
 }

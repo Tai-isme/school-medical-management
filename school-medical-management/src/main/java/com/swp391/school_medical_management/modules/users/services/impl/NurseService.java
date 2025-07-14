@@ -398,23 +398,25 @@ public class NurseService {
     }
 
     public List<HealthCheckFormDTO> getNotSentHealthCheckForms() {
-        List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository.findByStatus(HealthCheckFormStatus.DRAFT);
+        List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository
+                .findByStatus(HealthCheckFormStatus.DRAFT);
         List<HealthCheckFormDTO> healthCheckFormDTOList = healthCheckFormEntitieList.stream()
                 .map(healthCheckForm -> modelMapper.map(healthCheckForm, HealthCheckFormDTO.class))
                 .collect(Collectors.toList());
         return healthCheckFormDTOList;
     }
 
-    public OnGoingProgramDTO getOnGoingPrograms(){
+    public OnGoingProgramDTO getOnGoingPrograms() {
         List<VaccineProgramDTO> vaccinePrograms = vaccineProgramRepository.findByStatus(VaccineProgramStatus.ON_GOING)
-            .stream()
-            .map(vaccineprogram -> modelMapper.map(vaccineprogram, VaccineProgramDTO.class))
-            .collect(Collectors.toList());
+                .stream()
+                .map(vaccineprogram -> modelMapper.map(vaccineprogram, VaccineProgramDTO.class))
+                .collect(Collectors.toList());
 
-        List<HealthCheckProgramDTO> healthCheckPrograms = healthCheckProgramRepository.findByStatus(HealthCheckProgramStatus.ON_GOING)
-            .stream()
-            .map(healthCheckProgram -> modelMapper.map(healthCheckProgram, HealthCheckProgramDTO.class))
-            .collect(Collectors.toList());
+        List<HealthCheckProgramDTO> healthCheckPrograms = healthCheckProgramRepository
+                .findByStatus(HealthCheckProgramStatus.ON_GOING)
+                .stream()
+                .map(healthCheckProgram -> modelMapper.map(healthCheckProgram, HealthCheckProgramDTO.class))
+                .collect(Collectors.toList());
 
         return new OnGoingProgramDTO(vaccinePrograms, healthCheckPrograms);
     }
@@ -999,24 +1001,25 @@ public class NurseService {
         return feedbackDTOList;
     }
 
-
     public List<FeedbackDTO> getAllFeedbacks() {
-    List<FeedbackEntity> feedbackList = feedbackRepository.findAll();
+        List<FeedbackEntity> feedbackList = feedbackRepository.findAll();
 
-    List<FeedbackDTO> feedbackDTOList = feedbackList.stream()
-            .map(feedback -> {
-                FeedbackDTO dto = modelMapper.map(feedback, FeedbackDTO.class);
-                dto.setParentId(feedback.getParent() != null ? feedback.getParent().getUserId() : null);
-                dto.setNurseId(feedback.getNurse() != null ? feedback.getNurse().getUserId() : null);
-                dto.setVaccineResultId(feedback.getVaccineResult() != null ? feedback.getVaccineResult().getVaccineResultId() : null);
-                dto.setHealthResultId(feedback.getHealthResult() != null ? feedback.getHealthResult().getHealthResultId() : null);
-                return dto;
-            })
-            .collect(Collectors.toList());
+        List<FeedbackDTO> feedbackDTOList = feedbackList.stream()
+                .map(feedback -> {
+                    FeedbackDTO dto = modelMapper.map(feedback, FeedbackDTO.class);
+                    dto.setParentId(feedback.getParent() != null ? feedback.getParent().getUserId() : null);
+                    dto.setNurseId(feedback.getNurse() != null ? feedback.getNurse().getUserId() : null);
+                    dto.setVaccineResultId(
+                            feedback.getVaccineResult() != null ? feedback.getVaccineResult().getVaccineResultId()
+                                    : null);
+                    dto.setHealthResultId(
+                            feedback.getHealthResult() != null ? feedback.getHealthResult().getHealthResultId() : null);
+                    return dto;
+                })
+                .collect(Collectors.toList());
 
         return feedbackDTOList;
     }
-
 
     public List<StudentDTO> getStudentsNotVaccinated(Long vaccineProgramId, Long vaccineNameId) {
         List<StudentEntity> students;
@@ -1241,7 +1244,6 @@ public class NurseService {
         return dto;
     }
 
-
     public void createFormsForHealthCheckProgram(Long programId) {
         HealthCheckProgramEntity program = healthCheckProgramRepository.findById(programId)
                 .orElseThrow(() -> new RuntimeException("Program not found"));
@@ -1279,11 +1281,52 @@ public class NurseService {
             form.setParent(student.getParent());
             form.setFormDate(LocalDate.now());
             form.setStatus(VaccineFormEntity.VaccineFormStatus.SENT);
-            form.setNote(null); 
+            form.setNote(null);
             forms.add(form);
         }
 
         vaccineFormRepository.saveAll(forms);
+    }
+
+    public List<HealthCheckResultDTO> createResultsByProgramId(Long programId) {
+        List<HealthCheckFormEntity> committedForms = healthCheckFormRepository.findCommittedFormsByProgramId(programId);
+        List<HealthCheckResultDTO> resultList = new ArrayList<>();
+
+        for (HealthCheckFormEntity form : committedForms) {
+            Optional<HealthCheckResultEntity> existingResult = healthCheckResultRepository
+                    .findByHealthCheckFormEntity(form);
+            if (existingResult.isPresent())
+                continue;
+
+            HealthCheckResultEntity result = new HealthCheckResultEntity();
+            result.setHealthCheckFormEntity(form);
+            result.setDiagnosis("GOOD");
+            result.setLevel(HealthCheckResultEntity.Level.GOOD);
+            result.setVision("10/10");
+            result.setHearing("Normal");
+            result.setWeight(50.0);
+            result.setHeight(160.0);
+            result.setNote("No issue detected");
+
+            HealthCheckResultEntity savedResult = healthCheckResultRepository.save(result);
+
+            HealthCheckResultDTO dto = new HealthCheckResultDTO();
+            dto.setHealthResultId(savedResult.getHealthResultId());
+            dto.setDiagnosis(savedResult.getDiagnosis());
+            dto.setLevel(savedResult.getLevel().name());
+            dto.setNote(savedResult.getNote());
+
+            HealthCheckFormDTO formDTO = new HealthCheckFormDTO();
+            formDTO.setId(form.getId());
+            formDTO.setFormDate(form.getFormDate());
+            formDTO.setCommit(form.getCommit());
+            formDTO.setStatus(form.getStatus() != null ? form.getStatus().name() : null);
+            dto.setHealthCheckFormDTO(formDTO);
+
+            resultList.add(dto);
+        }
+
+        return resultList;
     }
 
 }
