@@ -1319,8 +1319,11 @@ public class NurseService {
             dto.setStudentDTO(studentDTO);
             resultList.add(dto);
         }
-
+        Optional<HealthCheckProgramEntity> programOpt = healthCheckProgramRepository.findById(programId);
+        programOpt.ifPresent(program -> {
+            program.setStatus(HealthCheckProgramStatus.COMPLETED);
+            healthCheckProgramRepository.save(program);
+        });
         return resultList;
     }
-
 }

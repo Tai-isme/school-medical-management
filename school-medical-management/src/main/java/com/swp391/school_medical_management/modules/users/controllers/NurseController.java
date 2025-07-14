@@ -380,5 +380,4 @@ public class NurseController {
         List<HealthCheckResultDTO> createdResults = nurseService.createResultsByProgramId(programId);
         return ResponseEntity.ok(createdResults);
     }
-
 }
