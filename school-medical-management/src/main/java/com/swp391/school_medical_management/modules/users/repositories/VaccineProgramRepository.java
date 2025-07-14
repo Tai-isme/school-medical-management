@@ -25,7 +25,7 @@ public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEn
     Optional<VaccineProgramEntity> findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus status);
 
     Optional<VaccineProgramEntity> findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(LocalDate date);
-
+    
     public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Long> {
     
     Optional<VaccineProgramEntity> findByVaccineNameAndStatus(VaccineNameEntity vaccineName, VaccineProgramStatus status);

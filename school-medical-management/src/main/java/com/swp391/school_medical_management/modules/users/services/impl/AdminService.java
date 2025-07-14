@@ -156,29 +156,30 @@ public class AdminService {
         }
 
         // kiểm tra chương trình gần nhất trước đó có COMPLETED chưa
-        Optional<HealthCheckProgramEntity> lastProgramOpt = healthCheckProgramRepository
-                .findTopByStartDateLessThanOrderByStartDateDesc(request.getStartDate());
+        // Optional<HealthCheckProgramEntity> lastProgramOpt = healthCheckProgramRepository
+        //         .findTopByStartDateLessThanOrderByStartDateDesc(request.getStartDate());
 
-        if (lastProgramOpt.isPresent()) {
-            HealthCheckProgramEntity last = lastProgramOpt.get();
-            if (!HealthCheckProgramStatus.COMPLETED.equals(last.getStatus())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "The last health check program is not COMPLETED.");
-            }
-        }
+        // if (lastProgramOpt.isPresent()) {
+        //     HealthCheckProgramEntity last = lastProgramOpt.get();
+        //     if (!HealthCheckProgramStatus.COMPLETED.equals(last.getStatus())) {
+        //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //                 "The last health check program is not COMPLETED.");
+        //     }
+        // }
 
         // kiểm tra có chương trình nào vẫn còn hiệu lực vào thời điểm bắt đầu chương
         // trình mới
-        List<HealthCheckProgramEntity> overlappingPrograms = healthCheckProgramRepository
-                .findByEndDateAfter(request.getStartDate());
 
-        boolean hasUncompleted = overlappingPrograms.stream()
-                .anyMatch(p -> !HealthCheckProgramStatus.COMPLETED.equals(p.getStatus()));
+        // List<HealthCheckProgramEntity> overlappingPrograms = healthCheckProgramRepository
+        //         .findByEndDateAfter(request.getStartDate());
 
-        if (hasUncompleted) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Another health check program is still active and not COMPLETED.");
-        }
+        // boolean hasUncompleted = overlappingPrograms.stream()
+        //         .anyMatch(p -> !HealthCheckProgramStatus.COMPLETED.equals(p.getStatus()));
+
+        // if (hasUncompleted) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //             "Another health check program is still active and not COMPLETED.");
+        // }
 
         HealthCheckProgramEntity healthCheckProgramEntity = new HealthCheckProgramEntity();
         healthCheckProgramEntity.setHealthCheckName(request.getHealthCheckName());
@@ -259,9 +260,9 @@ public class AdminService {
         healthCheckProgramEntity.setStatus(newStatus);
         healthCheckProgramRepository.save(healthCheckProgramEntity);
 
-        if (newStatus == HealthCheckProgramStatus.ON_GOING) {
-            createHealthCheckForm(healthCheckProgramEntity);
-        }
+        // if (newStatus == HealthCheckProgramStatus.ON_GOING) {
+        //     createHealthCheckForm(healthCheckProgramEntity);
+        // }
 
         return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
     }
@@ -338,17 +339,17 @@ public class AdminService {
         Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository
                 .findByVaccineNameAndStatus(vaccineNameEntity, VaccineProgramStatus.NOT_STARTED);
 
-        Optional<VaccineProgramEntity> lastVaccineProgramOpt = vaccineProgramRepository
-                .findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(request.getVaccineDate());
+        // Optional<VaccineProgramEntity> lastVaccineProgramOpt = vaccineProgramRepository
+        //         .findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(request.getVaccineDate());
 
-        if (lastVaccineProgramOpt.isPresent()) {
-            VaccineProgramEntity lastVaccineProgramEntity = lastVaccineProgramOpt.get();
-            logger.info(lastVaccineProgramEntity.getVaccineName().getVaccineName() + " "
-                    + lastVaccineProgramEntity.getStatus());
-            if (!VaccineProgramStatus.COMPLETED.equals(lastVaccineProgramEntity.getStatus())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Last vaccine is not COMPLETED!");
-            }
-        }
+        // if (lastVaccineProgramOpt.isPresent()) {
+        //     VaccineProgramEntity lastVaccineProgramEntity = lastVaccineProgramOpt.get();
+        //     logger.info(lastVaccineProgramEntity.getVaccineName().getVaccineName() + " "
+        //             + lastVaccineProgramEntity.getStatus());
+        //     if (!VaccineProgramStatus.COMPLETED.equals(lastVaccineProgramEntity.getStatus())) {
+        //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Last vaccine is not COMPLETED!");
+        //     }
+        // }
 
         if (existingProgramOpt.isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -443,9 +444,9 @@ public class AdminService {
         vaccineProgramEntity.setStatus(newStatus);
         vaccineProgramRepository.save(vaccineProgramEntity);
 
-        if (newStatus == VaccineProgramStatus.ON_GOING) {
-            createVaccineForm(vaccineProgramEntity);
-        }
+        // if (newStatus == VaccineProgramStatus.ON_GOING) {
+        //     createVaccineForm(vaccineProgramEntity);
+        // }
 
         return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
     }

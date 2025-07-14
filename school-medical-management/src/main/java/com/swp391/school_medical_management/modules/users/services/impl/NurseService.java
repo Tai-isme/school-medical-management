@@ -632,7 +632,6 @@ public class NurseService {
                 System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " + ex.getReason());
             }
         }
-
         return resultList;
     }
 
