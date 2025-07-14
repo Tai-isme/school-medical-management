@@ -191,10 +191,10 @@ public class NurseController {
         return ResponseEntity.ok(healthCheckResultDTO);
     }
 
-    @GetMapping("/health-check-result")
-    public ResponseEntity<List<HealthCheckResultDTO>> getAllHealthCheckResult() {
-        List<HealthCheckResultDTO> healthCheckResultDTOList = nurseService.getAllHealthCheckResult();
-        return ResponseEntity.ok(healthCheckResultDTOList);
+    @GetMapping("/health-check-result/program/{programId}")
+    public ResponseEntity<List<HealthCheckResultDTO>> getHealthCheckResultByProgram(@PathVariable Long programId) {
+        List<HealthCheckResultDTO> resultDTOList = nurseService.getHealthCheckResultByProgram(programId);
+        return ResponseEntity.ok(resultDTOList);
     }
 
     @DeleteMapping("/health-check-result/{healCheckResultId}")
@@ -222,10 +222,10 @@ public class NurseController {
         return ResponseEntity.ok(vaccineResultDTO);
     }
 
-    @GetMapping("/vaccine-result")
-    public ResponseEntity<List<VaccineResultDTO>> getAllVaccineResult() {
-        List<VaccineResultDTO> vaccineResultDTOList = nurseService.getAllVaccineResult();
-        return ResponseEntity.ok(vaccineResultDTOList);
+    @GetMapping("/vaccine-result/program/{programId}")
+    public ResponseEntity<List<VaccineResultDTO>> getVaccineResultByProgram(@PathVariable Long programId) {
+        List<VaccineResultDTO> results = nurseService.getVaccineResultByProgram(programId);
+        return ResponseEntity.ok(results);
     }
 
     @DeleteMapping("/vaccine-result/{vaccineResultId}")

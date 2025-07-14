@@ -371,7 +371,8 @@ public class NurseService {
     }
 
     public List<VaccineFormDTO> getAllCommitedVaccineFormByProgram(Long programId) {
-        List<VaccineFormEntity> vaccineForms = vaccineFormRepository.findByCommitTrueAndVaccineProgram_VaccineId(programId);
+        List<VaccineFormEntity> vaccineForms = vaccineFormRepository
+                .findByCommitTrueAndVaccineProgram_VaccineId(programId);
         if (vaccineForms.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No committed vaccine forms found");
         return vaccineForms.stream()
@@ -380,7 +381,8 @@ public class NurseService {
     }
 
     public List<VaccineFormDTO> getNotSentVaccineFormsByProgram(Long programId) {
-        List<VaccineFormEntity> vaccineForms = vaccineFormRepository.findByStatusAndVaccineProgram_VaccineId(VaccineFormStatus.DRAFT,
+        List<VaccineFormEntity> vaccineForms = vaccineFormRepository.findByStatusAndVaccineProgram_VaccineId(
+                VaccineFormStatus.DRAFT,
                 programId);
         return vaccineForms.stream()
                 .map(form -> modelMapper.map(form, VaccineFormDTO.class))
@@ -717,33 +719,32 @@ public class NurseService {
         return dto;
     }
 
-    public List<HealthCheckResultDTO> getAllHealthCheckResult() {
-        List<HealthCheckResultEntity> healthCheckResultEntityList = healthCheckResultRepository.findAll();
-        if (healthCheckResultEntityList.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check result found");
+    public List<HealthCheckResultDTO> getHealthCheckResultByProgram(Long programId) {
+        List<HealthCheckResultEntity> resultEntityList = healthCheckResultRepository
+                .findByHealthCheckFormEntity_HealthCheckProgram_Id(programId);
+
+        if (resultEntityList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check result found for this program");
         }
 
         List<HealthCheckResultDTO> dtoList = new ArrayList<>();
 
-        for (HealthCheckResultEntity entity : healthCheckResultEntityList) {
+        for (HealthCheckResultEntity entity : resultEntityList) {
             HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
 
-            HealthCheckFormEntity formEntity = entity.getHealthCheckFormEntity();
-            dto.setHealthCheckFormDTO(modelMapper.map(formEntity, HealthCheckFormDTO.class));
+            HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
+            dto.setHealthCheckFormDTO(modelMapper.map(form, HealthCheckFormDTO.class));
 
-            StudentEntity student = formEntity.getStudent();
+            StudentEntity student = form.getStudent();
             StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
 
-            if (student.getClassEntity() != null) {
+            if (student.getClassEntity() != null)
                 studentDTO.setClassDTO(modelMapper.map(student.getClassEntity(), ClassDTO.class));
-            }
 
-            if (student.getParent() != null) {
+            if (student.getParent() != null)
                 studentDTO.setUserDTO(modelMapper.map(student.getParent(), UserDTO.class));
-            }
 
             dto.setStudentDTO(studentDTO);
-
             dtoList.add(dto);
         }
 
@@ -898,38 +899,34 @@ public class NurseService {
         return dto;
     }
 
-    public List<VaccineResultDTO> getAllVaccineResult() {
-        List<VaccineResultEntity> vaccineResultEntityList = vaccineResultRepository.findAll();
-        if (vaccineResultEntityList.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine result found");
+    public List<VaccineResultDTO> getVaccineResultByProgram(Long programId) {
+        List<VaccineResultEntity> resultEntities = vaccineResultRepository
+                .findByVaccineFormEntity_VaccineProgram_VaccineId(programId);
 
-        List<VaccineResultDTO> vaccineResultDTOList = new ArrayList<>();
+        if (resultEntities.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine result found for this program");
 
-        for (VaccineResultEntity entity : vaccineResultEntityList) {
+        List<VaccineResultDTO> dtoList = new ArrayList<>();
+        for (VaccineResultEntity entity : resultEntities) {
             VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
 
-            VaccineFormEntity formEntity = entity.getVaccineFormEntity();
-            logger.info(formEntity.getNote());
-            VaccineFormDTO formDTO = modelMapper.map(formEntity, VaccineFormDTO.class);
-            dto.setVaccineFormDTO(formDTO);
+            VaccineFormEntity form = entity.getVaccineFormEntity();
+            dto.setVaccineFormDTO(modelMapper.map(form, VaccineFormDTO.class));
 
-            StudentEntity student = formEntity.getStudent();
+            StudentEntity student = form.getStudent();
             StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
 
-            if (student.getClassEntity() != null) {
+            if (student.getClassEntity() != null)
                 studentDTO.setClassDTO(modelMapper.map(student.getClassEntity(), ClassDTO.class));
-            }
 
-            if (student.getParent() != null) {
+            if (student.getParent() != null)
                 studentDTO.setUserDTO(modelMapper.map(student.getParent(), UserDTO.class));
-            }
 
             dto.setStudentDTO(studentDTO);
-
-            vaccineResultDTOList.add(dto);
+            dtoList.add(dto);
         }
 
-        return vaccineResultDTOList;
+        return dtoList;
     }
 
     public void deleteVaccineResult(Long vaccineResultId) {
