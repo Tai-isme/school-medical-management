@@ -56,6 +56,7 @@ const VaccineProgramList = () => {
   // Thêm state để lưu kết quả của nurse
   const [nurseResults, setNurseResults] = useState([]);
   const [nurseResultsLoading, setNurseResultsLoading] = useState(false);
+  const [searchTermResult, setSearchTermResult] = useState(""); // Thêm state tìm kiếm kết quả
 
   useEffect(() => {
     fetchProgram();
@@ -415,6 +416,27 @@ const VaccineProgramList = () => {
     resultTablePage * resultTablePageSize
   );
 
+  // Thêm biến lọc kết quả nurse theo tên chương trình:
+  const filteredNurseResults = nurseResults.filter(item => {
+    const programName =
+      item?.vaccineFormDTO?.vaccineProgram?.vaccineName?.vaccineName || "";
+    return programName.toLowerCase().includes(searchTermResult.toLowerCase());
+  });
+
+  const handleNotifyVaccine = async (formId) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.post(
+        "http://localhost:8080/api/notify-vaccine",
+        { formIds: [formId] },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Gửi thông báo thành công!");
+    } catch (error) {
+      message.error("Gửi thông báo thất bại!");
+    }
+  };
+
   return (
     <div
       style={{
@@ -689,6 +711,13 @@ const VaccineProgramList = () => {
                               onClick={() => handleCreateProgramResult(program)}
                             >
                               Tạo kết quả
+                            </Button>
+                            <Button
+                              type="default"
+                              style={{ marginLeft: 8, border: "1px solid #faad14", color: "#faad14" }}
+                              onClick={() => handleNotifyVaccine(program.vaccineId)}
+                            >
+                              Gửi thông báo
                             </Button>
                             {/* Đã xóa nút Tạo kết quả */}
                           </div>
@@ -1031,10 +1060,58 @@ const VaccineProgramList = () => {
                     overflowX: "auto",
                   }}
                 >
+                  {/* Thêm ô tìm kiếm */}
+                  <div style={{ marginBottom: 16, display: "flex", justifyContent: "flex-end" }}>
+                    <Input
+                      placeholder="Tìm kiếm tên chương trình..."
+                      prefix={<SearchOutlined />}
+                      value={searchTermResult}
+                      onChange={e => setSearchTermResult(e.target.value)}
+                      allowClear
+                      style={{ width: 260 }}
+                    />
+                  </div>
                   <Table
                     columns={[
                       { title: "ID kết quả", dataIndex: "vaccineResultId", key: "vaccineResultId" },
-                      { title: "Tên chương trình", dataIndex: ["vaccineFormDTO", "vaccineProgram", "vaccineName", "vaccineName"], key: "programName" },
+                      { 
+                        title: "Chương trình & Trạng thái", 
+                        key: "programAndStatus",
+                        render: (_, record) => {
+                          const programName = record?.vaccineFormDTO?.vaccineProgram?.vaccineName?.vaccineName || "";
+                          const status = record?.vaccineFormDTO?.vaccineProgram?.status;
+                          let color = "#595959";
+                          if (status === "ON_GOING") color = "#1890ff";
+                          else if (status === "COMPLETED") color = "#21ba45";
+                          else if (status === "NOT_STARTED") color = "#faad14";
+                          return (
+                            <div>
+                              <div style={{ fontWeight: 600 }}>{programName}</div>
+                              <span style={{
+                                fontWeight: 600,
+                                color,
+                                fontSize: 13,
+                                textTransform: "uppercase",
+                                letterSpacing: 0.5,
+                                whiteSpace: "nowrap",
+                                padding: "2px 8px",
+                                borderRadius: 4,
+                                background: "#f6f6f6",
+                                display: "inline-block",
+                                marginTop: 4,
+                              }}>
+                                {status === "ON_GOING"
+                                  ? "Đang diễn ra"
+                                  : status === "COMPLETED"
+                                  ? "Đã hoàn thành"
+                                  : status === "NOT_STARTED"
+                                  ? "Chưa bắt đầu"
+                                  : status}
+                              </span>
+                            </div>
+                          );
+                        }
+                      },
                       { 
                         title: "Học sinh & Lớp", 
                         key: "studentAndClass",
@@ -1048,40 +1125,12 @@ const VaccineProgramList = () => {
                       { title: "Giới tính", dataIndex: ["studentDTO", "gender"], key: "gender" },
                       { title: "Ghi chú phiếu", dataIndex: ["vaccineFormDTO", "note"], key: "formNotes" },
                       { title: "Ngày tiêm", dataIndex: ["vaccineFormDTO", "vaccineProgram", "vaccineDate"], key: "programDate" },
-                      { title: "Trạng thái chương trình", dataIndex: ["vaccineFormDTO", "vaccineProgram", "status"], key: "programStatus", render: (status) => {
-                        let color = "#595959";
-                        if (status === "ON_GOING") color = "#1890ff";
-                        else if (status === "COMPLETED") color = "#21ba45";
-                        else if (status === "NOT_STARTED") color = "#faad14";
-                        return (
-                          <span style={{
-                            fontWeight: 600,
-                            color,
-                            fontSize: 13,
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                            whiteSpace: "nowrap",
-                            padding: "2px 8px",
-                            borderRadius: 4,
-                            background: "#f6f6f6",
-                            display: "inline-block",
-                          }}>
-                            {status === "ON_GOING"
-                              ? "Đang diễn ra"
-                              : status === "COMPLETED"
-                              ? "Đã hoàn thành"
-                              : status === "NOT_STARTED"
-                              ? "Chưa bắt đầu"
-                              : status}
-                          </span>
-                        );
-                      } },
                       { title: "Tình trạng sức khỏe", dataIndex: "statusHealth", key: "statusHealth" },
                       { title: "Phản ứng", dataIndex: "reaction", key: "reaction" },
                       { title: "Ghi chú kết quả", dataIndex: "resultNote", key: "resultNote" },
                       { title: "Ngày tạo", dataIndex: "createdAt", key: "createdAt" },
                     ]}
-                    dataSource={pagedNurseResults}
+                    dataSource={filteredNurseResults}
                     loading={nurseResultsLoading}
                     rowKey="vaccineResultId"
                     bordered
@@ -1089,7 +1138,7 @@ const VaccineProgramList = () => {
                     pagination={{
                       current: resultTablePage,
                       pageSize: resultTablePageSize,
-                      total: nurseResults.length,
+                      total: filteredNurseResults.length,
                       showSizeChanger: true,
                       pageSizeOptions: ["5", "10", "20", "50"],
                       onChange: (page, pageSize) => {
