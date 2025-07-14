@@ -52,4 +52,7 @@ public interface StudentRepository extends JpaRepository<StudentEntity, Long> {
 
     List<StudentEntity> findByFullNameContainingIgnoreCase(String keyword);
 
+    @Query("SELECT s FROM StudentEntity s WHERE s.parent IS NOT NULL")
+    List<StudentEntity> findAllWithParent();
+
 }

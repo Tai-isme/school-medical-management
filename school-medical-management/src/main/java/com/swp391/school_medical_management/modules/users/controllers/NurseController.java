@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.ReplyFeedbackRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
@@ -217,17 +217,24 @@ public class NurseController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/replyfeeback")
-    public ResponseEntity<String> replyToFeedback(
-            @PathVariable("id") Integer feedbackId,
-            @RequestBody Map<String, String> request) {
-        nurseService.replyToFeedback(feedbackId, request.get("response"));
-        return ResponseEntity.ok("Replied to feedback.");
-    }
+    @PutMapping("/{id}/replyfeedback")
+    public ResponseEntity<FeedbackDTO> replyToFeedback(
+        @PathVariable("id") Integer feedbackId,
+        @RequestBody ReplyFeedbackRequest request) {
+
+    FeedbackDTO dto = nurseService.replyToFeedback(feedbackId, request);
+    return ResponseEntity.ok(dto);
+}
+
 
     @GetMapping("/getfeedback/{nurseId}")
     public ResponseEntity<List<FeedbackDTO>> getFeedbacksForNurse(@PathVariable Integer nurseId) {
         return ResponseEntity.ok(nurseService.getFeedbacksForNurse(nurseId));
+    }
+
+    @GetMapping("/getAllFeedback")
+    public ResponseEntity<List<FeedbackDTO>> getAllFeedbacks() {
+        return ResponseEntity.ok(nurseService.getAllFeedbacks());
     }
 
     // @GetMapping("/students")
@@ -332,4 +339,14 @@ public class NurseController {
         nurseService.updateStatus(requestId, newStatus);
         return ResponseEntity.ok().build();
     }
+
+
+    @PostMapping("/create-health-check-form/{programId}")
+    public ResponseEntity<String> generateForms(@PathVariable Long programId) {
+        nurseService.createFormsForHealthCheckProgram(programId);
+        return ResponseEntity.ok("Forms generated successfully for all students.");
+    }
+
+
+
 }

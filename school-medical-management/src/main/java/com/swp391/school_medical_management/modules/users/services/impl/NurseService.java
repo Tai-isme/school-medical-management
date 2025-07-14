@@ -20,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.ReplyFeedbackRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
@@ -42,6 +43,7 @@ import com.swp391.school_medical_management.modules.users.entities.FeedbackEntit
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
@@ -61,6 +63,7 @@ import com.swp391.school_medical_management.modules.users.repositories.BlogRepos
 import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
 import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
 import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
@@ -92,6 +95,9 @@ public class NurseService {
 
     @Autowired
     private HealthCheckFormRepository healthCheckFormRepository;
+
+    @Autowired
+    private  HealthCheckProgramRepository healthCheckProgramRepository;
 
     @Autowired
     private VaccineFormRepository vaccineFormRepository;
@@ -895,16 +901,26 @@ public class NurseService {
         return studentDTOList;
     }
 
-    public void replyToFeedback(Integer feedbackId, String response) {
+    public FeedbackDTO replyToFeedback(Integer feedbackId, ReplyFeedbackRequest request) {
         FeedbackEntity feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DON'T FIND TO RESPONSE."));
 
         if (feedback.getStatus() == FeedbackStatus.REPLIED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "RESPONSE WAS REPLIED");
         }
-        feedback.setResponseNurse(response);
+
+        feedback.setResponseNurse(request.getResponse());
         feedback.setStatus(FeedbackStatus.REPLIED);
+
+        if (request.getNurseId() != null) {
+            UserEntity nurse = userRepository.findById(request.getNurseId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NURSE NOT FOUND"));
+            feedback.setNurse(nurse);
+        }
+
         feedbackRepository.save(feedback);
+        FeedbackDTO dto = modelMapper.map(feedback, FeedbackDTO.class);
+        return dto;
     }
 
     public List<FeedbackDTO> getFeedbacksForNurse(Integer nurseId) {
@@ -917,6 +933,25 @@ public class NurseService {
 
         return feedbackDTOList;
     }
+
+
+    public List<FeedbackDTO> getAllFeedbacks() {
+    List<FeedbackEntity> feedbackList = feedbackRepository.findAll();
+
+    List<FeedbackDTO> feedbackDTOList = feedbackList.stream()
+            .map(feedback -> {
+                FeedbackDTO dto = modelMapper.map(feedback, FeedbackDTO.class);
+                dto.setParentId(feedback.getParent() != null ? feedback.getParent().getUserId() : null);
+                dto.setNurseId(feedback.getNurse() != null ? feedback.getNurse().getUserId() : null);
+                dto.setVaccineResultId(feedback.getVaccineResult() != null ? feedback.getVaccineResult().getVaccineResultId() : null);
+                dto.setHealthResultId(feedback.getHealthResult() != null ? feedback.getHealthResult().getHealthResultId() : null);
+                return dto;
+            })
+            .collect(Collectors.toList());
+
+        return feedbackDTOList;
+    }
+
 
     public List<StudentDTO> getStudentsNotVaccinated(Long vaccineProgramId, Long vaccineNameId) {
         List<StudentEntity> students;
@@ -1139,6 +1174,29 @@ public class NurseService {
         dto.setStatus(entity.getStatus().name());
         dto.setParentId(entity.getParent().getUserId());
         return dto;
+    }
+
+
+    public void createFormsForHealthCheckProgram(Long programId) {
+        HealthCheckProgramEntity program = healthCheckProgramRepository.findById(programId)
+                .orElseThrow(() -> new RuntimeException("Program not found"));
+
+        List<StudentEntity> students = studentRepository.findAllWithParent();
+
+        List<HealthCheckFormEntity> forms = new ArrayList<>();
+
+        for (StudentEntity student : students) {
+            HealthCheckFormEntity form = new HealthCheckFormEntity();
+            form.setHealthCheckProgram(program);
+            form.setStudent(student);
+            form.setParent(student.getParent());
+            form.setFormDate(LocalDate.now());
+            form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.DRAFT);
+            form.setCommit(false);
+            forms.add(form);
+        }
+
+        healthCheckFormRepository.saveAll(forms);
     }
 
 }

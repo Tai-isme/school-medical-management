@@ -13,6 +13,7 @@ public class FeedbackDTO {
     private String comment;
     private String status;
     private Long parentId;
+    private Long nurseId;
     private Integer vaccineResultId;
     private Integer healthResultId;
 }
