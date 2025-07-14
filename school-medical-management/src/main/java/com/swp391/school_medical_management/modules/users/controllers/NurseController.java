@@ -35,6 +35,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.MedicalE
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.OnGoingProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
@@ -107,6 +108,23 @@ public class NurseController {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
         List<VaccineFormDTO> vaccineFormDTOList = nurseService.getAllCommitedTrueVaccineForm(Long.parseLong(nurseId));
         return ResponseEntity.ok(vaccineFormDTOList);
+    }
+
+    @GetMapping("/vaccine-forms/not-send")
+    public ResponseEntity<List<VaccineFormDTO>> getNotSentVaccineForms() {
+        List<VaccineFormDTO> forms = nurseService.getNotSentVaccineForms();
+        return ResponseEntity.ok(forms);
+    }
+
+    @GetMapping("/health-check-forms/not-send")
+    public ResponseEntity<List<HealthCheckFormDTO>> getNotSentHealthCheckForms() {
+        List<HealthCheckFormDTO> forms = nurseService.getNotSentHealthCheckForms();
+        return ResponseEntity.ok(forms);
+    }
+
+    @GetMapping("/programs/on-going")
+    public ResponseEntity<OnGoingProgramDTO> getOnGoingPrograms() {
+        return ResponseEntity.ok(nurseService.getOnGoingPrograms());
     }
 
     @GetMapping("/draft-form/count")

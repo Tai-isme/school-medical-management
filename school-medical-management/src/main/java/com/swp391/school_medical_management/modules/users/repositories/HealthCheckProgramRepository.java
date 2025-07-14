@@ -17,6 +17,8 @@ public interface HealthCheckProgramRepository extends JpaRepository<HealthCheckP
 
     Optional<HealthCheckProgramEntity> findById(Long id);
 
+    List<HealthCheckProgramEntity> findByStatus(HealthCheckProgramStatus status);
+
     long countByStatusIn(List<HealthCheckProgramStatus> statuses);
 
     Optional<HealthCheckProgramEntity> findTopByStatusOrderByEndDateDesc(HealthCheckProgramStatus status);

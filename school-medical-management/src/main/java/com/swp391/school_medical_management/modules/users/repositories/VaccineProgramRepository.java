@@ -18,6 +18,8 @@ public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEn
 
     List<VaccineProgramEntity> findAll();
 
+    List<VaccineProgramEntity> findByStatus(VaccineProgramStatus status);
+
     long countByStatusIn(List<VaccineProgramStatus> statuses);
 
     Optional<VaccineProgramEntity> findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus status);

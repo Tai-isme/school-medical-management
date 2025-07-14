@@ -28,14 +28,17 @@ import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.OnGoingProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
 import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
 import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
@@ -43,7 +46,11 @@ import com.swp391.school_medical_management.modules.users.entities.FeedbackEntit
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
+<<<<<<< HEAD
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
+=======
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
+>>>>>>> 6d0f76771c539f8631b158c7fd826246619bc6c4
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
@@ -55,6 +62,7 @@ import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
@@ -72,6 +80,7 @@ import com.swp391.school_medical_management.modules.users.repositories.StudentRe
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineHistoryRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
 
 @Service
@@ -92,6 +101,12 @@ public class NurseService {
 
     @Autowired
     private StudentRepository studentRepository;
+
+    @Autowired
+    private VaccineProgramRepository vaccineProgramRepository;
+
+    @Autowired
+    private HealthCheckProgramRepository healthCheckProgramRepository;
 
     @Autowired
     private HealthCheckFormRepository healthCheckFormRepository;
@@ -378,6 +393,36 @@ public class NurseService {
                 .map(vaccineFormEntity -> modelMapper.map(vaccineFormEntity, VaccineFormDTO.class))
                 .collect(Collectors.toList());
         return vaccineFormDTOList;
+    }
+
+    public List<VaccineFormDTO> getNotSentVaccineForms() {
+        List<VaccineFormEntity> vaccineFormEntitieList = vaccineFormRepository.findByStatus(VaccineFormStatus.DRAFT);
+        List<VaccineFormDTO> vaccineFormDTOList = vaccineFormEntitieList.stream()
+                .map(vaccineForm -> modelMapper.map(vaccineForm, VaccineFormDTO.class))
+                .collect(Collectors.toList());
+        return vaccineFormDTOList;
+    }
+
+    public List<HealthCheckFormDTO> getNotSentHealthCheckForms() {
+        List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository.findByStatus(HealthCheckFormStatus.DRAFT);
+        List<HealthCheckFormDTO> healthCheckFormDTOList = healthCheckFormEntitieList.stream()
+                .map(healthCheckForm -> modelMapper.map(healthCheckForm, HealthCheckFormDTO.class))
+                .collect(Collectors.toList());
+        return healthCheckFormDTOList;
+    }
+
+    public OnGoingProgramDTO getOnGoingPrograms(){
+        List<VaccineProgramDTO> vaccinePrograms = vaccineProgramRepository.findByStatus(VaccineProgramStatus.ON_GOING)
+            .stream()
+            .map(vaccineprogram -> modelMapper.map(vaccineprogram, VaccineProgramDTO.class))
+            .collect(Collectors.toList());
+
+        List<HealthCheckProgramDTO> healthCheckPrograms = healthCheckProgramRepository.findByStatus(HealthCheckProgramStatus.ON_GOING)
+            .stream()
+            .map(healthCheckProgram -> modelMapper.map(healthCheckProgram, HealthCheckProgramDTO.class))
+            .collect(Collectors.toList());
+
+        return new OnGoingProgramDTO(vaccinePrograms, healthCheckPrograms);
     }
 
     public MedicalEventDTO createMedicalEvent(Long nurseId, MedicalEventRequest request) {
