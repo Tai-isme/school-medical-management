@@ -46,11 +46,8 @@ import com.swp391.school_medical_management.modules.users.entities.FeedbackEntit
 import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
-<<<<<<< HEAD
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
-=======
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
->>>>>>> 6d0f76771c539f8631b158c7fd826246619bc6c4
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
@@ -62,10 +59,10 @@ import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
-import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
 import com.swp391.school_medical_management.modules.users.repositories.BlogRepository;
 import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
@@ -110,9 +107,6 @@ public class NurseService {
 
     @Autowired
     private HealthCheckFormRepository healthCheckFormRepository;
-
-    @Autowired
-    private  HealthCheckProgramRepository healthCheckProgramRepository;
 
     @Autowired
     private VaccineFormRepository vaccineFormRepository;
