@@ -1322,6 +1322,8 @@ public class NurseService {
             formDTO.setStatus(form.getStatus() != null ? form.getStatus().name() : null);
             dto.setHealthCheckFormDTO(formDTO);
 
+            StudentDTO studentDTO = modelMapper.map(form.getStudent(), StudentDTO.class);
+            dto.setStudentDTO(studentDTO);
             resultList.add(dto);
         }
 
