@@ -8,7 +8,9 @@ import { faHouse } from '@fortawesome/free-solid-svg-icons';
 
 const Notifications = () => {
   const students = JSON.parse(localStorage.getItem("students") || "[]");
-  const [selectedStudentId, setSelectedStudentId] = useState(students[0].id);
+  const [selectedStudentId, setSelectedStudentId] = useState(
+    students.length > 0 ? students[0].id : null
+  );
   const selectedStudent = students.find((s) => s.id === selectedStudentId);
 
   const [selectedNotification, setSelectedNotification] = useState(null);

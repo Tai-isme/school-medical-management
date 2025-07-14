@@ -56,8 +56,9 @@ const HealthCheckResultCard = () => {
     const checkDate = item.healthCheckProgram?.endDate || "";
     const matchName = programName.toLowerCase().includes(filterName.toLowerCase());
     const matchDate = filterDate ? checkDate === filterDate : true;
-    const matchStatus = item.healthCheckProgram.status === "COMPLETED"; // chỉ lấy trạng thái COMPLETED
-    return matchName && matchDate && matchStatus;
+    const matchStatus = item.healthCheckProgram.status === "COMPLETED";
+    const matchCommit = item.commit === true; // chỉ hiện commit=true
+    return matchName && matchDate && matchStatus && matchCommit;
   });
 
   // const vaccineColumns = [...]; // Không dùng Table nữa

@@ -41,19 +41,21 @@ const VaccineHistoryDetailModal = ({ open, onClose, data, loading }) => {
         <p>
           <b>Phản ứng:</b> {data.reaction || "---"}
         </p>
-        {data.vaccineName?.url && (
-          <p>
-            <b>Thông tin thêm:</b>{" "}
-            <a
-              href={vaccineUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#1890ff', textDecoration: 'underline' }}
-            >
-              Xem thêm thông tin về vắc xin
-            </a>
-          </p>
-        )}
+        {data.vaccineName?.url
+          ? (
+            <p>
+              <b>Thông tin thêm:</b>{" "}
+              <a
+                href={vaccineUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#1890ff', textDecoration: 'underline' }}
+              >
+                Xem thêm thông tin về vắc xin
+              </a>
+            </p>
+          )
+          : null}
       </div>
     </Modal>
   );
