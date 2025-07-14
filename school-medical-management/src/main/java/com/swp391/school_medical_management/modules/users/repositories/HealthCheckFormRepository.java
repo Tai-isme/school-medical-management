@@ -14,34 +14,36 @@ import com.swp391.school_medical_management.modules.users.entities.StudentEntity
 import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
 
 public interface HealthCheckFormRepository extends JpaRepository<HealthCheckFormEntity, Long> {
-    List<HealthCheckFormEntity> findHealthCheckFormEntityByHealthCheckProgramAndStudent(
-            HealthCheckProgramEntity healthCheckProgramEntity, StudentEntity student);
+        List<HealthCheckFormEntity> findHealthCheckFormEntityByHealthCheckProgramAndStudent(
+                        HealthCheckProgramEntity healthCheckProgramEntity, StudentEntity student);
 
-    Optional<HealthCheckFormEntity> findByIdAndStatus(Long id, HealthCheckFormStatus status);
+        Optional<HealthCheckFormEntity> findByIdAndStatus(Long id, HealthCheckFormStatus status);
 
-    List<HealthCheckFormEntity> findAll();
+        List<HealthCheckFormEntity> findAll();
 
-    List<HealthCheckFormEntity> findAllByStudentAndStatus(StudentEntity student, HealthCheckFormStatus status);
+        List<HealthCheckFormEntity> findAllByStudentAndStatus(StudentEntity student, HealthCheckFormStatus status);
 
-    List<HealthCheckFormEntity> findByCommitTrue();
+        List<HealthCheckFormEntity> findByCommitTrue();
 
-    List<HealthCheckFormEntity> findByStatus(HealthCheckFormStatus status);
+        List<HealthCheckFormEntity> findByCommitTrueAndHealthCheckProgram_Id(Long programId);
 
-    long countByStatusAndCommitFalse(HealthCheckFormStatus status);
+        List<HealthCheckFormEntity> findByStatusAndHealthCheckProgram_Id(HealthCheckFormStatus status, Long programId);
 
-    Optional<HealthCheckFormEntity> findByStudentAndStatus(StudentEntity student, HealthCheckFormStatus status);
+        long countByStatusAndCommitFalse(HealthCheckFormStatus status);
 
-    @Query("""
-            SELECT
-            COUNT(CASE WHEN hf.commit = true THEN 1 END) AS committedCount,
-            COUNT(hf) AS totalSent
-            FROM HealthCheckFormEntity hf
-            WHERE hf.healthCheckProgram.Id = :healthCheckId
-            """)
-    ParticipationRateRaw getParticipationRateByHealthCheckId(@Param("healthCheckId") Long healthCheckId);
+        Optional<HealthCheckFormEntity> findByStudentAndStatus(StudentEntity student, HealthCheckFormStatus status);
 
-    @Query("SELECT f FROM HealthCheckFormEntity f " +
-       "WHERE f.healthCheckProgram.id = :programId AND f.commit = true")
-    List<HealthCheckFormEntity> findCommittedFormsByProgramId(@Param("programId") Long programId);
+        @Query("""
+                        SELECT
+                        COUNT(CASE WHEN hf.commit = true THEN 1 END) AS committedCount,
+                        COUNT(hf) AS totalSent
+                        FROM HealthCheckFormEntity hf
+                        WHERE hf.healthCheckProgram.Id = :healthCheckId
+                        """)
+        ParticipationRateRaw getParticipationRateByHealthCheckId(@Param("healthCheckId") Long healthCheckId);
+
+        @Query("SELECT f FROM HealthCheckFormEntity f " +
+                        "WHERE f.healthCheckProgram.id = :programId AND f.commit = true")
+        List<HealthCheckFormEntity> findCommittedFormsByProgramId(@Param("programId") Long programId);
 
 }

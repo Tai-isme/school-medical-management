@@ -88,37 +88,36 @@ public class NurseController {
         return ResponseEntity.ok(healthCheckFormDTO);
     }
 
-    @GetMapping("/health-check-forms/commited")
-    public ResponseEntity<List<HealthCheckFormDTO>> getAllCommitedTrueHealthCheckForm() {
+    @GetMapping("/health-check-forms/commited/program/{programId}")
+    public ResponseEntity<List<HealthCheckFormDTO>> getAllCommitedHealthCheckFormByProgram(
+            @PathVariable Long programId) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
         List<HealthCheckFormDTO> healthCheckFormDTOList = nurseService
-                .getAllCommitedTrueHealthCheckForm(Long.parseLong(nurseId));
+                .getAllCommitedHealthCheckFormByProgram(Long.parseLong(nurseId), programId);
         return ResponseEntity.ok(healthCheckFormDTOList);
     }
 
     @GetMapping("/vaccine-forms/{vaccineFormId}")
     public ResponseEntity<VaccineFormDTO> getVaccineFormById(@PathVariable Long vaccineFormId) {
-        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        VaccineFormDTO vaccineFormDTO = nurseService.getVaccinFormById(Long.parseLong(nurseId), vaccineFormId);
+        VaccineFormDTO vaccineFormDTO = nurseService.getVaccinFormById(vaccineFormId);
         return ResponseEntity.ok(vaccineFormDTO);
     }
 
-    @GetMapping("/vaccine-forms/commited")
-    public ResponseEntity<List<VaccineFormDTO>> getAllCommitedTrueVaccineForm() {
-        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<VaccineFormDTO> vaccineFormDTOList = nurseService.getAllCommitedTrueVaccineForm(Long.parseLong(nurseId));
+    @GetMapping("/vaccine-forms/commited/program/{programId}")
+    public ResponseEntity<List<VaccineFormDTO>> getAllCommitedVaccineFormByProgram(@PathVariable Long programId) {
+        List<VaccineFormDTO> vaccineFormDTOList = nurseService.getAllCommitedVaccineFormByProgram(programId);
         return ResponseEntity.ok(vaccineFormDTOList);
     }
 
-    @GetMapping("/vaccine-forms/not-send")
-    public ResponseEntity<List<VaccineFormDTO>> getNotSentVaccineForms() {
-        List<VaccineFormDTO> forms = nurseService.getNotSentVaccineForms();
+    @GetMapping("/vaccine-forms/not-send/program/{programId}")
+    public ResponseEntity<List<VaccineFormDTO>> getNotSentVaccineFormsByProgram(@PathVariable Long programId) {
+        List<VaccineFormDTO> forms = nurseService.getNotSentVaccineFormsByProgram(programId);
         return ResponseEntity.ok(forms);
     }
 
-    @GetMapping("/health-check-forms/not-send")
-    public ResponseEntity<List<HealthCheckFormDTO>> getNotSentHealthCheckForms() {
-        List<HealthCheckFormDTO> forms = nurseService.getNotSentHealthCheckForms();
+    @GetMapping("/health-check-forms/not-send/program/{programId}")
+    public ResponseEntity<List<HealthCheckFormDTO>> getNotSentHealthCheckFormsByProgram(@PathVariable Long programId) {
+        List<HealthCheckFormDTO> forms = nurseService.getNotSentHealthCheckFormsByProgram(programId);
         return ResponseEntity.ok(forms);
     }
 
@@ -237,13 +236,12 @@ public class NurseController {
 
     @PutMapping("/{id}/replyfeedback")
     public ResponseEntity<FeedbackDTO> replyToFeedback(
-        @PathVariable("id") Integer feedbackId,
-        @RequestBody ReplyFeedbackRequest request) {
+            @PathVariable("id") Integer feedbackId,
+            @RequestBody ReplyFeedbackRequest request) {
 
-    FeedbackDTO dto = nurseService.replyToFeedback(feedbackId, request);
-    return ResponseEntity.ok(dto);
-}
-
+        FeedbackDTO dto = nurseService.replyToFeedback(feedbackId, request);
+        return ResponseEntity.ok(dto);
+    }
 
     @GetMapping("/getfeedback/{nurseId}")
     public ResponseEntity<List<FeedbackDTO>> getFeedbacksForNurse(@PathVariable Integer nurseId) {
@@ -358,7 +356,6 @@ public class NurseController {
         return ResponseEntity.ok().build();
     }
 
-
     @PostMapping("/create-health-check-form/{programId}")
     public ResponseEntity<String> createHealthCheckForm(@PathVariable Long programId) {
         nurseService.createFormsForHealthCheckProgram(programId);
@@ -371,12 +368,12 @@ public class NurseController {
         return ResponseEntity.ok("Vaccine forms generated successfully.");
     }
 
-
     // @PostMapping("/create-default-by-program/{programId}")
-    // public ResponseEntity<List<HealthCheckResultDTO>> createResultsByProgram(@PathVariable Long programId) {
-    //     List<HealthCheckResultDTO> results = nurseService
-    //             .createDefaultHealthCheckResultsByProgramId(programId);
-    //     return ResponseEntity.ok(results);
+    // public ResponseEntity<List<HealthCheckResultDTO>>
+    // createResultsByProgram(@PathVariable Long programId) {
+    // List<HealthCheckResultDTO> results = nurseService
+    // .createDefaultHealthCheckResultsByProgramId(programId);
+    // return ResponseEntity.ok(results);
     // }
 
     @PostMapping("/create-healthCheckResult-byProgram-/{programId}")

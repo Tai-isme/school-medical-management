@@ -338,22 +338,20 @@ public class NurseService {
         return modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
     }
 
-    public List<HealthCheckFormDTO> getAllCommitedTrueHealthCheckForm(Long nurseId) {
+    public List<HealthCheckFormDTO> getAllCommitedHealthCheckFormByProgram(Long nurseId, Long programId) {
         Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
         if (nurseOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
 
-        List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository.findByCommitTrue();
+        List<HealthCheckFormEntity> formEntities = healthCheckFormRepository
+                .findByCommitTrueAndHealthCheckProgram_Id(programId);
 
-        if (healthCheckFormEntitieList.isEmpty())
+        if (formEntities.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No committed health check forms found");
 
-        List<HealthCheckFormDTO> healthCheckFormDTOList = healthCheckFormEntitieList
-                .stream()
-                .map(healthCheckFormEntity -> modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class))
+        return formEntities.stream()
+                .map(entity -> modelMapper.map(entity, HealthCheckFormDTO.class))
                 .collect(Collectors.toList());
-
-        return healthCheckFormDTOList;
     }
 
     public Map<String, Long> countDraftForm() {
@@ -364,10 +362,7 @@ public class NurseService {
                 "healthCheckForm", healthCheckForm);
     }
 
-    public VaccineFormDTO getVaccinFormById(Long nurseId, Long vaccineFormId) {
-        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        if (nurseOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
+    public VaccineFormDTO getVaccinFormById(Long vaccineFormId) {
         Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(vaccineFormId);
         if (vaccineFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
@@ -375,35 +370,30 @@ public class NurseService {
         return modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
     }
 
-    public List<VaccineFormDTO> getAllCommitedTrueVaccineForm(Long nurseId) {
-        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        if (nurseOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
-        List<VaccineFormEntity> vaccineFormEntitieList = vaccineFormRepository.findByCommitTrue();
-        if (vaccineFormEntitieList.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No commited vaccine forms found");
-        List<VaccineFormDTO> vaccineFormDTOList = vaccineFormEntitieList
-                .stream()
-                .map(vaccineFormEntity -> modelMapper.map(vaccineFormEntity, VaccineFormDTO.class))
-                .collect(Collectors.toList());
-        return vaccineFormDTOList;
-    }
-
-    public List<VaccineFormDTO> getNotSentVaccineForms() {
-        List<VaccineFormEntity> vaccineFormEntitieList = vaccineFormRepository.findByStatus(VaccineFormStatus.DRAFT);
-        List<VaccineFormDTO> vaccineFormDTOList = vaccineFormEntitieList.stream()
+    public List<VaccineFormDTO> getAllCommitedVaccineFormByProgram(Long programId) {
+        List<VaccineFormEntity> vaccineForms = vaccineFormRepository.findByCommitTrueAndVaccineProgram_VaccineId(programId);
+        if (vaccineForms.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No committed vaccine forms found");
+        return vaccineForms.stream()
                 .map(vaccineForm -> modelMapper.map(vaccineForm, VaccineFormDTO.class))
                 .collect(Collectors.toList());
-        return vaccineFormDTOList;
     }
 
-    public List<HealthCheckFormDTO> getNotSentHealthCheckForms() {
-        List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository
-                .findByStatus(HealthCheckFormStatus.DRAFT);
-        List<HealthCheckFormDTO> healthCheckFormDTOList = healthCheckFormEntitieList.stream()
-                .map(healthCheckForm -> modelMapper.map(healthCheckForm, HealthCheckFormDTO.class))
+    public List<VaccineFormDTO> getNotSentVaccineFormsByProgram(Long programId) {
+        List<VaccineFormEntity> vaccineForms = vaccineFormRepository.findByStatusAndVaccineProgram_VaccineId(VaccineFormStatus.DRAFT,
+                programId);
+        return vaccineForms.stream()
+                .map(form -> modelMapper.map(form, VaccineFormDTO.class))
                 .collect(Collectors.toList());
-        return healthCheckFormDTOList;
+    }
+
+    public List<HealthCheckFormDTO> getNotSentHealthCheckFormsByProgram(Long programId) {
+        List<HealthCheckFormEntity> healthCheckForms = healthCheckFormRepository
+                .findByStatusAndHealthCheckProgram_Id(HealthCheckFormStatus.DRAFT, programId);
+
+        return healthCheckForms.stream()
+                .map(form -> modelMapper.map(form, HealthCheckFormDTO.class))
+                .collect(Collectors.toList());
     }
 
     public OnGoingProgramDTO getOnGoingPrograms() {
@@ -683,10 +673,13 @@ public class NurseService {
 
         HealthCheckFormDTO healthCheckFormDTO = modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
         HealthCheckResultEntity healthCheckResultEntity = existingResultOpt.get();
-
         healthCheckResultEntity.setDiagnosis(request.getDiagnosis());
         healthCheckResultEntity.setLevel(HealthCheckResultEntity.Level.valueOf(request.getLevel().toUpperCase()));
         healthCheckResultEntity.setNote(request.getNote());
+        healthCheckResultEntity.setVision(request.getVision());
+        healthCheckResultEntity.setHearing(request.getHearing());
+        healthCheckResultEntity.setWeight(request.getWeight());
+        healthCheckResultEntity.setHeight(request.getHeight());
         healthCheckResultRepository.save(healthCheckResultEntity);
 
         HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,

@@ -25,7 +25,7 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
 
   List<VaccineFormEntity> findByCommitTrue();
 
-  List<VaccineFormEntity> findByStatus(VaccineFormStatus status);
+  List<VaccineFormEntity> findByCommitTrueAndVaccineProgram_VaccineId(Long programId);
 
   long countByStatusAndCommitFalse(VaccineFormStatus status);
 
@@ -40,8 +40,9 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
       """)
   ParticipationRateRaw getParticipationRateByVaccineId(@Param("vaccineId") Long vaccineId);
 
-
   Long countByVaccineProgram_VaccineId(Long vaccineProgramId);
+
+  List<VaccineFormEntity> findByStatusAndVaccineProgram_VaccineId(VaccineFormStatus status, Long programId);
 
   Long countByVaccineProgram_VaccineIdAndCommitTrue(Long vaccineProgramId);
 }
