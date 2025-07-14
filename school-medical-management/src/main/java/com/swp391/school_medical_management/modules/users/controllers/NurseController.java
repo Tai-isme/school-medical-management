@@ -82,31 +82,30 @@ public class NurseController {
 
     @GetMapping("/health-check-forms/{healthCheckFormId}")
     public ResponseEntity<HealthCheckFormDTO> getHealthCheckFormById(@PathVariable Long healthCheckFormId) {
-        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        HealthCheckFormDTO healthCheckFormDTO = nurseService.getHealthCheckFormById(Long.parseLong(nurseId),
-                healthCheckFormId);
+        HealthCheckFormDTO healthCheckFormDTO = nurseService.getHealthCheckFormById(healthCheckFormId);
         return ResponseEntity.ok(healthCheckFormDTO);
     }
 
-    @GetMapping("/health-check-forms/commited/program/{programId}")
-    public ResponseEntity<List<HealthCheckFormDTO>> getAllCommitedHealthCheckFormByProgram(
-            @PathVariable Long programId) {
-        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<HealthCheckFormDTO> healthCheckFormDTOList = nurseService
-                .getAllCommitedHealthCheckFormByProgram(Long.parseLong(nurseId), programId);
-        return ResponseEntity.ok(healthCheckFormDTOList);
+    @GetMapping("/health-check-forms/program/{programId}")
+    public ResponseEntity<List<HealthCheckFormDTO>> getHealthCheckFormsByProgram(
+            @PathVariable Long programId,
+            @RequestParam(required = false) Boolean committed) {
+        List<HealthCheckFormDTO> list = nurseService.getHealthCheckFormsByProgram(programId, committed);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/vaccine-forms/program/{programId}")
+    public ResponseEntity<List<VaccineFormDTO>> getVaccineFormsByProgram(
+            @PathVariable Long programId,
+            @RequestParam(required = false) Boolean committed) {
+        List<VaccineFormDTO> forms = nurseService.getVaccineFormsByProgram(programId, committed);
+        return ResponseEntity.ok(forms);
     }
 
     @GetMapping("/vaccine-forms/{vaccineFormId}")
     public ResponseEntity<VaccineFormDTO> getVaccineFormById(@PathVariable Long vaccineFormId) {
         VaccineFormDTO vaccineFormDTO = nurseService.getVaccinFormById(vaccineFormId);
         return ResponseEntity.ok(vaccineFormDTO);
-    }
-
-    @GetMapping("/vaccine-forms/commited/program/{programId}")
-    public ResponseEntity<List<VaccineFormDTO>> getAllCommitedVaccineFormByProgram(@PathVariable Long programId) {
-        List<VaccineFormDTO> vaccineFormDTOList = nurseService.getAllCommitedVaccineFormByProgram(programId);
-        return ResponseEntity.ok(vaccineFormDTOList);
     }
 
     @GetMapping("/vaccine-forms/not-send/program/{programId}")

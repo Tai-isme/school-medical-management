@@ -26,6 +26,8 @@ public interface HealthCheckFormRepository extends JpaRepository<HealthCheckForm
         List<HealthCheckFormEntity> findByCommitTrue();
 
         List<HealthCheckFormEntity> findByCommitTrueAndHealthCheckProgram_Id(Long programId);
+        
+        List<HealthCheckFormEntity> findByHealthCheckProgram_Id(Long programId);
 
         List<HealthCheckFormEntity> findByStatusAndHealthCheckProgram_Id(HealthCheckFormStatus status, Long programId);
 

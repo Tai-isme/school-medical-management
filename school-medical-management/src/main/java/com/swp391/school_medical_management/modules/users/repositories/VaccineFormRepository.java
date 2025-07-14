@@ -26,6 +26,8 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
   List<VaccineFormEntity> findByCommitTrue();
 
   List<VaccineFormEntity> findByCommitTrueAndVaccineProgram_VaccineId(Long programId);
+  
+  List<VaccineFormEntity> findByVaccineProgram_VaccineId(Long programId);
 
   long countByStatusAndCommitFalse(VaccineFormStatus status);
 

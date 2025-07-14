@@ -324,11 +324,7 @@ public class NurseService {
         return medicalRequestDTO;
     }
 
-    public HealthCheckFormDTO getHealthCheckFormById(Long nurseId, Long healthCheckFormId) {
-        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        if (nurseOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
-
+    public HealthCheckFormDTO getHealthCheckFormById(Long healthCheckFormId) {
         Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(healthCheckFormId);
         if (healthCheckFormOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
@@ -338,19 +334,36 @@ public class NurseService {
         return modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
     }
 
-    public List<HealthCheckFormDTO> getAllCommitedHealthCheckFormByProgram(Long nurseId, Long programId) {
-        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        if (nurseOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
+    public List<HealthCheckFormDTO> getHealthCheckFormsByProgram(Long programId, Boolean committed) {
+        List<HealthCheckFormEntity> healthCheckForms;
+        if (Boolean.TRUE.equals(committed)) {
+            healthCheckForms = healthCheckFormRepository.findByCommitTrueAndHealthCheckProgram_Id(programId);
+        } else {
+            healthCheckForms = healthCheckFormRepository.findByHealthCheckProgram_Id(programId);
+        }
 
-        List<HealthCheckFormEntity> formEntities = healthCheckFormRepository
-                .findByCommitTrueAndHealthCheckProgram_Id(programId);
+        if (healthCheckForms.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check forms found");
 
-        if (formEntities.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No committed health check forms found");
-
-        return formEntities.stream()
+        return healthCheckForms.stream()
                 .map(entity -> modelMapper.map(entity, HealthCheckFormDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<VaccineFormDTO> getVaccineFormsByProgram(Long programId, Boolean committed) {
+        List<VaccineFormEntity> vaccineForms;
+
+        if (Boolean.TRUE.equals(committed)) {
+            vaccineForms = vaccineFormRepository.findByCommitTrueAndVaccineProgram_VaccineId(programId);
+        } else {
+            vaccineForms = vaccineFormRepository.findByVaccineProgram_VaccineId(programId);
+        }
+
+        if (vaccineForms.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine forms found");
+
+        return vaccineForms.stream()
+                .map(form -> modelMapper.map(form, VaccineFormDTO.class))
                 .collect(Collectors.toList());
     }
 
@@ -368,16 +381,6 @@ public class NurseService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
         VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
         return modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
-    }
-
-    public List<VaccineFormDTO> getAllCommitedVaccineFormByProgram(Long programId) {
-        List<VaccineFormEntity> vaccineForms = vaccineFormRepository
-                .findByCommitTrueAndVaccineProgram_VaccineId(programId);
-        if (vaccineForms.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No committed vaccine forms found");
-        return vaccineForms.stream()
-                .map(vaccineForm -> modelMapper.map(vaccineForm, VaccineFormDTO.class))
-                .collect(Collectors.toList());
     }
 
     public List<VaccineFormDTO> getNotSentVaccineFormsByProgram(Long programId) {
