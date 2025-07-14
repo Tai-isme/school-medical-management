@@ -97,6 +97,13 @@ public class AdminController {
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 
+    @PatchMapping("/vaccine-program/{id}")
+    public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(@PathVariable Long id,
+            @RequestParam("status") String status) {
+        VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgramStatus(id, status);
+        return ResponseEntity.ok(vaccineProgramDTO);
+    }
+
     @GetMapping("/health-check-program")
     public ResponseEntity<List<HealthCheckProgramDTO>> getAllHealthCheckProgram() {
         String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -224,7 +231,6 @@ public class AdminController {
         VaccineFormStatsDTO stats = adminService.getFormStatsByProgram(vaccineProgramId);
         return ResponseEntity.ok(stats);
     }
-
 
     @GetMapping("/get=all-VaccineName")
     public ResponseEntity<List<VaccineNameDTO>> getAllVaccineNames() {
