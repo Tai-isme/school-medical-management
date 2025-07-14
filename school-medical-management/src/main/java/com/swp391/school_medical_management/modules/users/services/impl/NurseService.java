@@ -634,6 +634,32 @@ public class NurseService {
         return resultList;
     }
 
+    public List<HealthCheckResultDTO> createDefaultHealthCheckResultsByProgramId(Long programId) {
+        List<HealthCheckFormEntity> committedForms = healthCheckFormRepository.findCommittedFormsByProgramId(programId);
+        List<HealthCheckResultDTO> resultList = new ArrayList<>();
+
+        for (HealthCheckFormEntity form : committedForms) {
+            boolean exists = healthCheckResultRepository.findByHealthCheckFormEntity(form).isPresent();
+            if (exists)
+                continue;
+
+            HealthCheckResultRequest defaultRequest = new HealthCheckResultRequest();
+            defaultRequest.setDiagnosis("GOOD");
+            defaultRequest.setLevel("GOOD");
+            defaultRequest.setNote("No problem");
+            defaultRequest.setHealthCheckFormId(form.getId());
+
+            try {
+                HealthCheckResultDTO resultDTO = createHealthCheckResult(defaultRequest);
+                resultList.add(resultDTO);
+            } catch (ResponseStatusException ex) {
+                System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " + ex.getReason());
+            }
+        }
+
+        return resultList;
+    }
+
     public HealthCheckResultDTO updateHealthCheckResult(Long healCheckResultId, HealthCheckResultRequest request) {
 
         Optional<HealthCheckResultEntity> existingResultOpt = healthCheckResultRepository

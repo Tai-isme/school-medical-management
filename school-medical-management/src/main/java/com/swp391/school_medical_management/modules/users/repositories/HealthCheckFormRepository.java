@@ -1,17 +1,17 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
-
-import java.util.List;
-import java.util.Optional;
 
 public interface HealthCheckFormRepository extends JpaRepository<HealthCheckFormEntity, Long> {
     List<HealthCheckFormEntity> findHealthCheckFormEntityByHealthCheckProgramAndStudent(
@@ -39,4 +39,9 @@ public interface HealthCheckFormRepository extends JpaRepository<HealthCheckForm
             WHERE hf.healthCheckProgram.Id = :healthCheckId
             """)
     ParticipationRateRaw getParticipationRateByHealthCheckId(@Param("healthCheckId") Long healthCheckId);
+
+    @Query("SELECT f FROM HealthCheckFormEntity f " +
+       "WHERE f.healthCheckProgram.id = :programId AND f.commit = true")
+    List<HealthCheckFormEntity> findCommittedFormsByProgramId(@Param("programId") Long programId);
+
 }

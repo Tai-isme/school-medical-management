@@ -371,4 +371,12 @@ public class NurseController {
         return ResponseEntity.ok("Vaccine forms generated successfully.");
     }
 
+
+    @GetMapping("/create-health-check-result/{programId}")
+    public ResponseEntity<List<HealthCheckResultDTO>> createResultsByProgram(@PathVariable Long programId) {
+        List<HealthCheckResultDTO> results = nurseService
+                .createDefaultHealthCheckResultsByProgramId(programId);
+        return ResponseEntity.ok(results);
+    }
+
 }
