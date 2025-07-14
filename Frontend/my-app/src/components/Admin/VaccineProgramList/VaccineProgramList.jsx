@@ -98,6 +98,18 @@ const VaccineProgramList = () => {
     }
   };
 
+  // ...existing code...
+const handleEditResult = (programId) => {
+  // TODO: Hiện modal chỉnh sửa kết quả hoặc chuyển tab, tuỳ ý bạn
+  console.log("Chỉnh sửa kết quả cho chương trình", programId);
+};
+
+const handleSendNotification = (programId) => {
+  // TODO: Gửi thông báo, có thể gọi API hoặc hiện modal xác nhận
+  console.log("Gửi thông báo cho chương trình", programId);
+};
+// ...existing code...
+
   const fetchNurseResults = async () => {
     setNurseResultsLoading(true);
     const token = localStorage.getItem("token");
@@ -706,6 +718,12 @@ const VaccineProgramList = () => {
                               Xem chi tiết
                             </Button>
                             <Button
+                              style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
+                              onClick={() => handleViewResult(program.vaccineId)}
+                            >
+                              Xem kết quả
+                            </Button>
+                            <Button
                               type="primary"
                               style={{ marginLeft: 8, background: "#1890ff", border: "none" }}
                               onClick={() => handleCreateProgramResult(program)}
@@ -714,8 +732,20 @@ const VaccineProgramList = () => {
                             </Button>
                             <Button
                               type="default"
+<<<<<<< HEAD
                               style={{ marginLeft: 8, border: "1px solid #faad14", color: "#faad14" }}
                               onClick={() => handleNotifyVaccine(program.vaccineId)}
+=======
+                              style={{ marginLeft: 8, background: "#ff9800", color: "#fff", border: "none" }}
+                              onClick={() => handleEditResult(program.id)}
+                            >
+                              Chỉnh sửa kết quả
+                            </Button>
+                            <Button
+                              type="default"
+                              style={{ marginLeft: 8, background: "#00bcd4", color: "#fff", border: "none" }}
+                              onClick={() => handleSendNotification(program.id)}
+>>>>>>> 48b5f0e50327317023b297efc3a5590e15e2341d
                             >
                               Gửi thông báo
                             </Button>
