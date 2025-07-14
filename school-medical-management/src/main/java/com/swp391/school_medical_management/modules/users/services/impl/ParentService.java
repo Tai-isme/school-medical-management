@@ -261,11 +261,6 @@ public class ParentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
 
-        boolean isMedicalRequestExist = medicalRequestRepository
-                .existsByStudentAndStatus(student, MedicalRequestStatus.PROCESSING);
-        if (isMedicalRequestExist)
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Medical request already exists");
-
         if (request.getMedicalRequestDetailRequests() == null || request.getMedicalRequestDetailRequests().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical request details cannot be empty");
         }
