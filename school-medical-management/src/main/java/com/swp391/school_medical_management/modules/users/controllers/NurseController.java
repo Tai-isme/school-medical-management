@@ -360,11 +360,15 @@ public class NurseController {
 
 
     @PostMapping("/create-health-check-form/{programId}")
-    public ResponseEntity<String> generateForms(@PathVariable Long programId) {
+    public ResponseEntity<String> createHealthCheckForm(@PathVariable Long programId) {
         nurseService.createFormsForHealthCheckProgram(programId);
         return ResponseEntity.ok("Forms generated successfully for all students.");
     }
 
-
+    @PostMapping("/create-vaccine-form/{programId}")
+    public ResponseEntity<String> createVaccineForm(@PathVariable Long programId) {
+        nurseService.createFormsForVaccineProgram(programId);
+        return ResponseEntity.ok("Vaccine forms generated successfully.");
+    }
 
 }

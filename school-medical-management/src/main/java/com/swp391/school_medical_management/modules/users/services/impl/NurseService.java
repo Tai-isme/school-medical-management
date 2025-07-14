@@ -1230,12 +1230,34 @@ public class NurseService {
             form.setStudent(student);
             form.setParent(student.getParent());
             form.setFormDate(LocalDate.now());
-            form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.DRAFT);
+            form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.SENT);
             form.setCommit(false);
             forms.add(form);
         }
 
         healthCheckFormRepository.saveAll(forms);
+    }
+
+    public void createFormsForVaccineProgram(Long vaccineProgramId) {
+        VaccineProgramEntity program = vaccineProgramRepository.findById(vaccineProgramId)
+                .orElseThrow(() -> new RuntimeException("Vaccine program not found"));
+
+        List<StudentEntity> students = studentRepository.findAllWithParent();
+
+        List<VaccineFormEntity> forms = new ArrayList<>();
+
+        for (StudentEntity student : students) {
+            VaccineFormEntity form = new VaccineFormEntity();
+            form.setVaccineProgram(program);
+            form.setStudent(student);
+            form.setParent(student.getParent());
+            form.setFormDate(LocalDate.now());
+            form.setStatus(VaccineFormEntity.VaccineFormStatus.SENT);
+            form.setNote(null); 
+            forms.add(form);
+        }
+
+        vaccineFormRepository.saveAll(forms);
     }
 
 }
