@@ -57,6 +57,11 @@ const VaccineProgramList = () => {
   const [nurseResults, setNurseResults] = useState([]);
   const [nurseResultsLoading, setNurseResultsLoading] = useState(false);
   const [searchTermResult, setSearchTermResult] = useState(""); // Thêm state tìm kiếm kết quả
+  const [selectedResult, setSelectedResult] = useState(null);
+  const [selectedResultLoading, setSelectedResultLoading] = useState(false);
+  const [selectedVaccineResult, setSelectedVaccineResult] = useState(null);
+  const [selectedVaccineResultId, setSelectedVaccineResultId] = useState(null);
+  const [selectedVaccineResultLoading, setSelectedVaccineResultLoading] = useState(false);
 
   useEffect(() => {
     fetchProgram();
@@ -97,18 +102,6 @@ const VaccineProgramList = () => {
       setVaccineList([]);
     }
   };
-
-  // ...existing code...
-const handleEditResult = (programId) => {
-  // TODO: Hiện modal chỉnh sửa kết quả hoặc chuyển tab, tuỳ ý bạn
-  console.log("Chỉnh sửa kết quả cho chương trình", programId);
-};
-
-const handleSendNotification = (programId) => {
-  // TODO: Gửi thông báo, có thể gọi API hoặc hiện modal xác nhận
-  console.log("Gửi thông báo cho chương trình", programId);
-};
-// ...existing code...
 
   const fetchNurseResults = async () => {
     setNurseResultsLoading(true);
@@ -213,22 +206,21 @@ const handleSendNotification = (programId) => {
     }
   };
 
-  const handleViewResult = async (programId) => {
-    setResultLoading(true);
-    setResultVisible(true);
+  const handleViewResult = async (vaccineResultId) => {
+    setActiveTab("result");
+    setSelectedVaccineResultLoading(true);
+    setSelectedVaccineResultId(vaccineResultId);
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "http://localhost:8080/api/admin/vaccine-results-status-by-program",
+        `http://localhost:8080/api/nurse/vaccine-result/${vaccineResultId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Lọc kết quả theo programId
-      const filtered = res.data.filter((item) => item.programId === programId);
-      setResultData(filtered);
+      setSelectedVaccineResult([res.data]); // Đưa vào mảng để Table nhận dataSource
     } catch (err) {
-      setResultData([]);
+      setSelectedVaccineResult([]);
     } finally {
-      setResultLoading(false);
+      setSelectedVaccineResultLoading(false);
     }
   };
 
@@ -384,45 +376,6 @@ const handleSendNotification = (programId) => {
     setResultPageLoading(false);
   };
 
-  const testResultData = [
-    {
-      key: 1,
-      programName: "Chương trình tiêm chủng 1",
-      statusHealth: "Tốt",
-      count: 120,
-    },
-    {
-      key: 2,
-      programName: "Chương trình tiêm chủng 2",
-      statusHealth: "Bình thường",
-      count: 80,
-    },
-    {
-      key: 3,
-      programName: "Chương trình tiêm chủng 3",
-      statusHealth: "Có phản ứng nhẹ",
-      count: 10,
-    },
-  ];
-
-  const resultColumns = [
-    {
-      title: "Tên chương trình",
-      dataIndex: "programName",
-      key: "programName",
-    },
-    {
-      title: "Trạng thái sức khỏe",
-      dataIndex: "statusHealth",
-      key: "statusHealth",
-    },
-    {
-      title: "Số lượng",
-      dataIndex: "count",
-      key: "count",
-    },
-  ];
-
   const pagedNurseResults = nurseResults.slice(
     (resultTablePage - 1) * resultTablePageSize,
     resultTablePage * resultTablePageSize
@@ -447,6 +400,14 @@ const handleSendNotification = (programId) => {
     } catch (error) {
       message.error("Gửi thông báo thất bại!");
     }
+  };
+
+  const handleEditResult = (id) => {
+    message.info(`Chức năng chỉnh sửa kết quả (ID: ${id}) chưa được phát triển.`);
+  };
+
+  const handleSendNotification = (id) => {
+    message.info(`Chức năng gửi thông báo (ID: ${id}) chưa được phát triển.`);
   };
 
   return (
@@ -719,7 +680,7 @@ const handleSendNotification = (programId) => {
                             </Button>
                             <Button
                               style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
-                              onClick={() => handleViewResult(program.vaccineId)}
+                              onClick={() => handleViewResult(program.vaccineId)} // hoặc truyền vaccineResultId phù hợp
                             >
                               Xem kết quả
                             </Button>
@@ -732,10 +693,6 @@ const handleSendNotification = (programId) => {
                             </Button>
                             <Button
                               type="default"
-<<<<<<< HEAD
-                              style={{ marginLeft: 8, border: "1px solid #faad14", color: "#faad14" }}
-                              onClick={() => handleNotifyVaccine(program.vaccineId)}
-=======
                               style={{ marginLeft: 8, background: "#ff9800", color: "#fff", border: "none" }}
                               onClick={() => handleEditResult(program.id)}
                             >
@@ -745,7 +702,6 @@ const handleSendNotification = (programId) => {
                               type="default"
                               style={{ marginLeft: 8, background: "#00bcd4", color: "#fff", border: "none" }}
                               onClick={() => handleSendNotification(program.id)}
->>>>>>> 48b5f0e50327317023b297efc3a5590e15e2341d
                             >
                               Gửi thông báo
                             </Button>
@@ -1160,12 +1116,12 @@ const handleSendNotification = (programId) => {
                       { title: "Ghi chú kết quả", dataIndex: "resultNote", key: "resultNote" },
                       { title: "Ngày tạo", dataIndex: "createdAt", key: "createdAt" },
                     ]}
-                    dataSource={filteredNurseResults}
-                    loading={nurseResultsLoading}
+                    dataSource={selectedVaccineResultId ? selectedVaccineResult : filteredNurseResults}
+                    loading={selectedVaccineResultLoading || nurseResultsLoading}
                     rowKey="vaccineResultId"
                     bordered
                     style={{ minWidth: 900 }}
-                    pagination={{
+                    pagination={selectedVaccineResultId ? false : {
                       current: resultTablePage,
                       pageSize: resultTablePageSize,
                       total: filteredNurseResults.length,
@@ -1178,6 +1134,17 @@ const handleSendNotification = (programId) => {
                     }}
                   />
                 </div>
+                {selectedVaccineResultId && (
+                  <Button
+                    style={{ marginBottom: 16 }}
+                    onClick={() => {
+                      setSelectedVaccineResultId(null);
+                      setSelectedVaccineResult(null);
+                    }}
+                  >
+                    Quay lại danh sách kết quả
+                  </Button>
+                )}
               </div>
             ),
           },

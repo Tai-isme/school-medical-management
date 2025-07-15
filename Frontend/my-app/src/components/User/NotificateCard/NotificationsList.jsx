@@ -154,7 +154,8 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
         open={modalOpen}
         onCancel={handleModalClose}
         footer={null}
-        width={700}
+        width={900} // Đặt chiều rộng modal là 1200px
+        centered // Căn giữa modal trên màn hình
         title={
           modalNotification
             ? modalNotification.type === 'vaccine'
@@ -164,28 +165,33 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
         }
       >
         {modalNotification && modalNotification.type === 'vaccine' && (
-          <VaccineNotificationModalContent
-            notification={modalNotification}
-            checked={checked}
-            setChecked={setChecked}
-            reason={note}
-            setReason={setNote}
-            onSubmit={handleConfirmVaccine}
-            loading={loading}
-            disabled={disableSend}
-          />
+          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+            <VaccineNotificationModalContent
+              notification={modalNotification}
+              checked={checked}
+              setChecked={setChecked}
+              reason={note}
+              setReason={setNote}
+              onSubmit={handleConfirmVaccine}
+              loading={loading}
+              disabled={disableSend}
+              parentNote={modalNotification.note}
+            />
+          </div>
         )}
         {modalNotification && modalNotification.type === 'healthcheck' && (
-          <HealthCheckNotificationModalContent
-            notification={modalNotification}
-            checked={checked}
-            setChecked={setChecked}
-            note={note}
-            setNote={setNote}
-            onSubmit={handleConfirmHealthCheck}
-            loading={loading}
-            disabled={disableSend}
-          />
+          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+            <HealthCheckNotificationModalContent
+              notification={modalNotification}
+              checked={checked}
+              setChecked={setChecked}
+              note={note}
+              setNote={setNote}
+              onSubmit={handleConfirmHealthCheck}
+              loading={loading}
+              disabled={disableSend}
+            />
+          </div>
         )}
       </Modal>
     </>

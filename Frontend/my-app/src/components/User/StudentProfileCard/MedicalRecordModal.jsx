@@ -80,12 +80,19 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
 
   useEffect(() => {
     if (open) {
-      const currentVaccines = (initialValues?.vaccineHistories || []).map((v, idx) => ({ 
-        ...v, 
-        key: v.key || `initial-${idx}-${Date.now()}` 
+      // Đảm bảo mỗi vaccineHistory có vaccineNameId là id của vaccine
+      const currentVaccines = (initialValues?.vaccineHistories || []).map((v, idx) => ({
+        ...v,
+        vaccineNameId: typeof v.vaccineName === "object" ? v.vaccineName.id : v.vaccineNameId || v.vaccineName,
+        vaccineName: v.vaccineName, // giữ lại object nếu cần
+        key: v.key || `initial-${idx}-${Date.now()}`
       }));
       setVaccineHistories(currentVaccines);
-      form.setFieldsValue(initialValues || {});
+      // Set initialValues cho Form, bao gồm vaccineHistories đã có vaccineNameId
+      form.setFieldsValue({
+        ...initialValues,
+        vaccineHistories: currentVaccines
+      });
     }
   }, [initialValues, open, form]);
 
@@ -318,17 +325,14 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
               {vaccineHistories.map((item, idx) => (
                 <div key={idx} style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
                   <Form.Item
-                    name={['vaccineHistories', idx, 'vaccineName']}
+                    name={['vaccineHistories', idx, 'vaccineNameId']}
                     style={{ flex: 2, marginBottom: 0 }}
                     rules={[
                       { required: true, message: 'Chọn loại vaccin' },
                       {
                         validator: (_, value) => {
-                          const currentId = typeof value === 'object' ? value.id : value;
                           const duplicate = vaccineHistories.some(
-                            (v, i) =>
-                              i !== idx &&
-                              (typeof v.vaccineName === 'object' ? v.vaccineName.id : v.vaccineName) === currentId
+                            (v, i) => i !== idx && v.vaccineNameId === value
                           );
                           return duplicate
                             ? Promise.reject('Không được chọn trùng loại vaccin!')
@@ -341,11 +345,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                       showSearch
                       placeholder="Chọn vaccin"
                       optionFilterProp="children"
-                      value={
-                        typeof item.vaccineName === 'object'
-                          ? item.vaccineName.id
-                          : item.vaccineName // nếu là id
-                      }
+                      value={item.vaccineNameId}
                       onChange={value => {
                         const selectedVac = vaccineOptions.find(v => v.id === value);
                         handleVaccineChange(selectedVac, idx, 'vaccineName'); // lưu object nếu cần hiển thị
