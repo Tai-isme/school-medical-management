@@ -17,4 +17,5 @@ public class HealthCheckProgramDTO {
     private LocalDate endDate;
     private String status;
     private String note;
+    private int sended;
 }

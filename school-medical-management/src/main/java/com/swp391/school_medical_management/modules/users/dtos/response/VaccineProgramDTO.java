@@ -19,4 +19,5 @@ public class VaccineProgramDTO {
     private LocalDate vaccineDate;
     private String status;
     private String note;
+    private int sended;
 }

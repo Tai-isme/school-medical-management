@@ -125,10 +125,10 @@ public class NurseController {
         return ResponseEntity.ok(nurseService.getOnGoingPrograms());
     }
 
-    @GetMapping("/draft-form/count")
-    public ResponseEntity<Map<String, Long>> countDraftForms() {
-        return ResponseEntity.ok(nurseService.countDraftForm());
-    }
+    // @GetMapping("/draft-form/count/{programId}")
+    // public ResponseEntity<Map<String, Long>> countDraftFormsByProgram(@PathVariable Long programId) {
+    //     return ResponseEntity.ok(nurseService.countDraftFormByProgram(programId));
+    // }
 
     @GetMapping("/medical-events/{studentId}")
     public ResponseEntity<List<MedicalEventDTO>> getMedicalEventsByStudent(@PathVariable Long studentId) {

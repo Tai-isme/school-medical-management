@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -33,6 +34,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.VaccineNa
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
@@ -156,29 +158,31 @@ public class AdminService {
         }
 
         // kiểm tra chương trình gần nhất trước đó có COMPLETED chưa
-        // Optional<HealthCheckProgramEntity> lastProgramOpt = healthCheckProgramRepository
-        //         .findTopByStartDateLessThanOrderByStartDateDesc(request.getStartDate());
+        // Optional<HealthCheckProgramEntity> lastProgramOpt =
+        // healthCheckProgramRepository
+        // .findTopByStartDateLessThanOrderByStartDateDesc(request.getStartDate());
 
         // if (lastProgramOpt.isPresent()) {
-        //     HealthCheckProgramEntity last = lastProgramOpt.get();
-        //     if (!HealthCheckProgramStatus.COMPLETED.equals(last.getStatus())) {
-        //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //                 "The last health check program is not COMPLETED.");
-        //     }
+        // HealthCheckProgramEntity last = lastProgramOpt.get();
+        // if (!HealthCheckProgramStatus.COMPLETED.equals(last.getStatus())) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "The last health check program is not COMPLETED.");
+        // }
         // }
 
         // kiểm tra có chương trình nào vẫn còn hiệu lực vào thời điểm bắt đầu chương
         // trình mới
 
-        // List<HealthCheckProgramEntity> overlappingPrograms = healthCheckProgramRepository
-        //         .findByEndDateAfter(request.getStartDate());
+        // List<HealthCheckProgramEntity> overlappingPrograms =
+        // healthCheckProgramRepository
+        // .findByEndDateAfter(request.getStartDate());
 
         // boolean hasUncompleted = overlappingPrograms.stream()
-        //         .anyMatch(p -> !HealthCheckProgramStatus.COMPLETED.equals(p.getStatus()));
+        // .anyMatch(p -> !HealthCheckProgramStatus.COMPLETED.equals(p.getStatus()));
 
         // if (hasUncompleted) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Another health check program is still active and not COMPLETED.");
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Another health check program is still active and not COMPLETED.");
         // }
 
         HealthCheckProgramEntity healthCheckProgramEntity = new HealthCheckProgramEntity();
@@ -302,6 +306,16 @@ public class AdminService {
         List<HealthCheckProgramDTO> healthCheckProgramDTOList = healthCheckProgramEntityList.stream()
                 .map(entity -> modelMapper.map(entity, HealthCheckProgramDTO.class))
                 .toList();
+        for (HealthCheckProgramDTO healthCheckProgramDTO : healthCheckProgramDTOList) {
+            Long programId = healthCheckProgramDTO.getId();
+            List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository
+                    .findAllByHealthCheckProgram_Id(programId);
+            if (healthCheckFormEntitieList.isEmpty()) {
+                healthCheckProgramDTO.setSended(0);
+            } else {
+                healthCheckProgramDTO.setSended(1);
+            }
+        }
         return healthCheckProgramDTOList;
     }
 
@@ -339,16 +353,20 @@ public class AdminService {
         Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository
                 .findByVaccineNameAndStatus(vaccineNameEntity, VaccineProgramStatus.NOT_STARTED);
 
-        // Optional<VaccineProgramEntity> lastVaccineProgramOpt = vaccineProgramRepository
-        //         .findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(request.getVaccineDate());
+        // Optional<VaccineProgramEntity> lastVaccineProgramOpt =
+        // vaccineProgramRepository
+        // .findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(request.getVaccineDate());
 
         // if (lastVaccineProgramOpt.isPresent()) {
-        //     VaccineProgramEntity lastVaccineProgramEntity = lastVaccineProgramOpt.get();
-        //     logger.info(lastVaccineProgramEntity.getVaccineName().getVaccineName() + " "
-        //             + lastVaccineProgramEntity.getStatus());
-        //     if (!VaccineProgramStatus.COMPLETED.equals(lastVaccineProgramEntity.getStatus())) {
-        //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Last vaccine is not COMPLETED!");
-        //     }
+        // VaccineProgramEntity lastVaccineProgramEntity = lastVaccineProgramOpt.get();
+        // logger.info(lastVaccineProgramEntity.getVaccineName().getVaccineName() + " "
+        // + lastVaccineProgramEntity.getStatus());
+        // if
+        // (!VaccineProgramStatus.COMPLETED.equals(lastVaccineProgramEntity.getStatus()))
+        // {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Last vaccine is
+        // not COMPLETED!");
+        // }
         // }
 
         if (existingProgramOpt.isPresent()) {
@@ -445,7 +463,7 @@ public class AdminService {
         vaccineProgramRepository.save(vaccineProgramEntity);
 
         // if (newStatus == VaccineProgramStatus.ON_GOING) {
-        //     createVaccineForm(vaccineProgramEntity);
+        // createVaccineForm(vaccineProgramEntity);
         // }
 
         return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
@@ -490,6 +508,16 @@ public class AdminService {
         List<VaccineProgramDTO> vaccineProgramDTOList = vaccineProgramEntitieList.stream()
                 .map(entity -> modelMapper.map(entity, VaccineProgramDTO.class))
                 .toList();
+        for (VaccineProgramDTO v : vaccineProgramDTOList) {
+            Long programId = v.getVaccineId();
+            List<VaccineFormEntity> vaccineFormEntityList = vaccineFormRepository
+                    .findAllByVaccineProgram_VaccineId(programId);
+            if (vaccineFormEntityList.isEmpty()) {
+                v.setSended(0);
+            } else {
+                v.setSended(1);
+            }
+        }
         return vaccineProgramDTOList;
     }
 

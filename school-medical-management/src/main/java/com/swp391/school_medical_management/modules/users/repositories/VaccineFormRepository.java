@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
@@ -26,10 +27,12 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
   List<VaccineFormEntity> findByCommitTrue();
 
   List<VaccineFormEntity> findByCommitTrueAndVaccineProgram_VaccineId(Long programId);
-  
+
   List<VaccineFormEntity> findByVaccineProgram_VaccineId(Long programId);
 
-  long countByStatusAndCommitFalse(VaccineFormStatus status);
+  // long countByVaccineProgram_IdAndStatusAndCommitFalse(Long programId,
+  // VaccineFormStatus status);
+  List<VaccineFormEntity> findAllByVaccineProgram_VaccineId(Long programId);
 
   Optional<VaccineFormEntity> findByStudentAndStatus(StudentEntity student, VaccineFormStatus status);
 

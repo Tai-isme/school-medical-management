@@ -367,13 +367,13 @@ public class NurseService {
                 .collect(Collectors.toList());
     }
 
-    public Map<String, Long> countDraftForm() {
-        long vaccineForm = vaccineFormRepository.countByStatusAndCommitFalse(VaccineFormStatus.DRAFT);
-        long healthCheckForm = healthCheckFormRepository.countByStatusAndCommitFalse(HealthCheckFormStatus.DRAFT);
-        return Map.of(
-                "vaccineForm", vaccineForm,
-                "healthCheckForm", healthCheckForm);
-    }
+    // public Map<String, Long> countDraftFormByProgram(Long programId) {
+    //     long vaccineForm = vaccineFormRepository.countByVaccineProgram_IdAndStatusAndCommitFalse(programId, VaccineFormStatus.DRAFT);
+    //     long healthCheckForm = healthCheckFormRepository.countByHealthCheckProgram_IdAndStatusAndCommitFalse(programId, HealthCheckFormStatus.DRAFT);
+    //     return Map.of(
+    //             "vaccineForm", vaccineForm,
+    //             "healthCheckForm", healthCheckForm);
+    // }
 
     public VaccineFormDTO getVaccinFormById(Long vaccineFormId) {
         Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(vaccineFormId);
