@@ -313,7 +313,9 @@ public class AdminService {
             if (healthCheckFormEntitieList.isEmpty()) {
                 healthCheckProgramDTO.setSended(0);
             } else {
-                healthCheckProgramDTO.setSended(1);
+                boolean allStatusOne = healthCheckFormEntitieList.stream()
+                        .allMatch(form -> form.getStatus().equals(HealthCheckFormStatus.DRAFT));
+                healthCheckProgramDTO.setSended(allStatusOne ? 1 : 0);
             }
         }
         return healthCheckProgramDTOList;
@@ -515,7 +517,9 @@ public class AdminService {
             if (vaccineFormEntityList.isEmpty()) {
                 v.setSended(0);
             } else {
-                v.setSended(1);
+                boolean allStatusOne = vaccineFormEntityList.stream()
+                        .allMatch(form -> form.getStatus().equals(VaccineFormStatus.DRAFT));
+                v.setSended(allStatusOne ? 1 : 0);
             }
         }
         return vaccineProgramDTOList;
