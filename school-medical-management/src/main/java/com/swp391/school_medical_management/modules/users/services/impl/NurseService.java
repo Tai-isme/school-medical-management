@@ -1240,22 +1240,32 @@ public class NurseService {
         HealthCheckProgramEntity program = healthCheckProgramRepository.findById(programId)
                 .orElseThrow(() -> new RuntimeException("Program not found"));
 
-        List<StudentEntity> students = studentRepository.findAllWithParent();
-
-        List<HealthCheckFormEntity> forms = new ArrayList<>();
-
-        for (StudentEntity student : students) {
-            HealthCheckFormEntity form = new HealthCheckFormEntity();
-            form.setHealthCheckProgram(program);
-            form.setStudent(student);
-            form.setParent(student.getParent());
-            form.setFormDate(LocalDate.now());
-            form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.SENT);
-            form.setCommit(false);
-            forms.add(form);
+        List<HealthCheckFormEntity> existingForms = healthCheckFormRepository.findByHealthCheckProgram_Id(programId);
+        for (HealthCheckFormEntity form : existingForms) {
+            if (form.getStatus() == HealthCheckFormEntity.HealthCheckFormStatus.SENT) {
+                throw new RuntimeException("Health check forms already created for this program");
+            } else {
+                form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.SENT);
+                healthCheckFormRepository.save(form);
+            }
         }
 
-        healthCheckFormRepository.saveAll(forms);
+        // List<StudentEntity> students = studentRepository.findAllWithParent();
+
+        // List<HealthCheckFormEntity> forms = new ArrayList<>();
+
+        // for (StudentEntity student : students) {
+        // HealthCheckFormEntity form = new HealthCheckFormEntity();
+        // form.setHealthCheckProgram(program);
+        // form.setStudent(student);
+        // form.setParent(student.getParent());
+        // form.setFormDate(LocalDate.now());
+        // form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.SENT);
+        // form.setCommit(false);
+        // forms.add(form);
+        // }
+
+        // healthCheckFormRepository.saveAll(forms);
     }
 
     public void createFormsForVaccineProgram(Long vaccineProgramId) {

@@ -260,9 +260,9 @@ public class AdminService {
         healthCheckProgramEntity.setStatus(newStatus);
         healthCheckProgramRepository.save(healthCheckProgramEntity);
 
-        // if (newStatus == HealthCheckProgramStatus.ON_GOING) {
-        //     createHealthCheckForm(healthCheckProgramEntity);
-        // }
+        if (newStatus == HealthCheckProgramStatus.ON_GOING) {
+            createHealthCheckForm(healthCheckProgramEntity);
+        }
 
         return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
     }
