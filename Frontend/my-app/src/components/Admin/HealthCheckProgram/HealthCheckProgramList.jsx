@@ -572,9 +572,25 @@ const HealthCheckProgramList = () => {
                           type="default"
                           style={{
                             marginLeft: 8,
-                            background: "#00bcd4",
-                            color: "#fff",
+                            background: program.status === "NOT_STARTED" ||
+                                        program.status === "COMPLETED" ||
+                                        (totalForms[program.id] ?? 0) > 0 ||
+                                        (program.status !== "ON_GOING" && notifiedPrograms[program.id] === true)
+                              ? "#e0e0e0"
+                              : "#00bcd4",
+                            color: program.status === "NOT_STARTED" ||
+                                  program.status === "COMPLETED" ||
+                                  (totalForms[program.id] ?? 0) > 0 ||
+                                  (program.status !== "ON_GOING" && notifiedPrograms[program.id] === true)
+                              ? "#aaa"
+                              : "#fff",
                             border: "none",
+                            cursor: program.status === "NOT_STARTED" ||
+                                  program.status === "COMPLETED" ||
+                                  (totalForms[program.id] ?? 0) > 0 ||
+                                  (program.status !== "ON_GOING" && notifiedPrograms[program.id] === true)
+                              ? "not-allowed"
+                              : "pointer"
                           }}
                           onClick={() => handleSendNotification(program.id)}
                           disabled={
