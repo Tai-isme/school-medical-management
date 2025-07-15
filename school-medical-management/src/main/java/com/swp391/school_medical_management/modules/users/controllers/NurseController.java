@@ -380,4 +380,12 @@ public class NurseController {
         List<HealthCheckResultDTO> createdResults = nurseService.createResultsByProgramId(programId);
         return ResponseEntity.ok(createdResults);
     }
+
+    @PostMapping("/create-vaccineResults-byProgram/{programId}")
+    public ResponseEntity<List<VaccineResultDTO>> createVaccineResultsByProgramId(@PathVariable Long programId) {
+        List<VaccineResultDTO> createdResults = nurseService.createVaccineResultsByProgramId(programId);
+        return ResponseEntity.ok(createdResults);
+    }
+
+
 }
