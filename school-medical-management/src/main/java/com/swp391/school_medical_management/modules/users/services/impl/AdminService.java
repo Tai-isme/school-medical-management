@@ -462,9 +462,9 @@ public class AdminService {
         vaccineProgramEntity.setStatus(newStatus);
         vaccineProgramRepository.save(vaccineProgramEntity);
 
-        // if (newStatus == VaccineProgramStatus.ON_GOING) {
-        // createVaccineForm(vaccineProgramEntity);
-        // }
+        if (newStatus == VaccineProgramStatus.ON_GOING) {
+            createVaccineForm(vaccineProgramEntity);
+        }
 
         return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
     }

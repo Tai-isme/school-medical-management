@@ -1276,18 +1276,15 @@ public class NurseService {
 
         List<VaccineFormEntity> forms = new ArrayList<>();
 
-        for (StudentEntity student : students) {
-            VaccineFormEntity form = new VaccineFormEntity();
-            form.setVaccineProgram(program);
-            form.setStudent(student);
-            form.setParent(student.getParent());
-            form.setFormDate(LocalDate.now());
-            form.setStatus(VaccineFormEntity.VaccineFormStatus.SENT);
-            form.setNote(null);
-            forms.add(form);
+        List<VaccineFormEntity> existingForms = vaccineFormRepository.findByVaccineProgram_VaccineId(vaccineProgramId);
+        for (VaccineFormEntity form : existingForms) {
+            if (form.getStatus() == VaccineFormEntity.VaccineFormStatus.SENT) {
+                throw new RuntimeException("Health check forms already created for this program");
+            } else {
+                form.setStatus(VaccineFormEntity.VaccineFormStatus.SENT);
+                vaccineFormRepository.save(form);
+            }
         }
-
-        vaccineFormRepository.saveAll(forms);
     }
 
     public List<HealthCheckResultDTO> createResultsByProgramId(Long programId) {
@@ -1336,4 +1333,64 @@ public class NurseService {
         });
         return resultList;
     }
+
+    public List<VaccineResultDTO> createVaccineResultsByProgramId(Long programId) {
+        List<VaccineFormEntity> committedForms = vaccineFormRepository.findCommittedFormsByProgramId(programId);
+        List<VaccineResultDTO> resultList = new ArrayList<>();
+
+        for (VaccineFormEntity form : committedForms) {
+            Optional<VaccineResultEntity> existingResult = vaccineResultRepository.findByVaccineFormEntity(form);
+            if (existingResult.isPresent())
+                continue;
+
+            VaccineResultEntity result = new VaccineResultEntity();
+            result.setVaccineFormEntity(form);
+            result.setStatusHealth("Healthy");
+            result.setResultNote("No reaction observed");
+            result.setReaction("None");
+            result.setCreatedAt(LocalDateTime.now());
+
+            VaccineResultEntity savedResult = vaccineResultRepository.save(result);
+
+            VaccineResultDTO dto = new VaccineResultDTO();
+            dto.setVaccineResultId(savedResult.getVaccineResultId());
+            dto.setStatusHealth(savedResult.getStatusHealth());
+            dto.setResultNote(savedResult.getResultNote());
+            dto.setReaction(savedResult.getReaction());
+            dto.setCreatedAt(savedResult.getCreatedAt());
+
+            VaccineFormDTO formDTO = new VaccineFormDTO();
+            formDTO.setId(form.getId());
+            formDTO.setStudentId(form.getStudent() != null ? form.getStudent().getId() : null);
+            formDTO.setParentId(form.getParent() != null ? form.getParent().getUserId() : null);
+            formDTO.setFormDate(form.getFormDate());
+            formDTO.setNote(form.getNote());
+            formDTO.setCommit(form.getCommit());
+            formDTO.setStatus(form.getStatus() != null ? form.getStatus().name() : null);
+
+            if (form.getVaccineProgram() != null) {
+                VaccineProgramDTO vaccineProgramDTO = modelMapper.map(form.getVaccineProgram(),
+                        VaccineProgramDTO.class);
+                formDTO.setVaccineProgram(vaccineProgramDTO);
+            }
+
+            dto.setVaccineFormDTO(formDTO);
+
+            if (form.getStudent() != null) {
+                StudentDTO studentDTO = modelMapper.map(form.getStudent(), StudentDTO.class);
+                dto.setStudentDTO(studentDTO);
+            }
+
+            resultList.add(dto);
+        }
+
+        Optional<VaccineProgramEntity> programOpt = vaccineProgramRepository.findById(programId);
+        programOpt.ifPresent(program -> {
+            program.setStatus(VaccineProgramStatus.COMPLETED);
+            vaccineProgramRepository.save(program);
+        });
+
+        return resultList;
+    }
+
 }
