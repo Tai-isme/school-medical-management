@@ -182,9 +182,9 @@ public class AdminController {
     }
 
     @PostMapping("/student/import-excel")
-    public ResponseEntity<String> uploadExcel(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadStudentFromExcel(@RequestParam("file") MultipartFile file) {
         try {
-            adminService.importFromExcel(file);
+            adminService.importStudentFromExcel(file);
             return ResponseEntity.ok("Import thành công!");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Import thất bại: " + e.getMessage());
@@ -242,5 +242,16 @@ public class AdminController {
     public ResponseEntity<VaccineNameDTO> createVaccineName(@RequestBody @Valid VaccineNameRequest request) {
         VaccineNameDTO dto = adminService.createVaccineName(request);
         return new ResponseEntity<>(dto, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
+    @PostMapping("/vaccine-name/import-excel")
+    public ResponseEntity<String> uploadVaccineNameExcel(@RequestParam("file") MultipartFile file) {
+        try {
+            adminService.importVaccineNameFromExcel(file);
+            return ResponseEntity.ok("Import thành công!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Import thất bại: " + e.getMessage());
+        }
     }
 }

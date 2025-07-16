@@ -9,4 +9,5 @@ import com.swp391.school_medical_management.modules.users.entities.VaccineNameEn
 public interface VaccineNameRepository extends JpaRepository<VaccineNameEntity, Long> {
     Optional<VaccineNameEntity> findByVaccineName(String vaccineName); 
     Optional<VaccineNameEntity> findById(Long id);                     
+    Optional<VaccineNameEntity> findByVaccineNameAndManufactureAndUrlAndNote (String name, String url,String manufacture, String note);         
 }

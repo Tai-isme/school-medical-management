@@ -657,7 +657,7 @@ public class AdminService {
         userRepository.delete(user);
     }
 
-    public void importFromExcel(MultipartFile file) {
+    public void importStudentFromExcel(MultipartFile file) {
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
             DataFormatter formatter = new DataFormatter();
@@ -863,5 +863,50 @@ public class AdminService {
         VaccineNameEntity saved = vaccineNameRepository.save(entity);
 
         return modelMapper.map(saved, VaccineNameDTO.class);
+    }
+
+    public void importVaccineNameFromExcel(MultipartFile file) {
+        try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            for (Row row : sheet) {
+                int rowNum = row.getRowNum();
+                if (rowNum == 0)
+                    continue; // skip header
+                try {
+                    
+                    String vaccineName = row.getCell(0).getStringCellValue();
+                    String manufacture = row.getCell(1).getStringCellValue();
+                    String url = row.getCell(2).getStringCellValue();
+                    String note = row.getCell(3).getStringCellValue();
+
+                    VaccineNameEntity vaccine = new VaccineNameEntity();
+                    vaccine.setVaccineName(vaccineName);
+                    vaccine.setManufacture(manufacture);
+                    vaccine.setUrl(url);
+                    vaccine.setNote(note);
+
+                    // student
+                    Optional<VaccineNameEntity> vaccineNameOpt = vaccineNameRepository
+                        .findByVaccineNameAndManufactureAndUrlAndNote(vaccineName, manufacture, url, note);
+                    VaccineNameEntity vaccineNameEntity;
+                    if (vaccineNameOpt.isPresent()) {
+                        vaccineNameEntity = vaccineNameOpt.get();
+                    } else {
+                        vaccineNameEntity = new VaccineNameEntity();
+                        vaccineNameEntity.setVaccineName(vaccineName);
+                        vaccineNameEntity.setManufacture(manufacture);
+                        vaccineNameEntity.setUrl(url);
+                        vaccineNameEntity.setNote(note);
+                    }
+
+                    vaccineNameRepository.save(vaccineNameEntity);
+                } catch (Exception e) {
+                    throw new RuntimeException("Lỗi ở dòng Excel số " + (rowNum + 1) + ": "
+                            + row.getCell(0).getStringCellValue() + " - " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi đọc file Excel: " + e.getMessage());
+        }
     }
 }
