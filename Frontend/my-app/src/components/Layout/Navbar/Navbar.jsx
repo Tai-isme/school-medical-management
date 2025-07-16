@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from "react-router-dom";
 import '../Navbar/Navbar.css';
-import Login from '../Login/Login';
+import Login from '../Login/Login.jsx';
 import NotificationSocket from './NotificationSocket';
 import NotificationPanel from './NotificationPanel';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -74,7 +74,7 @@ const Navbar = () => {
     <>
       <nav className="navbar">
         <ul className="nav-links">
-          <li className="logo"><img src="./Logo.png" alt="Logo" /></li>
+          <li className="logo"><img src="../../../../public/logo.png" alt="Logo" /></li>
           <li>
             <a style={{ cursor: 'pointer' }} onClick={() => { navigate("/") }}>Trang chủ</a>
           </li>

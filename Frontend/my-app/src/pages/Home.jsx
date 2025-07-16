@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MedicalInfoCards from '../components/User/MedicalInfoCards/MedicalInfoCards';
-import Login from '../components/Layout/Login/Login';
+import Login from '../components/Layout/Login/Login.jsx';
 import Slider from '../components/Layout/Slider/Slider';
 
 function Home() {

@@ -129,7 +129,7 @@ function Login({ onClose }) {
 
                 <div className="modal-image"> {/* Sử dụng class từ CSS */}
                     <img
-                        src="./Logo.png"
+                        src="../../../../public/logo.png"
                         alt="School Health Logo"
                     />
                 </div>
