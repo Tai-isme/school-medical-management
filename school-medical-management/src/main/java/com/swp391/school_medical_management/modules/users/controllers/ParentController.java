@@ -222,6 +222,7 @@ public class ParentController {
     }
 
     @GetMapping("/all-forms/{studentId}")
+    @PreAuthorize("hasAnyRole('ROLE_PARENT', 'ROLE_NURSE')")
     public ResponseEntity<AllFormsByStudentDTO> getAllFormByStudent(@PathVariable Long studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         AllFormsByStudentDTO allFormsByStudentDTOList = parentService.getAllFormByStudent(Long.parseLong(parentId),

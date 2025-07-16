@@ -631,7 +631,7 @@ public class ParentService {
         AllFormsByStudentDTO allFormsByStudentDTO = new AllFormsByStudentDTO();
         List<HealthCheckFormDTO> healthCheckForms = getAllHealthCheckForm(parentId, studentId);
         if (!healthCheckForms.isEmpty()) {
-            allFormsByStudentDTO.setHealthCheckForms(Collections.<HealthCheckFormDTO>emptyList());
+            allFormsByStudentDTO.setHealthCheckForms(healthCheckForms);
         } else {
             allFormsByStudentDTO.setHealthCheckForms(Collections.emptyList());
         }
