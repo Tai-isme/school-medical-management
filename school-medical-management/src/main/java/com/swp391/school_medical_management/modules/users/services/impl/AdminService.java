@@ -311,11 +311,11 @@ public class AdminService {
             List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository
                     .findAllByHealthCheckProgram_Id(programId);
             if (healthCheckFormEntitieList.isEmpty()) {
-                healthCheckProgramDTO.setSended(0);
+                healthCheckProgramDTO.setSended(1);
             } else {
                 boolean allStatusOne = healthCheckFormEntitieList.stream()
                         .allMatch(form -> form.getStatus().equals(HealthCheckFormStatus.DRAFT));
-                healthCheckProgramDTO.setSended(allStatusOne ? 1 : 0);
+                healthCheckProgramDTO.setSended(allStatusOne ? 0 : 1);
             }
         }
         return healthCheckProgramDTOList;
@@ -515,11 +515,11 @@ public class AdminService {
             List<VaccineFormEntity> vaccineFormEntityList = vaccineFormRepository
                     .findAllByVaccineProgram_VaccineId(programId);
             if (vaccineFormEntityList.isEmpty()) {
-                v.setSended(0);
+                v.setSended(1);
             } else {
                 boolean allStatusOne = vaccineFormEntityList.stream()
                         .allMatch(form -> form.getStatus().equals(VaccineFormStatus.DRAFT));
-                v.setSended(allStatusOne ? 1 : 0);
+                v.setSended(allStatusOne ? 0 : 1);
             }
         }
         return vaccineProgramDTOList;
