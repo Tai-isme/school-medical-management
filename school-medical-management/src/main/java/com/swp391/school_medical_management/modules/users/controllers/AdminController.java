@@ -244,7 +244,6 @@ public class AdminController {
         return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @PostMapping("/vaccine-name/import-excel")
     public ResponseEntity<String> uploadVaccineNameExcel(@RequestParam("file") MultipartFile file) {
         try {
