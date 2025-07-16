@@ -14,7 +14,11 @@ import {
   Tabs,
   Pagination,
 } from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  SearchOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import { Select } from "antd"; // Thêm dòng này
 import axios from "axios";
 import dayjs from "dayjs";
@@ -61,8 +65,15 @@ const VaccineProgramList = () => {
   const [selectedResultLoading, setSelectedResultLoading] = useState(false);
   const [selectedVaccineResult, setSelectedVaccineResult] = useState(null);
   const [selectedVaccineResultId, setSelectedVaccineResultId] = useState(null);
-  const [selectedVaccineResultLoading, setSelectedVaccineResultLoading] = useState(false);
+  const [selectedVaccineResultLoading, setSelectedVaccineResultLoading] =
+    useState(false);
+  const [sampleResultData, setSampleResultData] = useState(null); // Thêm state ở đầu component
+  const [editableRows, setEditableRows] = useState([]); // Thêm state cho hàng có thể chỉnh sửa
+  const [studentStats, setStudentStats] = useState({}); // { [programId]: { total, confirmed } }
 
+  const [importVaccineVisible, setImportVaccineVisible] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importFile, setImportFile] = useState(null);
   useEffect(() => {
     fetchProgram();
     // Lấy danh sách vaccine khi load trang
@@ -118,6 +129,54 @@ const VaccineProgramList = () => {
       setNurseResultsLoading(false);
     }
   };
+
+  const fetchStudentStats = async (programId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(
+        `http://localhost:8080/api/nurse/vaccine-forms/program/${programId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const total = res.data.length;
+      const confirmed = res.data.filter((item) => item.commit === true).length;
+      setStudentStats((prev) => ({
+        ...prev,
+        [programId]: { total, confirmed },
+      }));
+    } catch {
+      setStudentStats((prev) => ({
+        ...prev,
+        [programId]: { total: 0, confirmed: 0 },
+      }));
+    }
+  };
+
+  // Lọc danh sách theo tên chương trình và ngày tiêm
+  const filteredPrograms = programs.filter((program) => {
+    const matchName =
+      typeof program.vaccineName === "object"
+        ? program.vaccineName?.vaccineName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        : typeof program.vaccineName === "string"
+        ? program.vaccineName.toLowerCase().includes(searchTerm.toLowerCase())
+        : false;
+    const matchDate = filterDate
+      ? dayjs(program.vaccineDate).isSame(filterDate, "day")
+      : true;
+    const matchStatus = filterStatus ? program.status === filterStatus : true;
+    return matchName && matchDate && matchStatus;
+  });
+
+  // Gọi khi mount hoặc khi danh sách chương trình thay đổi
+  useEffect(() => {
+    filteredPrograms.forEach((program) => {
+      if (!studentStats[program.vaccineId]) {
+        fetchStudentStats(program.vaccineId);
+      }
+    });
+    // eslint-disable-next-line
+  }, [filteredPrograms]);
 
   const handleCreate = async (values) => {
     setLoading(true);
@@ -206,17 +265,17 @@ const VaccineProgramList = () => {
     }
   };
 
-  const handleViewResult = async (vaccineResultId) => {
+  const handleViewResult = async (programId) => {
     setActiveTab("result");
     setSelectedVaccineResultLoading(true);
-    setSelectedVaccineResultId(vaccineResultId);
+    setSelectedVaccineResultId(programId);
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:8080/api/nurse/vaccine-result/${vaccineResultId}`,
+        `http://localhost:8080/api/nurse/vaccine-result/program/${programId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setSelectedVaccineResult([res.data]); // Đưa vào mảng để Table nhận dataSource
+      setSelectedVaccineResult(res.data); // API trả về mảng
     } catch (err) {
       setSelectedVaccineResult([]);
     } finally {
@@ -259,8 +318,10 @@ const VaccineProgramList = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      message.success(`Tạo kết quả cho vaccine ID ${program.vaccineId} thành công!`);
-    setCreateResultVisible(false);
+      message.success(
+        `Tạo kết quả cho vaccine ID ${program.vaccineId} thành công!`
+      );
+      setCreateResultVisible(false);
       resultForm.resetFields();
     } catch (error) {
       message.error("Tạo kết quả thất bại!");
@@ -270,65 +331,69 @@ const VaccineProgramList = () => {
   };
 
   const handleCreateProgramResult = async (program) => {
-  const token = localStorage.getItem("token");
-  try {
-    await axios.post(
-      "http://localhost:8080/api/nurse/vaccine-result",
-      {
-        statusHealth: "Tốt",
-        resultNote: "",
-        reaction: "",
-        createdAt: new Date().toISOString(),
-        vaccineFormDTO: {
-          id: program.vaccineFormId || program.id || program.vaccineId,
-          studentId: program.studentId,
-          parentId: program.parentId,
-          formDate: program.formDate,
-          note: program.note || "",
-          commit: true,
-          status: program.status || "",
-          vaccineProgram: program.vaccineProgram || {},
-        },
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.post(
+        `http://localhost:8080/api/nurse/create-vaccineResults-byProgram/${program.vaccineId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSampleResultData(res.data);
+      setEditableRows(res.data.map((item) => ({ ...item })));
+      setActiveTab("result");
+      message.success("Tạo kết quả thành công!");
+    } catch (error) {
+      message.error("Tạo kết quả thất bại!");
+    }
+  };
+
+  const handleEditCell = (value, record, field) => {
+    setEditableRows((prev) =>
+      prev.map((row) =>
+        row.vaccineResultId === record.vaccineResultId
+          ? { ...row, [field]: value }
+          : row
+      )
     );
+  };
 
-    Swal.fire({
-      icon: "success",
-      title: "Thành công!",
-      text: "Tạo chương trình tiêm chủng thành công!",
-      timer: 1500,
-      showConfirmButton: false,
-    });
+  // Hàm lưu từng dòng
+  const handleSaveRow = async (record) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `http://localhost:8080/api/nurse/vaccine-result/${record.vaccineResultId}`,
+        {
+          statusHealth: record.statusHealth,
+          resultNote: record.resultNote,
+          reaction: record.reaction,
+          vaccineFormId: record.vaccineFormDTO.id,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    // Gọi lại fetchNurseResults() nếu cần
-  } catch (error) {
-    Swal.fire({
-      icon: "error",
-      title: "Thất bại!",
-      text: "Tạo chương trình tiêm chủng thất bại!",
-    });
-  }
-};
+      setSampleResultData((prev) =>
+        prev.map((row) =>
+          row.vaccineResultId === record.vaccineResultId ? { ...record } : row
+        )
+      );
 
-  // Lọc danh sách theo tên chương trình và ngày tiêm
-  const filteredPrograms = programs.filter((program) => {
-    const matchName =
-      typeof program.vaccineName === "object"
-        ? program.vaccineName?.vaccineName
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
-        : typeof program.vaccineName === "string"
-        ? program.vaccineName.toLowerCase().includes(searchTerm.toLowerCase())
-        : false;
-    const matchDate = filterDate
-      ? dayjs(program.vaccineDate).isSame(filterDate, "day")
-      : true;
-    const matchStatus = filterStatus ? program.status === filterStatus : true;
-    return matchName && matchDate && matchStatus;
-  });
+      Swal.fire({
+        icon: "success",
+        title: "Thành công",
+        text: "Đã lưu kết quả!",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi",
+        text: "Lưu kết quả thất bại!",
+        confirmButtonText: "OK",
+      });
+    }
+  };
 
   // Phân trang
   const pagedPrograms = filteredPrograms.slice(
@@ -382,7 +447,7 @@ const VaccineProgramList = () => {
   );
 
   // Thêm biến lọc kết quả nurse theo tên chương trình:
-  const filteredNurseResults = nurseResults.filter(item => {
+  const filteredNurseResults = nurseResults.filter((item) => {
     const programName =
       item?.vaccineFormDTO?.vaccineProgram?.vaccineName?.vaccineName || "";
     return programName.toLowerCase().includes(searchTermResult.toLowerCase());
@@ -402,12 +467,63 @@ const VaccineProgramList = () => {
     }
   };
 
-  const handleEditResult = (id) => {
-    message.info(`Chức năng chỉnh sửa kết quả (ID: ${id}) chưa được phát triển.`);
+  const handleEditResult = async (programId) => {
+    setSelectedVaccineResultLoading(true);
+    setActiveTab("result");
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `http://localhost:8080/api/nurse/vaccine-result/program/${programId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSampleResultData(res.data); // bật chế độ editable
+      setEditableRows(res.data.map((item) => ({ ...item })));
+    } catch (error) {
+      setSampleResultData([]);
+      setEditableRows([]);
+      message.error("Không lấy được dữ liệu kết quả!");
+    } finally {
+      setSelectedVaccineResultLoading(false);
+    }
   };
 
-  const handleSendNotification = (id) => {
-    message.info(`Chức năng gửi thông báo (ID: ${id}) chưa được phát triển.`);
+  // const handleSendNotification = async (programId) => {
+  //   const token = localStorage.getItem("token");
+  //   try {
+  //     await axios.post(
+  //       `http://localhost:8080/api/nurse/create-vaccine-form/${programId}`,
+  //       {},
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+  //     message.success("Gửi thông báo thành công!");
+  //   } catch (error) {
+  //     message.error("Gửi thông báo thất bại!");
+  //   }
+  // };
+
+  const handleSendNotification = async (programId) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.post(
+        `http://localhost:8080/api/nurse/create-vaccine-form/${programId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      Swal.fire({
+        icon: "success",
+        title: "Thành công",
+        text: "Gửi thông báo thành công!",
+        confirmButtonText: "OK",
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Thất bại",
+        text: "Gửi thông báo thất bại!",
+        confirmButtonText: "OK",
+      });
+    }
   };
 
   return (
@@ -500,6 +616,22 @@ const VaccineProgramList = () => {
                           onClick={() => setAddVaccineVisible(true)}
                         >
                           Thêm mới vaccine
+                        </Button>
+                        <Button
+                          type="default"
+                          icon={<UploadOutlined />}
+                          style={{
+                            border: "1.5px solid #1890ff",
+                            color: "#fff",
+                            background:
+                              "linear-gradient(90deg, #1890ff 60% 100%)",
+                            fontWeight: 600,
+                            boxShadow: "0 2px 8px rgba(33,186,69,0.08)",
+                            transition: "all 0.2s",
+                          }}
+                          onClick={() => setImportVaccineVisible(true)}
+                        >
+                          Import tên vaccine
                         </Button>
                       </>
                     )}
@@ -631,7 +763,8 @@ const VaccineProgramList = () => {
                                   fontSize: 32,
                                 }}
                               >
-                                {program.totalStudents}
+                                {studentStats[program.vaccineId]?.total ??
+                                  "..."}
                               </div>
                               <div style={{ color: "#888", fontWeight: 500 }}>
                                 Tổng học sinh
@@ -654,7 +787,8 @@ const VaccineProgramList = () => {
                                   fontSize: 32,
                                 }}
                               >
-                                {program.confirmed}
+                                {studentStats[program.vaccineId]?.confirmed ??
+                                  "..."}
                               </div>
                               <div style={{ color: "#888", fontWeight: 500 }}>
                                 Đã xác nhận
@@ -679,29 +813,60 @@ const VaccineProgramList = () => {
                               Xem chi tiết
                             </Button>
                             <Button
-                              style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
-                              onClick={() => handleViewResult(program.vaccineId)} // hoặc truyền vaccineResultId phù hợp
+                              style={{
+                                background: "#21ba45",
+                                border: "none",
+                                marginLeft: 8,
+                              }}
+                              onClick={() =>
+                                handleViewResult(program.vaccineId)
+                              }
+                              disabled={program.status !== "COMPLETED"}
                             >
                               Xem kết quả
                             </Button>
                             <Button
                               type="primary"
-                              style={{ marginLeft: 8, background: "#1890ff", border: "none" }}
+                              style={{
+                                marginLeft: 8,
+                                background: "#1890ff",
+                                border: "none",
+                              }}
                               onClick={() => handleCreateProgramResult(program)}
+                              disabled={program.status === "COMPLETED"}
                             >
                               Tạo kết quả
                             </Button>
                             <Button
                               type="default"
-                              style={{ marginLeft: 8, background: "#ff9800", color: "#fff", border: "none" }}
-                              onClick={() => handleEditResult(program.id)}
+                              style={{
+                                marginLeft: 8,
+                                background: "#ff9800",
+                                color: "#fff",
+                                border: "none",
+                              }}
+                              onClick={() =>
+                                handleEditResult(program.vaccineId)
+                              }
+                              disabled={program.status !== "COMPLETED"}
                             >
                               Chỉnh sửa kết quả
                             </Button>
                             <Button
                               type="default"
-                              style={{ marginLeft: 8, background: "#00bcd4", color: "#fff", border: "none" }}
-                              onClick={() => handleSendNotification(program.id)}
+                              style={{
+                                marginLeft: 8,
+                                background: "#00bcd4",
+                                color: "#fff",
+                                border: "none",
+                              }}
+                              onClick={() =>
+                                handleSendNotification(program.vaccineId)
+                              }
+                              disabled={
+                                program.status === "NOT_STARTED" ||
+                                program.status === "COMPLETED"
+                              }
                             >
                               Gửi thông báo
                             </Button>
@@ -990,16 +1155,6 @@ const VaccineProgramList = () => {
                         setAddVaccineLoading(false);
                       }
                     }}
-                    //     message.success("Thêm vaccine mới thành công!");
-                    //     setAddVaccineVisible(false);
-                    //     addVaccineForm.resetFields();
-                    //     fetchVaccineList();
-                    //   } catch {
-                    //     message.error("Thêm vaccine mới thất bại!");
-                    //   } finally {
-                    //     setAddVaccineLoading(false);
-                    //   }
-                    // }}
                   >
                     <Form.Item
                       label="Tên vaccine"
@@ -1026,6 +1181,80 @@ const VaccineProgramList = () => {
                     </Form.Item>
                   </Form>
                 </Modal>
+                <Modal
+                  title="Import tên vaccine từ Excel"
+                  open={importVaccineVisible}
+                  onCancel={() => setImportVaccineVisible(false)}
+                  footer={null}
+                  destroyOnClose
+                >
+                  <Form
+                    layout="vertical"
+                    onFinish={async () => {
+                      if (!importFile) {
+                        message.error("Vui lòng chọn file Excel!");
+                        return;
+                      }
+                      const formData = new FormData();
+                      formData.append("file", importFile);
+                      setImportLoading(true);
+                      try {
+                        const token = localStorage.getItem("token");
+                        await axios.post(
+                          "http://localhost:8080/api/admin/vaccine-name/import-excel",
+                          formData,
+                          {
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                              "Content-Type": "multipart/form-data",
+                            },
+                          }
+                        );
+                        // Thông báo thành công bằng Swal.fire
+                        Swal.fire({
+                          icon: "success",
+                          title: "Import thành công!",
+                          showConfirmButton: false,
+                          timer: 1500,
+                        });
+                        setImportVaccineVisible(false);
+                        fetchVaccineList();
+                        setImportFile(null);
+                      } catch {
+                        message.error("Import thất bại!");
+                      } finally {
+                        setImportLoading(false);
+                      }
+                    }}
+                  >
+                    <Form.Item
+                      label="Chọn file Excel"
+                      name="file"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng chọn file Excel!",
+                        },
+                      ]}
+                    >
+                      <Input
+                        type="file"
+                        accept=".xlsx,.xls"
+                        onChange={(e) => setImportFile(e.target.files[0])}
+                      />
+                    </Form.Item>
+                    <Form.Item>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        loading={importLoading}
+                        style={{ width: "100%" }}
+                      >
+                        Import
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </Modal>
               </>
             ),
           },
@@ -1039,92 +1268,185 @@ const VaccineProgramList = () => {
                     background: "#fff",
                     borderRadius: 10,
                     padding: 24,
-                    minWidth: 1200,
                     maxWidth: "calc(100vw - 260px)",
+                    width: "auto",
                     margin: "0 auto",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                     overflowX: "auto",
                   }}
                 >
                   {/* Thêm ô tìm kiếm */}
-                  <div style={{ marginBottom: 16, display: "flex", justifyContent: "flex-end" }}>
+                  <div
+                    style={{
+                      marginBottom: 16,
+                      display: "flex",
+                      justifyContent: "flex-end",
+                    }}
+                  >
                     <Input
                       placeholder="Tìm kiếm tên chương trình..."
                       prefix={<SearchOutlined />}
                       value={searchTermResult}
-                      onChange={e => setSearchTermResult(e.target.value)}
+                      onChange={(e) => setSearchTermResult(e.target.value)}
                       allowClear
                       style={{ width: 260 }}
                     />
                   </div>
                   <Table
                     columns={[
-                      { title: "ID kết quả", dataIndex: "vaccineResultId", key: "vaccineResultId" },
-                      { 
-                        title: "Chương trình & Trạng thái", 
-                        key: "programAndStatus",
-                        render: (_, record) => {
-                          const programName = record?.vaccineFormDTO?.vaccineProgram?.vaccineName?.vaccineName || "";
-                          const status = record?.vaccineFormDTO?.vaccineProgram?.status;
-                          let color = "#595959";
-                          if (status === "ON_GOING") color = "#1890ff";
-                          else if (status === "COMPLETED") color = "#21ba45";
-                          else if (status === "NOT_STARTED") color = "#faad14";
-                          return (
-                            <div>
-                              <div style={{ fontWeight: 600 }}>{programName}</div>
-                              <span style={{
-                                fontWeight: 600,
-                                color,
-                                fontSize: 13,
-                                textTransform: "uppercase",
-                                letterSpacing: 0.5,
-                                whiteSpace: "nowrap",
-                                padding: "2px 8px",
-                                borderRadius: 4,
-                                background: "#f6f6f6",
-                                display: "inline-block",
-                                marginTop: 4,
-                              }}>
-                                {status === "ON_GOING"
-                                  ? "Đang diễn ra"
-                                  : status === "COMPLETED"
-                                  ? "Đã hoàn thành"
-                                  : status === "NOT_STARTED"
-                                  ? "Chưa bắt đầu"
-                                  : status}
-                              </span>
-                            </div>
-                          );
-                        }
+                      {
+                        title: "ID kết quả",
+                        dataIndex: "vaccineResultId",
+                        key: "vaccineResultId",
                       },
-                      { 
-                        title: "Học sinh & Lớp", 
-                        key: "studentAndClass",
+                      {
+                        title: "Học sinh",
+                        dataIndex: ["studentDTO", "fullName"],
+                        key: "studentName",
+                        render: (_, record) => record.studentDTO?.fullName,
+                      },
+                      {
+                        title: "Giới tính",
+                        dataIndex: ["studentDTO", "gender"],
+                        key: "gender",
+                        render: (_, record) => record.studentDTO?.gender,
+                      },
+                      {
+                        title: "Tình trạng sức khỏe",
+                        dataIndex: "statusHealth",
+                        key: "statusHealth",
+                        render: (text, record) =>
+                          sampleResultData ? (
+                            <Input
+                              value={
+                                editableRows.find(
+                                  (r) =>
+                                    r.vaccineResultId === record.vaccineResultId
+                                )?.statusHealth
+                              }
+                              onChange={(e) =>
+                                handleEditCell(
+                                  e.target.value,
+                                  record,
+                                  "statusHealth"
+                                )
+                              }
+                              style={{ minWidth: 100 }}
+                            />
+                          ) : (
+                            text
+                          ),
+                      },
+                      {
+                        title: "Phản ứng",
+                        dataIndex: "reaction",
+                        key: "reaction",
+                        render: (text, record) =>
+                          sampleResultData ? (
+                            <Input
+                              value={
+                                editableRows.find(
+                                  (r) =>
+                                    r.vaccineResultId === record.vaccineResultId
+                                )?.reaction
+                              }
+                              onChange={(e) =>
+                                handleEditCell(
+                                  e.target.value,
+                                  record,
+                                  "reaction"
+                                )
+                              }
+                              style={{ minWidth: 100 }}
+                            />
+                          ) : (
+                            text
+                          ),
+                      },
+                      {
+                        title: "Ghi chú kết quả",
+                        dataIndex: "resultNote",
+                        key: "resultNote",
+                        render: (text, record) =>
+                          sampleResultData ? (
+                            <Input
+                              value={
+                                editableRows.find(
+                                  (r) =>
+                                    r.vaccineResultId === record.vaccineResultId
+                                )?.resultNote
+                              }
+                              onChange={(e) =>
+                                handleEditCell(
+                                  e.target.value,
+                                  record,
+                                  "resultNote"
+                                )
+                              }
+                              style={{ minWidth: 120 }}
+                            />
+                          ) : (
+                            text
+                          ),
+                      },
+                      {
+                        title: "Ngày tạo",
+                        dataIndex: "createdAt",
+                        key: "createdAt",
+                      },
+                      {
+                        title: "Tên vaccine",
+                        key: "vaccineName",
+                        render: (_, record) =>
+                          record.vaccineFormDTO?.vaccineProgram?.vaccineName
+                            ?.vaccineName,
+                      },
+                      {
+                        title: "Ngày tiêm",
+                        key: "vaccineDate",
+                        render: (_, record) =>
+                          record.vaccineFormDTO?.vaccineProgram?.vaccineDate,
+                      },
+                      // Thêm cột Lưu
+                      sampleResultData && {
+                        title: "Thao tác",
+                        key: "action",
                         render: (_, record) => (
-                          <div>
-                            <div><b>{record.studentDTO?.fullName}</b></div>
-                            <div style={{ color: "#888" }}>{record.studentDTO?.classDTO?.className}</div>
-                          </div>
-                        )
+                          <Button
+                            type="primary"
+                            onClick={() =>
+                              handleSaveRow(
+                                editableRows.find(
+                                  (r) =>
+                                    r.vaccineResultId === record.vaccineResultId
+                                )
+                              )
+                            }
+                          >
+                            Lưu
+                          </Button>
+                        ),
                       },
-                      { title: "Giới tính", dataIndex: ["studentDTO", "gender"], key: "gender" },
-                      { title: "Ghi chú phiếu", dataIndex: ["vaccineFormDTO", "note"], key: "formNotes" },
-                      { title: "Ngày tiêm", dataIndex: ["vaccineFormDTO", "vaccineProgram", "vaccineDate"], key: "programDate" },
-                      { title: "Tình trạng sức khỏe", dataIndex: "statusHealth", key: "statusHealth" },
-                      { title: "Phản ứng", dataIndex: "reaction", key: "reaction" },
-                      { title: "Ghi chú kết quả", dataIndex: "resultNote", key: "resultNote" },
-                      { title: "Ngày tạo", dataIndex: "createdAt", key: "createdAt" },
-                    ]}
-                    dataSource={selectedVaccineResultId ? selectedVaccineResult : filteredNurseResults}
-                    loading={selectedVaccineResultLoading || nurseResultsLoading}
+                    ].filter(Boolean)}
+                    dataSource={
+                      sampleResultData
+                        ? editableRows
+                        : selectedVaccineResultId
+                        ? selectedVaccineResult
+                        : filteredNurseResults
+                    }
+                    loading={
+                      selectedVaccineResultLoading || nurseResultsLoading
+                    }
                     rowKey="vaccineResultId"
                     bordered
                     style={{ minWidth: 900 }}
-                    pagination={selectedVaccineResultId ? false : {
+                    pagination={{
                       current: resultTablePage,
                       pageSize: resultTablePageSize,
-                      total: filteredNurseResults.length,
+                      total: sampleResultData
+                        ? editableRows.length
+                        : selectedVaccineResultId,
                       showSizeChanger: true,
                       pageSizeOptions: ["5", "10", "20", "50"],
                       onChange: (page, pageSize) => {
@@ -1134,17 +1456,6 @@ const VaccineProgramList = () => {
                     }}
                   />
                 </div>
-                {selectedVaccineResultId && (
-                  <Button
-                    style={{ marginBottom: 16 }}
-                    onClick={() => {
-                      setSelectedVaccineResultId(null);
-                      setSelectedVaccineResult(null);
-                    }}
-                  >
-                    Quay lại danh sách kết quả
-                  </Button>
-                )}
               </div>
             ),
           },
