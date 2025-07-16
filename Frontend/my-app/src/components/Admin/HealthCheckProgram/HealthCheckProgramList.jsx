@@ -33,6 +33,7 @@ const HealthCheckProgramList = () => {
   const [confirmedCounts, setConfirmedCounts] = useState({});
   const [totalForms, setTotalForms] = useState({});
   const [notifiedPrograms, setNotifiedPrograms] = useState({}); // { [programId]: true/false }
+  const [sentNotificationIds, setSentNotificationIds] = useState([]); // Thêm state để lưu các program đã gửi thông báo
   const pageSize = 3; // Số chương trình mỗi trang
   const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
   const [isViewResult, setIsViewResult] = useState(false);
@@ -145,6 +146,7 @@ const HealthCheckProgramList = () => {
     }
   };
 
+  // Sửa hàm handleSendNotification
   const handleSendNotification = async (programId) => {
     const confirm = await Swal.fire({
       title: "Bạn có chắc muốn gửi thông báo?",
@@ -172,8 +174,8 @@ const HealthCheckProgramList = () => {
         showConfirmButton: false,
         timer: 1500
       });
-      // Cập nhật trạng thái đã gửi thông báo
-      setNotifiedPrograms(prev => ({ ...prev, [programId]: true }));
+      // Disable nút ngay trên giao diện
+      setSentNotificationIds(prev => [...prev, programId]);
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -234,11 +236,19 @@ const HealthCheckProgramList = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Nếu response là mảng, set vào healthCheckResults để render table
       setHealthCheckResults(res.data);
       setSelectedProgramId(programId);
       setActiveTab("result");
       setShowResultPage(true);
+
+      // Nếu role là NURSE, cập nhật trạng thái program trên frontend để disable nút Tạo kết quả ngay
+      if (userRole === "NURSE") {
+        setPrograms(prev =>
+          prev.map(p =>
+            p.id === programId ? { ...p, status: "COMPLETED" } : p
+          )
+        );
+      }
     } catch (error) {
       Swal.fire("Lỗi", "Không thể tạo kết quả!", "error");
     } finally {
@@ -489,6 +499,7 @@ const HealthCheckProgramList = () => {
                             { value: "ON_GOING", label: "Đang diễn ra" },
                             { value: "COMPLETED", label: "Đã hoàn thành" },
                           ]}
+                          disabled={userRole === "NURSE"}
                         />
                       ) : (
                         <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
@@ -502,7 +513,7 @@ const HealthCheckProgramList = () => {
                           <div style={{ color: "#1890ff", fontWeight: 700, fontSize: 32 }}>
                             {totalForms[program.id] ?? 0}
                           </div>
-                          <div style={{ color: "#888", fontWeight: 500 }}>Tổng học sinh đã gửi form đăng ký</div>
+                          <div style={{ color: "#888", fontWeight: 500 }}>Tổng học sinh dự kiến tham gia</div>
                         </div>
                       </Col>
                       <Col span={12}>
@@ -510,7 +521,7 @@ const HealthCheckProgramList = () => {
                           <div style={{ color: "#21ba45", fontWeight: 700, fontSize: 32 }}>
                             {confirmedCounts[program.id] ?? 0}
                           </div>
-                          <div style={{ color: "#888", fontWeight: 500 }}>Đã xác nhận</div>
+                          <div style={{ color: "#888", fontWeight: 500 }}>Đã xác nhận tham gia</div>
                         </div>
                       </Col>
                     </Row>
@@ -545,11 +556,14 @@ const HealthCheckProgramList = () => {
                           background: "#1976d2",
                           color: "#fff",
                           border: "none",
-                          opacity: program.status === "ON_GOING" && (confirmedCounts[program.id] ?? 0) > 0 ? 1 : 0.5
+                          opacity: program.status === "ON_GOING" && (confirmedCounts[program.id] ?? 0) > 0 && userRole !== "ADMIN"
+                            ? 1
+                            : 0.5,
                         }}
                           onClick={() => handleCreateResult(program.id)}
                           disabled={
-                            !(program.status === "ON_GOING" && (confirmedCounts[program.id] ?? 0) > 0)
+                            !(program.status === "ON_GOING" && (confirmedCounts[program.id] ?? 0) > 0) ||
+                            userRole === "ADMIN"
                           }
                         >
                           Tạo kết quả
@@ -572,38 +586,33 @@ const HealthCheckProgramList = () => {
                           type="default"
                           style={{
                             marginLeft: 8,
-                            background: program.status === "NOT_STARTED" ||
-                                        program.status === "COMPLETED" ||
-                                        (totalForms[program.id] ?? 0) > 0 ||
-                                        (program.status !== "ON_GOING" && notifiedPrograms[program.id] === true)
-                              ? "#e0e0e0"
-                              : "#00bcd4",
-                            color: program.status === "NOT_STARTED" ||
-                                  program.status === "COMPLETED" ||
-                                  (totalForms[program.id] ?? 0) > 0 ||
-                                  (program.status !== "ON_GOING" && notifiedPrograms[program.id] === true)
-                              ? "#aaa"
-                              : "#fff",
+                            background: "#00bcd4",
+                            color: "#fff",
                             border: "none",
-                            cursor: program.status === "NOT_STARTED" ||
-                                  program.status === "COMPLETED" ||
-                                  (totalForms[program.id] ?? 0) > 0 ||
-                                  (program.status !== "ON_GOING" && notifiedPrograms[program.id] === true)
-                              ? "not-allowed"
-                              : "pointer"
+                            cursor:
+                              program.status === "NOT_STARTED" ||
+                              program.status === "COMPLETED" ||
+                              (program.status === "ON_GOING" && program.sended === 1) ||
+                              sentNotificationIds.includes(program.id) ||
+                              userRole === "ADMIN"
+                                ? "not-allowed"
+                                : "pointer",
+                            opacity:
+                              program.status === "NOT_STARTED" ||
+                              program.status === "COMPLETED" ||
+                              (program.status === "ON_GOING" && program.sended === 1) ||
+                              sentNotificationIds.includes(program.id) ||
+                              userRole === "ADMIN"
+                                ? 0.5
+                                : 1,
                           }}
                           onClick={() => handleSendNotification(program.id)}
                           disabled={
                             program.status === "NOT_STARTED" ||
                             program.status === "COMPLETED" ||
-                            (
-                              program.status === "ON_GOING" &&
-                              (totalForms[program.id] ?? 0) > 0
-                            ) ||
-                            (
-                              program.status !== "ON_GOING" &&
-                              notifiedPrograms[program.id] === true
-                            )
+                            (program.status === "ON_GOING" && program.sended === 1) ||
+                            sentNotificationIds.includes(program.id) ||
+                            userRole === "ADMIN"
                           }
                         >
                           Gửi thông báo
@@ -620,6 +629,7 @@ const HealthCheckProgramList = () => {
                                 setEditMode(true);
                                 setCreateVisible(true);
                               }}
+                              disabled={userRole === "NURSE"}
                             >
                               Sửa
                             </Button>
@@ -628,6 +638,11 @@ const HealthCheckProgramList = () => {
                             danger
                             type="primary"
                             onClick={() => handleDelete(program.id)}
+                            disabled={
+                              userRole === "NURSE" ||
+                              program.status === "COMPLETED" ||
+                              program.status === "ON_GOING"
+                            }
                           >
                             Xóa
                           </Button>
