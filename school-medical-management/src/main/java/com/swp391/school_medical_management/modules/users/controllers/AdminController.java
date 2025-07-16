@@ -138,11 +138,13 @@ public class AdminController {
         return ResponseEntity.ok(vaccineProgramDTO);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")//test
     @GetMapping("/vaccine-program")
     public ResponseEntity<List<VaccineProgramDTO>> getAllVaccineProgram() {
         List<VaccineProgramDTO> vaccineProgramDTOList = adminService.getAllVaccineProgram();
         return ResponseEntity.ok(vaccineProgramDTOList);
     }
+
 
     @GetMapping("/vaccine-program/{vaccineProgramId}")
     public ResponseEntity<VaccineProgramDTO> getVaccineProgramById(@PathVariable long vaccineProgramId) {

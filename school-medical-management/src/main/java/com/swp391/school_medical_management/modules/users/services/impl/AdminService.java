@@ -311,7 +311,7 @@ public class AdminService {
             List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository
                     .findAllByHealthCheckProgram_Id(programId);
             if (healthCheckFormEntitieList.isEmpty()) {
-                healthCheckProgramDTO.setSended(1);
+                healthCheckProgramDTO.setSended(0);
             } else {
                 boolean allStatusOne = healthCheckFormEntitieList.stream()
                         .allMatch(form -> form.getStatus().equals(HealthCheckFormStatus.DRAFT));
@@ -515,7 +515,7 @@ public class AdminService {
             List<VaccineFormEntity> vaccineFormEntityList = vaccineFormRepository
                     .findAllByVaccineProgram_VaccineId(programId);
             if (vaccineFormEntityList.isEmpty()) {
-                v.setSended(1);
+                v.setSended(0);
             } else {
                 boolean allStatusOne = vaccineFormEntityList.stream()
                         .allMatch(form -> form.getStatus().equals(VaccineFormStatus.DRAFT));
