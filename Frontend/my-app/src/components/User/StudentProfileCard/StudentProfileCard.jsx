@@ -156,6 +156,29 @@ const StudentProfile = () => {
       key: 'note',
       align: 'center',
       minWidth: 650,
+      render: (text) => {
+        // Tính số dòng dựa vào số lần xuống dòng và độ dài
+        const lines = text ? text.split('\n').length : 1;
+        const approxLines = Math.max(lines, Math.ceil((text?.length || 0) / 80));
+        return (
+          <textarea
+            value={text}
+            readOnly
+            rows={approxLines}
+            style={{
+              width: '100%',
+              border: 'none',
+              background: 'transparent',
+              fontSize: 15,
+              color: '#333',
+              padding: 4,
+              whiteSpace: 'pre-wrap',
+              overflowWrap: 'break-word',
+              resize: 'none', // Không cho resize
+            }}
+          />
+        );
+      },
     },
   ];
 

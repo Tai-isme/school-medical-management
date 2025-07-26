@@ -30,19 +30,23 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
   };
 
   const handleFinish = async (values) => {
-    const payload = {
-      studentId,
-      allergies: values.allergies || "",
-      chronicDisease: values.chronicDisease || "",
-      treatmentHistory: values.treatmentHistory || "",
-      vision: values.vision || "",
-      hearing: values.hearing || "",
-      weight: Number(values.weight) || 0,
-      height: Number(values.height) || 0,
-      note: values.note || "",
-      createBy: "0",
-      vaccineHistories: vaccineHistories.length > 0 ? vaccineHistories : [],
-    };
+    const filteredVaccineHistories = vaccineHistories.filter(
+    v => v.vaccineNameId // chỉ giữ dòng có chọn vaccine
+  );
+
+  const payload = {
+    studentId,
+    allergies: values.allergies || "",
+    chronicDisease: values.chronicDisease || "",
+    treatmentHistory: values.treatmentHistory || "",
+    vision: values.vision || "",
+    hearing: values.hearing || "",
+    weight: Number(values.weight) || 0,
+    height: Number(values.height) || 0,
+    note: values.note || "",
+    createBy: "0",
+    vaccineHistories: filteredVaccineHistories,
+  };
 
     try {
       if (editMode) {
@@ -328,9 +332,10 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                     name={['vaccineHistories', idx, 'vaccineNameId']}
                     style={{ flex: 2, marginBottom: 0 }}
                     rules={[
-                      { required: true, message: 'Chọn loại vaccin' },
+                      // Bỏ dòng required
                       {
                         validator: (_, value) => {
+                          if (!value) return Promise.resolve(); // Cho phép bỏ trống
                           const duplicate = vaccineHistories.some(
                             (v, i) => i !== idx && v.vaccineNameId === value
                           );
@@ -365,6 +370,20 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                   <Form.Item
                     name={['vaccineHistories', idx, 'note']}
                     style={{ flex: 3, marginBottom: 0, minWidth: 200, maxWidth: 350 }}
+                    rules={[
+                      {
+      validator: (_, value, callback) => {
+        const vaccineId = vaccineHistories[idx]?.vaccineNameId;
+        if (value && value.length > 255) {
+          return Promise.reject('Mô tả không được vượt quá 255 ký tự');
+        }
+        if (value && !vaccineId) {
+          return Promise.reject('Vui lòng chọn loại vaccine');
+        }
+        return Promise.resolve();
+      }
+    }
+                    ]}
                   >
                     <Input.TextArea
                       placeholder="Mô tả"

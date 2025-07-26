@@ -270,7 +270,7 @@ const HealthCheckProgramList = () => {
       await axios.put(
         `http://localhost:8080/api/admin/health-check-program/${program.id}`,
         {
-          name: values.name,
+          healthCheckName: values.name,
           description: values.description,
           startDate: values.startDate.format("YYYY-MM-DD"),
           endDate: values.endDate.format("YYYY-MM-DD"),
@@ -321,11 +321,41 @@ const HealthCheckProgramList = () => {
 
   
 
-  const handleUpdateStatus = async (id, status) => {
+  const handleUpdateStatus = async (id, newStatus) => {
+    const program = programs.find(p => p.id === id);
+    const oldStatus = program?.status;
+
+    // Kiểm tra các trường hợp không hợp lệ
+    if (
+      (oldStatus === "ON_GOING" && newStatus === "NOT_STARTED") ||
+      (oldStatus === "COMPLETED" && (newStatus === "ON_GOING" || newStatus === "NOT_STARTED"))
+    ) {
+      await Swal.fire({
+        icon: "error",
+        title: "Không thể đổi trạng thái!",
+        text: "Không thể chuyển từ Đang diễn ra sang Chưa bắt đầu hoặc từ Đã hoàn thành sang Đang diễn ra/Chưa bắt đầu.",
+        confirmButtonColor: "#3085d6",
+      });
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "Bạn có chắc muốn đổi trạng thái chương trình?",
+      text: "Thao tác này sẽ cập nhật trạng thái chương trình khám định kỳ.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Đổi trạng thái",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#21ba45",
+      cancelButtonColor: "#d33",
+    });
+
+    if (!result.isConfirmed) return;
+
     const token = localStorage.getItem("token");
     try {
       await axios.patch(
-        `http://localhost:8080/api/admin/health-check-program/${id}?status=${status}`,
+        `http://localhost:8080/api/admin/health-check-program/${id}?status=${newStatus}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },

@@ -9,32 +9,82 @@ const { Title, Text } = Typography;
 
 const columns = [
   {
-    title: "Loại sự kiện", // Tên cột hiển thị
-    dataIndex: "typeEvent", // Key tương ứng trong object dữ liệu
-    key: "typeEvent", // Key duy nhất cho cột này
+    title: "Loại sự kiện",
+    dataIndex: "typeEvent",
+    key: "typeEvent",
     minWidth: 200,
-    // Bạn có thể tùy chỉnh render cho cột này nếu muốn
-    // render: (text) => <Tag color="blue">{text.toUpperCase()}</Tag>,
+    render: (text) => (
+      <span style={{
+        fontSize: 15,
+        color: '#333',
+        fontFamily: 'inherit',
+        padding: 4,
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'break-word',
+        fontWeight: 400,
+      }}>{text}</span>
+    ),
   },
   {
     title: "Ngày diễn ra",
     dataIndex: "date",
     key: "date",
     minWidth: 150,
-    // Sắp xếp theo ngày
     sorter: (a, b) => new Date(a.date) - new Date(b.date),
-    render: (text) => new Date(text).toLocaleDateString("vi-VN"), // Định dạng ngày tháng VN
+    render: (text) => (
+      <span style={{
+        fontSize: 15,
+        color: '#333',
+        fontFamily: 'inherit',
+        padding: 4,
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'break-word',
+        fontWeight: 400,
+      }}>{new Date(text).toLocaleDateString("vi-VN")}</span>
+    ),
   },
   {
     title: "Y tá phụ trách",
     key: "nurseDTO",
     minWidth: 150,
-    render: (_, record) => record.nurseDTO?.fullName || "Không rõ",
+    render: (_, record) => (
+      <span style={{
+        fontSize: 15,
+        color: '#333',
+        fontFamily: 'inherit',
+        padding: 4,
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'break-word',
+        fontWeight: 400,
+      }}>{record.nurseDTO?.fullName || "Không rõ"}</span>
+    ),
   },
   {
     title: "Mô tả",
     dataIndex: "description",
     key: "description",
+    render: (text) => {
+      const lines = text ? text.split('\n').length : 1;
+      const approxLines = Math.max(lines, Math.ceil((text?.length || 0) / 80));
+      return (
+        <textarea
+          value={text}
+          readOnly
+          rows={approxLines}
+          style={{
+            width: '100%',
+            border: 'none',
+            background: 'transparent',
+            fontSize: 15,
+            color: '#333',
+            padding: 4,
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'break-word',
+            resize: 'none',
+          }}
+        />
+      );
+    },
   },
 ];
 
