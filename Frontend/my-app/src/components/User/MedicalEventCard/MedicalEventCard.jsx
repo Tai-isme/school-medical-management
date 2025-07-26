@@ -12,7 +12,7 @@ const columns = [
     title: "Loại sự kiện",
     dataIndex: "typeEvent",
     key: "typeEvent",
-    minWidth: 200,
+    width: 200, // Giảm chiều rộng
     render: (text) => (
       <span style={{
         fontSize: 15,
@@ -29,7 +29,7 @@ const columns = [
     title: "Ngày diễn ra",
     dataIndex: "date",
     key: "date",
-    minWidth: 150,
+    width: 110, // Giảm chiều rộng
     sorter: (a, b) => new Date(a.date) - new Date(b.date),
     render: (text) => (
       <span style={{
@@ -46,7 +46,7 @@ const columns = [
   {
     title: "Y tá phụ trách",
     key: "nurseDTO",
-    minWidth: 150,
+    width: 110, // Giảm chiều rộng
     render: (_, record) => (
       <span style={{
         fontSize: 15,
@@ -63,6 +63,7 @@ const columns = [
     title: "Mô tả",
     dataIndex: "description",
     key: "description",
+    width: 320, // Tăng chiều rộng
     render: (text) => {
       const lines = text ? text.split('\n').length : 1;
       const approxLines = Math.max(lines, Math.ceil((text?.length || 0) / 80));

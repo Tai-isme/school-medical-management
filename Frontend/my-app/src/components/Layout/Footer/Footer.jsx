@@ -31,15 +31,15 @@ export default function Footer() {
               fontWeight: 500
             }}
           >
-            support@ytehocduong.vn
+            fptuniversity@fpt.edu.vn
           </a>
           |
           <span style={{ margin: "0 12px" }}>
-            ĐT: 0123 456 789
+            ĐT: 02873005588
           </span>
           |
           <span style={{ margin: "0 12px" }}>
-            Địa chỉ: 123 Đường Sức Khỏe, Quận 1, TP.HCM
+            Địa chỉ: 7 Đ. D1, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh 700000, Việt Nam
           </span>
         </div>
         <div style={{ fontSize: 14, color: "#1976d2a0" }}>

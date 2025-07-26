@@ -37,9 +37,9 @@ function App() {
 
   return (
     <Router>
-
       {/* Navbar chỉ hiện khi chưa đăng nhập hoặc không phải admin */}
       {(!role || role === "PARENT") && <Navbar />}
+      <div className="main-content">
       <Routes>
         <Route path="/" element={<Home />} /> 
         <Route path="/blog" element={<BlogPage />} /> 
@@ -50,9 +50,8 @@ function App() {
         <Route path="/vaccine-result" element={<VaccineResultPage />} />
         <Route path="/health-check" element={<HealthCheckResultPage />} />
         <Route path="/dashboard" element={<ProtectedRoute />} />
-
-        
       </Routes>
+      </div>
       {(!role || role === "PARENT") && <Footer />}
     </Router>
   ); 

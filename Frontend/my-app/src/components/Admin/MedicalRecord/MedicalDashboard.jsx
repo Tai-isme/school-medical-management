@@ -83,13 +83,13 @@ export default function MedicalDashboard() {
           Quản lý hồ sơ học sinh
         </h2>
         <div style={{ marginRight: 32, display: "flex", gap: 12, marginTop: 12, marginBottom: 10 }}>
-          <Button
+          {/* <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAddStudent}
           >
             Thêm học sinh
-          </Button>
+          </Button> */}
           <Button
             icon={<FileExcelOutlined />}
             onClick={handleDownloadTemplate}
