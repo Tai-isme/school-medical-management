@@ -89,10 +89,10 @@ public class NotifyController {
 
     @PostMapping("/notify-vaccine")
     public ResponseEntity<?> notifyVaccineToParents(@RequestBody NotifyToParentRequest request) {
+        System.out.println("📢 ĐÃ VÀO CONTROLLER");
         List<Long> formIds = request.getFormIds();
         List<Long> skippedForms = new ArrayList<>();
         for (Long formId : formIds) {
-
             Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(formId);
             if (vaccineFormOpt.isEmpty())
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found vaccine form with id: " + formId);
@@ -128,8 +128,8 @@ public class NotifyController {
         return ResponseEntity.ok("Đã gửi thông báo. Các form đã skip: " + skippedForms);
     }
 
-    @GetMapping("/notify/{studentId}")
-    public ResponseEntity<List<NotificationMessageDTO>> getAllNotify(@PathVariable Long studentId) {
+    @GetMapping("/notify/{userId}")
+    public ResponseEntity<List<NotificationMessageDTO>> getAllNotify(@PathVariable Long userId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         List<NotificationMessageDTO> notificationMessageDTOList = notificationService
                 .getNotificationByUserId(Long.parseLong(parentId));

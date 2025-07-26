@@ -23,6 +23,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRe
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequestDetailRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineHistoryRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
@@ -31,6 +32,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.MedicalR
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
@@ -612,10 +614,17 @@ public class ParentService {
 
         List<MedicalEventDTO> medicalEventDTOList = medicalEventEntitieList
                 .stream()
-                .map(medicalEventEntitie -> modelMapper
-                        .map(medicalEventEntitie, MedicalEventDTO.class))
-                .collect(Collectors
-                        .toList());
+                .map(medicalEventEntity -> {
+                    MedicalEventDTO dto = modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
+
+                    dto.setStudentDTO(modelMapper.map(studentEntity, StudentDTO.class));
+                    dto.setParentDTO(modelMapper.map(studentEntity.getParent(), UserDTO.class));
+                    dto.setNurseDTO(modelMapper.map(medicalEventEntity.getNurse(), UserDTO.class));
+                    dto.setClassDTO(modelMapper.map(studentEntity.getClass(), ClassDTO.class));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
         return medicalEventDTOList;
     }
 

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -64,6 +65,12 @@ public class NurseController {
     @GetMapping("/medical-request")
     public ResponseEntity<List<MedicalRequestDTO>> getAllMedicalRequest() {
         List<MedicalRequestDTO> medicalrequestDTOList = nurseService.getAllMedicalRequest();
+        return ResponseEntity.ok(medicalrequestDTOList);
+    }
+
+    @GetMapping("/medical-request/{status}")
+    public ResponseEntity<List<MedicalRequestDTO>> getAllMedicalRequestByStatus(@PathVariable String status) {
+        List<MedicalRequestDTO> medicalrequestDTOList = nurseService.getAllMedicalRequestByStatus(status);
         return ResponseEntity.ok(medicalrequestDTOList);
     }
 
@@ -126,8 +133,9 @@ public class NurseController {
     }
 
     // @GetMapping("/draft-form/count/{programId}")
-    // public ResponseEntity<Map<String, Long>> countDraftFormsByProgram(@PathVariable Long programId) {
-    //     return ResponseEntity.ok(nurseService.countDraftFormByProgram(programId));
+    // public ResponseEntity<Map<String, Long>>
+    // countDraftFormsByProgram(@PathVariable Long programId) {
+    // return ResponseEntity.ok(nurseService.countDraftFormByProgram(programId));
     // }
 
     @GetMapping("/medical-events/{studentId}")
@@ -386,6 +394,5 @@ public class NurseController {
         List<VaccineResultDTO> createdResults = nurseService.createVaccineResultsByProgramId(programId);
         return ResponseEntity.ok(createdResults);
     }
-
 
 }

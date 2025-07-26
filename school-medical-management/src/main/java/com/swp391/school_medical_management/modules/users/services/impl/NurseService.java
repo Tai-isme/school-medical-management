@@ -179,6 +179,35 @@ public class NurseService {
         return medicalRequestDTOList;
     }
 
+    public List<MedicalRequestDTO> getAllMedicalRequestByStatus(String statusStr) {
+        MedicalRequestStatus status;
+        try {
+            status = MedicalRequestStatus.valueOf(statusStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status value");
+        }
+        List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findByStatus(status);
+        if (medicalRequestEntityList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical requests found");
+        }
+        List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
+        for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
+            StudentEntity studentEntity = medicalRequestEntity.getStudent();
+            StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+            List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity
+                    .getMedicalRequestDetailEntities();
+            List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
+                    .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
+                            MedicalRequestDetailDTO.class))
+                    .collect(Collectors.toList());
+            MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+            medicalRequestDTO.setStudentDTO(studentDTO);
+            medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+            medicalRequestDTOList.add(medicalRequestDTO);
+        }
+        return medicalRequestDTOList;
+    }
+
     public List<MedicalRequestDetailDTO> getMedicalRequestDetail(int requestId) {
         Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository
                 .findMedicalRequestEntityByRequestId(requestId);
@@ -368,11 +397,15 @@ public class NurseService {
     }
 
     // public Map<String, Long> countDraftFormByProgram(Long programId) {
-    //     long vaccineForm = vaccineFormRepository.countByVaccineProgram_IdAndStatusAndCommitFalse(programId, VaccineFormStatus.DRAFT);
-    //     long healthCheckForm = healthCheckFormRepository.countByHealthCheckProgram_IdAndStatusAndCommitFalse(programId, HealthCheckFormStatus.DRAFT);
-    //     return Map.of(
-    //             "vaccineForm", vaccineForm,
-    //             "healthCheckForm", healthCheckForm);
+    // long vaccineForm =
+    // vaccineFormRepository.countByVaccineProgram_IdAndStatusAndCommitFalse(programId,
+    // VaccineFormStatus.DRAFT);
+    // long healthCheckForm =
+    // healthCheckFormRepository.countByHealthCheckProgram_IdAndStatusAndCommitFalse(programId,
+    // HealthCheckFormStatus.DRAFT);
+    // return Map.of(
+    // "vaccineForm", vaccineForm,
+    // "healthCheckForm", healthCheckForm);
     // }
 
     public VaccineFormDTO getVaccinFormById(Long vaccineFormId) {
@@ -1288,6 +1321,7 @@ public class NurseService {
     }
 
     public List<HealthCheckResultDTO> createResultsByProgramId(Long programId) {
+        logger.info("Creating health check results for program ID: {}", programId);
         List<HealthCheckFormEntity> committedForms = healthCheckFormRepository.findCommittedFormsByProgramId(programId);
         List<HealthCheckResultDTO> resultList = new ArrayList<>();
 
@@ -1308,6 +1342,19 @@ public class NurseService {
             result.setNote("No issue detected");
 
             HealthCheckResultEntity savedResult = healthCheckResultRepository.save(result);
+
+            StudentEntity student = form.getStudent();
+            MedicalRecordEntity medicalRecord = medicalRecordsRepository.findMedicalRecordByStudent_Id(student.getId()).get();
+            if (medicalRecord != null) {
+                medicalRecord.setVision(savedResult.getVision());
+                medicalRecord.setHearing(savedResult.getHearing());
+                medicalRecord.setWeight(savedResult.getWeight());
+                medicalRecord.setHeight(savedResult.getHeight());
+                medicalRecord.setNote(savedResult.getNote());
+                medicalRecord.setLastUpdate(LocalDateTime.now());
+                medicalRecordsRepository.save(medicalRecord);
+            }
+
 
             HealthCheckResultDTO dto = new HealthCheckResultDTO();
             dto.setHealthResultId(savedResult.getHealthResultId());
@@ -1335,6 +1382,7 @@ public class NurseService {
     }
 
     public List<VaccineResultDTO> createVaccineResultsByProgramId(Long programId) {
+        logger.info("Creating vaccine results for program ID: {}", programId);
         List<VaccineFormEntity> committedForms = vaccineFormRepository.findCommittedFormsByProgramId(programId);
         List<VaccineResultDTO> resultList = new ArrayList<>();
 
@@ -1382,6 +1430,16 @@ public class NurseService {
             }
 
             resultList.add(dto);
+            if (form.getVaccineProgram() != null && form.getVaccineProgram().getVaccineName() != null) {
+                VaccineHistoryEntity history = new VaccineHistoryEntity();
+                history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
+                history.setMedicalRecord(
+                        medicalRecordsRepository.findMedicalRecordByStudent_Id(form.getStudent().getId()).get());
+                history.setNote(form.getVaccineProgram().getNote());
+                history.setCreateBy((byte) 1);
+
+                vaccineHistoryRepository.save(history);
+            }
         }
 
         Optional<VaccineProgramEntity> programOpt = vaccineProgramRepository.findById(programId);
