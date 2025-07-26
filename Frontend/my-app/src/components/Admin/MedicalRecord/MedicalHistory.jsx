@@ -70,9 +70,8 @@ export default function MedicalHistory({ studentId }) {
             ⚡ {e.typeEvent}
           </div>
           <div>Ngày xảy ra: {e.date}</div>
+          <div>Y tá phụ trách: {e.nurseDTO.fullName}</div>
           <div>Mô tả: {e.description}</div>
-          <div>Học sinh: {e.studentName}</div>
-          <div>Y tá phụ trách: {e.nurseId}</div>
         </div>
       ))}
     </div>

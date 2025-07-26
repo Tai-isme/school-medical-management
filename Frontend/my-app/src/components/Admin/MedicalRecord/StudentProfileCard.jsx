@@ -73,7 +73,11 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
     <div style={{ background: "#fff", borderRadius: 8, padding: "8px", minHeight: 180, width: "800px"}}>
       <div style={{ display: "flex", alignItems: "center", gap: 32, marginBottom: 16, minHeight: 120, height: 120 }}>
         <img
-          src="./logo512.png"
+          src={
+            studentInfo?.avatar
+              ? studentInfo.avatar
+              : "https://res.cloudinary.com/duzh5dnul/image/upload/v1750673843/6473ad42-3f20-4708-9bcf-76dff5d30ab2_avt2.jpg"
+          }
           alt="avatar"
           style={{
             width: 120,
@@ -205,34 +209,42 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
               <div style={{ flex: 1, textAlign: "left" }}>Tên Vaccin</div>
               <div style={{ flex: 1, textAlign: "left" }}>Mô tả</div>
             </div>
-            {(safeRecord.vaccineHistories || []).map((v, idx) => (
-              <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                <input
-                  style={{
-                    flex: 1,
-                    padding: 8,
-                    borderRadius: 5,
-                    border: "1px solid #ccc",
-                    fontSize: 16,
-                    fontFamily: "inherit"
-                  }}
-                  value={v.vaccineName.vaccineName || ""}
-                  readOnly
-                />
-                <input
-                  style={{
-                    flex: 1,
-                    padding: 8,
-                    borderRadius: 5,
-                    border: "1px solid #ccc",
-                    fontSize: 16,
-                    fontFamily: "inherit"
-                  }}
-                  value={v.note || ""}
-                  readOnly
-                />
-              </div>
-            ))}
+            {(safeRecord.vaccineHistories || []).map((v, idx) => {
+  const lines = v.note ? v.note.split('\n').length : 1;
+  const approxLines = Math.max(lines, Math.ceil((v.note?.length || 0) / 40));
+  return (
+    <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+      <input
+        style={{
+          width: 180, // Chỉ tới phần bạn gạch đỏ
+          padding: 8,
+          borderRadius: 5,
+          border: "1px solid #ccc",
+          fontSize: 16,
+          fontFamily: "inherit"
+        }}
+        value={v.vaccineName.vaccineName || ""}
+        readOnly
+      />
+      <textarea
+        style={{
+          flex: 1,
+          padding: 8,
+          borderRadius: 5,
+          border: "1px solid #ccc",
+          fontSize: 16,
+          fontFamily: "inherit",
+          resize: "none",
+          width: "100%",
+          boxSizing: "border-box"
+        }}
+        value={v.note || ""}
+        readOnly
+        rows={approxLines}
+      />
+    </div>
+  );
+})}
           </div>
         )}
       </div>
