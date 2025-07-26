@@ -1344,7 +1344,8 @@ public class NurseService {
             HealthCheckResultEntity savedResult = healthCheckResultRepository.save(result);
 
             StudentEntity student = form.getStudent();
-            MedicalRecordEntity medicalRecord = medicalRecordsRepository.findMedicalRecordByStudent_Id(student.getId()).get();
+            MedicalRecordEntity medicalRecord = medicalRecordsRepository.findMedicalRecordByStudent_Id(student.getId())
+                    .get();
             if (medicalRecord != null) {
                 medicalRecord.setVision(savedResult.getVision());
                 medicalRecord.setHearing(savedResult.getHearing());
@@ -1354,7 +1355,6 @@ public class NurseService {
                 medicalRecord.setLastUpdate(LocalDateTime.now());
                 medicalRecordsRepository.save(medicalRecord);
             }
-
 
             HealthCheckResultDTO dto = new HealthCheckResultDTO();
             dto.setHealthResultId(savedResult.getHealthResultId());
@@ -1430,16 +1430,28 @@ public class NurseService {
             }
 
             resultList.add(dto);
-            if (form.getVaccineProgram() != null && form.getVaccineProgram().getVaccineName() != null) {
-                VaccineHistoryEntity history = new VaccineHistoryEntity();
-                history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
-                history.setMedicalRecord(
-                        medicalRecordsRepository.findMedicalRecordByStudent_Id(form.getStudent().getId()).get());
-                history.setNote(form.getVaccineProgram().getNote());
-                history.setCreateBy((byte) 1);
+            if (form.getVaccineProgram() != null && form.getVaccineProgram().getVaccineName() != null
+                    && form.getStudent() != null) {
+                Long studentId = form.getStudent().getId();
+                Optional<MedicalRecordEntity> medicalRecordOpt = medicalRecordsRepository
+                        .findMedicalRecordByStudent_Id(studentId);
 
-                vaccineHistoryRepository.save(history);
+                if (medicalRecordOpt.isPresent()) {
+                    MedicalRecordEntity medicalRecord = medicalRecordOpt.get();
+
+                    VaccineHistoryEntity history = new VaccineHistoryEntity();
+                    history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
+                    history.setMedicalRecord(medicalRecord);
+                    logger.info(medicalRecord.getRecordId() + " - " + history.getVaccineNameEntity().getVaccineName());
+                    history.setNote(form.getVaccineProgram().getNote());
+                    history.setCreateBy((byte) 1);
+
+                    vaccineHistoryRepository.save(history);
+                } else {
+                    logger.warn("Không tìm thấy hồ sơ y tế cho học sinh ID: {}", studentId);
+                }
             }
+
         }
 
         Optional<VaccineProgramEntity> programOpt = vaccineProgramRepository.findById(programId);

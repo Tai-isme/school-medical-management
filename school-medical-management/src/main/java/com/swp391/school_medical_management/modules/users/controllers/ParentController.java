@@ -41,7 +41,7 @@ import jakarta.validation.Valid;
 @Validated
 @RestController
 @RequestMapping("api/parent")
-// @PreAuthorize("hasRole('ROLE_PARENT')")
+@PreAuthorize("hasRole('ROLE_PARENT')")
 public class ParentController {
 
     @Autowired

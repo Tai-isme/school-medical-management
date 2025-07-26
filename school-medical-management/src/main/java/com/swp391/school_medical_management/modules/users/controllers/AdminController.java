@@ -44,7 +44,7 @@ import jakarta.validation.Valid;
 @Validated
 @RestController
 @RequestMapping("api/admin")
-// @PreAuthorize("hasRole('ROLE_ADMIN')")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminController {
 
     @Autowired
