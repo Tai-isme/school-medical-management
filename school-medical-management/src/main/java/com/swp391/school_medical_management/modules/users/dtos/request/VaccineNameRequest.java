@@ -8,5 +8,7 @@ public class VaccineNameRequest {
     
     private String manufacture;
     
-    private String note;    
+    private String url;
+
+    private String note; 
 }
