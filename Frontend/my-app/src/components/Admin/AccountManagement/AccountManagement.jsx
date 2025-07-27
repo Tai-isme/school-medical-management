@@ -149,7 +149,6 @@ const AccountManagement = () => {
     setCreateLoading(true);
     try {
       const token = localStorage.getItem("token");
-      console.log("Token:", values);
       await axios.post(
         "http://localhost:8080/api/admin/create-nurses-account",
         {
@@ -164,7 +163,12 @@ const AccountManagement = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      message.success("Tạo tài khoản Nurse thành công!");
+      await Swal.fire({
+        icon: "success",
+        title: "Thành công",
+        text: "Tạo tài khoản Nurse thành công!",
+        confirmButtonText: "OK",
+      });
       setCreateModalVisible(false);
       form.resetFields();
       // Reload danh sách tài khoản
@@ -183,7 +187,12 @@ const AccountManagement = () => {
       }));
       setAccounts(responseData);
     } catch (err) {
-      message.error("Tạo tài khoản Nurse thất bại!");
+      Swal.fire({
+        icon: "error",
+        title: "Thất bại",
+        text: "Tạo tài khoản Nurse thất bại!",
+        confirmButtonText: "OK",
+      });
     } finally {
       setCreateLoading(false);
     }

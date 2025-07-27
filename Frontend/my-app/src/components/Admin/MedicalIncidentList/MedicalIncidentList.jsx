@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Input, message, Row, Col, DatePicker, Card,
 import axios from "axios";
 import dayjs from "dayjs";
 import "./MedicalIncidentList.css";
+import Swal from "sweetalert2"; // Thêm dòng này ở đầu file nếu chưa có
 
 const MedicalIncidentList = () => {
   const [data, setData] = useState([]);
@@ -123,7 +124,12 @@ const MedicalIncidentList = () => {
       setData((prev) => [...prev, created]);
       form.resetFields();
       setIsModalVisible(false);
-      message.success("Tạo sự kiện thành công!");
+      Swal.fire({
+        icon: "success",
+        title: "Tạo sự kiện thành công!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     } catch (error) {
       console.error("Lỗi tạo sự kiện:", error);
       message.error("Không thể tạo sự kiện. Kiểm tra lại thông tin.");

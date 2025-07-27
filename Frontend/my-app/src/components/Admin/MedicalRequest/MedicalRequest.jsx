@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import axios from "axios";
+import Swal from "sweetalert2"; // Thêm dòng này ở đầu file
 import "./MedicalRequest.css";
 
 dayjs.extend(isSameOrAfter);
@@ -76,10 +77,20 @@ const MedicalRequest = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      message.success("Duyệt thành công!");
-      fetchRequests(activeStatus); // Refresh list
+      Swal.fire({
+        icon: "success",
+        title: "Duyệt thành công!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+      fetchRequests(activeStatus);
     } catch {
-      message.error("Duyệt thất bại!");
+      Swal.fire({
+        icon: "error",
+        title: "Duyệt thất bại!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     }
   };
 
@@ -91,10 +102,20 @@ const MedicalRequest = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      message.success("Từ chối thành công!");
+      Swal.fire({
+        icon: "success",
+        title: "Từ chối thành công!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
       fetchRequests(activeStatus);
     } catch {
-      message.error("Từ chối thất bại!");
+      Swal.fire({
+        icon: "error",
+        title: "Từ chối thất bại!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     }
   };
 
@@ -106,10 +127,20 @@ const MedicalRequest = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      message.success("Đã cho uống thuốc!");
+      Swal.fire({
+        icon: "success",
+        title: "Đã cho uống thuốc!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
       fetchRequests(activeStatus);
     } catch {
-      message.error("Cập nhật thất bại!");
+      Swal.fire({
+        icon: "error",
+        title: "Cập nhật thất bại!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     }
   };
 

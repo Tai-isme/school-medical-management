@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Form, Input, Button, message, Card } from "antd";
+import { Form, Input, Button, Card } from "antd";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const cardStyle = {
   background: "#f4fff8",
@@ -39,9 +40,34 @@ const ChangePasswordForm = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      message.success("Đổi mật khẩu thành công!");
+      Swal.fire({
+        icon: "success",
+        title: "Thành công",
+        text: "Đổi mật khẩu thành công!",
+      });
     } catch (err) {
-      message.error("Đổi mật khẩu thất bại!");
+      console.log(err.response);
+      if (
+        err.response &&
+        err.response.data &&
+        err.response.data.message
+      ) {
+        const serverMsg = err.response.data.message;
+        const errorMessageMap = {
+          "Old password is incorrect!": "Mật khẩu cũ không đúng!",
+        };
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi",
+          text: errorMessageMap[serverMsg] || serverMsg,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi",
+          text: "Đổi mật khẩu thất bại!",
+        });
+      }
     } finally {
       setLoading(false);
     }
