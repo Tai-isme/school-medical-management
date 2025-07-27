@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -665,12 +666,15 @@ public class AdminService {
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
             DataFormatter formatter = new DataFormatter();
+            int importedCount = 0;
             for (Row row : sheet) {
                 int rowNum = row.getRowNum();
                 if (rowNum == 0)
                     continue; // skip header
+                if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK) {
+                    continue; // skip empty rows
+                }
                 try {
-
                     // student
                     String studentName = row.getCell(0).getStringCellValue();
                     LocalDate dob = row.getCell(1).getLocalDateTimeCellValue().toLocalDate();
@@ -735,10 +739,14 @@ public class AdminService {
                     }
 
                     studentRepository.save(student);
+                    importedCount++;
                 } catch (Exception e) {
                     throw new RuntimeException("Lỗi ở dòng Excel số " + (rowNum + 1) + ": "
                             + row.getCell(0).getStringCellValue() + " - " + e.getMessage());
                 }
+            }
+            if (importedCount == 0) {
+                throw new RuntimeException("File không có dữ liệu hợp lệ để import.");
             }
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi đọc file Excel: " + e.getMessage());
@@ -872,10 +880,13 @@ public class AdminService {
     public void importVaccineNameFromExcel(MultipartFile file) {
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
+            int importedCount = 0;
             for (Row row : sheet) {
                 int rowNum = row.getRowNum();
                 if (rowNum == 0)
                     continue; // skip header
+                if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK)
+                    continue; // skip empty row
                 try {
 
                     String vaccineName = row.getCell(0).getStringCellValue();
@@ -908,6 +919,9 @@ public class AdminService {
                     throw new RuntimeException("Lỗi ở dòng Excel số " + (rowNum + 1) + ": "
                             + row.getCell(0).getStringCellValue() + " - " + e.getMessage());
                 }
+            }
+            if (importedCount == 0) {
+                throw new RuntimeException("File không có dữ liệu hợp lệ để import.");
             }
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi đọc file Excel: " + e.getMessage());
