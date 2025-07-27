@@ -1344,8 +1344,11 @@ public class NurseService {
             HealthCheckResultEntity savedResult = healthCheckResultRepository.save(result);
 
             StudentEntity student = form.getStudent();
-            MedicalRecordEntity medicalRecord = medicalRecordsRepository.findMedicalRecordByStudent_Id(student.getId())
-                    .get();
+
+            MedicalRecordEntity medicalRecord = medicalRecordsRepository
+                    .findMedicalRecordByStudent_Id(student.getId())
+                    .orElse(null);
+
             if (medicalRecord != null) {
                 medicalRecord.setVision(savedResult.getVision());
                 medicalRecord.setHearing(savedResult.getHearing());
