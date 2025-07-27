@@ -56,6 +56,7 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/accounts")
     public ResponseEntity<List<UserDTO>> getAllAccounts() {
         List<UserDTO> userList = adminService.getAllAccounts();
@@ -104,6 +105,7 @@ public class AdminController {
         return ResponseEntity.ok(vaccineProgramDTO);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/health-check-program")
     public ResponseEntity<List<HealthCheckProgramDTO>> getAllHealthCheckProgram() {
         String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -138,13 +140,12 @@ public class AdminController {
         return ResponseEntity.ok(vaccineProgramDTO);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")//test
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/vaccine-program")
     public ResponseEntity<List<VaccineProgramDTO>> getAllVaccineProgram() {
         List<VaccineProgramDTO> vaccineProgramDTOList = adminService.getAllVaccineProgram();
         return ResponseEntity.ok(vaccineProgramDTOList);
     }
-
 
     @GetMapping("/vaccine-program/{vaccineProgramId}")
     public ResponseEntity<VaccineProgramDTO> getVaccineProgramById(@PathVariable long vaccineProgramId) {
@@ -193,6 +194,7 @@ public class AdminController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/statistics/overview")
     public Map<String, Long> getOverviewStats() {
         long studentCount = adminService.countStudents();
@@ -208,26 +210,31 @@ public class AdminController {
                 "processingMedicalRequestCount", processingMedicalRequestCount);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/event-stats/monthly")
     public ResponseEntity<List<Map<String, Object>>> getMonthlyStats(@RequestParam int year) {
         return ResponseEntity.ok(adminService.getEventStatsByMonth(year));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/vaccine-results-status-by-program")
     public ResponseEntity<List<HealthCheckResultStatsDTO>> getVaccineResultStatusStatsByProgram() {
         return ResponseEntity.ok(adminService.getVaccineResultStatusStatsByProgram());
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/health-check-results-status-by-program")
     public ResponseEntity<List<HealthCheckResultStatsDTO>> getHealthCheckResultStatusStatsByProgram() {
         return ResponseEntity.ok(adminService.getHealthCheckResultStatusStatsByProgram());
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/committed-participation-rate")
     public ResponseEntity<ParticipationDTO> getParticipationRate() {
         return ResponseEntity.ok(adminService.getLatestParticipation());
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/stats/{vaccineProgramId}")
     public ResponseEntity<VaccineFormStatsDTO> getFormStats(@PathVariable Long vaccineProgramId) {
         VaccineFormStatsDTO stats = adminService.getFormStatsByProgram(vaccineProgramId);
