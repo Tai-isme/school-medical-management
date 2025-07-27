@@ -18,5 +18,6 @@ public class MedicalRequestDTO {
     private String status;
     private StudentDTO studentDTO;
     private long parentId;
+    private String reason;
     private List<MedicalRequestDetailDTO> medicalRequestDetailDTO;
 }
