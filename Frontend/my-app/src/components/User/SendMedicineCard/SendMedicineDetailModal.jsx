@@ -56,7 +56,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
             }}
           >
             {detailData.status === "COMPLETED"
-              ? "Hoàn thành"
+              ? "Đã cho uống"
               : detailData.status === "SUBMITTED"
               ? "Chờ duyệt"
               : detailData.status === "PROCESSING"
