@@ -174,7 +174,7 @@ export default function MedicalDashboard() {
               padding: 0,
             }}
           >
-            <EmergencyContact parentInfo={selectedStudent?.userDTO} />
+            <EmergencyContact parentInfo={selectedStudent?.userDTO} parentRole={selectedStudent} />
           </div>
           <div
             style={{

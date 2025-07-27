@@ -6,8 +6,9 @@ const mockContact = {
   address: "số 22, xóm 6/thôn 19, Xã Vũ Ninh, H...",
 };
 
-export default function EmergencyContact({ parentInfo }) {
+export default function EmergencyContact({ parentInfo, parentRole }) {
   if (!parentInfo) return <div>Không có thông tin phụ huynh</div>;
+  console.log("EmergencyContact parentInfo:", parentRole);
   return (
     <div
       style={{
@@ -28,7 +29,8 @@ export default function EmergencyContact({ parentInfo }) {
         Liên hệ khẩn cấp
       </div>
       <div style={{ fontWeight: "bold", color: "#009688" }}>
-        {parentInfo.fullName}
+        {parentInfo.fullName} {parentRole.relationship ? `(${parentRole.relationship})` : ""}
+        
       </div>
       <div>📞 {parentInfo.phone}</div>
       <div>🏠 {parentInfo.address}</div>

@@ -113,7 +113,7 @@ export default function StudentInfoCard({ onChange }) {
         {selectedStudent?.fullName || selectedStudent?.name || "--"}
       </Text>
       <Text style={{ fontSize: 16, marginBottom: 8 }}>
-        Mã số: {selectedStudent?.id || "--"}
+        Mã học sinh: {selectedStudent?.id || "--"}
       </Text>
       <Text type="secondary" style={{ fontSize: 16, marginBottom: 8 }}>
         {/* Lớp: {selectedStudent?.className || selectedStudent?.classID || "--"} */}
