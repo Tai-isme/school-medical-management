@@ -429,13 +429,7 @@ const AccountManagement = () => {
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            label="Mật khẩu"
-            name="password"
-            rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
-          >
-            <Input.Password />
-          </Form.Item>
+          {/* XÓA FIELD MẬT KHẨU */}
           <Form.Item
             label="Số điện thoại"
             name="phone"

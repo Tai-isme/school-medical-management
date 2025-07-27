@@ -64,11 +64,11 @@ function Login({ onClose }) {
                 const role = data.users.role;
                 console.log("Role:", role);
 
-                // if (role === "ADMIN" || role === "NURSE") {
-                //     navigate("/dashboard");
-                // } else if (role === "PARENT") {
-                //     navigate("/");
-                // }
+                if (role === "ADMIN" || role === "NURSE") {
+                    navigate("/dashboard");
+                } else if (role === "PARENT") {
+                    navigate("/");
+                }
             } else {
                 setError("Tài khoản không tồn tại hoặc thông tin không chính xác!");
             }
@@ -126,7 +126,6 @@ function Login({ onClose }) {
     return (
         <div className="modal-overlay"> {/* Sử dụng class từ CSS */}
             <div className="modal-content"> {/* Sử dụng class từ CSS */}
-
                 <div className="modal-image"> {/* Sử dụng class từ CSS */}
                     <img
                         src="../../../../public/logo.png"
@@ -134,98 +133,38 @@ function Login({ onClose }) {
                     />
                 </div>
 
-                <label className="role-label"> {/* Sử dụng class từ CSS */}
-                    Đăng nhập với vai trò
-                </label>
+                <h2 className="login-title">Đăng nhập</h2>
 
-                <select
-                    className="role-select" // Sử dụng class từ CSS
-                    value={selectedRole}
-                    onChange={(e) => {
-                        setSelectedRole(e.target.value);
-                        setIsOtpSent(false);
-                        setPhone("");
-                        setOtp("");
-                        setUsername("");
-                        setPassword("");
-                        setError("");
-                    }}
-                >
-                    <option value="parent">Phụ huynh</option>
-                    <option value="admin">Nhân viên y tế</option>
-                </select>
+                {error && <p className="error-message">{error}</p>}
 
-                {error && <p className="error-message">{error}</p>} {/* Sử dụng class từ CSS */}
-
-                {selectedRole === 'parent' && (
-                    <div className="form-input-button-group"> {/* Sử dụng class từ CSS */}
-                        <button
-                            className="google-login-button" // Sử dụng class từ CSS
-                            onClick={handleGoogleLogin}
-                        >
-                            <FcGoogle size={20} /> Đăng nhập bằng Google
-                        </button>
-
-                        {!isOtpSent ? (
-                            <>
-                                <input
-                                    type="text"
-                                    placeholder="Số điện thoại phụ huynh"
-                                    className="form-input" // Sử dụng class từ CSS
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                />
-                                <button
-                                    className="primary-button send-otp-button" // Sử dụng class từ CSS
-                                    onClick={handleSendOTP}
-                                >
-                                    Gửi mã OTP
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <input
-                                    type="text"
-                                    placeholder="Nhập mã OTP"
-                                    className="form-input" // Sử dụng class từ CSS
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value)}
-                                />
-                                <button
-                                    className="primary-button verify-otp-button" // Sử dụng class từ CSS
-                                    onClick={handleVerifyOTP}
-                                >
-                                    Xác thực OTP
-                                </button>
-                            </>
-                        )}
-                    </div>
-                )}
-
-                {selectedRole === 'admin' && (
-                    <div className="form-input-button-group"> {/* Sử dụng class từ CSS */}
-                        <input
-                            type="text"
-                            placeholder="Tên đăng nhập nhân viên y tế"
-                            className="form-input" // Sử dụng class từ CSS
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                        />
-                        <input
-                            type="password"
-                            placeholder="Mật khẩu"
-                            className="form-input" // Sử dụng class từ CSS
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <button
-                            className="primary-button login-button" // Sử dụng class từ CSS
-                            onClick={handleLoginUsernamePassword}
-                        >
-                            Đăng nhập
-                        </button>
-                    </div>
-                )}
+                <div className="form-input-button-group">
+                    <input
+                        type="text"
+                        placeholder="Email"
+                        className="form-input"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <input
+                        type="password"
+                        placeholder="Mật khẩu"
+                        className="form-input"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                        className="primary-button login-button"
+                        onClick={handleLoginUsernamePassword}
+                    >
+                        Đăng nhập
+                    </button>
+                    <button
+                        className="google-login-button"
+                        onClick={handleGoogleLogin}
+                    >
+                        <FcGoogle size={20} /> Đăng nhập bằng Google
+                    </button>
+                </div>
 
                 <button className="btn-close-login-form" onClick={Close}>X</button> {/* Sử dụng class từ CSS */}
             </div>
