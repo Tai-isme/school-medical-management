@@ -591,9 +591,13 @@ public class AdminService {
         user.setActive(true);
         user.setRole(UserRole.NURSE);
         userRepository.save(user);
-        emailService.sendEmail(request.getEmail(), "Account: ",
-                "\nEmail: " + request.getEmail()
-                        + "\nPassword: " + password);
+        emailService.sendEmail(
+                request.getEmail(),
+                "Thông tin tài khoản",
+                "Tài khoản của bạn đã được tạo thành công.\n\n"
+                        + "Email: " + request.getEmail() + "\n"
+                        + "Password: " + password + "\n\n"
+                        + "Vui lòng đăng nhập và đổi mật khẩu ngay để bảo mật tài khoản.");
         return modelMapper.map(user, UserDTO.class);
     }
 
@@ -873,7 +877,7 @@ public class AdminService {
                 if (rowNum == 0)
                     continue; // skip header
                 try {
-                    
+
                     String vaccineName = row.getCell(0).getStringCellValue();
                     String manufacture = row.getCell(1).getStringCellValue();
                     String url = row.getCell(2).getStringCellValue();
@@ -887,7 +891,7 @@ public class AdminService {
 
                     // student
                     Optional<VaccineNameEntity> vaccineNameOpt = vaccineNameRepository
-                        .findByVaccineNameAndManufactureAndUrlAndNote(vaccineName, manufacture, url, note);
+                            .findByVaccineNameAndManufactureAndUrlAndNote(vaccineName, manufacture, url, note);
                     VaccineNameEntity vaccineNameEntity;
                     if (vaccineNameOpt.isPresent()) {
                         vaccineNameEntity = vaccineNameOpt.get();
