@@ -292,7 +292,7 @@ public class AdminService {
             healthCheckFormEntity.setParent(parent);
             healthCheckFormEntity.setNotes(null);
             healthCheckFormEntity.setCommit(null);
-            healthCheckFormEntity.setFormDate(programEntity.getStartDate().minusDays(3));
+            healthCheckFormEntity.setFormDate(programEntity.getStartDate().minusDays(7));
             healthCheckFormEntity.setStatus(HealthCheckFormStatus.DRAFT);
             healthCheckFormEntity.setHealthCheckProgram(programEntity);
             healthCheckFormRepository.save(healthCheckFormEntity);
@@ -495,7 +495,7 @@ public class AdminService {
             vaccineFormEntity.setParent(parent);
             vaccineFormEntity.setNote(null);
             vaccineFormEntity.setCommit(null);
-            vaccineFormEntity.setFormDate(programEntity.getVaccineDate().minusDays(3));
+            vaccineFormEntity.setFormDate(programEntity.getVaccineDate().minusDays(7));
             vaccineFormEntity.setStatus(VaccineFormStatus.DRAFT);
             vaccineFormEntity.setVaccineProgram(programEntity);
 
