@@ -50,7 +50,7 @@ import jakarta.validation.Valid;
 @Validated
 @RestController
 @RequestMapping("api/nurse")
-// @PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
+@PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
 public class NurseController {
 
     @Autowired
