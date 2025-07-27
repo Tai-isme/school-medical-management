@@ -279,6 +279,7 @@ const VaccineProgramList = () => {
     setActiveTab("result");
     setSelectedVaccineResultLoading(true);
     setSelectedVaccineResultId(programId);
+    setSampleResultData(null); // Thêm dòng này để tắt chế độ chỉnh sửa
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
@@ -1321,8 +1322,8 @@ const VaccineProgramList = () => {
                     background: "#fff",
                     borderRadius: 10,
                     padding: 24,
-                    maxWidth: "calc(100vw - 260px)",
-                    width: "auto",
+                    maxWidth: 1300,
+                    width: "100%",
                     margin: "0 auto",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                     overflowX: "auto",
