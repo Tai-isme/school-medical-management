@@ -203,34 +203,44 @@ const VaccineProgramList = () => {
   };
 
   const handleUpdate = async (values) => {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    try {
-      await axios.put(
-        `http://localhost:8080/api/admin/vaccine-program/${program.vaccineId}`,
-        {
-          vaccineName: values.vaccineName,
-          manufacture: values.manufacture,
-          description: values.description,
-          vaccineDate: values.vaccineDate.format("YYYY-MM-DD"),
-          note: values.note,
+  setLoading(true);
+  const token = localStorage.getItem("token");
+  try {
+    await axios.put(
+      `http://localhost:8080/api/admin/vaccine-program/${program.vaccineId}`,
+      {
+        vaccineNameId: values.vaccineNameId,
+        manufacture: values.manufacture,
+        description: values.description,
+        vaccineDate: values.vaccineDate.format("YYYY-MM-DD"),
+        note: values.note,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      message.success("Cập nhật chương trình thành công!");
-      setCreateVisible(false);
-      setEditMode(false);
-      fetchProgram();
-    } catch (error) {
-      message.error("Cập nhật chương trình thất bại!");
-    } finally {
-      setLoading(false);
-    }
-  };
+      }
+    );
+    await Swal.fire({
+      icon: "success",
+      title: "Cập nhật chương trình thành công!",
+      showConfirmButton: false,
+      timer: 1500,
+    });
+    setCreateVisible(false);
+    setEditMode(false);
+    fetchProgram();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Cập nhật chương trình thất bại!",
+      confirmButtonText: "OK",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+// filepath: f:\Ky_5_FPT\SWP\Frontend\school-medical-management\Frontend\my-
 
   const handleDelete = async (programId) => {
     const result = await Swal.fire({
@@ -284,21 +294,32 @@ const VaccineProgramList = () => {
   };
 
   const handleUpdateStatus = async (vaccineId, status) => {
-    const token = localStorage.getItem("token");
-    try {
-      await axios.patch(
-        `http://localhost:8080/api/admin/vaccine-program/${vaccineId}?status=${status}`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      message.success("Cập nhật trạng thái thành công!");
-      fetchProgram();
-    } catch (error) {
-      message.error("Cập nhật trạng thái thất bại!");
-    }
-  };
+  const confirm = await Swal.fire({
+    title: "Bạn có chắc muốn chuyển trạng thái?",
+    text: "Thao tác này sẽ thay đổi trạng thái của chương trình tiêm chủng.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Chuyển trạng thái",
+    cancelButtonText: "Hủy",
+  });
+  if (!confirm.isConfirmed) return;
+
+  const token = localStorage.getItem("token");
+  try {
+    await axios.patch(
+      `http://localhost:8080/api/admin/vaccine-program/${vaccineId}?status=${status}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    message.success("Cập nhật trạng thái thành công!");
+    fetchProgram();
+  } catch (error) {
+    message.error("Cập nhật trạng thái thất bại!");
+  }
+};
+// ...existing code...
 
   const handleCreateResult = async (values) => {
     setCreateResultLoading(true);
@@ -331,21 +352,32 @@ const VaccineProgramList = () => {
   };
 
   const handleCreateProgramResult = async (program) => {
-    const token = localStorage.getItem("token");
-    try {
-      const res = await axios.post(
-        `http://localhost:8080/api/nurse/create-vaccineResults-byProgram/${program.vaccineId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setSampleResultData(res.data);
-      setEditableRows(res.data.map((item) => ({ ...item })));
-      setActiveTab("result");
-      message.success("Tạo kết quả thành công!");
-    } catch (error) {
-      message.error("Tạo kết quả thất bại!");
-    }
-  };
+  const confirm = await Swal.fire({
+    title: "Bạn có chắc muốn tạo kết quả?",
+    text: "Sau khi tạo, bạn sẽ nhập kết quả tiêm chủng cho học sinh.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Tạo kết quả",
+    cancelButtonText: "Hủy",
+  });
+  if (!confirm.isConfirmed) return;
+
+  const token = localStorage.getItem("token");
+  try {
+    const res = await axios.post(
+      `http://localhost:8080/api/nurse/create-vaccineResults-byProgram/${program.vaccineId}`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setSampleResultData(res.data);
+    setEditableRows(res.data.map((item) => ({ ...item })));
+    setActiveTab("result");
+    message.success("Tạo kết quả thành công!");
+  } catch (error) {
+    message.error("Tạo kết quả thất bại!");
+  }
+};
+// ...existing code...
 
   const handleEditCell = (value, record, field) => {
     setEditableRows((prev) =>
@@ -487,21 +519,17 @@ const VaccineProgramList = () => {
     }
   };
 
-  // const handleSendNotification = async (programId) => {
-  //   const token = localStorage.getItem("token");
-  //   try {
-  //     await axios.post(
-  //       `http://localhost:8080/api/nurse/create-vaccine-form/${programId}`,
-  //       {},
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-  //     message.success("Gửi thông báo thành công!");
-  //   } catch (error) {
-  //     message.error("Gửi thông báo thất bại!");
-  //   }
-  // };
-
   const handleSendNotification = async (programId) => {
+    const confirm = await Swal.fire({
+      title: "Bạn có chắc muốn gửi thông báo?",
+      text: "Sau khi gửi, phụ huynh sẽ nhận được thông báo về chương trình tiêm chủng này.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Gửi thông báo",
+      cancelButtonText: "Hủy",
+    });
+    if (!confirm.isConfirmed) return;
+
     const token = localStorage.getItem("token");
     try {
       await axios.post(
@@ -509,7 +537,6 @@ const VaccineProgramList = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       Swal.fire({
         icon: "success",
         title: "Thành công",
@@ -826,17 +853,24 @@ const VaccineProgramList = () => {
                               Xem kết quả
                             </Button>
                             <Button
-                              type="primary"
-                              style={{
-                                marginLeft: 8,
-                                background: "#1890ff",
-                                border: "none",
-                              }}
-                              onClick={() => handleCreateProgramResult(program)}
-                              disabled={program.status === "COMPLETED"}
-                            >
-                              Tạo kết quả
-                            </Button>
+  type="primary"
+  style={{
+    marginLeft: 8,
+    background: "#1890ff",
+    border: "none",
+  }}
+  onClick={() => handleCreateProgramResult(program)}
+  disabled={
+    userRole === "ADMIN" ||
+    !(
+      userRole === "NURSE" &&
+      program.status === "ON_GOING" &&
+      (studentStats[program.vaccineId]?.confirmed > 0)
+    )
+  } // Chỉ cho NURSE bấm khi đang ON_GOING và đã xác nhận > 0
+>
+  Tạo kết quả
+</Button>
                             <Button
                               type="default"
                               style={{
@@ -852,24 +886,29 @@ const VaccineProgramList = () => {
                             >
                               Chỉnh sửa kết quả
                             </Button>
-                            <Button
-                              type="default"
-                              style={{
-                                marginLeft: 8,
-                                background: "#00bcd4",
-                                color: "#fff",
-                                border: "none",
-                              }}
-                              onClick={() =>
-                                handleSendNotification(program.vaccineId)
-                              }
-                              disabled={
-                                program.status === "NOT_STARTED" ||
-                                program.status === "COMPLETED"
-                              }
-                            >
-                              Gửi thông báo
-                            </Button>
+ <Button
+  type="default"
+  style={{
+    marginLeft: 8,
+    background: "#00bcd4",
+    color: "#fff",
+    border: "none",
+  }}
+  onClick={() => handleSendNotification(program.vaccineId)}
+  disabled={
+    userRole === "ADMIN" ||
+    program.status === "NOT_STARTED" ||
+    program.status === "COMPLETED" ||
+    program.sended === 1 || // Nếu đã gửi thông báo thì disable
+    (
+      program.status === "ON_GOING" &&
+      Array.isArray(studentStats[program.vaccineId]?.forms) &&
+      studentStats[program.vaccineId]?.forms.every(f => f.status === "DRAFT") === false
+    )
+  }
+>
+  Gửi thông báo
+</Button>
                             {/* Đã xóa nút Tạo kết quả */}
                           </div>
                           {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
@@ -893,13 +932,15 @@ const VaccineProgramList = () => {
                                   Sửa
                                 </Button>
                               )}
-                              <Button
-                                danger
-                                type="primary"
-                                onClick={() => handleDelete(program.vaccineId)}
-                              >
-                                Xóa
-                              </Button>
+                              {userRole === "ADMIN" && program.status === "NOT_STARTED" && (
+  <Button
+    danger
+    type="primary"
+    onClick={() => handleDelete(program.vaccineId)}
+  >
+    Xóa
+  </Button>
+)}
                             </div>
                           )}
                         </div>
@@ -1012,15 +1053,27 @@ const VaccineProgramList = () => {
                       <Input.TextArea rows={2} />
                     </Form.Item>
                     <Form.Item
-                      label="Ngày tiêm"
-                      name="vaccineDate"
-                      rules={[{ required: true, message: "Chọn ngày tiêm" }]}
-                    >
-                      <DatePicker
-                        style={{ width: "100%" }}
-                        format="YYYY-MM-DD"
-                      />
-                    </Form.Item>
+  label="Ngày tiêm"
+  name="vaccineDate"
+  rules={[
+    { required: true, message: "Chọn ngày tiêm" },
+    {
+      validator: (_, value) => {
+        if (!value) return Promise.resolve();
+        if (value.isBefore(dayjs(), "day")) {
+          return Promise.reject("Chỉ được chọn ngày trong tương lai!");
+        }
+        return Promise.resolve();
+      },
+    },
+  ]}
+>
+  <DatePicker
+    style={{ width: "100%" }}
+    format="YYYY-MM-DD"
+    disabledDate={(current) => current && current < dayjs().startOf("day")}
+  />
+</Form.Item>
                     <Form.Item label="Ghi chú" name="note">
                       <Input.TextArea rows={2} />
                     </Form.Item>
@@ -1393,6 +1446,7 @@ const VaccineProgramList = () => {
                         title: "Ngày tạo",
                         dataIndex: "createdAt",
                         key: "createdAt",
+                        render: (text) => dayjs(text).format("YYYY-MM-DD"),
                       },
                       {
                         title: "Tên vaccine",
@@ -1401,13 +1455,7 @@ const VaccineProgramList = () => {
                           record.vaccineFormDTO?.vaccineProgram?.vaccineName
                             ?.vaccineName,
                       },
-                      {
-                        title: "Ngày tiêm",
-                        key: "vaccineDate",
-                        render: (_, record) =>
-                          record.vaccineFormDTO?.vaccineProgram?.vaccineDate,
-                      },
-                      // Thêm cột Lưu
+                      // Bỏ cột "Ngày tiêm"
                       sampleResultData && {
                         title: "Thao tác",
                         key: "action",
@@ -1417,8 +1465,7 @@ const VaccineProgramList = () => {
                             onClick={() =>
                               handleSaveRow(
                                 editableRows.find(
-                                  (r) =>
-                                    r.vaccineResultId === record.vaccineResultId
+                                  (r) => r.vaccineResultId === record.vaccineResultId
                                 )
                               )
                             }
