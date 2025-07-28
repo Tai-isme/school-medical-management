@@ -720,6 +720,19 @@ public class NurseService {
         healthCheckResultEntity.setHeight(request.getHeight());
         healthCheckResultRepository.save(healthCheckResultEntity);
 
+        try {
+            MedicalRecordEntity medicalRecordEntity = medicalRecordsRepository
+                    .findMedicalRecordByStudent_Id(healthCheckFormEntity.getStudent().getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Not found medical record by student"));
+            medicalRecordEntity.setVision(request.getVision());
+            medicalRecordEntity.setHearing(request.getHearing());
+            medicalRecordEntity.setWeight(request.getWeight());
+            medicalRecordEntity.setHeight(request.getHeight());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found medical record by student");
+        }
+
         HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,
                 HealthCheckResultDTO.class);
         healthCheckResultDTO.setHealthCheckFormDTO(healthCheckFormDTO);
@@ -1333,23 +1346,34 @@ public class NurseService {
 
             HealthCheckResultEntity result = new HealthCheckResultEntity();
             result.setHealthCheckFormEntity(form);
-            result.setDiagnosis("GOOD");
+            result.setDiagnosis("Không");
             result.setLevel(HealthCheckResultEntity.Level.GOOD);
             result.setVision("10/10");
-            result.setHearing("Normal");
-            result.setWeight(50.0);
-            result.setHeight(160.0);
-            result.setNote("No issue detected");
+            result.setHearing("Bình thường");
+            result.setWeight(0.0);
+            result.setHeight(0.0);
+            result.setNote("Không");
 
             HealthCheckResultEntity savedResult = healthCheckResultRepository.save(result);
 
             StudentEntity student = form.getStudent();
 
-            MedicalRecordEntity medicalRecord = medicalRecordsRepository
-                    .findMedicalRecordByStudent_Id(student.getId())
-                    .orElse(null);
+            Optional<MedicalRecordEntity> medicalRecordOpt = medicalRecordsRepository
+                    .findMedicalRecordByStudent_Id(student.getId());
+            if (medicalRecordOpt.isEmpty()) {
+                MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
+                medicalRecord.setStudent(student);
+                medicalRecord.setVision(result.getVision());
+                medicalRecord.setHearing(result.getHearing());
+                medicalRecord.setWeight(result.getWeight());
+                medicalRecord.setHeight(result.getHeight());
+                medicalRecord.setNote(result.getNote());
+                medicalRecord.setCreateBy((byte) 1);
+                medicalRecord.setLastUpdate(LocalDateTime.now());
+                medicalRecordsRepository.save(medicalRecord);
+            } else {
+                MedicalRecordEntity medicalRecord = medicalRecordOpt.get();
 
-            if (medicalRecord != null) {
                 medicalRecord.setVision(savedResult.getVision());
                 medicalRecord.setHearing(savedResult.getHearing());
                 medicalRecord.setWeight(savedResult.getWeight());
@@ -1365,6 +1389,10 @@ public class NurseService {
             dto.setDiagnosis(savedResult.getDiagnosis());
             dto.setLevel(savedResult.getLevel().name());
             dto.setNote(savedResult.getNote());
+            dto.setVision(savedResult.getVision());
+            dto.setHearing(savedResult.getHearing());
+            dto.setWeight(savedResult.getWeight());
+            dto.setHeight(savedResult.getHeight());
 
             HealthCheckFormDTO formDTO = new HealthCheckFormDTO();
             formDTO.setId(form.getId());
@@ -1397,9 +1425,9 @@ public class NurseService {
 
             VaccineResultEntity result = new VaccineResultEntity();
             result.setVaccineFormEntity(form);
-            result.setStatusHealth("Healthy");
-            result.setResultNote("No reaction observed");
-            result.setReaction("None");
+            result.setStatusHealth("Tốt");
+            result.setResultNote("Không");
+            result.setReaction("Không");
             result.setCreatedAt(LocalDateTime.now());
 
             VaccineResultEntity savedResult = vaccineResultRepository.save(result);
@@ -1446,13 +1474,27 @@ public class NurseService {
                     VaccineHistoryEntity history = new VaccineHistoryEntity();
                     history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
                     history.setMedicalRecord(medicalRecord);
-                    logger.info(medicalRecord.getRecordId() + " - " + history.getVaccineNameEntity().getVaccineName());
-                    history.setNote(form.getVaccineProgram().getNote());
+                    // logger.info(medicalRecord.getRecordId() + " - " +
+                    // history.getVaccineNameEntity().getVaccineName());
+                    history.setNote(DEFAULT_VACCINE_HS_NOTE);
                     history.setCreateBy((byte) 1);
 
                     vaccineHistoryRepository.save(history);
                 } else {
-                    logger.warn("Không tìm thấy hồ sơ y tế cho học sinh ID: {}", studentId);
+                    MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
+                    medicalRecord.setStudent(form.getStudent());
+                    medicalRecord.setNote(form.getVaccineProgram().getNote());
+                    medicalRecord.setCreateBy((byte) 1);
+                    medicalRecord.setLastUpdate(LocalDateTime.now());
+                    medicalRecordsRepository.save(medicalRecord);
+
+                    VaccineHistoryEntity history = new VaccineHistoryEntity();
+                    history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
+                    history.setMedicalRecord(medicalRecord);
+                    history.setNote(form.getVaccineProgram().getNote());
+                    history.setCreateBy((byte) 1);
+
+                    vaccineHistoryRepository.save(history);
                 }
             }
 

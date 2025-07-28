@@ -63,6 +63,7 @@ import com.swp391.school_medical_management.modules.users.repositories.MedicalRe
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineHistoryRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineNameRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
 
@@ -106,6 +107,9 @@ public class ParentService {
 
     @Autowired
     private VaccineNameRepository vaccineNameRepository;
+
+    @Autowired
+    private VaccineHistoryRepository vaccineHistoryRepository;
 
     public MedicalRecordDTO createMedicalRecord(Long parentId, MedicalRecordsRequest request) {
         Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
@@ -189,18 +193,28 @@ public class ParentService {
         medicalRecord.getVaccineHistories().clear();
 
         for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
-            VaccineHistoryEntity vaccineHistoryEntity = new VaccineHistoryEntity();
+        for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
 
-            Long vaccineNameId = vaccineHistoryRequest.getVaccineNameId();
-            VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(vaccineNameId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name not found"));
+            VaccineHistoryEntity exist = vaccineHistoryRepository
+                    .findByMedicalRecord_recordIdAndVaccineNameEntity_vaccineNameId(
+                            medicalRecord.getRecordId(), vaccineHistoryRequest.getVaccineNameId());
+            if (exist != null) {
+                exist.setNote(vaccineHistoryRequest.getNote());
+                medicalRecord.getVaccineHistories().add(exist);
+            } else {
+                VaccineHistoryEntity vaccineHistoryEntity = new VaccineHistoryEntity();
+                Long vaccineNameId = vaccineHistoryRequest.getVaccineNameId();
+                VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(vaccineNameId)
+                        .orElseThrow(
+                                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name not found"));
 
-            vaccineHistoryEntity.setVaccineNameEntity(vaccineNameEntity);
-            vaccineHistoryEntity.setNote(vaccineHistoryRequest.getNote());
-            vaccineHistoryEntity.setMedicalRecord(medicalRecord);
-            vaccineHistoryEntity.setCreateBy((byte) 0);
+                vaccineHistoryEntity.setVaccineNameEntity(vaccineNameEntity);
+                vaccineHistoryEntity.setNote(vaccineHistoryRequest.getNote());
+                vaccineHistoryEntity.setMedicalRecord(medicalRecord);
+                vaccineHistoryEntity.setCreateBy((byte) 0);
+                medicalRecord.getVaccineHistories().add(vaccineHistoryEntity);
+            }
 
-            medicalRecord.getVaccineHistories().add(vaccineHistoryEntity);
         }
 
         medicalRecordsRepository.save(medicalRecord);
