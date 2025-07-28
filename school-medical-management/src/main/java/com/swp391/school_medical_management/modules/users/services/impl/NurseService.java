@@ -1490,7 +1490,7 @@ public class NurseService {
                     VaccineHistoryEntity history = new VaccineHistoryEntity();
                     history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
                     history.setMedicalRecord(medicalRecord);
-                    history.setNote(form.getVaccineProgram().getNote());
+                    history.setNote(DEFAULT_VACCINE_HS_NOTE);
                     history.setCreateBy((byte) 1);
 
                     vaccineHistoryRepository.save(history);
