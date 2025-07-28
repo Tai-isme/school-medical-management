@@ -915,6 +915,7 @@ public class AdminService {
                     }
 
                     vaccineNameRepository.save(vaccineNameEntity);
+                    importedCount++;
                 } catch (Exception e) {
                     throw new RuntimeException("Lỗi ở dòng Excel số " + (rowNum + 1) + ": "
                             + row.getCell(0).getStringCellValue() + " - " + e.getMessage());
