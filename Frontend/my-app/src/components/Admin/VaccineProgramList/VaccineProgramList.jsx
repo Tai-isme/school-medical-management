@@ -557,10 +557,11 @@ const VaccineProgramList = () => {
   return (
     <div
       style={{
-        padding: 24,
         marginLeft: 220,
+        padding: 24,
+        width: "100%",
+        maxWidth: "100%",
         transition: "margin 0.2s",
-        maxWidth: "100vw",
         minWidth: 0, // Thêm dòng này
       }}
     >
@@ -1568,7 +1569,7 @@ const VaccineProgramList = () => {
                     style={{
                       paddingLeft: 2,
                       width: "100%",
-                      minWidth: 1240, // Sửa lại từ 1250
+                      minWidth: 1600, // Sửa lại từ 1250
                       borderRadius: 12,
                       overflow: "auto", // Đảm bảo Table cuộn khi thiếu không gian
                       background: "#fff",

@@ -91,7 +91,7 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
   return (
     <div className="sidebar-container">
       <div className="sidebar-logo">
-        <img src="/logo1.png" alt="Logo Y Tế" />
+        <img src="../../../../public/logo.png" alt="Logo Y Tế" />
       </div>
       {/* User Info Dropdown */}
       <Dropdown overlay={userMenu} trigger={["click"]}>
@@ -151,9 +151,9 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
         {/* <Menu.Item key="8" icon={<CommentOutlined />}>
           Phản hồi
         </Menu.Item> */}
-        <Menu.Item key="9" icon={<CommentOutlined />}>
+        {/* <Menu.Item key="9" icon={<CommentOutlined />}>
           Blog
-        </Menu.Item>
+        </Menu.Item> */}
       </Menu>
     </div>
   );

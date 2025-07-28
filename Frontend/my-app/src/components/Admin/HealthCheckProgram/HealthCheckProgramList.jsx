@@ -189,43 +189,43 @@ const HealthCheckProgramList = () => {
   };
 
   const handleCreate = async (values) => {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    try {
-      await axios.post(
-        "http://localhost:8080/api/admin/health-check-program",
-        {
-          healthCheckName: values.name,
-          description: values.description,
-          startDate: values.startDate.format("YYYY-MM-DD"),
-          endDate: values.endDate.format("YYYY-MM-DD"),
-          note: values.note,
+  setLoading(true);
+  const token = localStorage.getItem("token");
+  try {
+    await axios.post(
+      "http://localhost:8080/api/admin/health-check-program",
+      {
+        healthCheckName: values.name,
+        description: values.description,
+        startDate: values.startDate.format("YYYY-MM-DD"),
+        endDate: values.endDate.format("YYYY-MM-DD"),
+        note: values.note,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers:
-            {
-              Authorization: `Bearer ${token}`,
-            },
-        }
-      );
-      message.success("Tạo chương trình sức khỏe thành công!");
-      setCreateVisible(false);
-      fetchProgram();
-    } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message &&
-        error.response.data.message.includes("Another health check program is still active")
-      ) {
-        message.error("Bạn không thể tạo chương trình mới khi còn chương trình chưa hoàn thành.");
-      } else {
-        message.error("Tạo chương trình sức khỏe thất bại!");
       }
-    } finally {
-      setLoading(false);
+    );
+    message.success("Tạo chương trình sức khỏe thành công!");
+    setCreateVisible(false);
+    fetchProgram();
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      const errorMessage = error.response.data.message || "Đã xảy ra lỗi!";
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: errorMessage,
+        confirmButtonColor: "#3085d6",
+      });
+    } else {
+      message.error("Tạo chương trình sức khỏe thất bại!");
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleCreateResult = async (programId) => {
     setHealthCheckResultsLoading(true);
@@ -263,35 +263,45 @@ const HealthCheckProgramList = () => {
 };
   
 
-  const handleUpdate = async (values) => {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    try {
-      await axios.put(
-        `http://localhost:8080/api/admin/health-check-program/${program.id}`,
-        {
-          healthCheckName: values.name,
-          description: values.description,
-          startDate: values.startDate.format("YYYY-MM-DD"),
-          endDate: values.endDate.format("YYYY-MM-DD"),
-          note: values.note,
+const handleUpdate = async (values) => {
+  setLoading(true);
+  const token = localStorage.getItem("token");
+  try {
+    await axios.put(
+      `http://localhost:8080/api/admin/health-check-program/${program.id}`,
+      {
+        healthCheckName: values.name,
+        description: values.description,
+        startDate: values.startDate.format("YYYY-MM-DD"),
+        endDate: values.endDate.format("YYYY-MM-DD"),
+        note: values.note,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      message.success("Cập nhật chương trình thành công!");
-      setCreateVisible(false);
-      setEditMode(false);
-      fetchProgram();
-    } catch (error) {
+      }
+    );
+    message.success("Cập nhật chương trình thành công!");
+    setCreateVisible(false);
+    setEditMode(false);
+    fetchProgram();
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      const errorMessage = error.response.data.message || "Đã xảy ra lỗi!";
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: errorMessage,
+        confirmButtonColor: "#3085d6",
+      });
+    } else {
       message.error("Cập nhật chương trình thất bại!");
-    } finally {
-      setLoading(false);
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDelete = async (programId) => {
     const result = await Swal.fire({
@@ -787,7 +797,7 @@ const HealthCheckProgramList = () => {
                     background: "#fff",
                     borderRadius: 10,
                     padding: 24,
-                    minWidth: 1200,
+                    minWidth: 1630,
                     maxWidth: "calc(100vw - 260px)",
                     margin: "0 auto",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",

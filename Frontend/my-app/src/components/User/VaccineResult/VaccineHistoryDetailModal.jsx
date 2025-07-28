@@ -29,9 +29,7 @@ const VaccineHistoryDetailModal = ({ open, onClose, data, loading }) => {
         <p>
           <b>Trạng thái:</b> {data.status === "COMPLETED" ? "Đã hoàn thành" : data.status || "---"}
         </p>
-        <p>
-          <b>Ghi chú:</b> {data.note || "---"}
-        </p>
+       
         <p>
           <b>Tình trạng sức khỏe:</b> {data.statusHealth || "---"}
         </p>

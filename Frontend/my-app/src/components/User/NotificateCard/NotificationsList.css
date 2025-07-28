@@ -1,5 +1,5 @@
 .notifications-list {
-  max-height: 410px; /* hoặc chiều cao bạn muốn */
+  max-height: 510px; /* hoặc chiều cao bạn muốn */
   overflow-y: auto;
   padding-right: 8px;
 }

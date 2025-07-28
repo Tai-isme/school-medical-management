@@ -215,8 +215,12 @@ const AccountManagement = () => {
     setEditLoading(true);
     try {
       const token = localStorage.getItem("token");
+      if (!editingAccount || !editingAccount.userId) {
+        throw new Error("Không tìm thấy thông tin tài khoản để cập nhật.");
+      }
+
       await axios.put(
-        "http://localhost:8080/api/auth/update-profile",
+        `http://localhost:8080/api/admin/account/${editingAccount.userId}`,
         {
           fullName: values.fullName,
           email: values.email,
@@ -227,12 +231,21 @@ const AccountManagement = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      message.success("Cập nhật tài khoản thành công!");
+
+      Swal.fire({
+        icon: "success",
+        title: "Cập nhật thành công!",
+        text: `Thông tin tài khoản "${values.fullName}" đã được cập nhật.`,
+        confirmButtonText: "OK",
+      });
+
       setEditModalVisible(false);
+
       // Reload danh sách tài khoản
       const response = await axios.get("http://localhost:8080/api/admin/accounts", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const responseData = response.data.map((item) => ({
         userId: item.id,
         fullName: item.fullName,
@@ -241,11 +254,17 @@ const AccountManagement = () => {
         phone: item.phone,
         address: item.address,
         role: item.role.toLowerCase(),
-        active: item.active, // Thêm trường active để xác định trạng thái tài khoản
+        active: item.active,
       }));
+
       setAccounts(responseData);
     } catch (err) {
-      message.error("Cập nhật tài khoản thất bại!");
+      Swal.fire({
+        icon: "error",
+        title: "Cập nhật thất bại!",
+        text: err.response?.data?.message || "Vui lòng thử lại.",
+        confirmButtonText: "OK",
+      });
     } finally {
       setEditLoading(false);
     }
@@ -490,13 +509,13 @@ const AccountManagement = () => {
             ]}
           >
             <Input />
-          </Form.Item>
+          {/* </Form.Item>
           <Form.Item
             label="Mật khẩu"
             name="password"
             rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
           >
-            <Input.Password />
+            <Input.Password /> */}
           </Form.Item>
           <Form.Item
             label="Số điện thoại"

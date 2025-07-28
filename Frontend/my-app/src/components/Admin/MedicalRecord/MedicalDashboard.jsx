@@ -46,7 +46,20 @@ export default function MedicalDashboard() {
         },
         body: formData,
       });
-      if (!response.ok) throw new Error("Import thất bại!");
+
+      if (!response.ok) {
+        // Kiểm tra xem phản hồi có phải JSON hợp lệ không
+        let errorMessage = "Import thất bại!";
+        try {
+          const errorData = await response.json(); // Lấy dữ liệu lỗi từ API nếu có
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // Nếu không phải JSON hợp lệ, sử dụng phản hồi dạng text
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
 
       // Hiển thị thông báo thành công
       Swal.fire({
@@ -57,11 +70,11 @@ export default function MedicalDashboard() {
         timer: 1500,
       });
     } catch (err) {
-      // Hiển thị thông báo thất bại
+      // Hiển thị thông báo thất bại với lỗi chi tiết
       Swal.fire({
         icon: "error",
         title: "Import thất bại!",
-        text: "Vui lòng kiểm tra lại file và thử lại.",
+        text: err.message, // Hiển thị lỗi chi tiết từ API hoặc phản hồi dạng text
         showConfirmButton: true,
       });
     } finally {

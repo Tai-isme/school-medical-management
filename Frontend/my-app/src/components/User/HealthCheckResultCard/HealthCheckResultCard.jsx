@@ -165,12 +165,15 @@ const HealthCheckResultCard = () => {
             </div>
 
             <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 16,
-              width: '100%',
-              alignItems: 'stretch',
-            }}>
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 16,
+  width: '100%',
+  alignItems: 'stretch',
+  maxHeight: '62vh',
+  overflowY: 'auto',
+  paddingRight: 8,
+}}>
               <style>{`
                 .health-history-item {
                   background: #fff;

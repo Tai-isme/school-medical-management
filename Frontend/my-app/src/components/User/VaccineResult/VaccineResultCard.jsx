@@ -191,12 +191,15 @@ const VaccineResultCard = () => {
                   }
                 `}</style>
                 <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 16,
-                  width: '100%',
-                  alignItems: 'stretch',
-                }}>
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 16,
+  width: '100%',
+  alignItems: 'stretch',
+  maxHeight: '62vh',
+  overflowY: 'auto',
+  paddingRight: 8,
+}}>
                   {filteredHistory.map((item, idx) => (
                     <div
                       key={idx}

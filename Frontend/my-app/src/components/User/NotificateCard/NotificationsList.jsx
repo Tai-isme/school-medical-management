@@ -118,29 +118,26 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                     fontWeight: 'bold',
                     color: '#fff',
                     background:
-                      new Date(notification.formDate) < new Date()
-                        ? '#ff4d4f'
-                        : notification.commit === 'true' || notification.commit === true
-                        ? '#52c41a'
-                        : notification.commit === 'false' || notification.commit === false
-                        ? '#bfbfbf'
-                        : '#1890ff',
+                      notification.commit === true
+                        ? '#52c41a' // Màu xanh cho "Đã đăng ký"
+                        : notification.commit === false
+                        ? '#bfbfbf' // Màu xám cho "Không tham gia"
+                        : new Date(notification.formDate) < new Date()
+                        ? '#ff4d4f' // Màu đỏ cho "Đã hết hạn"
+                        : '#1890ff', // Màu xanh dương cho "Chưa đăng ký"
                     borderRadius: 8,
                     padding: '2px 12px',
                     display: 'inline-block',
                   }}
                 >
                   {
-                    // Nếu formDate < ngày hiện tại => kiểm tra hết hạn
-                    new Date(notification.formDate) < new Date()
+                    notification.commit === true
+                      ? 'Đã đăng ký'
+                      : notification.commit === false
+                      ? 'Không tham gia'
+                      : new Date(notification.formDate) < new Date()
                       ? 'Đã hết hạn'
-                      : notification.commit === 'true' || notification.commit === true
-                        ? 'Đã đăng ký'
-                        : notification.commit === 'false' || notification.commit === false
-                          ? 'Không tham gia'
-                          : notification.commit == null
-                            ? 'Chưa đăng ký'
-                            : ''
+                      : 'Chưa đăng ký'
                   }
                 </span>
               </div>
