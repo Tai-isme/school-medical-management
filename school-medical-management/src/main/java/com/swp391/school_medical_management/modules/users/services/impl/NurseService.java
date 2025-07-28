@@ -730,6 +730,7 @@ public class NurseService {
             medicalRecordEntity.setHearing(healthCheckResultEntity.getHearing());
             medicalRecordEntity.setWeight(healthCheckResultEntity.getWeight());
             medicalRecordEntity.setHeight(healthCheckResultEntity.getHeight());
+            medicalRecordEntity.setCreateBy((byte) 1);
             medicalRecordsRepository.save(medicalRecordEntity);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating medical record", e);
