@@ -287,7 +287,8 @@ public class NurseService {
         if (medicalRequest.getStatus() == MedicalRequestStatus.PROCESSING
                 && (statusEnum == MedicalRequestStatus.CANCELLED)) {
 
-            if (medicalRequest.getReason() == null || request.getReason_rejected().isBlank()) {
+                    logger.info(medicalRequest.getReason() + "   " + request.getReason_rejected());
+            if (request.getReason_rejected().isBlank()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Reason is required when cancelling a PROCESSING request");
             }

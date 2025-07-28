@@ -80,7 +80,7 @@ public class NurseController {
         return ResponseEntity.ok(medicalRequestDetailDTO);
     }
 
-    @PutMapping("/medical-request/{requestId}/status")
+    @PutMapping("/{requestId}/status")
     public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId,
             @RequestBody @Valid UpdateMedicalRequestStatus request) {
         MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, request);
@@ -352,15 +352,6 @@ public class NurseController {
             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok(nurseService.searchByDateRange(from, to));
-    }
-
-    @PutMapping("/{requestId}/status")
-    public ResponseEntity<Void> updateStatus(
-            @PathVariable int requestId,
-            @RequestParam("status") String status) {
-        var newStatus = MedicalRequestEntity.MedicalRequestStatus.valueOf(status.toUpperCase());
-        nurseService.updateStatus(requestId, newStatus);
-        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/create-health-check-form/{programId}")
