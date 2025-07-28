@@ -326,52 +326,55 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                 <div style={{ flex: 3, textAlign: 'left', paddingLeft: 8 }}>Mô tả (nếu có)</div>
                 <div style={{ width: 60, textAlign: 'center' }}>Xóa</div>
               </div>
-              {vaccineHistories.map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
-                  <Form.Item
-                    name={['vaccineHistories', idx, 'vaccineNameId']}
-                    style={{ flex: 2, marginBottom: 0 }}
-                    rules={[
-                      // Bỏ dòng required
-                      {
-                        validator: (_, value) => {
-                          if (!value) return Promise.resolve(); // Cho phép bỏ trống
-                          const duplicate = vaccineHistories.some(
-                            (v, i) => i !== idx && v.vaccineNameId === value
-                          );
-                          return duplicate
-                            ? Promise.reject('Không được chọn trùng loại vaccin!')
-                            : Promise.resolve();
+              {vaccineHistories.map((item, idx) => {
+                const isSchoolVaccine = editMode && item.createBy === 1;
+                return (
+                  <div key={idx} style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
+                    <Form.Item
+                      name={['vaccineHistories', idx, 'vaccineNameId']}
+                      style={{ flex: 2, marginBottom: 0 }}
+                      rules={[
+                        // Bỏ dòng required
+                        {
+                          validator: (_, value) => {
+                            if (!value) return Promise.resolve(); // Cho phép bỏ trống
+                            const duplicate = vaccineHistories.some(
+                              (v, i) => i !== idx && v.vaccineNameId === value
+                            );
+                            return duplicate
+                              ? Promise.reject('Không được chọn trùng loại vaccin!')
+                              : Promise.resolve();
+                          }
                         }
-                      }
-                    ]}
-                  >
-                    <Select
-                      showSearch
-                      placeholder="Chọn vaccin"
-                      optionFilterProp="children"
-                      value={item.vaccineNameId}
-                      onChange={value => {
-                        const selectedVac = vaccineOptions.find(v => v.id === value);
-                        handleVaccineChange(selectedVac, idx, 'vaccineName'); // lưu object nếu cần hiển thị
-                        handleVaccineChange(selectedVac.id, idx, 'vaccineNameId'); // lưu id để gửi backend
-                      }}
-                      filterOption={(input, option) =>
-                        option.children.toLowerCase().includes(input.toLowerCase())
-                      }
+                      ]}
                     >
-                      {vaccineOptions.map(vac => (
-                        <Select.Option key={vac.id} value={vac.id}>
-                          {vac.vaccineName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                  <Form.Item
-                    name={['vaccineHistories', idx, 'note']}
-                    style={{ flex: 3, marginBottom: 0, minWidth: 200, maxWidth: 350 }}
-                    rules={[
-                      {
+                      <Select
+                        showSearch
+                        placeholder="Chọn vaccin"
+                        optionFilterProp="children"
+                        value={item.vaccineNameId}
+                        onChange={value => {
+                          const selectedVac = vaccineOptions.find(v => v.id === value);
+                          handleVaccineChange(selectedVac, idx, 'vaccineName'); // lưu object nếu cần hiển thị
+                          handleVaccineChange(selectedVac.id, idx, 'vaccineNameId'); // lưu id để gửi backend
+                        }}
+                        filterOption={(input, option) =>
+                          option.children.toLowerCase().includes(input.toLowerCase())
+                        }
+                        disabled={isSchoolVaccine}
+                      >
+                        {vaccineOptions.map(vac => (
+                          <Select.Option key={vac.id} value={vac.id}>
+                            {vac.vaccineName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                    <Form.Item
+                      name={['vaccineHistories', idx, 'note']}
+                      style={{ flex: 3, marginBottom: 0, minWidth: 200, maxWidth: 350 }}
+                      rules={[
+                        {
       validator: (_, value, callback) => {
         const vaccineId = vaccineHistories[idx]?.vaccineNameId;
         if (value && value.length > 255) {
@@ -383,23 +386,25 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
         return Promise.resolve();
       }
     }
-                    ]}
-                  >
-                    <Input.TextArea
-                      placeholder="Mô tả"
-                      value={item.note}
-                      onChange={e => handleVaccineChange(e.target.value, idx, 'note')}
-                      autoSize={{ minRows: 1, maxRows: 3 }}
-                      style={{ width: "100%" }}
-                    />
-                  </Form.Item>
-                  <div style={{ width: 60, textAlign: "center" }}>
-                    {(!editMode || item.createBy !== 1) ? (
-                      <Button danger onClick={() => handleRemoveVaccine(idx)}>Xóa</Button>
-                    ) : null}
+                      ]}
+                    >
+                      <Input.TextArea
+                        placeholder="Mô tả"
+                        value={item.note}
+                        onChange={e => handleVaccineChange(e.target.value, idx, 'note')}
+                        autoSize={{ minRows: 1, maxRows: 3 }}
+                        style={{ width: "100%" }}
+                        disabled={isSchoolVaccine}
+                      />
+                    </Form.Item>
+                    <div style={{ width: 60, textAlign: "center" }}>
+                      {(!editMode || item.createBy !== 1) ? (
+                        <Button danger onClick={() => handleRemoveVaccine(idx)}>Xóa</Button>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <Button type="primary" style={{ marginTop: 16 }} onClick={handleAddVaccine}>
                 + Thêm mới vaccin
               </Button>
