@@ -18,6 +18,7 @@ import {
   PlusOutlined,
   SearchOutlined,
   UploadOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import { Select } from "antd"; // Thêm dòng này
 import axios from "axios";
@@ -203,44 +204,44 @@ const VaccineProgramList = () => {
   };
 
   const handleUpdate = async (values) => {
-  setLoading(true);
-  const token = localStorage.getItem("token");
-  try {
-    await axios.put(
-      `http://localhost:8080/api/admin/vaccine-program/${program.vaccineId}`,
-      {
-        vaccineNameId: values.vaccineNameId,
-        manufacture: values.manufacture,
-        description: values.description,
-        vaccineDate: values.vaccineDate.format("YYYY-MM-DD"),
-        note: values.note,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `http://localhost:8080/api/admin/vaccine-program/${program.vaccineId}`,
+        {
+          vaccineNameId: values.vaccineNameId,
+          manufacture: values.manufacture,
+          description: values.description,
+          vaccineDate: values.vaccineDate.format("YYYY-MM-DD"),
+          note: values.note,
         },
-      }
-    );
-    await Swal.fire({
-      icon: "success",
-      title: "Cập nhật chương trình thành công!",
-      showConfirmButton: false,
-      timer: 1500,
-    });
-    setCreateVisible(false);
-    setEditMode(false);
-    fetchProgram();
-  } catch (error) {
-    Swal.fire({
-      icon: "error",
-      title: "Cập nhật chương trình thất bại!",
-      confirmButtonText: "OK",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
-// filepath: f:\Ky_5_FPT\SWP\Frontend\school-medical-management\Frontend\my-
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      await Swal.fire({
+        icon: "success",
+        title: "Cập nhật chương trình thành công!",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+      setCreateVisible(false);
+      setEditMode(false);
+      fetchProgram();
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Cập nhật chương trình thất bại!",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  // filepath: f:\Ky_5_FPT\SWP\Frontend\school-medical-management\Frontend\my-
 
   const handleDelete = async (programId) => {
     const result = await Swal.fire({
@@ -295,32 +296,32 @@ const VaccineProgramList = () => {
   };
 
   const handleUpdateStatus = async (vaccineId, status) => {
-  const confirm = await Swal.fire({
-    title: "Bạn có chắc muốn chuyển trạng thái?",
-    text: "Thao tác này sẽ thay đổi trạng thái của chương trình tiêm chủng.",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Chuyển trạng thái",
-    cancelButtonText: "Hủy",
-  });
-  if (!confirm.isConfirmed) return;
+    const confirm = await Swal.fire({
+      title: "Bạn có chắc muốn chuyển trạng thái?",
+      text: "Thao tác này sẽ thay đổi trạng thái của chương trình tiêm chủng.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Chuyển trạng thái",
+      cancelButtonText: "Hủy",
+    });
+    if (!confirm.isConfirmed) return;
 
-  const token = localStorage.getItem("token");
-  try {
-    await axios.patch(
-      `http://localhost:8080/api/admin/vaccine-program/${vaccineId}?status=${status}`,
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    message.success("Cập nhật trạng thái thành công!");
-    fetchProgram();
-  } catch (error) {
-    message.error("Cập nhật trạng thái thất bại!");
-  }
-};
-// ...existing code...
+    const token = localStorage.getItem("token");
+    try {
+      await axios.patch(
+        `http://localhost:8080/api/admin/vaccine-program/${vaccineId}?status=${status}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      message.success("Cập nhật trạng thái thành công!");
+      fetchProgram();
+    } catch (error) {
+      message.error("Cập nhật trạng thái thất bại!");
+    }
+  };
+  // ...existing code...
 
   const handleCreateResult = async (values) => {
     setCreateResultLoading(true);
@@ -353,32 +354,32 @@ const VaccineProgramList = () => {
   };
 
   const handleCreateProgramResult = async (program) => {
-  const confirm = await Swal.fire({
-    title: "Bạn có chắc muốn tạo kết quả?",
-    text: "Sau khi tạo, bạn sẽ nhập kết quả tiêm chủng cho học sinh.",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Tạo kết quả",
-    cancelButtonText: "Hủy",
-  });
-  if (!confirm.isConfirmed) return;
+    const confirm = await Swal.fire({
+      title: "Bạn có chắc muốn tạo kết quả?",
+      text: "Sau khi tạo, bạn sẽ nhập kết quả tiêm chủng cho học sinh.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Tạo kết quả",
+      cancelButtonText: "Hủy",
+    });
+    if (!confirm.isConfirmed) return;
 
-  const token = localStorage.getItem("token");
-  try {
-    const res = await axios.post(
-      `http://localhost:8080/api/nurse/create-vaccineResults-byProgram/${program.vaccineId}`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setSampleResultData(res.data);
-    setEditableRows(res.data.map((item) => ({ ...item })));
-    setActiveTab("result");
-    message.success("Tạo kết quả thành công!");
-  } catch (error) {
-    message.error("Tạo kết quả thất bại!");
-  }
-};
-// ...existing code...
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.post(
+        `http://localhost:8080/api/nurse/create-vaccineResults-byProgram/${program.vaccineId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSampleResultData(res.data);
+      setEditableRows(res.data.map((item) => ({ ...item })));
+      setActiveTab("result");
+      message.success("Tạo kết quả thành công!");
+    } catch (error) {
+      message.error("Tạo kết quả thất bại!");
+    }
+  };
+  // ...existing code...
 
   const handleEditCell = (value, record, field) => {
     setEditableRows((prev) =>
@@ -481,9 +482,8 @@ const VaccineProgramList = () => {
 
   // Thêm biến lọc kết quả nurse theo tên chương trình:
   const filteredNurseResults = nurseResults.filter((item) => {
-    const programName =
-      item?.vaccineFormDTO?.vaccineProgram?.vaccineName?.vaccineName || "";
-    return programName.toLowerCase().includes(searchTermResult.toLowerCase());
+    const studentName = item?.studentDTO?.fullName || "";
+    return studentName.toLowerCase().includes(searchTermResult.toLowerCase());
   });
 
   const handleNotifyVaccine = async (formId) => {
@@ -561,6 +561,7 @@ const VaccineProgramList = () => {
         marginLeft: 220,
         transition: "margin 0.2s",
         maxWidth: "100vw",
+        minWidth: 0, // Thêm dòng này
       }}
     >
       <Tabs
@@ -571,16 +572,16 @@ const VaccineProgramList = () => {
             key: "program",
             label: "Chương trình tiêm chủng",
             children: (
-              // --- Toàn bộ nội dung hiện tại của bạn ---
               <>
-                {/* Header, filter, nút luôn hiển thị */}
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    marginBottom: 16,
+                    marginBottom: 15,
                     justifyContent: "space-between",
                     width: "100%",
+                    flexWrap: "wrap",
+                    gap: 12,
                   }}
                 >
                   <h2
@@ -594,75 +595,117 @@ const VaccineProgramList = () => {
                     <span style={{ color: "#52c41a", marginRight: 8 }}>🛡️</span>
                     Quản Lý Chương Trình Tiêm Chủng
                   </h2>
-                  <div style={{ display: "flex", gap: 12, marginLeft: 24 }}>
-                    <Input
-                      placeholder="Tìm kiếm tên chương trình..."
-                      prefix={<SearchOutlined />}
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      allowClear
-                      style={{ width: 220, background: "#fff" }}
-                    />
-                    <DatePicker
-                      placeholder="Lọc theo ngày tiêm"
-                      value={filterDate}
-                      onChange={setFilterDate}
-                      allowClear
-                      style={{ width: 170 }}
-                      format="YYYY-MM-DD"
-                    />
-                    <Select
-                      placeholder="Lọc theo trạng thái"
-                      value={filterStatus}
-                      onChange={setFilterStatus}
-                      allowClear
-                      style={{ width: 170 }}
-                      options={[
-                        { value: "", label: "Tất cả trạng thái" },
-                        { value: "NOT_STARTED", label: "Chưa bắt đầu" },
-                        { value: "ON_GOING", label: "Đang diễn ra" },
-                        { value: "COMPLETED", label: "Đã hoàn thành" },
-                      ]}
-                    />
-                    {/* Ẩn nút lên lịch tiêm chủng nếu là NURSE */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      flexWrap: "wrap",
+                      marginLeft: "auto",
+                    }}
+                  >
+                    {/* Nút Lấy biểu mẫu căn trái */}
                     {userRole === "ADMIN" && (
-                      <>
-                        <Button
-                          type="primary"
-                          icon={<PlusOutlined />}
-                          style={{ background: "#21ba45", border: "none" }}
-                          onClick={() => setCreateVisible(true)}
-                        >
-                          Lên lịch tiêm chủng
-                        </Button>
-                        <Button
-                          type="default"
-                          style={{
-                            border: "1px solid #21ba45",
-                            color: "#21ba45",
-                          }}
-                          onClick={() => setAddVaccineVisible(true)}
-                        >
-                          Thêm mới vaccine
-                        </Button>
-                        <Button
-                          type="default"
-                          icon={<UploadOutlined />}
-                          style={{
-                            border: "1.5px solid #1890ff",
-                            color: "#fff",
-                            background:
-                              "linear-gradient(90deg, #1890ff 60% 100%)",
-                            fontWeight: 600,
-                            boxShadow: "0 2px 8px rgba(33,186,69,0.08)",
-                            transition: "all 0.2s",
-                          }}
-                          onClick={() => setImportVaccineVisible(true)}
-                        >
-                          Import tên vaccine
-                        </Button>
-                      </>
+                      <Button
+                        type="default"
+                        icon={<DownloadOutlined />}
+                        style={{
+                          border: "1.5px solid #21ba45",
+                          color: "#21ba45",
+                          background: "#fff",
+                          fontWeight: 600,
+                          marginRight: 12,
+                        }}
+                        onClick={() => {
+                          const link = document.createElement("a");
+                          link.href = "/vaccine_name_import.xlsx";
+                          link.setAttribute("download", "vaccine_name_import.xlsx");
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                      >
+                        Lấy biểu mẫu
+                      </Button>
                     )}
+
+                    {/* Nhóm filter và các nút khác căn phải */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 12,
+                        flexWrap: "wrap",
+                        marginLeft: "auto",
+                      }}
+                    >
+                      <Input
+                        placeholder="Tìm kiếm tên chương trình..."
+                        prefix={<SearchOutlined />}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        allowClear
+                        style={{ width: 220, background: "#fff" }}
+                      />
+                      <DatePicker
+                        placeholder="Lọc theo ngày tiêm"
+                        value={filterDate}
+                        onChange={setFilterDate}
+                        allowClear
+                        style={{ width: 170 }}
+                        format="YYYY-MM-DD"
+                      />
+                      <Select
+                        placeholder="Lọc theo trạng thái"
+                        value={filterStatus}
+                        onChange={setFilterStatus}
+                        allowClear
+                        style={{ width: 170 }}
+                        options={[
+                          { value: "", label: "Tất cả trạng thái" },
+                          { value: "NOT_STARTED", label: "Chưa bắt đầu" },
+                          { value: "ON_GOING", label: "Đang diễn ra" },
+                          { value: "COMPLETED", label: "Đã hoàn thành" },
+                        ]}
+                      />
+                      {userRole === "ADMIN" && (
+                        <>
+                          <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            style={{ background: "#21ba45", border: "none" }}
+                            onClick={() => setCreateVisible(true)}
+                          >
+                            Lên lịch tiêm chủng
+                          </Button>
+                          <Button
+                            type="default"
+                            style={{
+                              border: "1px solid #21ba45",
+                              color: "#21ba45",
+                            }}
+                            onClick={() => setAddVaccineVisible(true)}
+                          >
+                            Thêm mới vaccine
+                          </Button>
+                          <Button
+                            type="default"
+                            icon={<UploadOutlined />}
+                            style={{
+                              border: "1.5px solid #1890ff",
+                              color: "#fff",
+                              background:
+                                "linear-gradient(90deg, #1890ff 60% 100%)",
+                              fontWeight: 600,
+                              boxShadow: "0 2px 8px rgba(33,186,69,0.08)",
+                              transition: "all 0.2s",
+                            }}
+                            onClick={() => setImportVaccineVisible(true)}
+                          >
+                            Import tên vaccine
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
                 {/* Danh sách chương trình hoặc thông báo rỗng */}
@@ -686,8 +729,8 @@ const VaccineProgramList = () => {
                           background: "#f6fcf7",
                           borderRadius: 10,
                           border: "1px solid #e6f4ea",
-                          width: "calc(100vw - 260px)",
-                          minWidth: 1200,
+                          width: "100%", // Sửa lại từ "calc(100vw - 260px)"
+                          minWidth: 0,   // Sửa lại từ 1200
                           margin: "0 auto",
                           transition: "width 0.2s",
                           marginBottom: 16,
@@ -854,24 +897,24 @@ const VaccineProgramList = () => {
                               Xem kết quả
                             </Button>
                             <Button
-  type="primary"
-  style={{
-    marginLeft: 8,
-    background: "#1890ff",
-    border: "none",
-  }}
-  onClick={() => handleCreateProgramResult(program)}
-  disabled={
-    userRole === "ADMIN" ||
-    !(
-      userRole === "NURSE" &&
-      program.status === "ON_GOING" &&
-      (studentStats[program.vaccineId]?.confirmed > 0)
-    )
-  } // Chỉ cho NURSE bấm khi đang ON_GOING và đã xác nhận > 0
->
-  Tạo kết quả
-</Button>
+                              type="primary"
+                              style={{
+                                marginLeft: 8,
+                                background: "#1890ff",
+                                border: "none",
+                              }}
+                              onClick={() => handleCreateProgramResult(program)}
+                              disabled={
+                                userRole === "ADMIN" ||
+                                !(
+                                  userRole === "NURSE" &&
+                                  program.status === "ON_GOING" &&
+                                  studentStats[program.vaccineId]?.confirmed > 0
+                                )
+                              } // Chỉ cho NURSE bấm khi đang ON_GOING và đã xác nhận > 0
+                            >
+                              Tạo kết quả
+                            </Button>
                             <Button
                               type="default"
                               style={{
@@ -887,29 +930,33 @@ const VaccineProgramList = () => {
                             >
                               Chỉnh sửa kết quả
                             </Button>
- <Button
-  type="default"
-  style={{
-    marginLeft: 8,
-    background: "#00bcd4",
-    color: "#fff",
-    border: "none",
-  }}
-  onClick={() => handleSendNotification(program.vaccineId)}
-  disabled={
-    userRole === "ADMIN" ||
-    program.status === "NOT_STARTED" ||
-    program.status === "COMPLETED" ||
-    program.sended === 1 || // Nếu đã gửi thông báo thì disable
-    (
-      program.status === "ON_GOING" &&
-      Array.isArray(studentStats[program.vaccineId]?.forms) &&
-      studentStats[program.vaccineId]?.forms.every(f => f.status === "DRAFT") === false
-    )
-  }
->
-  Gửi thông báo
-</Button>
+                            <Button
+                              type="default"
+                              style={{
+                                marginLeft: 8,
+                                background: "#00bcd4",
+                                color: "#fff",
+                                border: "none",
+                              }}
+                              onClick={() =>
+                                handleSendNotification(program.vaccineId)
+                              }
+                              disabled={
+                                userRole === "ADMIN" ||
+                                program.status === "NOT_STARTED" ||
+                                program.status === "COMPLETED" ||
+                                program.sended === 1 || // Nếu đã gửi thông báo thì disable
+                                (program.status === "ON_GOING" &&
+                                  Array.isArray(
+                                    studentStats[program.vaccineId]?.forms
+                                  ) &&
+                                  studentStats[program.vaccineId]?.forms.every(
+                                    (f) => f.status === "DRAFT"
+                                  ) === false)
+                              }
+                            >
+                              Gửi thông báo
+                            </Button>
                             {/* Đã xóa nút Tạo kết quả */}
                           </div>
                           {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
@@ -933,15 +980,18 @@ const VaccineProgramList = () => {
                                   Sửa
                                 </Button>
                               )}
-                              {userRole === "ADMIN" && program.status === "NOT_STARTED" && (
-  <Button
-    danger
-    type="primary"
-    onClick={() => handleDelete(program.vaccineId)}
-  >
-    Xóa
-  </Button>
-)}
+                              {userRole === "ADMIN" &&
+                                program.status === "NOT_STARTED" && (
+                                  <Button
+                                    danger
+                                    type="primary"
+                                    onClick={() =>
+                                      handleDelete(program.vaccineId)
+                                    }
+                                  >
+                                    Xóa
+                                  </Button>
+                                )}
                             </div>
                           )}
                         </div>
@@ -1054,27 +1104,31 @@ const VaccineProgramList = () => {
                       <Input.TextArea rows={2} />
                     </Form.Item>
                     <Form.Item
-  label="Ngày tiêm"
-  name="vaccineDate"
-  rules={[
-    { required: true, message: "Chọn ngày tiêm" },
-    {
-      validator: (_, value) => {
-        if (!value) return Promise.resolve();
-        if (value.isBefore(dayjs(), "day")) {
-          return Promise.reject("Chỉ được chọn ngày trong tương lai!");
-        }
-        return Promise.resolve();
-      },
-    },
-  ]}
->
-  <DatePicker
-    style={{ width: "100%" }}
-    format="YYYY-MM-DD"
-    disabledDate={(current) => current && current < dayjs().startOf("day")}
-  />
-</Form.Item>
+                      label="Ngày tiêm"
+                      name="vaccineDate"
+                      rules={[
+                        { required: true, message: "Chọn ngày tiêm" },
+                        {
+                          validator: (_, value) => {
+                            if (!value) return Promise.resolve();
+                            if (value.isBefore(dayjs(), "day")) {
+                              return Promise.reject(
+                                "Chỉ được chọn ngày trong tương lai!"
+                              );
+                            }
+                            return Promise.resolve();
+                          },
+                        },
+                      ]}
+                    >
+                      <DatePicker
+                        style={{ width: "100%" }}
+                        format="YYYY-MM-DD"
+                        disabledDate={(current) =>
+                          current && current < dayjs().startOf("day")
+                        }
+                      />
+                    </Form.Item>
                     <Form.Item label="Ghi chú" name="note">
                       <Input.TextArea rows={2} />
                     </Form.Item>
@@ -1183,10 +1237,11 @@ const VaccineProgramList = () => {
                       const token = localStorage.getItem("token");
                       try {
                         await axios.post(
-                          "http://localhost:8080/api/admin/create-VaccineName", // Sửa lại endpoint này
+                          "http://localhost:8080/api/admin/create-VaccineName",
                           {
                             vaccineName: values.vaccineName,
                             manufacture: values.manufacture,
+                            url: values.url, // Thêm dòng này
                             note: values.note,
                           },
                           { headers: { Authorization: `Bearer ${token}` } }
@@ -1218,6 +1273,19 @@ const VaccineProgramList = () => {
                       <Input />
                     </Form.Item>
                     <Form.Item label="Nhà sản xuất" name="manufacture">
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      label="URL thông tin vaccine"
+                      name="url"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Nhập URL thông tin vaccine",
+                        },
+                        { type: "url", message: "URL không hợp lệ!" },
+                      ]}
+                    >
                       <Input />
                     </Form.Item>
                     <Form.Item label="Ghi chú" name="note">
@@ -1322,8 +1390,8 @@ const VaccineProgramList = () => {
                     background: "#fff",
                     borderRadius: 10,
                     padding: 24,
-                    maxWidth: 1300,
-                    width: "100%",
+                    width: "100%", // Sửa dòng này
+                    maxWidth: "100%", // Sửa dòng này
                     margin: "0 auto",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                     overflowX: "auto",
@@ -1338,7 +1406,7 @@ const VaccineProgramList = () => {
                     }}
                   >
                     <Input
-                      placeholder="Tìm kiếm tên chương trình..."
+                      placeholder="Tìm kiếm tên học sinh..."
                       prefix={<SearchOutlined />}
                       value={searchTermResult}
                       onChange={(e) => setSearchTermResult(e.target.value)}
@@ -1466,7 +1534,8 @@ const VaccineProgramList = () => {
                             onClick={() =>
                               handleSaveRow(
                                 editableRows.find(
-                                  (r) => r.vaccineResultId === record.vaccineResultId
+                                  (r) =>
+                                    r.vaccineResultId === record.vaccineResultId
                                 )
                               )
                             }
@@ -1478,9 +1547,17 @@ const VaccineProgramList = () => {
                     ].filter(Boolean)}
                     dataSource={
                       sampleResultData
-                        ? editableRows
+                        ? editableRows.filter((item) =>
+                            (item?.studentDTO?.fullName || "")
+                              .toLowerCase()
+                              .includes(searchTermResult.toLowerCase())
+                          )
                         : selectedVaccineResultId
-                        ? selectedVaccineResult
+                        ? (selectedVaccineResult || []).filter((item) =>
+                            (item?.studentDTO?.fullName || "")
+                              .toLowerCase()
+                              .includes(searchTermResult.toLowerCase())
+                          )
                         : filteredNurseResults
                     }
                     loading={
@@ -1488,19 +1565,34 @@ const VaccineProgramList = () => {
                     }
                     rowKey="vaccineResultId"
                     bordered
-                    style={{ minWidth: 900 }}
+                    style={{
+                      paddingLeft: 2,
+                      width: "100%",
+                      minWidth: 1240, // Sửa lại từ 1250
+                      borderRadius: 12,
+                      overflow: "auto", // Đảm bảo Table cuộn khi thiếu không gian
+                      background: "#fff",
+                      boxShadow: "0 2px 8px rgba(33,186,69,0.08)",
+                    }}
+                    scroll={{ x: true }} // Cho phép cuộn ngang tự động
                     pagination={{
                       current: resultTablePage,
                       pageSize: resultTablePageSize,
                       total: sampleResultData
-                        ? editableRows.length
-                        : selectedVaccineResultId,
-                      showSizeChanger: true,
-                      pageSizeOptions: ["5", "10", "20", "50"],
-                      onChange: (page, pageSize) => {
-                        setResultTablePage(page);
-                        setResultTablePageSize(pageSize);
-                      },
+                        ? editableRows.filter((item) =>
+                            (item?.studentDTO?.fullName || "")
+                              .toLowerCase()
+                              .includes(searchTermResult.toLowerCase())
+                          ).length
+                        : selectedVaccineResultId
+                        ? (selectedVaccineResult || []).filter((item) =>
+                            (item?.studentDTO?.fullName || "")
+                              .toLowerCase()
+                              .includes(searchTermResult.toLowerCase())
+                          ).length
+                        : filteredNurseResults.length,
+                      onChange: setResultTablePage,
+                      showSizeChanger: false,
                     }}
                   />
                 </div>
