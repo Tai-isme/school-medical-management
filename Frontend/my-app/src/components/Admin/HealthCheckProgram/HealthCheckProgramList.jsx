@@ -1003,8 +1003,8 @@ const HealthCheckProgramList = () => {
                     bordered
                     size="middle"
                     style={{
-                      paddingLeft: 16,
-                      minWidth: 1740,
+                      paddingLeft: 5,
+                      minWidth: 1250,
                       borderRadius: 12,
                       overflow: "hidden",
                       background: "#fff",
@@ -1018,7 +1018,7 @@ const HealthCheckProgramList = () => {
                         </div>
                       ),
                     }}
-                    pagination={{ pageSize: 14 }} // Thêm dòng này để phân trang 14 học sinh/trang
+                    pagination={{ pageSize: 8 }} // Thêm dòng này để phân trang 14 học sinh/trang
                   />
                 </div>
               </div>
