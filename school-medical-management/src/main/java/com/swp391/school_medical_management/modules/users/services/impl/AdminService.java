@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -662,93 +663,77 @@ public class AdminService {
         userRepository.delete(user);
     }
 
+    @Transactional
     public void importStudentFromExcel(MultipartFile file) {
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
             DataFormatter formatter = new DataFormatter();
             int importedCount = 0;
-            boolean duplicateReported = false;
 
             for (Row row : sheet) {
                 int rowNum = row.getRowNum();
                 if (rowNum == 0)
-                    continue; 
-                if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK) {
-                    continue; 
-                }
-                try {
-                    // student
-                    String studentName = row.getCell(0).getStringCellValue();
-                    LocalDate dob = row.getCell(1).getLocalDateTimeCellValue().toLocalDate();
-                    String gender = row.getCell(2).getStringCellValue();
-                    String relationship = row.getCell(3).getStringCellValue();
+                    continue;
+                if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK)
+                    continue;
 
-                    // class
-                    String className = row.getCell(4).getStringCellValue();
-                    String teacherName = row.getCell(5).getStringCellValue();
+                String studentName = row.getCell(0).getStringCellValue();
+                LocalDate dob = row.getCell(1).getLocalDateTimeCellValue().toLocalDate();
+                String gender = row.getCell(2).getStringCellValue();
+                String relationship = row.getCell(3).getStringCellValue();
+                String className = row.getCell(4).getStringCellValue();
+                String teacherName = row.getCell(5).getStringCellValue();
+                String parentName = row.getCell(6).getStringCellValue();
+                String parentEmail = row.getCell(7).getStringCellValue();
+                String parentPhone = formatter.formatCellValue(row.getCell(8));
+                String parentAddress = row.getCell(9).getStringCellValue();
 
-                    // parent
-                    String parentName = row.getCell(6).getStringCellValue();
-                    String parentEmail = row.getCell(7).getStringCellValue();
-                    String parentPhone = formatter.formatCellValue(row.getCell(8));
-                    String parentAddress = row.getCell(9).getStringCellValue();
+                Optional<ClassEntity> classOpt = classRepository.findByClassNameAndTeacherName(className, teacherName);
+                ClassEntity classEntity = classOpt.orElseGet(() -> {
+                    ClassEntity newClass = new ClassEntity();
+                    newClass.setClassName(className);
+                    newClass.setTeacherName(teacherName);
+                    newClass.setQuantity(0);
+                    return classRepository.save(newClass);
+                });
 
-                    Optional<ClassEntity> classOpt = classRepository.findByClassNameAndTeacherName(className,
-                            teacherName);
-                    ClassEntity classEntity = classOpt.orElseGet(() -> {
-                        ClassEntity newClass = new ClassEntity();
-                        newClass.setClassName(className);
-                        newClass.setTeacherName(teacherName);
-                        newClass.setQuantity(0);
-                        return classRepository.save(newClass);
-                    });
-
-                    Optional<UserEntity> parentOpt = userRepository.findUserByEmailOrPhone(parentEmail, parentPhone);
-                    if (parentOpt.isPresent()) {
-                        if (!duplicateReported) {
-                            UserEntity existing = parentOpt.get();
-                            if (existing.getEmail().equalsIgnoreCase(parentEmail)) {
-                                throw new RuntimeException("Email " + parentEmail + " đã bị trùng.");
-                            } else {
-                                throw new RuntimeException("Số điện thoại " + parentPhone + " đã bị trùng.");
-                            }
-                        } else {
-                            continue;
-                        }
+                // kiểm tra trùng
+                Optional<UserEntity> parentOpt = userRepository.findUserByEmailOrPhone(parentEmail, parentPhone);
+                if (parentOpt.isPresent()) {
+                    UserEntity existing = parentOpt.get();
+                    if (existing.getEmail().equalsIgnoreCase(parentEmail)) {
+                        throw new RuntimeException("Email " + parentEmail + " đã bị trùng.");
+                    } else {
+                        throw new RuntimeException("Số điện thoại " + parentPhone + " đã bị trùng.");
                     }
-
-                    UserEntity parent = new UserEntity();
-                    parent.setFullName(parentName);
-                    parent.setEmail(parentEmail);
-                    parent.setPhone(parentPhone);
-                    parent.setAddress(parentAddress);
-                    parent.setActive(true);
-                    parent.setRole(UserRole.PARENT);
-                    parent = userRepository.save(parent);
-
-                    StudentEntity student = new StudentEntity();
-                    student.setFullName(studentName);
-                    student.setDob(dob);
-                    student.setGender(gender);
-                    student.setRelationship(relationship);
-                    student.setClassEntity(classEntity);
-                    student.setParent(parent);
-
-                    studentRepository.save(student);
-                    importedCount++;
-
-                } catch (RuntimeException ex) {
-                    throw ex;
-                } catch (Exception e) {
-                    throw new RuntimeException("Lỗi ở dòng Excel số " + rowNum + ": " + e.getMessage());
                 }
+
+                UserEntity parent = new UserEntity();
+                parent.setFullName(parentName);
+                parent.setEmail(parentEmail);
+                parent.setPhone(parentPhone);
+                parent.setAddress(parentAddress);
+                parent.setActive(true);
+                parent.setRole(UserRole.PARENT);
+                parent = userRepository.save(parent);
+
+                StudentEntity student = new StudentEntity();
+                student.setFullName(studentName);
+                student.setDob(dob);
+                student.setGender(gender);
+                student.setRelationship(relationship);
+                student.setClassEntity(classEntity);
+                student.setParent(parent);
+
+                studentRepository.save(student);
+                importedCount++;
             }
 
             if (importedCount == 0) {
                 throw new RuntimeException("File không hợp lệ.");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException("Import thất bại: " + e.getMessage());
         }
     }
 
@@ -885,7 +870,7 @@ public class AdminService {
                 if (rowNum == 0)
                     continue;
                 if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK)
-                    continue; 
+                    continue;
                 try {
 
                     String vaccineName = row.getCell(0).getStringCellValue();
