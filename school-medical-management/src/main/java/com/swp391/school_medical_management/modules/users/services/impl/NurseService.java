@@ -1483,7 +1483,6 @@ public class NurseService {
                 } else {
                     MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
                     medicalRecord.setStudent(form.getStudent());
-                    medicalRecord.setNote(form.getVaccineProgram().getNote());
                     medicalRecord.setCreateBy((byte) 1);
                     medicalRecord.setLastUpdate(LocalDateTime.now());
                     medicalRecordsRepository.save(medicalRecord);
