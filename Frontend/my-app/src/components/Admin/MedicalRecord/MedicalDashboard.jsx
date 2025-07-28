@@ -5,7 +5,7 @@ import StudentList from "./StudentList";
 import StudentProfileCard from "./StudentProfileCard";
 import EmergencyContact from "./EmergencyContact";
 import MedicalHistory from "./MedicalHistory";
-
+import Swal from "sweetalert2";
 export default function MedicalDashboard() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const fileInputRef = useRef(null);
@@ -47,10 +47,23 @@ export default function MedicalDashboard() {
         body: formData,
       });
       if (!response.ok) throw new Error("Import thất bại!");
-      // Xử lý kết quả thành công
-      alert("Import thành công!");
+
+      // Hiển thị thông báo thành công
+      Swal.fire({
+        icon: "success",
+        title: "Import thành công!",
+        text: "Dữ liệu đã được cập nhật.",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     } catch (err) {
-      alert("Import thất bại!");
+      // Hiển thị thông báo thất bại
+      Swal.fire({
+        icon: "error",
+        title: "Import thất bại!",
+        text: "Vui lòng kiểm tra lại file và thử lại.",
+        showConfirmButton: true,
+      });
     } finally {
       setUploading(false);
       e.target.value = ""; // Reset input để chọn lại file nếu cần

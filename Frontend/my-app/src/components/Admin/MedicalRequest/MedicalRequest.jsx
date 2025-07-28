@@ -76,8 +76,11 @@ const MedicalRequest = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/nurse/${id}/status?status=SUBMITTED`,
-        {},
+        `http://localhost:8080/api/nurse/${id}/status`,
+        {
+          status: "SUBMITTED",
+          reason_rejected: null
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       Swal.fire({
@@ -106,8 +109,11 @@ const MedicalRequest = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/nurse/${rejectRequestId}/status?status=CANCELLED`,
-        { reason_rejected: rejectReason }, // Gửi lý do từ chối trong body
+        `http://localhost:8080/api/nurse/${rejectRequestId}/status`,
+        { 
+          status: "CANCELLED",
+          reason_rejected: rejectReason
+         }, // Gửi lý do từ chối trong body
         { headers: { Authorization: `Bearer ${token}` } }
       );
       Swal.fire({
@@ -134,8 +140,11 @@ const MedicalRequest = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/nurse/${id}/status?status=COMPLETED`,
-        {},
+        `http://localhost:8080/api/nurse/${id}/status`,
+        {
+          status: "COMPLETED",
+          reason_rejected: null // Không cần lý do từ chối khi cho uống thuốc
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       Swal.fire({
@@ -363,8 +372,12 @@ const MedicalRequest = () => {
                 {dayjs(selectedRequest.date).format("DD/MM/YYYY")}
               </p>
               <p>
+                <strong>Thời gian dùng thuốc:</strong>{" "}
+                {selectedRequest.medicalRequestDetailDTO[0]?.time}
+              </p>
+              <p>
                 <strong>Học sinh:</strong>{" "}
-                {selectedRequest.studentDTO?.fullName || "Không rõ"}
+                {selectedRequest.studentDTO?.fullName + "   (" + selectedRequest.studentDTO?.id +")" || "Không rõ"} 
               </p>
               <p>
                 <strong>Ghi chú:</strong> {selectedRequest.note || "Không có"}
@@ -376,7 +389,7 @@ const MedicalRequest = () => {
                 {Array.isArray(selectedRequest.medicalRequestDetailDTO) && selectedRequest.medicalRequestDetailDTO.length > 0 ? (
                   selectedRequest.medicalRequestDetailDTO.map((item, idx) => (
                     <li key={idx}>
-                      {item.medicineName} - {item.quantity}
+                      {item.medicineName} - {item.dosage}
                     </li>
                   ))
                 ) : (
