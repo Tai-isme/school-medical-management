@@ -37,6 +37,9 @@ const MedicalRequest = () => {
   const [dateRange, setDateRange] = useState([null, null]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8); // Số lượng card mỗi trang
+  const [rejectReason, setRejectReason] = useState(""); // State để lưu lý do từ chối
+  const [rejectModalVisible, setRejectModalVisible] = useState(false); // State để hiển thị modal từ chối
+  const [rejectRequestId, setRejectRequestId] = useState(null); // State để lưu requestId của yêu cầu bị từ chối
 
   // Gọi API lấy tất cả khi đổi tab hoặc lần đầu
   useEffect(() => {
@@ -94,12 +97,17 @@ const MedicalRequest = () => {
     }
   };
 
-  const handleReject = async (id) => {
+  const handleRejectClick = (id) => {
+    setRejectRequestId(id); // Lưu requestId
+    setRejectModalVisible(true); // Hiển thị modal
+  };
+
+  const handleRejectConfirm = async () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/nurse/${id}/status?status=CANCELLED`,
-        {},
+        `http://localhost:8080/api/nurse/${rejectRequestId}/status?status=CANCELLED`,
+        { reason_rejected: rejectReason }, // Gửi lý do từ chối trong body
         { headers: { Authorization: `Bearer ${token}` } }
       );
       Swal.fire({
@@ -108,7 +116,7 @@ const MedicalRequest = () => {
         showConfirmButton: false,
         timer: 1500,
       });
-      fetchRequests(activeStatus);
+      fetchRequests(activeStatus); // Tải lại danh sách yêu cầu
     } catch {
       Swal.fire({
         icon: "error",
@@ -116,6 +124,9 @@ const MedicalRequest = () => {
         showConfirmButton: false,
         timer: 1500,
       });
+    } finally {
+      setRejectModalVisible(false); // Đóng modal
+      setRejectReason(""); // Xóa lý do từ chối
     }
   };
 
@@ -232,7 +243,7 @@ const MedicalRequest = () => {
                       <Button
                         danger
                         size="small"
-                        onClick={() => handleReject(record.requestId)}
+                        onClick={() => handleRejectClick(record.requestId)} // Mở modal nhập lý do
                       >
                         Từ chối
                       </Button>
@@ -374,6 +385,39 @@ const MedicalRequest = () => {
               </ul>
             </div>
           ) : null}
+        </Modal>
+
+        <Modal
+          title="Nhập lý do từ chối"
+          open={rejectModalVisible}
+          onCancel={() => setRejectModalVisible(false)} // Đóng modal
+          footer={[
+            <Button key="cancel" onClick={() => setRejectModalVisible(false)}>
+              Hủy
+            </Button>,
+            <Button
+              key="confirm"
+              type="primary"
+              onClick={handleRejectConfirm}
+              disabled={!rejectReason.trim()} // Vô hiệu hóa nếu lý do trống
+            >
+              Xác nhận
+            </Button>,
+          ]}
+        >
+          <textarea
+            placeholder="Nhập lý do từ chối..."
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            style={{
+              width: "100%",
+              height: "100px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              padding: "8px",
+              fontSize: "14px",
+            }}
+          />
         </Modal>
       </div>
     </div>

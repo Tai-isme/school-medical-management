@@ -28,6 +28,9 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
           <b>Ngày dùng:</b> {detailData.date}
         </div>
         <div style={{ marginBottom: 12 }}>
+          <b>Thời gian uống thuốc:</b> {detailData.medicalRequestDetailDTO?.[0]?.time || "Không có thông tin"}
+        </div>
+        <div style={{ marginBottom: 12 }}>
           <b>Ghi chú:</b> {detailData.note}
         </div>
         <div style={{ marginBottom: 12 }}>
@@ -72,7 +75,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
           )}
         </div>
         <div style={{ marginBottom: 12 }}>
-          <b>Học sinh nhận thuốc:</b> {detailData.studentDTO.fullName}
+          <b>Học sinh nhận thuốc:</b> {detailData.studentDTO?.fullName || "Không có thông tin"}
         </div>
         <div style={{ margin: "16px 0 8px", fontWeight: "bold" }}>Chi tiết đơn thuốc:</div>
         {detailData.medicalRequestDetailDTO?.map((item, idx) => (
@@ -84,7 +87,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
           }}>
             <div><b>Tên thuốc:</b> {item.medicineName}</div>
             <div><b>Liều lượng:</b> {item.dosage}</div>
-            <div><b>Thời gian:</b> {item.time}</div>
+            {/* <div><b>Thời gian:</b> {item.time || "Không có thông tin"}</div> */}
           </div>
         ))}
       </div>

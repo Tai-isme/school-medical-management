@@ -159,6 +159,17 @@
   width: calc(100% - 0px);
 }
 
+/* Thời gian dùng thuốc */
+.input-group select {
+  font-size: 16px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #a7d9ff;
+  background-color: #f8fcff;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .input-group input:focus,
 .note-section textarea:focus {
   outline: none;
