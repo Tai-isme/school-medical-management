@@ -188,9 +188,9 @@ public class AdminController {
     public ResponseEntity<String> uploadStudentFromExcel(@RequestParam("file") MultipartFile file) {
         try {
             adminService.importStudentFromExcel(file);
-            return ResponseEntity.ok("Import thành công!");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Import thất bại: " + e.getMessage());
+            return ResponseEntity.ok("Import thành công");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -257,9 +257,9 @@ public class AdminController {
     public ResponseEntity<String> uploadVaccineNameExcel(@RequestParam("file") MultipartFile file) {
         try {
             adminService.importVaccineNameFromExcel(file);
-            return ResponseEntity.ok("Import thành công!");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Import thất bại: " + e.getMessage());
+            return ResponseEntity.ok("Import thành công");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

@@ -667,12 +667,14 @@ public class AdminService {
             Sheet sheet = workbook.getSheetAt(0);
             DataFormatter formatter = new DataFormatter();
             int importedCount = 0;
+            boolean duplicateReported = false;
+
             for (Row row : sheet) {
                 int rowNum = row.getRowNum();
                 if (rowNum == 0)
-                    continue; // skip header
+                    continue; 
                 if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK) {
-                    continue; // skip empty rows
+                    continue; 
                 }
                 try {
                     // student
@@ -691,65 +693,62 @@ public class AdminService {
                     String parentPhone = formatter.formatCellValue(row.getCell(8));
                     String parentAddress = row.getCell(9).getStringCellValue();
 
-                    // class
                     Optional<ClassEntity> classOpt = classRepository.findByClassNameAndTeacherName(className,
                             teacherName);
-                    ClassEntity classEntity;
-                    if (classOpt.isPresent()) {
-                        classEntity = classOpt.get();
-                    } else {
-                        classEntity = new ClassEntity();
-                        classEntity.setClassName(className);
-                        classEntity.setTeacherName(teacherName);
-                        classEntity.setQuantity(0);
-                        classEntity = classRepository.save(classEntity);
-                    }
+                    ClassEntity classEntity = classOpt.orElseGet(() -> {
+                        ClassEntity newClass = new ClassEntity();
+                        newClass.setClassName(className);
+                        newClass.setTeacherName(teacherName);
+                        newClass.setQuantity(0);
+                        return classRepository.save(newClass);
+                    });
 
-                    // parent
-                    Optional<UserEntity> parentOpt = userRepository.findUserByEmail(parentEmail);
-                    UserEntity parent;
+                    Optional<UserEntity> parentOpt = userRepository.findUserByEmailOrPhone(parentEmail, parentPhone);
                     if (parentOpt.isPresent()) {
-                        parent = parentOpt.get();
-                    } else {
-                        parent = new UserEntity();
-                        parent.setFullName(parentName);
-                        parent.setEmail(parentEmail);
-                        parent.setPhone(parentPhone);
-                        parent.setAddress(parentAddress);
-                        parent.setActive(true);
-                        parent.setRole(UserRole.PARENT);
-                        parent = userRepository.save(parent);
+                        if (!duplicateReported) {
+                            UserEntity existing = parentOpt.get();
+                            if (existing.getEmail().equalsIgnoreCase(parentEmail)) {
+                                throw new RuntimeException("Email \"" + parentEmail + "\" đã bị trùng.");
+                            } else {
+                                throw new RuntimeException("Số điện thoại \"" + parentPhone + "\" đã bị trùng.");
+                            }
+                        } else {
+                            continue;
+                        }
                     }
 
-                    // student
-                    Optional<StudentEntity> studentOpt = studentRepository
-                            .findByFullNameAndDobAndGenderAndRelationshipAndClassEntityAndParent(
-                                    studentName, dob, gender, relationship, classEntity, parent);
-                    StudentEntity student;
-                    if (studentOpt.isPresent()) {
-                        student = studentOpt.get();
-                    } else {
-                        student = new StudentEntity();
-                        student.setFullName(studentName);
-                        student.setDob(dob);
-                        student.setGender(gender);
-                        student.setRelationship(relationship);
-                        student.setClassEntity(classEntity);
-                        student.setParent(parent);
-                    }
+                    UserEntity parent = new UserEntity();
+                    parent.setFullName(parentName);
+                    parent.setEmail(parentEmail);
+                    parent.setPhone(parentPhone);
+                    parent.setAddress(parentAddress);
+                    parent.setActive(true);
+                    parent.setRole(UserRole.PARENT);
+                    parent = userRepository.save(parent);
+
+                    StudentEntity student = new StudentEntity();
+                    student.setFullName(studentName);
+                    student.setDob(dob);
+                    student.setGender(gender);
+                    student.setRelationship(relationship);
+                    student.setClassEntity(classEntity);
+                    student.setParent(parent);
 
                     studentRepository.save(student);
                     importedCount++;
+
+                } catch (RuntimeException ex) {
+                    throw ex;
                 } catch (Exception e) {
-                    throw new RuntimeException("Lỗi ở dòng Excel số " + (rowNum + 1) + ": "
-                            + row.getCell(0).getStringCellValue() + " - " + e.getMessage());
+                    throw new RuntimeException("Lỗi ở dòng Excel số " + rowNum + ": " + e.getMessage());
                 }
             }
+
             if (importedCount == 0) {
-                throw new RuntimeException("File không có dữ liệu hợp lệ để import.");
+                throw new RuntimeException("File không hợp lệ.");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi khi đọc file Excel: " + e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -884,9 +883,9 @@ public class AdminService {
             for (Row row : sheet) {
                 int rowNum = row.getRowNum();
                 if (rowNum == 0)
-                    continue; // skip header
+                    continue;
                 if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK)
-                    continue; // skip empty row
+                    continue; 
                 try {
 
                     String vaccineName = row.getCell(0).getStringCellValue();
@@ -917,15 +916,15 @@ public class AdminService {
                     vaccineNameRepository.save(vaccineNameEntity);
                     importedCount++;
                 } catch (Exception e) {
-                    throw new RuntimeException("Lỗi ở dòng Excel số " + (rowNum + 1) + ": "
+                    throw new RuntimeException("Lỗi ở dòng Excel số " + rowNum + ": "
                             + row.getCell(0).getStringCellValue() + " - " + e.getMessage());
                 }
             }
             if (importedCount == 0) {
-                throw new RuntimeException("File không có dữ liệu hợp lệ để import.");
+                throw new RuntimeException("File không hợp lệ.");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi khi đọc file Excel: " + e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 }
