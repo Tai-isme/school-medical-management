@@ -160,7 +160,7 @@ public class ParentController {
     @GetMapping("/health-check-forms/student/{studentId}")
     public ResponseEntity<List<HealthCheckFormDTO>> getAllHealthCheckForm(@PathVariable Long studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<HealthCheckFormDTO> healthCheckFormDTOList = parentService.getAllHealthCheckForm(Long.parseLong(parentId),
+        List<HealthCheckFormDTO> healthCheckFormDTOList = parentService.getAllHealthCheckFormCommited(Long.parseLong(parentId),
                 studentId);
         return ResponseEntity.ok(healthCheckFormDTOList);
     }
@@ -168,7 +168,7 @@ public class ParentController {
     @GetMapping("/vaccine-forms/student/{studentId}")
     public ResponseEntity<List<VaccineFormDTO>> getAllVaccineForm(@PathVariable Long studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<VaccineFormDTO> vaccineFormDTOList = parentService.getAllVaccineForm(Long.parseLong(parentId), studentId);
+        List<VaccineFormDTO> vaccineFormDTOList = parentService.getAllVaccineFormCommited(Long.parseLong(parentId), studentId);
         return ResponseEntity.ok(vaccineFormDTOList);
     }
 
