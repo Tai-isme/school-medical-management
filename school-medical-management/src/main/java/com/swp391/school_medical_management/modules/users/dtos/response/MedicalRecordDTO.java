@@ -24,6 +24,7 @@ public class MedicalRecordDTO {
     private String hearing;
     private Double weight;
     private Double height;
+    private Byte createBy;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdate;
     private String note;

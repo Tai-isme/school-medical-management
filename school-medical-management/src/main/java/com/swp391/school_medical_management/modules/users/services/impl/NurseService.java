@@ -1355,6 +1355,7 @@ public class NurseService {
                 medicalRecord.setWeight(savedResult.getWeight());
                 medicalRecord.setHeight(savedResult.getHeight());
                 medicalRecord.setNote(savedResult.getNote());
+                medicalRecord.setCreateBy((byte) 1);
                 medicalRecord.setLastUpdate(LocalDateTime.now());
                 medicalRecordsRepository.save(medicalRecord);
             }

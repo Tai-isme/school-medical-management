@@ -130,6 +130,7 @@ public class ParentService {
         medicalRecord.setHearing(request.getHearing());
         medicalRecord.setWeight(request.getWeight());
         medicalRecord.setHeight(request.getHeight());
+        medicalRecord.setCreateBy((byte) 0);
         medicalRecord.setNote(request.getNote());
         medicalRecord.setLastUpdate(LocalDateTime.now());
 
@@ -181,6 +182,7 @@ public class ParentService {
         medicalRecord.setHearing(request.getHearing());
         medicalRecord.setWeight(request.getWeight());
         medicalRecord.setHeight(request.getHeight());
+        medicalRecord.setCreateBy((byte) 0);
         medicalRecord.setNote(request.getNote());
         medicalRecord.setLastUpdate(LocalDateTime.now());
 
