@@ -25,28 +25,18 @@ export default function InstructionForm({ onShowHistory }) {
   const [selectedStudentId, setSelectedStudentId] = useState(students[0]?.id || '');
   const selectedStudent = students.find(s => String(s.id) === String(selectedStudentId));
 
-  const [medicines, setMedicines] = useState([{ name: '', quantity: '', usage: '' }]);
+  const [medicines, setMedicines] = useState([{ name: '', quantity: '' }]);
   const [note, setNote] = useState('');
   const [purpose, setPurpose] = useState(''); // Thêm state cho mục đích sử dụng thuốc
   const [usageTime, setUsageTime] = useState(''); // Thêm state cho thời gian sử dụng thuốc
+  const [selectedTime, setSelectedTime] = useState(""); // Thêm state cho thời gian dùng thuốc
   const [dateError, setDateError] = useState('');
   const [activeTab, setActiveTab] = useState('create'); // 'create' hoặc 'history'
   const [editingId, setEditingId] = useState(null);
-  const usageTimeOptions = [
-  "Sau ăn sáng từ 9h-9h30",
-  "Trước ăn trưa: 10h30-11h",
-  "Sau ăn trưa: từ 11h30-12h"
-];  
-const handleAddMedicine = () => {
-    setMedicines([...medicines, { name: '', quantity: '', usage: '' }]);
+
+  const handleAddMedicine = () => {
+    setMedicines([...medicines, { name: '', quantity: '' }]);
   };
-  const handleUsageTimeChange = (option) => {
-  setUsageTime(prev =>
-    prev.includes(option)
-      ? prev.filter(item => item !== option)
-      : [...prev, option]
-  );
-};
 
   const handleRemoveMedicine = (index) => {
     const newMedicines = medicines.filter((_, i) => i !== index);
@@ -93,9 +83,9 @@ const handleAddMedicine = () => {
       studentId: selectedStudent.id,
       medicalRequestDetailRequests: medicines.map(med => ({
         medicineName: med.name,
+        time: selectedTime, // Thời gian dùng thuốc được lấy từ phần chọn thời gian
         dosage: med.quantity,
-        time: med.usage
-      }))
+      })),
     };
 
     try {
@@ -127,7 +117,8 @@ const handleAddMedicine = () => {
       setPurpose('');
       setNote('');
       setUsageTime('');
-      setMedicines([{ name: '', quantity: '', usage: '' }]);
+      setSelectedTime(''); // Reset thời gian dùng thuốc
+      setMedicines([{ name: '', quantity: '' }]); // Xóa phần usage
       setEditingId(null); // Reset sau khi gửi
       message.success(editingId ? 'Đã cập nhật đơn thuốc!' : 'Đơn thuốc đã được gửi thành công!');
       toast.success(editingId ? 'Đã cập nhật đơn thuốc!' : 'Đơn thuốc đã được gửi thành công!');
@@ -147,43 +138,42 @@ const handleAddMedicine = () => {
   };
 
   // Nếu đang dùng ở SendMedicineCardDetails.jsx hoặc file render bảng
-const getStatusText = (status) => {
-  switch (status) {
-    case "PROCESSING":
-      return "Chờ duyệt";
-    case "SUBMITTED":
-      return "Đã duyệt";
-    case "COMPLETED":
-      return "Đã cho uống";
-    case "CANCELLED":
-      return "Bị từ chối";
-    default:
-      return status;
-  }
-};
-
-useEffect(() => {
-  const handleEdit = (e) => {
-    const req = e.detail;
-    setPurpose(req.requestName || '');
-    setNote(req.note || '');
-    setUsageTime(req.date || '');
-    setMedicines(
-        req.medicalRequestDetailDTO && Array.isArray(req.medicalRequestDetailDTO)
-        ? req.medicalRequestDetailDTO.map(item => ({
-            name: item.medicineName,
-            quantity: item.dosage,
-            usage: item.time
-          }))
-        : [{ name: '', quantity: '', usage: '' }]
-    );
-    setSelectedStudentId(req.studentDTO?.id || '');
-    setActiveTab('create');
-    setEditingId(req.requestId);
+  const getStatusText = (status) => {
+    switch (status) {
+      case "PROCESSING":
+        return "Chờ duyệt";
+      case "SUBMITTED":
+        return "Đã duyệt";
+      case "COMPLETED":
+        return "Đã cho uống";
+      case "CANCELLED":
+        return "Bị từ chối";
+      default:
+        return status;
+    }
   };
-  window.addEventListener('edit-medicine-request', handleEdit);
-  return () => window.removeEventListener('edit-medicine-request', handleEdit);
-}, []);
+
+  useEffect(() => {
+    const handleEdit = (e) => {
+      const req = e.detail;
+      setPurpose(req.requestName || '');
+      setNote(req.note || '');
+      setUsageTime(req.date || '');
+      setMedicines(
+        req.medicalRequestDetailDTO && Array.isArray(req.medicalRequestDetailDTO)
+          ? req.medicalRequestDetailDTO.map(item => ({
+              name: item.medicineName,
+              quantity: item.dosage,
+            }))
+          : [{ name: '', quantity: '' }]
+      );
+      setSelectedStudentId(req.studentDTO?.id || '');
+      setActiveTab('create');
+      setEditingId(req.requestId);
+    };
+    window.addEventListener('edit-medicine-request', handleEdit);
+    return () => window.removeEventListener('edit-medicine-request', handleEdit);
+  }, []);
 
   return (
     <div className="instruction-form-container" style={{ position: "relative" }}>
@@ -226,7 +216,7 @@ useEffect(() => {
       </div>
 
       {/* Tabs */}
-      <h2 style={{ textAlign: 'center', marginBottom: '20px' , marginTop: '0px' }}>Gửi đơn thuốc</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '20px', marginTop: '0px' }}>Gửi đơn thuốc</h2>
       <div className="tabs" style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: 0 }}>
         <button
           onClick={() => setActiveTab('create')}
@@ -270,25 +260,36 @@ useEffect(() => {
             <div className="student-info-section">
               <StudentInfoCard onChange={setSelectedStudentId} />
             </div>
+
+            {/* Phần chọn thời gian dùng thuốc */}
             
+
             {/* Phần Chi tiết đơn thuốc */}
             <div className="prescription-details-section">
               {/* Thêm input cho mục đích sử dụng thuốc */}
-            <div className="input-group">
-              <label style={{fontSize: '20px'}}>Mục đích gửi thuốc:</label>
-              <input
-                className="purpose-input"
-                width= "calc(100% - 20px)"
-                type="text"
-                value={purpose}
-                onChange={(e) => setPurpose(e.target.value)}
-                placeholder="Vd: Thuốc trị ho, thuốc hạ sốt..."
-                required
-              />
-            </div>
-            {/* Input thời gian sử dụng thuốc */}
               <div className="input-group">
-                <label style={{fontSize: '20px'}}>Ngày dùng:</label>
+                <label style={{ fontSize: '20px', fontWeight: 'bold' }}>Mục đích gửi thuốc:</label>
+                <input
+                  className="purpose-input"
+                  type="text"
+                  value={purpose}
+                  onChange={(e) => setPurpose(e.target.value)}
+                  placeholder="Vd: Thuốc trị ho, thuốc hạ sốt..."
+                  required
+                  style={{
+                    fontSize: '16px',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: '1px solid #a7d9ff',
+                    backgroundColor: '#f8fcff',
+                    width: '100%',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                  }}
+                />
+              </div>
+              {/* Input thời gian sử dụng thuốc */}
+              <div className="input-group">
+                <label style={{ fontSize: '20px', fontWeight: 'bold' }}>Ngày dùng:</label>
                 <input
                   type="date"
                   value={usageTime}
@@ -298,16 +299,47 @@ useEffect(() => {
                     setDateError(''); // Xóa lỗi khi người dùng thay đổi ngày
                   }}
                   required
-                  style={{fontSize: '16px', padding: '6px', borderRadius: '6px'}}
+                  style={{
+                    fontSize: '16px',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: '1px solid #a7d9ff',
+                    backgroundColor: '#f8fcff',
+                    width: '100%',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                  }}
                 />
               </div>
+              <div className="input-group">
+              <label style={{ fontSize: '20px', fontWeight: 'bold' }}>Thời gian dùng thuốc:</label>
+              <select
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                required
+                style={{
+                  fontSize: '16px',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: '1px solid #a7d9ff',
+                  backgroundColor: '#f8fcff',
+                  width: '100%',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                }}
+              >
+                <option value="">-- Chọn thời gian --</option>
+                <option value="Sau ăn sáng từ 9h-9h30">Sau ăn sáng từ 9h-9h30</option>
+                <option value="Trước ăn trưa: 10h30-11h">Trước ăn trưa: 10h30-11h</option>
+                <option value="Sau ăn trưa: từ 11h30-12h">Sau ăn trưa: từ 11h30-12h</option>
+              </select>
+            </div>
+
               {dateError && (
                 <span style={{ color: 'red', fontSize: '0.9em' }}>{dateError}</span>
               )}
-              <h2 style={{margin: '0px 0px 5px 0px'}}>Chi tiết đơn thuốc</h2>
+              <h2 style={{ margin: '0px 0px 5px 0px' }}>Chi tiết đơn thuốc</h2>
               <div className="medicine-list">
                 {medicines.map((medicine, index) => (
-                  <div key={index} className="medicine-item" style={{position: 'relative'}}>
+                  <div key={index} className="medicine-item" style={{ position: 'relative' }}>
                     {/* Nút X xoá */}
                     <button
                       type="button"
@@ -341,27 +373,13 @@ useEffect(() => {
                     <div className="input-group">
                       <label>Liều lượng:</label>
                       <input
-                        type="text" // Đổi từ number sang text
+                        type="text"
                         name="quantity"
                         value={medicine.quantity}
                         onChange={(e) => handleMedicineChange(index, e)}
                         placeholder="Uống 1 viên, Uống 1 muỗng..."
                         required
                       />
-                    </div>
-                    <div className="input-group" style={{ marginBottom: '0px' }}>
-                      <label>Thời gian:</label>
-                      <select
-                        name="usage"
-                        value={medicine.usage}
-                        onChange={(e) => handleMedicineChange(index, e)}
-                        required
-                      >
-                        <option value="">-- Chọn thời gian --</option>
-                        <option value="Sau ăn sáng từ 9h-9h30">Sau ăn sáng từ 9h-9h30</option>
-                        <option value="Trước ăn trưa: 10h30-11h">Trước ăn trưa: 10h30-11h</option>
-                        <option value="Sau ăn trưa: từ 11h30-12h">Sau ăn trưa: từ 11h30-12h</option>
-                      </select>
                     </div>
                   </div>
                 ))}
@@ -390,19 +408,19 @@ useEffect(() => {
       )}
 
       {activeTab === 'history' && (
-        <MedicalRequestDetail/>
+        <MedicalRequestDetail />
       )}
       <ToastContainer
-  position="bottom-right" // Thêm dòng này
-  autoClose={3000}
-  hideProgressBar={false}
-  newestOnTop={false}
-  closeOnClick
-  rtl={false}
-  pauseOnFocusLoss
-  draggable
-  pauseOnHover
-/>
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
-};
+}

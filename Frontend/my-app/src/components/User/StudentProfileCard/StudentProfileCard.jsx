@@ -65,6 +65,7 @@ const StudentProfile = () => {
         medicalHistory: data.treatmentHistory || '',
         lastUpdated: data.lastUpdate || '',
         note: data.note || '',
+        createBy: data.createBy || 0, // Include createBy field
       });
       setVaccineHistory(data.vaccineHistories || []);
     } catch (err) {
@@ -383,8 +384,16 @@ const StudentProfile = () => {
                         className={isEditing ? 'editable' : ''}
                         rows="3"
                       ></textarea>
+                      
                     </div>
+                    {/* Display the note if createBy is 1 */}
+                    {studentInfo.createBy === 1 && (
+                        <span style={{ marginTop: '8px', fontSize: '14px', color: '#1976d2' }}>
+                          Thông tin được tạo từ nhà trường.
+                        </span>
+                      )}
                   </div>
+                  
                 </>
               )}
 
@@ -409,7 +418,7 @@ const StudentProfile = () => {
             </>
           )}
 
-          <div className="buttons-container">
+          <div className="buttons-container" style={{ marginTop: '0px' }}>
             {activeTab === 'general' && (
               <>
                 {/* Chỉ hiện nút nếu đã có hồ sơ */}
