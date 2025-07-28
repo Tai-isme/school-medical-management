@@ -24,6 +24,9 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
 
   List<VaccineFormEntity> findAllByStudentAndStatusAndCommitIsTrue(StudentEntity student, VaccineFormStatus status);
 
+  List<VaccineFormEntity> findAllByStudentAndStatus(StudentEntity student, VaccineFormStatus status);
+
+
   List<VaccineFormEntity> findByCommitTrue();
 
   List<VaccineFormEntity> findByCommitTrueAndVaccineProgram_VaccineId(Long programId);

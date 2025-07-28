@@ -447,7 +447,7 @@ public class ParentService {
         medicalRequestRepository.delete(medicalRequestEntity);
     }
 
-    public List<HealthCheckFormDTO> getAllHealthCheckForm(Long parentId, Long studentId) {
+    public List<HealthCheckFormDTO> getAllHealthCheckFormCommited(Long parentId, Long studentId) {
         Optional<StudentEntity> studentOpt = studentRepository.findById(studentId);
         if (studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
@@ -462,12 +462,42 @@ public class ParentService {
         return healthCheckFormDTOs;
     }
 
-    public List<VaccineFormDTO> getAllVaccineForm(Long parentId, Long studentId) {
+    public List<VaccineFormDTO> getAllVaccineFormCommited(Long parentId, Long studentId) {
         Optional<StudentEntity> studentOpt = studentRepository.findById(studentId);
         if (studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
         StudentEntity studentEntity = studentOpt.get();
         List<VaccineFormEntity> vaccineFormEntities = vaccineFormRepository.findAllByStudentAndStatusAndCommitIsTrue(studentEntity,
+                VaccineFormStatus.SENT);
+
+        List<VaccineFormDTO> vaccineFormDTOs = vaccineFormEntities.stream()
+                .filter(form -> form.getStudent().getParent().getUserId().equals(parentId))
+                .map(vaccineFormEntity -> modelMapper.map(vaccineFormEntity, VaccineFormDTO.class))
+                .collect(Collectors.toList());
+        return vaccineFormDTOs;
+    }
+
+    public List<HealthCheckFormDTO> getAllHealthCheckForm(Long parentId, Long studentId) {
+        Optional<StudentEntity> studentOpt = studentRepository.findById(studentId);
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        StudentEntity studentEntity = studentOpt.get();
+        List<HealthCheckFormEntity> healthCheckFormEntities = healthCHeckFormRepository
+                .findAllByStudentAndStatus(studentEntity, HealthCheckFormStatus.SENT);
+
+        List<HealthCheckFormDTO> healthCheckFormDTOs = healthCheckFormEntities.stream()
+                .filter(form -> form.getParent().getUserId().equals(parentId))
+                .map(form -> modelMapper.map(form, HealthCheckFormDTO.class))
+                .collect(Collectors.toList());
+        return healthCheckFormDTOs;
+    }
+
+    public List<VaccineFormDTO> getAllVaccineForm(Long parentId, Long studentId) {
+        Optional<StudentEntity> studentOpt = studentRepository.findById(studentId);
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        StudentEntity studentEntity = studentOpt.get();
+        List<VaccineFormEntity> vaccineFormEntities = vaccineFormRepository.findAllByStudentAndStatus(studentEntity,
                 VaccineFormStatus.SENT);
 
         List<VaccineFormDTO> vaccineFormDTOs = vaccineFormEntities.stream()
