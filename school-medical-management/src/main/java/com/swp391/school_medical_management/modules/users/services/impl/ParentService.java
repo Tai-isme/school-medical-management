@@ -453,7 +453,7 @@ public class ParentService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
         StudentEntity studentEntity = studentOpt.get();
         List<HealthCheckFormEntity> healthCheckFormEntities = healthCHeckFormRepository
-                .findAllByStudentAndStatus(studentEntity, HealthCheckFormStatus.SENT);
+                .findAllByStudentAndStatusAndCommitIsTrue(studentEntity, HealthCheckFormStatus.SENT);
 
         List<HealthCheckFormDTO> healthCheckFormDTOs = healthCheckFormEntities.stream()
                 .filter(form -> form.getParent().getUserId().equals(parentId))
@@ -467,7 +467,7 @@ public class ParentService {
         if (studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
         StudentEntity studentEntity = studentOpt.get();
-        List<VaccineFormEntity> vaccineFormEntities = vaccineFormRepository.findAllByStudentAndStatus(studentEntity,
+        List<VaccineFormEntity> vaccineFormEntities = vaccineFormRepository.findAllByStudentAndStatusAndCommitIsTrue(studentEntity,
                 VaccineFormStatus.SENT);
 
         List<VaccineFormDTO> vaccineFormDTOs = vaccineFormEntities.stream()
