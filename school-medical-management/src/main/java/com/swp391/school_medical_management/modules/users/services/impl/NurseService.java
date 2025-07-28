@@ -725,12 +725,14 @@ public class NurseService {
                     .findMedicalRecordByStudent_Id(healthCheckFormEntity.getStudent().getId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                             "Not found medical record by student"));
-            medicalRecordEntity.setVision(request.getVision());
-            medicalRecordEntity.setHearing(request.getHearing());
-            medicalRecordEntity.setWeight(request.getWeight());
-            medicalRecordEntity.setHeight(request.getHeight());
+
+            medicalRecordEntity.setVision(healthCheckResultEntity.getVision());
+            medicalRecordEntity.setHearing(healthCheckResultEntity.getHearing());
+            medicalRecordEntity.setWeight(healthCheckResultEntity.getWeight());
+            medicalRecordEntity.setHeight(healthCheckResultEntity.getHeight());
+            medicalRecordsRepository.save(medicalRecordEntity);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found medical record by student");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating medical record", e);
         }
 
         HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,
