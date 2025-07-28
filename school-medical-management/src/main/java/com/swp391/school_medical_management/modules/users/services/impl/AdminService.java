@@ -708,9 +708,9 @@ public class AdminService {
                         if (!duplicateReported) {
                             UserEntity existing = parentOpt.get();
                             if (existing.getEmail().equalsIgnoreCase(parentEmail)) {
-                                throw new RuntimeException("Email \"" + parentEmail + "\" đã bị trùng.");
+                                throw new RuntimeException("Email " + parentEmail + " đã bị trùng.");
                             } else {
-                                throw new RuntimeException("Số điện thoại \"" + parentPhone + "\" đã bị trùng.");
+                                throw new RuntimeException("Số điện thoại " + parentPhone + " đã bị trùng.");
                             }
                         } else {
                             continue;

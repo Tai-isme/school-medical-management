@@ -185,12 +185,12 @@ public class AdminController {
     }
 
     @PostMapping("/student/import-excel")
-    public ResponseEntity<String> uploadStudentFromExcel(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, String>> uploadStudentFromExcel(@RequestParam("file") MultipartFile file) {
         try {
             adminService.importStudentFromExcel(file);
-            return ResponseEntity.ok("Import thành công");
+            return ResponseEntity.ok(Map.of("message", "Import thành công"));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 
