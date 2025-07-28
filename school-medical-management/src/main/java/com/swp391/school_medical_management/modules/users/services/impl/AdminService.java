@@ -144,18 +144,18 @@ public class AdminService {
 
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, long adminId) {
         UserEntity admin = userRepository.findUserByUserId(adminId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
 
         Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository
                 .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
 
         if (request.getStartDate().isAfter(request.getEndDate())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date must be before end date");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
         }
 
         if (existingProgramOpt.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Health check program with name '"
-                    + request.getHealthCheckName() + "' already exists and not started.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chương trình kiểm tra sức khỏe có tên '"
+                    + request.getHealthCheckName() + "' đã tồn tại và chưa bắt đầu.");
         }
 
         // kiểm tra chương trình gần nhất trước đó có COMPLETED chưa
@@ -202,25 +202,25 @@ public class AdminService {
         Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository.findById(id);
 
         if (existingProgramOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình kiểm tra sức khỏe");
 
         HealthCheckProgramEntity existingProgram = existingProgramOpt.get();
 
         if (existingProgram.getStatus() == HealthCheckProgramStatus.COMPLETED
                 || existingProgram.getStatus() == HealthCheckProgramStatus.ON_GOING)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Cannot update 'COMPLETED' or 'ON_GOING' program");
+                    "Không thể cập nhật chương trình đã hoàn thành hoặc đang diễn ra");
 
         if (request.getStartDate().isAfter(request.getEndDate()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date must be before end date");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
 
         if (!existingProgram.getHealthCheckName().equals(request.getHealthCheckName())) {
             Optional<HealthCheckProgramEntity> duplicateProgramOpt = healthCheckProgramRepository
                     .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
             if (duplicateProgramOpt.isPresent()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Health check program with name '" + request.getHealthCheckName()
-                                + "' already exists and not started.");
+                        "Chương trình kiểm tra sức khỏe có tên '" + request.getHealthCheckName()
+                                + "' đã tồn tại và chưa bắt đầu.");
             }
         }
 
