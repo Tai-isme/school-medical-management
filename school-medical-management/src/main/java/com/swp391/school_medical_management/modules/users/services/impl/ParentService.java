@@ -193,7 +193,6 @@ public class ParentService {
         medicalRecord.getVaccineHistories().clear();
 
         for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
-        for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
 
             VaccineHistoryEntity exist = vaccineHistoryRepository
                     .findByMedicalRecord_recordIdAndVaccineNameEntity_vaccineNameId(
