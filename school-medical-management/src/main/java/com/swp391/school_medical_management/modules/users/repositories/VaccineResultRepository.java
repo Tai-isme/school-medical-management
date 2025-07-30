@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface VaccineResultRepository extends JpaRepository<VaccineResultEntity, Long> {
+public interface VaccineResultRepository extends JpaRepository<VaccineResultEntity, Integer> {
     // Optional<VaccineResultEntity> findByVaccineFormEntity(VaccineFormEntity vaccineFormEntity);
 
     // Optional<VaccineResultEntity> findById(Long id);

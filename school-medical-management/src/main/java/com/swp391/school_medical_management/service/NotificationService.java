@@ -54,7 +54,7 @@ public class NotificationService {
         messagingTemplate.convertAndSend("/topic/parent/" + parentId, message);
     }
 
-    public List<NotificationMessageDTO> getNotificationByUserId(Long userId) {
+    public List<NotificationMessageDTO> getNotificationByUserId(int userId) {
         List<NotificationEntity> notificationEntityList = notificationRepository
                 .findByUser_UserIdOrderByCreatedAtDesc(userId);
         List<NotificationMessageDTO> notificationMessageDTOList = notificationEntityList.stream()

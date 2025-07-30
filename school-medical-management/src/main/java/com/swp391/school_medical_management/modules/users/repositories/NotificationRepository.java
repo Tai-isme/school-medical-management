@@ -1,11 +1,10 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
-import java.util.List;
-
+import com.swp391.school_medical_management.modules.users.entities.NotificationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.swp391.school_medical_management.modules.users.entities.NotificationEntity;
+import java.util.List;
 
-public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
-    List<NotificationEntity> findByUser_UserIdOrderByCreatedAtDesc(Long userId);
+public interface NotificationRepository extends JpaRepository<NotificationEntity, Integer> {
+    List<NotificationEntity> findByUser_UserIdOrderByCreatedAtDesc(int userId);
 }

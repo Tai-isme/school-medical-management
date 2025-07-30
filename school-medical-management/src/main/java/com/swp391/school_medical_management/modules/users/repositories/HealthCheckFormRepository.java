@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface HealthCheckFormRepository extends JpaRepository<HealthCheckFormEntity, Long> {
+public interface HealthCheckFormRepository extends JpaRepository<HealthCheckFormEntity, Integer> {
     // List<HealthCheckFormEntity> findHealthCheckFormEntityByHealthCheckProgramAndStudent(
     //                 HealthCheckProgramEntity healthCheckProgramEntity, StudentEntity student);
 

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Long> {
+public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Integer> {
     // List<VaccineFormEntity> findVaccineFormEntityByVaccineProgramAndStudent(VaccineProgramEntity vaccineProgramEntity,
     //     StudentEntity student);
 
@@ -57,5 +57,5 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
             FROM VaccineFormEntity vf
             WHERE vf.vaccineProgram.vaccineId = :vaccineId
             """)
-    ParticipationRateRaw getParticipationRateByVaccineId(@Param("vaccineId") Long vaccineId);
+    ParticipationRateRaw getParticipationRateByVaccineId(@Param("vaccineId") int vaccineId);
 }

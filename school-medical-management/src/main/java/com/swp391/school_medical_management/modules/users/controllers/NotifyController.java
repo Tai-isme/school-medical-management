@@ -1,18 +1,5 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.swp391.school_medical_management.modules.users.dtos.request.NotifyToParentRequest;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
@@ -22,6 +9,18 @@ import com.swp391.school_medical_management.modules.users.repositories.HealthChe
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 import com.swp391.school_medical_management.service.NotificationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -41,9 +40,9 @@ public class NotifyController {
 
     @PostMapping("/notify-health-check")
     public ResponseEntity<?> notifyHealthCheckToParents(@RequestBody NotifyToParentRequest request) {
-        List<Long> formIds = request.getFormIds();
-        List<Long> skippedForms = new ArrayList<>();
-        for (Long formId : formIds) {
+        List<Integer> formIds = request.getFormIds();
+        List<Integer> skippedForms = new ArrayList<>();
+        for (int formId : formIds) {
 
             Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(formId);
             if (healthCheckFormOpt.isEmpty())
@@ -84,9 +83,9 @@ public class NotifyController {
     @PostMapping("/notify-vaccine")
     public ResponseEntity<?> notifyVaccineToParents(@RequestBody NotifyToParentRequest request) {
         System.out.println("📢 ĐÃ VÀO CONTROLLER");
-        List<Long> formIds = request.getFormIds();
-        List<Long> skippedForms = new ArrayList<>();
-        for (Long formId : formIds) {
+        List<Integer> formIds = request.getFormIds();
+        List<Integer> skippedForms = new ArrayList<>();
+        for (Integer formId : formIds) {
             Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(formId);
             if (vaccineFormOpt.isEmpty())
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found vaccine form with id: " + formId);
