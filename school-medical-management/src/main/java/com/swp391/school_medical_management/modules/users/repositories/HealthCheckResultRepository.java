@@ -1,11 +1,14 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
-import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
+import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
 
 public interface HealthCheckResultRepository extends JpaRepository<HealthCheckResultEntity, Integer> {
     // Optional<HealthCheckResultEntity> findByHealthCheckFormEntity(HealthCheckFormEntity healthCheckFormEntity);
@@ -47,4 +50,11 @@ public interface HealthCheckResultRepository extends JpaRepository<HealthCheckRe
             ORDER BY p.id
             """)
     List<HealthCheckResultByProgramStatsRaw> getHealthCheckResultStatusStatsByProgram();
+
+    Optional<HealthCheckResultEntity> findByHealthCheckForm(HealthCheckFormEntity healthCheckForm);
+    
+
+    Optional<HealthCheckResultEntity> findByHealthResultId(int healthResultId); 
+
+    List<HealthCheckResultEntity> findByHealthCheckForm_HealthCheckProgram_Id(int programId);
 }

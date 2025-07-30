@@ -231,7 +231,7 @@ public class ParentController {
     }
 
     @GetMapping("/health-check-result/{healCheckResultId}")
-    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResultByResultID(@PathVariable Long healCheckResultId) {
+    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResultByResultID(@PathVariable int healCheckResultId) {
         HealthCheckResultDTO healthCheckResultDTO = nurseService.getHealthCheckResult(healCheckResultId);
         return ResponseEntity.ok(healthCheckResultDTO);
     }

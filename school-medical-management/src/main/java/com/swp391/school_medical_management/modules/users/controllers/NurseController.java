@@ -88,14 +88,14 @@ public class NurseController {
     }
 
     @GetMapping("/health-check-forms/{healthCheckFormId}")
-    public ResponseEntity<HealthCheckFormDTO> getHealthCheckFormById(@PathVariable Long healthCheckFormId) {
+    public ResponseEntity<HealthCheckFormDTO> getHealthCheckFormById(@PathVariable int healthCheckFormId) {
         HealthCheckFormDTO healthCheckFormDTO = nurseService.getHealthCheckFormById(healthCheckFormId);
         return ResponseEntity.ok(healthCheckFormDTO);
     }
 
     @GetMapping("/health-check-forms/program/{programId}")
     public ResponseEntity<List<HealthCheckFormDTO>> getHealthCheckFormsByProgram(
-            @PathVariable Long programId,
+            @PathVariable int programId,
             @RequestParam(required = false) Boolean committed) {
         List<HealthCheckFormDTO> list = nurseService.getHealthCheckFormsByProgram(programId, committed);
         return ResponseEntity.ok(list);
@@ -186,26 +186,26 @@ public class NurseController {
     }
 
     @PutMapping("/health-check-result/{healCheckResultId}")
-    public ResponseEntity<HealthCheckResultDTO> putMethodName(@PathVariable Long healCheckResultId,
+    public ResponseEntity<HealthCheckResultDTO> putMethodName(@PathVariable int healCheckResultId,
             @RequestBody HealthCheckResultRequest request) {
         HealthCheckResultDTO healthCheckResultDTO = nurseService.updateHealthCheckResult(healCheckResultId, request);
         return ResponseEntity.ok(healthCheckResultDTO);
     }
 
     @GetMapping("/health-check-result/{healCheckResultId}")
-    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResult(@PathVariable Long healCheckResultId) {
+    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResult(@PathVariable int healCheckResultId) {
         HealthCheckResultDTO healthCheckResultDTO = nurseService.getHealthCheckResult(healCheckResultId);
         return ResponseEntity.ok(healthCheckResultDTO);
     }
 
     @GetMapping("/health-check-result/program/{programId}")
-    public ResponseEntity<List<HealthCheckResultDTO>> getHealthCheckResultByProgram(@PathVariable Long programId) {
+    public ResponseEntity<List<HealthCheckResultDTO>> getHealthCheckResultByProgram(@PathVariable int programId) {
         List<HealthCheckResultDTO> resultDTOList = nurseService.getHealthCheckResultByProgram(programId);
         return ResponseEntity.ok(resultDTOList);
     }
 
     @DeleteMapping("/health-check-result/{healCheckResultId}")
-    public ResponseEntity<Void> deleteHealthCheckResult(@PathVariable Long healCheckResultId) {
+    public ResponseEntity<Void> deleteHealthCheckResult(@PathVariable int healCheckResultId) {
         nurseService.deleteHealthCheckResult(healCheckResultId);
         return ResponseEntity.noContent().build();
     }
