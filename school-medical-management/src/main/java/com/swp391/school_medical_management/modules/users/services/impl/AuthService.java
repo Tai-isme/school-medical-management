@@ -1,38 +1,33 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.LoginResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.RefreshTokenDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.entities.RefreshTokenEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
+import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.service.JwtService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
-import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.ChangePasswordRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.IdTokenRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.LoginRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.LoginResponse;
-import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
-import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
-import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
-import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
-import com.swp391.school_medical_management.service.JwtService;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -63,7 +58,7 @@ public class AuthService {
         if (userOpt.isEmpty())
             throw new BadCredentialsException("Incorrect email or password!");
         UserEntity user = userOpt.get();
-        if (user.isActive() == false) {
+        if (!user.isActive()) {
             throw new BadCredentialsException("Your account is not active!");
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
@@ -75,8 +70,8 @@ public class AuthService {
         return new LoginResponse(token, refreshToken, userDTO, null);
     }
 
-    public void updateAccountStatus(Long userId, boolean status) {
-        Optional<UserEntity> userOpt = userRepository.findUserByUserId(userId);
+    public void updateAccountStatus(int userId, boolean status) {
+        Optional<UserEntity> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
@@ -98,7 +93,7 @@ public class AuthService {
 
         // 2. Xoá refresh token theo userId
         String userId = jwtService.getUserIdFromJwt(token);
-        Optional<UserEntity> userOpt = userRepository.findUserByUserId(Long.parseLong(userId));
+        Optional<UserEntity> userOpt = userRepository.findById(Integer.parseInt(userId));
         if (userOpt.isEmpty()) {
             throw new RuntimeException("User not found with ID: " + userId);
         }
@@ -106,8 +101,8 @@ public class AuthService {
         refreshTokenRepository.deleteByUser(user);
     }
 
-    public void changePassword(Long userId, ChangePasswordRequest request) {
-        UserEntity user = userRepository.findUserByUserId(userId)
+    public void changePassword(int userId, ChangePasswordRequest request) {
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
@@ -118,8 +113,8 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public void updateProfile(Long userId, UpdateProfileRequest request) {
-        UserEntity user = userRepository.findUserByUserId(userId)
+    public void updateProfile(int userId, UpdateProfileRequest request) {
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
         user.setFullName(request.getFullName());
         // if (!user.getEmail().equals(request.getEmail())) {
@@ -127,18 +122,18 @@ public class AuthService {
         //     if (emailExists) {
         //         throw new RuntimeException("Email already in use");
         //     }
-            user.setEmail(request.getEmail());
+        user.setEmail(request.getEmail());
         // }
         // if (!user.getPhone().equals(request.getPhone())) {
         //     boolean phoneExists = userRepository.existsByPhone(request.getPhone());
         //     if (phoneExists) {
         //         throw new RuntimeException("Phone already in use");
         //     }
-            user.setPhone(request.getPhone());
+        user.setPhone(request.getPhone());
         // }
         user.setAddress(request.getAddress());
 
-        userRepository.save(user);  
+        userRepository.save(user);
     }
 
     public RefreshTokenDTO refreshToken(String refreshToken) {
@@ -165,7 +160,7 @@ public class AuthService {
                 throw new BadCredentialsException("Not found user with phone number: " + phoneNumberINTL);
             }
             UserEntity user = userOpt.get();
-            if (user.isActive() == false) {
+            if (!user.isActive()) {
                 throw new BadCredentialsException("Your account is not active!");
             }
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
@@ -189,7 +184,7 @@ public class AuthService {
             if (userOpt.isEmpty())
                 throw new BadCredentialsException("Not found user with email: " + email);
             UserEntity user = userOpt.get();
-            if (user.isActive() == false) {
+            if (!user.isActive()) {
                 throw new BadCredentialsException("Your account is not active!");
             }
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);

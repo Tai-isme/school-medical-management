@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StudentDTO {
-    private long studentId;
+    private int studentId;
     private String fullName;
     private LocalDate dob;
     private String gender;

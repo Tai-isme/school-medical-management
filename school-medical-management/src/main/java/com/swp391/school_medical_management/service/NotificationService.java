@@ -1,21 +1,18 @@
 package com.swp391.school_medical_management.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.swp391.school_medical_management.modules.users.dtos.response.NotificationMessageDTO;
 import com.swp391.school_medical_management.modules.users.entities.NotificationEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.repositories.NotificationRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationService {
@@ -32,8 +29,8 @@ public class NotificationService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public void sendNotificationToParent(Long parentId, String title, String content, String formType, long formId,
-            boolean isRead) {
+    public void sendNotificationToParent(int parentId, String title, String content, String formType, long formId,
+                                         boolean isRead) {
         UserEntity user = userRepository.findById(parentId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

@@ -1,12 +1,16 @@
 package com.swp391.school_medical_management.helpers;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.service.JwtService;
+import jakarta.annotation.Nonnull;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,19 +23,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.cloud.storage.Option;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
-import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
-import com.swp391.school_medical_management.service.JwtService;
-
-import jakarta.annotation.Nonnull;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -58,7 +54,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 || path.startsWith("/swagger-ui")
                 || path.equals("/swagger-ui.html")
                 || path.startsWith("/api/test")
-                || path.startsWith("/ws") 
+                || path.startsWith("/ws")
         ) {
             filterChain.doFilter(request, response);
             return;
@@ -117,7 +113,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        if(jwtService.isBlackListedToken(jwt)){
+        if (jwtService.isBlackListedToken(jwt)) {
             logger.info("Blacklisted token");
             sendErrorResponse(response,
                     request,
@@ -129,17 +125,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         userId = jwtService.getUserIdFromJwt(jwt);
         role = jwtService.getRoleFromJwt(jwt);
-        Optional<UserEntity> userOpt = userRepository.findUserByUserId(Long.parseLong(userId));
-        if(userOpt.isEmpty()) {
+        Optional<UserEntity> userOpt = userRepository.findById(Integer.parseInt(userId));
+        if (userOpt.isEmpty()) {
             sendErrorResponse(response,
                     request,
                     HttpServletResponse.SC_UNAUTHORIZED,
                     "Xac thuc khong thanh cong!",
                     "Nguoi dung khong ton tai");
             return;
-        }   
+        }
         UserEntity user = userOpt.get();
-        if(user.isActive() == false) {
+        if (!user.isActive()) {
             sendErrorResponse(response,
                     request,
                     HttpServletResponse.SC_UNAUTHORIZED,

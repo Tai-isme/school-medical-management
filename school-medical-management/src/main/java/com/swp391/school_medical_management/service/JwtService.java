@@ -9,8 +9,8 @@ import com.swp391.school_medical_management.modules.users.repositories.RefreshTo
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +23,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -44,7 +40,7 @@ public class JwtService {
     @Autowired
     private JwtConfig jwtConfig;
 
-    private SecretKey key;
+    private final SecretKey key;
 
     @Autowired
     private UserRepository userRepository;
@@ -54,7 +50,7 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtConfig.getSecretKey()));
     }
 
-    public String generateToken(Long userId, String email, String phone, UserRole role) {
+    public String generateToken(int userId, String email, String phone, UserRole role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationTime());
         return Jwts.builder()
@@ -69,7 +65,7 @@ public class JwtService {
                 .compact();
     }
 
-    public String generateRefreshToken(Long userId) {
+    public String generateRefreshToken(int userId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtConfig.getExpirationRefreshTime());
 
@@ -77,8 +73,7 @@ public class JwtService {
 
         LocalDateTime localExpiryDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-        UserEntity user = userRepository.findUserByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         Optional<RefreshTokenEntity> optionalRefreshToken = refreshTokenRepository.findByUser(user);
         if (optionalRefreshToken.isPresent()) {
             RefreshTokenEntity dBRefreshToken = optionalRefreshToken.get();

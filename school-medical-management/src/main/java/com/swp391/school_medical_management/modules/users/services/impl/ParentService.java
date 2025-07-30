@@ -1,12 +1,12 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
+import com.swp391.school_medical_management.modules.users.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,57 +15,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.FeedbackRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequestDetailRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineHistoryRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
-import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity;
-import com.swp391.school_medical_management.modules.users.entities.FeedbackEntity.FeedbackStatus;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
-// import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
-import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-// import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
-import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
-import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
-import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
-import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineHistoryRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineNameRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ParentService {
@@ -111,130 +64,103 @@ public class ParentService {
     @Autowired
     private VaccineHistoryRepository vaccineHistoryRepository;
 
-    public MedicalRecordDTO createMedicalRecord(Long parentId, MedicalRecordsRequest request) {
-        // Optional<StudentEntity> studentOpt =
-        // studentRepository.findStudentById(request.getStudentId());
-        // if (studentOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+    public MedicalRecordDTO createMedicalRecord(int parentId, MedicalRecordsRequest request) {
+        Optional<StudentEntity> studentOpt = studentRepository.findById(request.getStudentId());
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy học sinh");
 
-        // StudentEntity student = studentOpt.get();
-        // if (!student.getParent().getUserId().equals(parentId)) {
-        // throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        // }
+        StudentEntity student = studentOpt.get();
+        if (!(student.getParent().getUserId() == parentId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập học sinh này");
+        }
 
-        // if
-        // (medicalRecordsRepository.findMedicalRecordByStudent_Id(request.getStudentId()).isPresent())
-        // {
-        // throw new RuntimeException("Medical record already exists");
-        // }
+        Optional<MedicalRecordEntity> recordOpt = medicalRecordsRepository.findByStudent_Id(request.getStudentId());
+        if (recordOpt.isPresent()) {
+            throw new RuntimeException("Hồ sơ ý tế đã tồn tại");
+        }
 
-        // MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
-        // medicalRecord.setStudent(student);
-        // medicalRecord.setAllergies(request.getAllergies());
-        // medicalRecord.setChronicDisease(request.getChronicDisease());
-        // medicalRecord.setTreatmentHistory(request.getTreatmentHistory());
-        // medicalRecord.setVision(request.getVision());
-        // medicalRecord.setHearing(request.getHearing());
-        // medicalRecord.setWeight(request.getWeight());
-        // medicalRecord.setHeight(request.getHeight());
-        // medicalRecord.setCreateBy((byte) 0);
-        // medicalRecord.setNote(request.getNote());
-        // medicalRecord.setLastUpdate(LocalDateTime.now());
+        MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
+        medicalRecord.setAllergies(request.getAllergies());
+        medicalRecord.setChronicDisease(request.getChronicDisease());
+        medicalRecord.setVision(request.getVision());
+        medicalRecord.setHearing(request.getHearing());
+        medicalRecord.setWeight(request.getWeight());
+        medicalRecord.setHeight(request.getHeight());
+        medicalRecord.setLastUpdate(LocalDateTime.now());
+        medicalRecord.setCreateBy(false);
+        medicalRecord.setNote(request.getNote());
+        medicalRecord.setStudent(student);
 
-        // List<VaccineHistoryEntity> vaccineHistories = new ArrayList<>();
-        // for (VaccineHistoryRequest vaccineHistoryRequest :
-        // request.getVaccineHistories()) {
-        // VaccineHistoryEntity vaccineHistory = new VaccineHistoryEntity();
+        List<VaccineHistoryEntity> vaccineHistoryEntities = new ArrayList<>();
+        for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
+            VaccineHistoryEntity vaccineHistory = new VaccineHistoryEntity();
 
-        // Long vaccineNameId = vaccineHistoryRequest.getVaccineNameId();
-        // VaccineNameEntity vaccineNameEntity =
-        // vaccineNameRepository.findById(vaccineNameId)
-        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        // "Vaccine name not found"));
+            int vaccineNameId = vaccineHistoryRequest.getVaccineNameId();
+            VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(vaccineNameId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tồn tại vaccine"));
 
-        // vaccineHistory.setVaccineNameEntity(vaccineNameEntity);
-        // vaccineHistory.setNote(vaccineHistoryRequest.getNote());
-        // vaccineHistory.setMedicalRecord(medicalRecord);
-        // vaccineHistory.setCreateBy((byte) 0);
-        // vaccineHistories.add(vaccineHistory);
-        // }
+            vaccineHistory.setNote(vaccineHistoryRequest.getNote());
+            vaccineHistory.setCreateBy(false);
+            vaccineHistory.setUnit(vaccineHistoryRequest.getUnit());
+            vaccineHistory.setStudent(student);
+            vaccineHistory.setVaccineNameEntity(vaccineNameEntity);
+            vaccineHistoryEntities.add(vaccineHistory);
+            vaccineHistoryRepository.save(vaccineHistory);
+        }
 
-        // medicalRecord.setVaccineHistories(vaccineHistories);
-        // medicalRecordsRepository.save(medicalRecord);
+        medicalRecordsRepository.save(medicalRecord);
 
-        // MedicalRecordDTO medicalRecordDTO = modelMapper.map(medicalRecord,
-        // MedicalRecordDTO.class);
-        // List<VaccineHistoryDTO> vaccineHistoryDTOList =
-        // medicalRecord.getVaccineHistories()
-        // .stream()
-        // .map(vaccineHistory -> modelMapper.map(vaccineHistory,
-        // VaccineHistoryDTO.class))
-        // .collect(Collectors.toList());
-        // medicalRecordDTO.setVaccineHistories(vaccineHistoryDTOList);
 
-        // return medicalRecordDTO;
-        return null;
+        StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
+        MedicalRecordDTO medicalRecordDTO = modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+        medicalRecordDTO.setStudentDTO(studentDTO);
+        return medicalRecordDTO;
     }
 
-    public MedicalRecordDTO updateMedicalRecord(Long parentId, MedicalRecordsRequest request) {
-        // Optional<StudentEntity> studentOpt =
-        // studentRepository.findStudentById(request.getStudentId());
-        // if (studentOpt.isEmpty() ||
-        // !studentOpt.get().getParent().getUserId().equals(parentId)) {
-        // throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        // }
+    public MedicalRecordDTO updateMedicalRecord(int parentId, MedicalRecordsRequest request) {
+        Optional<StudentEntity> studentOpt = studentRepository.findById(request.getStudentId());
+        if (studentOpt.isEmpty() || !(studentOpt.get().getParent().getUserId() == parentId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào học sinh này!");
+        }
+        StudentDTO studentDTO = modelMapper.map(studentOpt.get(), StudentDTO.class);
+        Optional<MedicalRecordEntity> recordOpt = medicalRecordsRepository.findByStudent_Id(request.getStudentId());
+        if (recordOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ y tế!");
+        }
 
-        // Optional<MedicalRecordEntity> recordOpt = medicalRecordsRepository
-        // .findMedicalRecordByStudent_Id(request.getStudentId());
-        // if (recordOpt.isEmpty()) {
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical record not
-        // found");
-        // }
+        MedicalRecordEntity medicalRecord = recordOpt.get();
+        medicalRecord.setAllergies(request.getAllergies());
+        medicalRecord.setChronicDisease(request.getChronicDisease());
+        medicalRecord.setVision(request.getVision());
+        medicalRecord.setHearing(request.getHearing());
+        medicalRecord.setWeight(request.getWeight());
+        medicalRecord.setHeight(request.getHeight());
+        medicalRecord.setLastUpdate(LocalDateTime.now());
+        medicalRecord.setCreateBy(false);
+        medicalRecord.setNote(request.getNote());
+        medicalRecord.setStudent(studentOpt.get());
 
-        // MedicalRecordEntity medicalRecord = recordOpt.get();
-        // medicalRecord.setAllergies(request.getAllergies());
-        // medicalRecord.setChronicDisease(request.getChronicDisease());
-        // medicalRecord.setTreatmentHistory(request.getTreatmentHistory());
-        // medicalRecord.setVision(request.getVision());
-        // medicalRecord.setHearing(request.getHearing());
-        // medicalRecord.setWeight(request.getWeight());
-        // medicalRecord.setHeight(request.getHeight());
-        // medicalRecord.setCreateBy((byte) 0);
-        // medicalRecord.setNote(request.getNote());
-        // medicalRecord.setLastUpdate(LocalDateTime.now());
+        for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
+            VaccineHistoryEntity exist = vaccineHistoryRepository.findByStudentAndVaccineNameEntity_vaccineNameId(medicalRecord.getStudent(), vaccineHistoryRequest.getVaccineNameId());
+            if (exist != null) {
+                exist.setNote(vaccineHistoryRequest.getNote());
+            } else {
+                VaccineHistoryEntity vaccineHistoryEntity = new VaccineHistoryEntity();
+                int vaccineNameId = vaccineHistoryRequest.getVaccineNameId();
+                VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(vaccineNameId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy vaccine!"));
 
-        // medicalRecord.getVaccineHistories().clear();
-
-        // for (VaccineHistoryRequest vaccineHistoryRequest :
-        // request.getVaccineHistories()) {
-
-        // VaccineHistoryEntity exist = vaccineHistoryRepository
-        // .findByMedicalRecord_recordIdAndVaccineNameEntity_vaccineNameId(
-        // medicalRecord.getRecordId(), vaccineHistoryRequest.getVaccineNameId());
-        // if (exist != null) {
-        // exist.setNote(vaccineHistoryRequest.getNote());
-        // medicalRecord.getVaccineHistories().add(exist);
-        // } else {
-        // VaccineHistoryEntity vaccineHistoryEntity = new VaccineHistoryEntity();
-        // Long vaccineNameId = vaccineHistoryRequest.getVaccineNameId();
-        // VaccineNameEntity vaccineNameEntity =
-        // vaccineNameRepository.findById(vaccineNameId)
-        // .orElseThrow(
-        // () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name not
-        // found"));
-
-        // vaccineHistoryEntity.setVaccineNameEntity(vaccineNameEntity);
-        // vaccineHistoryEntity.setNote(vaccineHistoryRequest.getNote());
-        // vaccineHistoryEntity.setMedicalRecord(medicalRecord);
-        // vaccineHistoryEntity.setCreateBy((byte) 0);
-        // medicalRecord.getVaccineHistories().add(vaccineHistoryEntity);
-        // }
-
-        // }
-
-        // medicalRecordsRepository.save(medicalRecord);
-        // return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
-        return null;
+                vaccineHistoryEntity.setNote(vaccineHistoryRequest.getNote());
+                vaccineHistoryEntity.setCreateBy(false);
+                vaccineHistoryEntity.setUnit(vaccineHistoryRequest.getUnit());
+                vaccineHistoryEntity.setStudent(studentOpt.get());
+                vaccineHistoryEntity.setVaccineNameEntity(vaccineNameEntity);
+            }
+        }
+        medicalRecordsRepository.save(medicalRecord);
+        MedicalRecordDTO medicalRecordDTO = modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+        medicalRecordDTO.setStudentDTO(studentDTO);
+        return medicalRecordDTO;
     }
 
     public List<MedicalRecordDTO> getAllMedicalRecordByParentId(Long parentId) {

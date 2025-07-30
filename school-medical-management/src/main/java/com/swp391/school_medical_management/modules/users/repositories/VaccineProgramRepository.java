@@ -1,15 +1,10 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
 
 public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEntity, Long> {
     // Optional<VaccineProgramEntity> findByVaccineNameAndStatus(VaccineNameEntity vaccineName,
@@ -33,5 +28,8 @@ public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEn
     //             VaccineProgramStatus status);
 
     // }
+
+    //Thien
+    Optional<VaccineProgramEntity> findTopByStatusOrderByStartDateDesc(VaccineProgramStatus status);
 
 }

@@ -1,19 +1,12 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface StudentRepository extends JpaRepository<StudentEntity, Long> {
-    List<StudentEntity> findStudentByParent_UserId(Long aLong);
+import java.util.List;
+
+public interface StudentRepository extends JpaRepository<StudentEntity, Integer> {
+    List<StudentEntity> findStudentByParent_UserId(int userId);
 
     // Optional<StudentEntity> findStudentById(Long id);
 

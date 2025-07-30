@@ -58,7 +58,7 @@ public class HealthCheckResultEntity {
     @Column(name = "is_checked")
     private Boolean isChecked;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "health_check_form_id", referencedColumnName = "health_check_form_id", foreignKey = @ForeignKey(name = "FK_health_check_result_form"))
     private HealthCheckFormEntity healthCheckForm;
 

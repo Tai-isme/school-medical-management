@@ -1,42 +1,19 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import java.util.List;
-
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
+import com.swp391.school_medical_management.modules.users.services.impl.ParentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.FeedbackRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
-import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
-import com.swp391.school_medical_management.modules.users.services.impl.ParentService;
-
-import jakarta.validation.Valid;
+import java.util.List;
 
 @Validated
 @RestController
@@ -52,7 +29,7 @@ public class ParentController {
 
     /**
      * Medical record for a student.
-     * 
+     *
      * @param medicalRecordsRequest the request containing medical record details
      * @return ResponseEntity with the created MedicalRecordDTO
      */
@@ -61,8 +38,7 @@ public class ParentController {
     public ResponseEntity<MedicalRecordDTO> createMedicalRecords(
             @RequestBody MedicalRecordsRequest medicalRecordsRequest) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRecordDTO medicalRecordDTO = parentService.createMedicalRecord(Long.parseLong(parentId),
-                medicalRecordsRequest);
+        MedicalRecordDTO medicalRecordDTO = parentService.createMedicalRecord(Integer.parseInt(parentId), medicalRecordsRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(medicalRecordDTO);
     }
 
@@ -70,8 +46,7 @@ public class ParentController {
     public ResponseEntity<MedicalRecordDTO> updateMedicalRecords(
             @RequestBody MedicalRecordsRequest medicalRecordsRequest) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRecordDTO medicalRecordDTO = parentService.updateMedicalRecord(Long.parseLong(parentId),
-                medicalRecordsRequest);
+        MedicalRecordDTO medicalRecordDTO = parentService.updateMedicalRecord(Integer.parseInt(parentId), medicalRecordsRequest);
         return ResponseEntity.ok(medicalRecordDTO);
     }
 
@@ -105,7 +80,7 @@ public class ParentController {
 
     /**
      * Medical request for a student.
-     * 
+     *
      * @param request the request containing medical request details
      * @return ResponseEntity with the created MedicalRequestDTO
      */
@@ -143,7 +118,7 @@ public class ParentController {
 
     @PutMapping("/medical-request/{requestId}")
     public ResponseEntity<MedicalRequestDTO> updateMedicalRequest(@Valid @RequestBody MedicalRequest request,
-            @PathVariable int requestId) {
+                                                                  @PathVariable int requestId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         MedicalRequestDTO medicalRequestDTO = parentService.updateMedicalRequest(Long.parseLong(parentId), request,
                 requestId);
@@ -190,7 +165,7 @@ public class ParentController {
 
     @PatchMapping("/health-check-forms/{healCheckFormId}/commit")
     public ResponseEntity<Void> commitHealthCheckForm(@RequestBody CommitHealthCheckFormRequest request,
-            @PathVariable Long healCheckFormId) {
+                                                      @PathVariable Long healCheckFormId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         parentService.commitHealthCheckForm(Long.parseLong(parentId), healCheckFormId, request);
         return ResponseEntity.noContent().build();
@@ -198,7 +173,7 @@ public class ParentController {
 
     @PatchMapping("/vaccine-forms/{vaccineFormId}/commit")
     public ResponseEntity<Void> commitVaccineForm(@RequestBody CommitVaccineFormRequest request,
-            @PathVariable Long vaccineFormId) {
+                                                  @PathVariable Long vaccineFormId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         parentService.commitVaccineForm(Long.parseLong(parentId), vaccineFormId, request);
         return ResponseEntity.noContent().build();

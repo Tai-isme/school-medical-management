@@ -1,28 +1,7 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.swp391.school_medical_management.helpers.ApiResponse;
-import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.ChangePasswordRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.IdTokenRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.LoginRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.RefreshTokenRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.LoginResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.RefreshTokenDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
@@ -30,8 +9,14 @@ import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.modules.users.services.impl.AuthService;
 import com.swp391.school_medical_management.modules.users.services.impl.BlacklistService;
-
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
@@ -57,7 +42,7 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        authService.changePassword(Long.parseLong(userId), request);
+        authService.changePassword(Integer.parseInt(userId), request);
         return ResponseEntity.ok("Password changed successfully");
     }
 
@@ -65,7 +50,7 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        authService.updateProfile(Long.parseLong(userId), request);
+        authService.updateProfile(Integer.parseInt(userId), request);
         return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật thông tin cá nhân thành công", null));
     }
 
@@ -78,7 +63,7 @@ public class AuthController {
 
     @PatchMapping("/update-account-status/{UserId}/{status}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Void> updateAccountStatus(@PathVariable Long UserId, @PathVariable boolean status) {
+    public ResponseEntity<Void> updateAccountStatus(@PathVariable int UserId, @PathVariable boolean status) {
         authService.updateAccountStatus(UserId, status);
         return ResponseEntity.noContent().build();
     }
@@ -112,7 +97,7 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> me() {
         String id = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = (UserEntity) userRepository.findUserByUserId(Long.parseLong(id))
+        UserEntity user = userRepository.findById(Integer.parseInt(id))
                 .orElseThrow(() -> new RuntimeException("User khong ton tai"));
 
         UserDTO userDTO = UserDTO.builder()
