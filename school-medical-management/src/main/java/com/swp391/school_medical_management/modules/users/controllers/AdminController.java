@@ -51,30 +51,26 @@ public class AdminController {
     }
 
     @PostMapping("/health-check-program")
-    public ResponseEntity<HealthCheckProgramDTO> createHealthCheckProgram(
-            @Valid @RequestBody HealthCheckProgramRequest request) {
+    public ResponseEntity<HealthCheckProgramDTO> createHealthCheckProgram(@Valid @RequestBody HealthCheckProgramRequest request) {
         String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
         HealthCheckProgramDTO healthCheckProgramDTO = adminService.createHealthCheckProgram(request, Integer.parseInt(adminId));
         return ResponseEntity.status(HttpStatus.CREATED).body(healthCheckProgramDTO);
     }
 
     @PutMapping("/health-check-program/{id}")
-    public ResponseEntity<HealthCheckProgramDTO> updateHealthCheckProgram(
-            @Valid @RequestBody HealthCheckProgramRequest request, @PathVariable int id) {
+    public ResponseEntity<HealthCheckProgramDTO> updateHealthCheckProgram(@Valid @RequestBody HealthCheckProgramRequest request, @PathVariable int id) {
         HealthCheckProgramDTO healthCheckProgramDTO = adminService.updateHealthCheckProgram(id, request);
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 
     @PatchMapping("/health-check-program/{id}")
-    public ResponseEntity<HealthCheckProgramDTO> updateHealthCheckProgramStatus(@PathVariable int id,
-                                                                                @RequestParam("status") String status) {
+    public ResponseEntity<HealthCheckProgramDTO> updateHealthCheckProgramStatus(@PathVariable int id, @RequestParam("status") String status) {
         HealthCheckProgramDTO healthCheckProgramDTO = adminService.updateHealthCheckProgramStatus(id, status);
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 
     @PatchMapping("/vaccine-program/{id}")
-    public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(@PathVariable Long id,
-                                                                        @RequestParam("status") String status) {
+    public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(@PathVariable Long id, @RequestParam("status") String status) {
         VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgramStatus(id, status);
         return ResponseEntity.ok(vaccineProgramDTO);
     }
@@ -83,8 +79,7 @@ public class AdminController {
     @GetMapping("/health-check-program")
     public ResponseEntity<List<HealthCheckProgramDTO>> getAllHealthCheckProgram() {
         String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<HealthCheckProgramDTO> healthCheckProgramList = adminService
-                .getAllHealthCheckProgram(Integer.parseInt(adminId));
+        List<HealthCheckProgramDTO> healthCheckProgramList = adminService.getAllHealthCheckProgram(Integer.parseInt(adminId));
         return ResponseEntity.ok(healthCheckProgramList);
     }
 
@@ -108,8 +103,7 @@ public class AdminController {
     }
 
     @PutMapping("/vaccine-program/{vaccineProgramId}")
-    public ResponseEntity<VaccineProgramDTO> updateVaccineProgram(@RequestBody VaccineProgramRequest request,
-                                                                  @PathVariable long vaccineProgramId) {
+    public ResponseEntity<VaccineProgramDTO> updateVaccineProgram(@RequestBody VaccineProgramRequest request, @PathVariable long vaccineProgramId) {
         VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgram(request, vaccineProgramId);
         return ResponseEntity.ok(vaccineProgramDTO);
     }
@@ -149,12 +143,10 @@ public class AdminController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/medical-records/{studentId}")
-    public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable long studentId) {
+    public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable int studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRecordDTO medicalRecordDTO = adminService.getMedicalRecordByStudentId(Long.parseLong(parentId),
-                studentId);
-        if (medicalRecordDTO == null)
-            return ResponseEntity.notFound().build();
+        MedicalRecordDTO medicalRecordDTO = adminService.getMedicalRecordByStudentId(Integer.parseInt(parentId), studentId);
+        if (medicalRecordDTO == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(medicalRecordDTO);
     }
 
@@ -176,12 +168,7 @@ public class AdminController {
         long vaccineProgramCount = adminService.countVaccineProgram();
         long healthCheckProgramCount = adminService.countHealthCheckProgram();
         long processingMedicalRequestCount = adminService.countProcessingMedicalRequest();
-        return Map.of(
-                "studentCount", studentCount,
-                "medicalRecordCount", medicalRecordCount,
-                "vaccineProgramCount", vaccineProgramCount,
-                "healthCheckProgramCount", healthCheckProgramCount,
-                "processingMedicalRequestCount", processingMedicalRequestCount);
+        return Map.of("studentCount", studentCount, "medicalRecordCount", medicalRecordCount, "vaccineProgramCount", vaccineProgramCount, "healthCheckProgramCount", healthCheckProgramCount, "processingMedicalRequestCount", processingMedicalRequestCount);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
