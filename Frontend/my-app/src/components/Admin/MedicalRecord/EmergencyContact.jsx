@@ -29,7 +29,7 @@ export default function EmergencyContact({ parentInfo, parentRole }) {
         Liên hệ khẩn cấp
       </div>
       <div style={{ fontWeight: "bold", color: "#009688" }}>
-        {parentInfo.fullName} {parentRole.relationship ? `(${parentRole.relationship})` : ""}
+        {parentInfo.fullName} {parentInfo.relationship ? `(${parentInfo.relationship})` : ""}
         
       </div>
       <div>📞 {parentInfo.phone}</div>

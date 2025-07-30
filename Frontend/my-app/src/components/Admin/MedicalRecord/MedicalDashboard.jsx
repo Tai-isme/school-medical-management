@@ -170,7 +170,7 @@ export default function MedicalDashboard() {
         
           <div >
             <StudentProfileCard
-              studentId={selectedStudent?.id}
+              studentId={selectedStudent?.studentId}
               studentInfo={selectedStudent}
             />
           </div>
@@ -200,7 +200,7 @@ export default function MedicalDashboard() {
               padding: 0,
             }}
           >
-            <EmergencyContact parentInfo={selectedStudent?.userDTO} parentRole={selectedStudent} />
+            <EmergencyContact parentInfo={selectedStudent?.parentDTO} parentRole={selectedStudent} />
           </div>
           <div
             style={{
@@ -213,7 +213,7 @@ export default function MedicalDashboard() {
               padding: 0,
             }}
           >
-            <MedicalHistory studentId={selectedStudent?.id} />
+            <MedicalHistory studentId={selectedStudent?.studentId} />
           </div>
         </div>
       </div>
