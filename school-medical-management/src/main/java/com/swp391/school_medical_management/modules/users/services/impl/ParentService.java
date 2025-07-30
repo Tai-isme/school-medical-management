@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ParentService {
@@ -110,10 +111,12 @@ public class ParentService {
 
         medicalRecordsRepository.save(medicalRecord);
 
+        List<VaccineHistoryDTO> vaccineHistoryDTOS = vaccineHistoryEntities.stream().map(vaccineHistory -> modelMapper.map(vaccineHistory, VaccineHistoryDTO.class)).collect(Collectors.toList());
 
         StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
         MedicalRecordDTO medicalRecordDTO = modelMapper.map(medicalRecord, MedicalRecordDTO.class);
         medicalRecordDTO.setStudentDTO(studentDTO);
+        medicalRecordDTO.setVaccineHistoryDTOS(vaccineHistoryDTOS);
         return medicalRecordDTO;
     }
 
@@ -144,6 +147,7 @@ public class ParentService {
             VaccineHistoryEntity exist = vaccineHistoryRepository.findByStudentAndVaccineNameEntity_vaccineNameId(medicalRecord.getStudent(), vaccineHistoryRequest.getVaccineNameId());
             if (exist != null) {
                 exist.setNote(vaccineHistoryRequest.getNote());
+                vaccineHistoryRepository.save(exist);
             } else {
                 VaccineHistoryEntity vaccineHistoryEntity = new VaccineHistoryEntity();
                 int vaccineNameId = vaccineHistoryRequest.getVaccineNameId();
@@ -155,11 +159,17 @@ public class ParentService {
                 vaccineHistoryEntity.setUnit(vaccineHistoryRequest.getUnit());
                 vaccineHistoryEntity.setStudent(studentOpt.get());
                 vaccineHistoryEntity.setVaccineNameEntity(vaccineNameEntity);
+                vaccineHistoryRepository.save(vaccineHistoryEntity);
             }
         }
         medicalRecordsRepository.save(medicalRecord);
+
+        List<VaccineHistoryEntity> historyEntities = vaccineHistoryRepository.findByStudent(studentOpt.get());
+        List<VaccineHistoryDTO> historyDTOS = historyEntities.stream().map(vaccineHistory -> modelMapper.map(vaccineHistory, VaccineHistoryDTO.class)).collect(Collectors.toList());
+
         MedicalRecordDTO medicalRecordDTO = modelMapper.map(medicalRecord, MedicalRecordDTO.class);
         medicalRecordDTO.setStudentDTO(studentDTO);
+        medicalRecordDTO.setVaccineHistoryDTOS(historyDTOS);
         return medicalRecordDTO;
     }
 

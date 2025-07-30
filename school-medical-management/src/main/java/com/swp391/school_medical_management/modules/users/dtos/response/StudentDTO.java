@@ -21,5 +21,5 @@ public class StudentDTO {
     private int classId;
     private int parentId;
     private ClassDTO classDTO;
-    private UserDTO userDTO;
+    private UserDTO parentDTO;
 }
