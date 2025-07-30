@@ -1,29 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Card, Tabs, Form, Input, Row, Col, Avatar, Spin } from "antd";
 import axios from "axios";
-
-const mockProfile = {
-  name: "Lê Hải Anh",
-  code: "HS_00147",
-  gender: "Nam",
-  dob: "15/03/2019",
-  placeOfBirth: "Bệnh viện Nhi",
-  healthType: "2",
-  class: "Cơm nát",
-  avatar: "https://via.placeholder.com/120x120?text=Avatar",
-};
-
-const mockChronic = {
-  type: "Dị ứng",
-  status: "Khi ăn đậu hoặc đồ ăn liên quan đến đậu thì bị nổi mẩn đỏ.",
-  solution: "Hạn chế món đồ ăn có đậu cho bé.",
-};
-
-const mockVaccines = [
-  { name: "Hepatitis B", desc: "Đã tiêm ở tại trường" },
-  { name: "1", desc: "1" },
-  { name: "2", desc: "2" },
-  { name: "3", desc: "3" },
-];
 
 export default function StudentProfileCard({ studentId, studentInfo }) {
   const [tab, setTab] = useState("chronic");
@@ -52,10 +29,9 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
     fetchRecord();
   }, [studentId]);
 
-  if (!studentId) return <div>Chọn học sinh để xem hồ sơ</div>;
-  if (loading) return <div>Đang tải...</div>;
+  if (!studentId) return <Card>Chọn học sinh để xem hồ sơ</Card>;
+  if (loading) return <Spin tip="Đang tải..." />;
 
-  // Nếu record là null hoặc undefined, tạo object rỗng với các thuộc tính mặc định
   const safeRecord = record || {
     vision: "",
     hearing: "",
@@ -70,184 +46,128 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
   };
 
   return (
-    <div style={{ background: "#fff", borderRadius: 8, padding: "8px", minHeight: 180, width: "800px"}}>
-      <div style={{ display: "flex", alignItems: "center", gap: 32, marginBottom: 16, minHeight: 120, height: 120 }}>
-        <img
-          src={
-            studentInfo?.avatar
-              ? studentInfo.avatar
-              : "https://res.cloudinary.com/duzh5dnul/image/upload/v1750673843/6473ad42-3f20-4708-9bcf-76dff5d30ab2_avt2.jpg"
-          }
-          alt="avatar"
-          style={{
-            width: 120,
-            height: 120,
-            borderRadius: "50%",
-            objectFit: "cover",
-            border: "2px solid #e0e0e0",
-            background: "#fafafa",
-          }}
-        />
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
-          <div style={{ fontWeight: "bold", fontSize: 28, marginBottom: 6 }}>
+    <Card
+      style={{ borderRadius: 8, minHeight: 900, width: 800, margin: "0 auto" }}
+      bodyStyle={{ padding: 24 }}
+    >
+      <Row gutter={32} align="middle" style={{ marginBottom: 16 }}>
+        <Col>
+          <Avatar
+            src={
+              studentInfo?.avatar
+                ? studentInfo.avatar
+                : "https://res.cloudinary.com/duzh5dnul/image/upload/v1750673843/6473ad42-3f20-4708-9bcf-76dff5d30ab2_avt2.jpg"
+            }
+            size={120}
+            style={{ border: "2px solid #e0e0e0", background: "#fafafa" }}
+          />
+        </Col>
+        <Col flex="auto">
+          <div style={{ fontWeight: "bold", fontSize: 24, marginBottom: 6 }}>
             Mã số học sinh: {safeRecord.studentId}
           </div>
-          <div style={{ fontSize: 20, marginBottom: 2 }}>
+          <div style={{ fontSize: 18, marginBottom: 2 }}>
             Tên học sinh: {studentInfo?.fullName || ""}
           </div>
-          <div style={{ fontSize: 18, marginBottom: 2 }}>
+          <div style={{ fontSize: 16, marginBottom: 2 }}>
             Lớp: {studentInfo?.classDTO?.className || ""}
           </div>
-          <div style={{ fontSize: 18 }}>
+          <div style={{ fontSize: 16 }}>
             Giới tính: {studentInfo?.gender || ""}
           </div>
-        </div>
-      </div>
+        </Col>
+      </Row>
 
-      {/* Tabs */}
-      <div
-        style={{
-          background: "#f8fafd",
-          borderRadius: 8,
-          // marginTop: 8,
-          padding: 16,
-          border: "1px solid #e0e0e0",
-          maxWidth: 768,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-          <div
-            onClick={() => setTab("chronic")}
-            style={{
-              fontWeight: "bold",
-              fontSize: 15,
-              borderBottom: tab === "chronic" ? "2px solid #bdbdbd" : "none",
-              paddingBottom: 2,
-              marginRight: 18,
-              color: tab === "chronic" ? "#888" : "#bbb",
-              cursor: "pointer",
-            }}
-          >
-            Hồ sơ sức khỏe
-          </div>
-          <div
-            onClick={() => setTab("vaccine")}
-            style={{
-              fontWeight: "bold",
-              fontSize: 15,
-              borderBottom: tab === "vaccine" ? "2px solid #4caf50" : "none",
-              paddingBottom: 2,
-              color: tab === "vaccine" ? "#388e3c" : "#bbb",
-              cursor: "pointer",
-            }}
-          >
-            Các Vaccine đã tiêm
-          </div>
-        </div>
-
-        {/* Tab content */}
-        {tab === "chronic" && (
-          <div
-            style={{
-              background: "#f9fbfd",
-              borderRadius: 8,
-              padding: "0px",
-              width: "100%",
-              boxSizing: "border-box",
-              maxWidth: 700,
-              margin: "0 auto"
-            }}
-          >
-            <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 22, margin: "0px 0px 8px 0px"  }}>
-              Thông tin học sinh
-            </div>
-            <div style={{ display: "flex", gap: 20, marginBottom: 18 }}>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <label style={{ marginBottom: 8, fontSize: 18 }}>Thị giác <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18 }} value={safeRecord.vision || ""} readOnly />
+      <Tabs
+        activeKey={tab}
+        onChange={setTab}
+        items={[
+          {
+            key: "chronic",
+            label: "Hồ sơ sức khỏe",
+            children: (
+              <Form
+                layout="vertical"
+                style={{ maxWidth: 700, margin: "0 auto" }}
+              >
+                <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 20, marginBottom: 16 }}>
+                  Thông tin học sinh
+                </div>
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Form.Item label="Thị giác">
+                      <Input value={safeRecord.vision || ""} readOnly />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item label="Thính lực">
+                      <Input value={safeRecord.hearing || ""} readOnly />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Form.Item label="Cân nặng">
+                      <Input value={safeRecord.weight || ""} readOnly />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item label="Chiều cao">
+                      <Input value={safeRecord.height || ""} readOnly />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Form.Item label="Bị dị ứng với các loại nào">
+                  <Input.TextArea value={safeRecord.allergies || ""} readOnly  rows={3} />
+                </Form.Item>
+                <Form.Item label="Bệnh mãn tính">
+                  <Input.TextArea value={safeRecord.chronicDisease || ""} readOnly  rows={2} />
+                </Form.Item>
+                <Form.Item label="Lịch sử điều trị">
+                  <Input.TextArea value={safeRecord.treatmentHistory || ""} readOnly  rows={2} />
+                </Form.Item>
+                <Form.Item label="Ghi chú">
+                  <Input.TextArea value={safeRecord.note || ""} readOnly  rows={2} />
+                </Form.Item>
+              </Form>
+            ),
+          },
+          {
+            key: "vaccine",
+            label: "Các Vaccine đã tiêm",
+            children: (
+              <div style={{ background: "#f9fbfd", borderRadius: 8, padding: 12 }}>
+                <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 20, marginBottom: 12 }}>
+                  Các loại vaccin đã tiêm
+                </div>
+                <Row style={{ fontWeight: "bold", marginBottom: 8 }}>
+                  <Col span={12}>Tên Vaccin</Col>
+                  <Col span={12}>Mô tả</Col>
+                </Row>
+                {(safeRecord.vaccineHistories || []).map((v, idx) => (
+                  <Row key={idx} gutter={8} style={{ marginBottom: 8 }}>
+                    <Col span={12}>
+                      <Input
+                        value={v.vaccineName?.vaccineName || ""}
+                        readOnly
+                        style={{ fontSize: 16 }}
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <Input.TextArea
+                        value={v.note || ""}
+                        readOnly
+                        autoSize
+                        style={{ fontSize: 16 }}
+                      />
+                    </Col>
+                  </Row>
+                ))}
               </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <label style={{ marginBottom: 8, fontSize: 18 }}>Thính lực <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18 }} value={safeRecord.hearing || ""} readOnly />
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 20, marginBottom: 18 }}>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <label style={{ marginBottom: 8, fontSize: 18 }}>Cân nặng <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18 }} value={safeRecord.weight || ""} readOnly />
-              </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <label style={{ marginBottom: 8, fontSize: 18 }}>Chiều cao <span style={{ color: "red" }}>*</span></label>
-                <input style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18 }} value={safeRecord.height || ""} readOnly />
-              </div>
-            </div>
-            <div style={{ marginBottom: 18 }}>
-              <label style={{ marginBottom: 8, display: "block", fontSize: 18 }}>Bị dị ứng với các loại nào</label>
-              <textarea style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18, minHeight: 40 }} value={safeRecord.allergies || ""} readOnly />
-            </div>
-            <div style={{ marginBottom: 18 }}>
-              <label style={{ marginBottom: 8, display: "block", fontSize: 18 }}>Bệnh mãn tính</label>
-              <textarea style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18, minHeight: 40 }} value={safeRecord.chronicDisease || ""} readOnly />
-            </div>
-            <div style={{ marginBottom: 18 }}>
-              <label style={{ marginBottom: 8, display: "block", fontSize: 18 }}>Lịch sử điều trị</label>
-              <textarea style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18, minHeight: 40 }} value={safeRecord.treatmentHistory || ""} readOnly />
-            </div>
-            <div>
-              <label style={{ marginBottom: 8, display: "block", fontSize: 18 }}>Ghi chú</label>
-              <textarea style={{ width: "100%", padding: 10, borderRadius: 5, border: "1px solid #ccc", fontSize: 18, minHeight: 40 }} value={safeRecord.note || ""} readOnly />
-            </div>
-          </div>
-        )}
-
-        {tab === "vaccine" && (
-          <div style={{ background: "#f9fbfd", borderRadius: 8, padding: 12 }}>
-            <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 22, marginBottom: 12 }}>
-              Các loại vaccin đã tiêm
-            </div>
-            <div style={{ display: "flex", fontWeight: "bold", marginBottom: 8 }}>
-              <div style={{ flex: 1, textAlign: "left" }}>Tên Vaccin</div>
-              <div style={{ flex: 1, textAlign: "left" }}>Mô tả</div>
-            </div>
-            {(safeRecord.vaccineHistories || []).map((v, idx) => {
-  const lines = v.note ? v.note.split('\n').length : 1;
-  const approxLines = Math.max(lines, Math.ceil((v.note?.length || 0) / 40));
-  return (
-    <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-      <input
-        style={{
-          width: 180, // Chỉ tới phần bạn gạch đỏ
-          padding: 8,
-          borderRadius: 5,
-          border: "1px solid #ccc",
-          fontSize: 16,
-          fontFamily: "inherit"
-        }}
-        value={v.vaccineName.vaccineName || ""}
-        readOnly
+            ),
+          },
+        ]}
       />
-      <textarea
-        style={{
-          flex: 1,
-          padding: 8,
-          borderRadius: 5,
-          border: "1px solid #ccc",
-          fontSize: 16,
-          fontFamily: "inherit",
-          resize: "none",
-          width: "100%",
-          boxSizing: "border-box"
-        }}
-        value={v.note || ""}
-        readOnly
-        rows={approxLines}
-      />
-    </div>
-  );
-})}
-          </div>
-        )}
-      </div>
-    </div>
+    </Card>
   );
 }

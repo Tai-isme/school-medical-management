@@ -206,6 +206,14 @@ const VaccineProgramModal = ({
           <Input placeholder="Nhập địa điểm diễn ra" />
         </Form.Item>
 
+        <Form.Item
+          label="Mô tả"
+          name="description"
+          rules={[{ required: false }]}
+        >
+          <Input.TextArea rows={3} placeholder="Nhập mô tả về chương trình tiêm chủng" />
+        </Form.Item>
+
         <Form.Item>
           <Button
             type="primary"

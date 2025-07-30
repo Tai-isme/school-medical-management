@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Button,
   Card,
@@ -26,6 +26,8 @@ import dayjs from "dayjs";
 import Swal from "sweetalert2";
 import { Table } from "antd"; // Thêm import này
 import VaccineProgramModal from "./VaccineProgramModal"; // Import component mới tạo
+import VaccineProgramResultTab from "./VaccineProgramResultTab";
+import AddVaccineModal from "./AddVaccineModal";
 
 const VaccineProgramList = () => {
   const [programs, setPrograms] = useState([]);
@@ -555,6 +557,9 @@ const VaccineProgramList = () => {
     }
   };
 
+  const [editData, setEditData] = useState({});
+  const memoInitialValues = useMemo(() => editData, [editData]);
+
   return (
     <div
       style={{
@@ -1062,6 +1067,7 @@ const VaccineProgramList = () => {
                   editMode={editMode}
                   program={program}
                   vaccineList={vaccineList}
+                  initialValues={memoInitialValues}
                 />
                 <Modal
                   title="Kết quả tiêm chủng"
@@ -1138,90 +1144,15 @@ const VaccineProgramList = () => {
                     </Form.Item>
                   </Form>
                 </Modal>
-                <Modal
-                  title="Thêm mới vaccine"
+                <AddVaccineModal
                   open={addVaccineVisible}
                   onCancel={() => {
                     setAddVaccineVisible(false);
                     addVaccineForm.resetFields();
                   }}
-                  footer={null}
-                  destroyOnClose
-                >
-                  <Form
-                    form={addVaccineForm}
-                    layout="vertical"
-                    onFinish={async (values) => {
-                      setAddVaccineLoading(true);
-                      const token = localStorage.getItem("token");
-                      try {
-                        await axios.post(
-                          "http://localhost:8080/api/admin/create-VaccineName",
-                          {
-                            vaccineName: values.vaccineName,
-                            manufacture: values.manufacture,
-                            url: values.url, // Thêm dòng này
-                            note: values.note,
-                          },
-                          { headers: { Authorization: `Bearer ${token}` } }
-                        );
-                        Swal.fire({
-                          icon: "success",
-                          title: "Thêm vaccine mới thành công!",
-                          showConfirmButton: false,
-                          timer: 1500,
-                        });
-                        setAddVaccineVisible(false);
-                        addVaccineForm.resetFields();
-                        fetchVaccineList();
-                      } catch {
-                        Swal.fire({
-                          icon: "error",
-                          title: "Thêm vaccine mới thất bại!",
-                        });
-                      } finally {
-                        setAddVaccineLoading(false);
-                      }
-                    }}
-                  >
-                    <Form.Item
-                      label="Tên vaccine"
-                      name="vaccineName"
-                      rules={[{ required: true, message: "Nhập tên vaccine" }]}
-                    >
-                      <Input />
-                    </Form.Item>
-                    <Form.Item label="Nhà sản xuất" name="manufacture">
-                      <Input />
-                    </Form.Item>
-                    <Form.Item
-                      label="URL thông tin vaccine"
-                      name="url"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Nhập URL thông tin vaccine",
-                        },
-                        { type: "url", message: "URL không hợp lệ!" },
-                      ]}
-                    >
-                      <Input />
-                    </Form.Item>
-                    <Form.Item label="Ghi chú" name="note">
-                      <Input.TextArea rows={2} />
-                    </Form.Item>
-                    <Form.Item>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={addVaccineLoading}
-                        style={{ width: "100%" }}
-                      >
-                        Thêm mới
-                      </Button>
-                    </Form.Item>
-                  </Form>
-                </Modal>
+                  addVaccineForm={addVaccineForm}
+                  fetchVaccineList={fetchVaccineList}
+                />
                 <Modal
                   title="Import tên vaccine từ Excel"
                   open={importVaccineVisible}
@@ -1303,219 +1234,22 @@ const VaccineProgramList = () => {
             key: "result",
             label: "Kết quả chương trình",
             children: (
-              <div style={{ marginTop: 24 }}>
-                <div
-                  style={{
-                    background: "#fff",
-                    borderRadius: 10,
-                    padding: 24,
-                    width: "100%", // Sửa dòng này
-                    maxWidth: "100%", // Sửa dòng này
-                    margin: "0 auto",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                    overflowX: "auto",
-                  }}
-                >
-                  {/* Thêm ô tìm kiếm */}
-                  <div
-                    style={{
-                      marginBottom: 16,
-                      display: "flex",
-                      justifyContent: "flex-end",
-                    }}
-                  >
-                    <Input
-                      placeholder="Tìm kiếm tên học sinh..."
-                      prefix={<SearchOutlined />}
-                      value={searchTermResult}
-                      onChange={(e) => setSearchTermResult(e.target.value)}
-                      allowClear
-                      style={{ width: 260 }}
-                    />
-                  </div>
-                  <Table
-                    columns={[
-                      {
-                        title: "ID kết quả",
-                        dataIndex: "vaccineResultId",
-                        key: "vaccineResultId",
-                      },
-                      {
-                        title: "Học sinh",
-                        dataIndex: ["studentDTO", "fullName"],
-                        key: "studentName",
-                        render: (_, record) => record.studentDTO?.fullName,
-                      },
-                      {
-                        title: "Giới tính",
-                        dataIndex: ["studentDTO", "gender"],
-                        key: "gender",
-                        render: (_, record) => record.studentDTO?.gender,
-                      },
-                      {
-                        title: "Tình trạng sức khỏe",
-                        dataIndex: "statusHealth",
-                        key: "statusHealth",
-                        render: (text, record) =>
-                          sampleResultData ? (
-                            <Input
-                              value={
-                                editableRows.find(
-                                  (r) =>
-                                    r.vaccineResultId === record.vaccineResultId
-                                )?.statusHealth
-                              }
-                              onChange={(e) =>
-                                handleEditCell(
-                                  e.target.value,
-                                  record,
-                                  "statusHealth"
-                                )
-                              }
-                              style={{ minWidth: 100 }}
-                            />
-                          ) : (
-                            text
-                          ),
-                      },
-                      {
-                        title: "Phản ứng",
-                        dataIndex: "reaction",
-                        key: "reaction",
-                        render: (text, record) =>
-                          sampleResultData ? (
-                            <Input
-                              value={
-                                editableRows.find(
-                                  (r) =>
-                                    r.vaccineResultId === record.vaccineResultId
-                                )?.reaction
-                              }
-                              onChange={(e) =>
-                                handleEditCell(
-                                  e.target.value,
-                                  record,
-                                  "reaction"
-                                )
-                              }
-                              style={{ minWidth: 100 }}
-                            />
-                          ) : (
-                            text
-                          ),
-                      },
-                      {
-                        title: "Ghi chú kết quả",
-                        dataIndex: "resultNote",
-                        key: "resultNote",
-                        render: (text, record) =>
-                          sampleResultData ? (
-                            <Input
-                              value={
-                                editableRows.find(
-                                  (r) =>
-                                    r.vaccineResultId === record.vaccineResultId
-                                )?.resultNote
-                              }
-                              onChange={(e) =>
-                                handleEditCell(
-                                  e.target.value,
-                                  record,
-                                  "resultNote"
-                                )
-                              }
-                              style={{ minWidth: 120 }}
-                            />
-                          ) : (
-                            text
-                          ),
-                      },
-                      {
-                        title: "Ngày tạo",
-                        dataIndex: "createdAt",
-                        key: "createdAt",
-                        render: (text) => dayjs(text).format("YYYY-MM-DD"),
-                      },
-                      {
-                        title: "Tên vaccine",
-                        key: "vaccineName",
-                        render: (_, record) =>
-                          record.vaccineFormDTO?.vaccineProgram?.vaccineName
-                            ?.vaccineName,
-                      },
-                      // Bỏ cột "Ngày tiêm"
-                      sampleResultData && {
-                        title: "Thao tác",
-                        key: "action",
-                        render: (_, record) => (
-                          <Button
-                            type="primary"
-                            onClick={() =>
-                              handleSaveRow(
-                                editableRows.find(
-                                  (r) =>
-                                    r.vaccineResultId === record.vaccineResultId
-                                )
-                              )
-                            }
-                          >
-                            Lưu
-                          </Button>
-                        ),
-                      },
-                    ].filter(Boolean)}
-                    dataSource={
-                      sampleResultData
-                        ? editableRows.filter((item) =>
-                            (item?.studentDTO?.fullName || "")
-                              .toLowerCase()
-                              .includes(searchTermResult.toLowerCase())
-                          )
-                        : selectedVaccineResultId
-                        ? (selectedVaccineResult || []).filter((item) =>
-                            (item?.studentDTO?.fullName || "")
-                              .toLowerCase()
-                              .includes(searchTermResult.toLowerCase())
-                          )
-                        : filteredNurseResults
-                    }
-                    loading={
-                      selectedVaccineResultLoading || nurseResultsLoading
-                    }
-                    rowKey="vaccineResultId"
-                    bordered
-                    style={{
-                      paddingLeft: 2,
-                      width: "100%",
-                      minWidth: 1600, // Sửa lại từ 1250
-                      borderRadius: 12,
-                      overflow: "auto", // Đảm bảo Table cuộn khi thiếu không gian
-                      background: "#fff",
-                      boxShadow: "0 2px 8px rgba(33,186,69,0.08)",
-                    }}
-                    scroll={{ x: true }} // Cho phép cuộn ngang tự động
-                    pagination={{
-                      current: resultTablePage,
-                      pageSize: resultTablePageSize,
-                      total: sampleResultData
-                        ? editableRows.filter((item) =>
-                            (item?.studentDTO?.fullName || "")
-                              .toLowerCase()
-                              .includes(searchTermResult.toLowerCase())
-                          ).length
-                        : selectedVaccineResultId
-                        ? (selectedVaccineResult || []).filter((item) =>
-                            (item?.studentDTO?.fullName || "")
-                              .toLowerCase()
-                              .includes(searchTermResult.toLowerCase())
-                          ).length
-                        : filteredNurseResults.length,
-                      onChange: setResultTablePage,
-                      showSizeChanger: false,
-                    }}
-                  />
-                </div>
-              </div>
+              <VaccineProgramResultTab
+                searchTermResult={searchTermResult}
+                setSearchTermResult={setSearchTermResult}
+                sampleResultData={sampleResultData}
+                editableRows={editableRows}
+                handleEditCell={handleEditCell}
+                handleSaveRow={handleSaveRow}
+                selectedVaccineResultId={selectedVaccineResultId}
+                selectedVaccineResult={selectedVaccineResult}
+                filteredNurseResults={filteredNurseResults}
+                selectedVaccineResultLoading={selectedVaccineResultLoading}
+                nurseResultsLoading={nurseResultsLoading}
+                resultTablePage={resultTablePage}
+                resultTablePageSize={resultTablePageSize}
+                setResultTablePage={setResultTablePage}
+              />
             ),
           },
         ]}
