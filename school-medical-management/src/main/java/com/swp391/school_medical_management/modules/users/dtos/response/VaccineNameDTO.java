@@ -11,6 +11,11 @@ public class VaccineNameDTO {
     private Long id;
     private String vaccineName;
     private String manufacture;
+    private Integer ageFrom;
+    private Integer ageTo;
+    private Integer totalUnit;
     private String url;
-    private String note;
+    private String description;
+    private String note; 
+    private UserDTO userDTO;
 }

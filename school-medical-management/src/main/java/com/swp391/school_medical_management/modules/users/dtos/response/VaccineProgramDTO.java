@@ -12,12 +12,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VaccineProgramDTO {
-    private long vaccineId;
+    private Long vaccineId;
     private VaccineNameDTO vaccineName;
+    private String vaccineProgramName;
     private String description;
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate vaccineDate;
+    private LocalDate startDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dateSendForm;
+    private String location;
     private String status;
     private String note;
     private int sended;
+    private UserDTO nurse;
+    private UserDTO admin;
 }

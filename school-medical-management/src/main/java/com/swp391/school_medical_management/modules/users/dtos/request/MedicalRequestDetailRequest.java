@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.dtos.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -11,9 +12,14 @@ public class MedicalRequestDetailRequest {
     @Size(max = 255, message = "Medicine name must be at most 255 characters")
     private String medicineName;
 
-    @NotBlank(message = "Dosage cannot be blank")
-    private String dosage;
+    @Positive(message = "Quantity must be a positive number")
+    private Integer quantity;
 
-    @NotBlank(message = "Time cannot be blank")
-    private String time;
+    @Size(max = 20, message = "Type must be at most 20 characters")
+    private String type;
+
+    @Size(max = 100, message = "Time schedule must be at most 100 characters")
+    private String timeSchedule;
+
+    private String status;
 }

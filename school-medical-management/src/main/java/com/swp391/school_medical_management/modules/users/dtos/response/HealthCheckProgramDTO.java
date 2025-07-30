@@ -11,11 +11,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class HealthCheckProgramDTO {
     private Long id;
-    private String name;
+    private String healthCheckName; 
     private String description;
+    private LocalDate dateSendForm;
     private LocalDate startDate;
-    private LocalDate endDate;
     private String status;
     private String note;
     private int sended;
+    private Long adminId;                
+    private Long nurseId;
 }

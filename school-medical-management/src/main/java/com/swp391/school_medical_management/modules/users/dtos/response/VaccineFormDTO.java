@@ -11,11 +11,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VaccineFormDTO {
     private Long id;
-    private Long studentId;
-    private Long parentId;
-    private LocalDate formDate;
+    private VaccineProgramDTO vaccineProgram;
+    private VaccineNameDTO vaccineName;
+    private StudentDTO studentDTO;
+    private UserDTO parentDTO;
+    private UserDTO nurseDTO;
+    private LocalDate expDate;
+    private LocalDate formDate; 
     private String note;
     private Boolean commit;
     private String status;
-    private VaccineProgramDTO vaccineProgram;
 }

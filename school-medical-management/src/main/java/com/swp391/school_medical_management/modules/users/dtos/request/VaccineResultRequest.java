@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VaccineResultRequest {
-    private String statusHealth;
     private String resultNote;
     private String reaction;
+    private String actionsTaken;
+    private Boolean isRejected;
     private Long vaccineFormId;
 }

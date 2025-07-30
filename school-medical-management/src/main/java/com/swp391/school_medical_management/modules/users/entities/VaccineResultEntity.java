@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,19 +27,22 @@ public class VaccineResultEntity {
     @Column(name = "vaccine_result_id")
     private Integer vaccineResultId;
 
-    @Column(name = "status_health")
-    private String statusHealth;
-
-    @Column(name = "result_note")
+    @Column(name = "result_note", length = 255)
     private String resultNote;
 
-    @Column(name = "reaction")
+    @Column(name = "reaction", length = 255)
     private String reaction;
 
-    @Column(name = "created_at")
+    @Column(name = "actions_taken", length = 255)
+    private String actionsTaken;
+
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
-    @ManyToOne
+    @Column(name = "is_rejected")
+    private Boolean isRejected;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vaccine_form_id", referencedColumnName = "vaccine_form_id")
     private VaccineFormEntity vaccineFormEntity;
 }

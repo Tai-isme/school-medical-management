@@ -21,6 +21,17 @@ public class MedicalRequest {
 
     private LocalDate date;
 
+    @Size(max = 500, message = "Reason for rejection must be at most 500 characters")
+    private String reasonRejected;
+
+    private String status;
+
+    @Positive(message = "Parent ID must be a positive number")
+    private Long parentId;
+    
+    @Positive(message = "Nurse ID must be a positive number")
+    private Long nurseId;
+
     @Positive(message = "Student ID must be a positive number")
     private long studentId;
 

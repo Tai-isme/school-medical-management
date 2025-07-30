@@ -2,7 +2,8 @@ package com.swp391.school_medical_management.modules.users.dtos.request;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.Future;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
+
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,11 +24,19 @@ public class HealthCheckProgramRequest {
     @FutureOrPresent(message = "Ngày bắt đầu phải là hôm nay hoặc trong tương lai")
     private LocalDate startDate;
 
-    @NotNull(message = "Ngày kết thúc không được để trống")
-    @Future(message = "Ngày kết thúc phải là trong tương lai")
-    private LocalDate endDate;
+    @FutureOrPresent(message = "Ngày gửi form phải là hôm nay hoặc trong tương lai")
+    private LocalDate dateSendForm;
 
-    @Size(max = 255, message = "Ghi chú tối đa 255 ký tự")
-    private String note;
+    @Size(max = 255, message = "Địa điểm tối đa 255 ký tự")
+    private String location;
+
+    @NotNull(message = "Trạng thái không được để trống")
+    private HealthCheckProgramEntity.HealthCheckProgramStatus status;
+
+    @NotNull(message = "ID admin không được để trống")
+    private Long adminId;
+
+    @NotNull(message = "ID y tá không được để trống")
+    private Long nurseId;
 
 }

@@ -20,6 +20,7 @@ public class UserDTO{
     private String email;
     private String phone;
     private String password;
+    private String relationship;
     private String address;
     private UserRole role;
     private boolean isActive;

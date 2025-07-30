@@ -21,9 +21,6 @@ public class MedicalRecordsRequest {
     @Size(max = 255, message = "Chronic disease must be at most 255 characters")
     private String chronicDisease;
 
-    @Size(max = 500, message = "Treatment history must be at most 500 characters")
-    private String treatmentHistory;
-
     @Pattern(regexp = "^(Normal|Abnormal|Unknown)?$", message = "Vision must be 'Normal', 'Abnormal' or 'Unknown'")
     private String vision;
 

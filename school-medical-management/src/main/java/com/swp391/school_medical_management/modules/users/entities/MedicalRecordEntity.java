@@ -7,6 +7,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,20 +29,25 @@ public class MedicalRecordEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "record_id")
-    private long recordId;
+    private Long recordId;
 
+    @Column(name = "allergies", length = 255)
     private String allergies;
 
-    @Column(name = "chronic_disease")
+    @Column(name = "chronic_disease", length = 255)
     private String chronicDisease;
 
-    @Column(name = "treatment_history")
-    private String treatmentHistory;
-
+    @Column(name = "vision", length = 50)
     private String vision;
+
+    @Column(name = "hearing", length = 50)
     private String hearing;
-    private double weight;
-    private double height;
+
+    @Column(name = "weight")
+    private Double weight;
+
+    @Column(name = "height")
+    private Double height;
 
     @Column(name = "last_update")
     private LocalDateTime lastUpdate;
@@ -49,10 +55,11 @@ public class MedicalRecordEntity {
     @Column(name = "create_by")
     private Byte createBy;
 
+    @Column(name = "note", length = 255)
     private String note;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_id", foreignKey = @ForeignKey(name = "medical_record_ibfk_1"))
     private StudentEntity student;
 
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true)

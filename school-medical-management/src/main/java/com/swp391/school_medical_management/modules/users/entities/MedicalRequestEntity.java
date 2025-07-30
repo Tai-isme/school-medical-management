@@ -37,11 +37,11 @@ public class MedicalRequestEntity {
     @Column(name = "date")
     private LocalDate date;
 
-    @Column(name = "note", length = 255)
+    @Column(name = "note", length = 500)
     private String note;
 
-    @Column(name = "reason_rejected", length = 255)
-    private String reason;
+    @Column(name = "reason_rejected", length = 500)
+    private String reasonRejected;
 
     @Column(name = "status", length = 50)
     @Enumerated(EnumType.STRING)
@@ -58,6 +58,10 @@ public class MedicalRequestEntity {
     @ManyToOne
     @JoinColumn(name = "parent_id", referencedColumnName = "user_id")
     private UserEntity parent;
+
+    @ManyToOne
+    @JoinColumn(name = "nurse_id", referencedColumnName = "user_id")
+    private UserEntity nurse;
 
     @OneToMany(mappedBy = "medicalRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MedicalRequestDetailEntity> medicalRequestDetailEntities;

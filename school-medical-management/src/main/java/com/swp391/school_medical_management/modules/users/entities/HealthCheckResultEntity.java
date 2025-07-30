@@ -27,17 +27,6 @@ public class HealthCheckResultEntity {
     @Column(name = "health_result_id")
     private Integer healthResultId;
 
-    @Column(name = "diagnosis", length = 255)
-    private String diagnosis;
-
-    @Column(name = "level", length = 50)
-    @Enumerated(EnumType.STRING)
-    private Level level;
-
-    public enum Level {
-        GOOD, FAIR, AVERAGE, POOR
-    }
-
     @Column(name = "vision", length = 50)
     private String vision;
 
@@ -50,10 +39,37 @@ public class HealthCheckResultEntity {
     @Column(name = "height", length = 50)
     private Double height;
 
+    @Column(name = "dental_status", length = 100)
+    private String dentalStatus;
+
+    @Column(name = "blood_pressure", length = 50)
+    private String bloodPressure;
+
+    @Column(name = "heart_rate", length = 50)
+    private String heartRate;
+
+    @Column(name = "general_condition", length = 50)
+    private String generalCondition;
+
     @Column(name = "note", length = 255)
     private String note;
 
+    @Column(name = "is_checked")
+    private Boolean isChecked;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "level", length = 50)
+    private Level level;
+
+    public enum Level {
+        GOOD, FAIR, AVERAGE, POOR
+    }
+
     @ManyToOne
     @JoinColumn(name = "health_check_form_id", referencedColumnName = "health_check_form_id", foreignKey = @ForeignKey(name = "FK_health_check_result_form"))
-    private HealthCheckFormEntity healthCheckFormEntity;
+    private HealthCheckFormEntity healthCheckForm;
+
+    @ManyToOne
+    @JoinColumn(name = "nurse_id", referencedColumnName = "user_id", foreignKey = @ForeignKey(name = "FK_health_check_result_nurse"))
+    private UserEntity nurse;
 }

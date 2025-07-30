@@ -1,9 +1,8 @@
 package com.swp391.school_medical_management.modules.users.entities;
 
-import java.time.LocalDate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,24 +15,23 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "student")
-public class StudentEntity {
+@AllArgsConstructor
+@Table(name = "vaccine_unit")
+public class VaccineUnitEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "student_id")
-    private long id;
-    @Column(name = "student_name")
-    private String fullName;
-    private LocalDate dob;
-    @Column(name = "avatar_url")
-    private String avatarUrl;
-    private String gender;
-    @ManyToOne
-    @JoinColumn(name = "class_id", referencedColumnName = "class_id")
-    private ClassEntity classEntity;
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
-    private UserEntity parent;
+    @Column(name = "unit_id")
+    private Integer unitId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vaccine_name_id", referencedColumnName = "vaccine_name_id", nullable = false)
+    private VaccineNameEntity vaccineName;
+
+    @Column(name = "unit", nullable = false)
+    private Integer unit;
+
+    @Column(name = "schedule", length = 255)
+    private String schedule;
 }

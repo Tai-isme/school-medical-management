@@ -7,7 +7,12 @@ import lombok.Data;
 @Data
 public class VaccineProgramRequest {
     private Long vaccineNameId;
+    private String vaccineProgramName;
+    private LocalDate startDate;
+    private LocalDate dateSendForm;
+    private String location;
     private String description;
-    private LocalDate vaccineDate;
-    private String note;
+    private Long nurseId;
+    private Long adminId;
+
 }

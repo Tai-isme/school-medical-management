@@ -16,8 +16,10 @@ public class MedicalRequestDTO {
     private LocalDate date;
     private String note;
     private String status;
+    private String reasonRejected; 
     private StudentDTO studentDTO;
-    private long parentId;
+    private UserDTO nurseDTO;
+    private UserDTO parentDTO;
     private String reason;
     private List<MedicalRequestDetailDTO> medicalRequestDetailDTO;
 }
