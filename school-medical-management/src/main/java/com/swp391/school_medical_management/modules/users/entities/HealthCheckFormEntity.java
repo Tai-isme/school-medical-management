@@ -52,12 +52,4 @@ public class HealthCheckFormEntity {
 
     @Column(name = "commit")
     private Boolean commit;
-
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    private HealthCheckFormStatus status;
-
-    public enum HealthCheckFormStatus {
-        DRAFT, SENT
-    }
 }

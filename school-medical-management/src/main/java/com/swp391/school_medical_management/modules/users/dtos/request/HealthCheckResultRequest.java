@@ -9,12 +9,11 @@ public class HealthCheckResultRequest {
     private String vision;
     private String hearing;
     private Double weight;
-    private Double height;
+    private int height;
     private String dentalStatus;
     private String bloodPressure;
     private String heartRate;
     private String generalCondition;
     private Boolean isChecked;
-    private Long healthCheckFormId;
-    private Long nurseId;
+    private int healthCheckFormId;
 }

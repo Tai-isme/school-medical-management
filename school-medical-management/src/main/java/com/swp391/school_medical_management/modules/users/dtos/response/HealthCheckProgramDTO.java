@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.dtos.response;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +18,12 @@ public class HealthCheckProgramDTO {
     private LocalDate startDate;
     private String status;
     private String note;
-    private int sended;
+    private String location;
     private Long adminId;                
     private Long nurseId;
+    private UserDTO adminDTO;
+    private UserDTO nurseDTO;
+    List<ParticipateClassDTO> participateClasses;
+    List<HealthCheckFormDTO> healthCheckFormDTOs;
+    
 }

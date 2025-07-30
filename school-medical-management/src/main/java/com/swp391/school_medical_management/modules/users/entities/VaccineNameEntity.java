@@ -32,18 +32,18 @@ public class VaccineNameEntity {
     private String manufacture;
 
     @Column(name = "age_from")
-    private Integer ageFrom;
+    private int ageFrom;
 
     @Column(name = "age_to")
-    private Integer ageTo;
+    private int ageTo;
 
     @Column(name = "total_unit")
-    private Integer totalUnit;
+    private int totalUnit;
 
     @Column(name = "url", length = 255)
     private String url;
 
-    @Column(name = "description", length = 255)
+    @Column(name = "description")
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class HealthCheckResultDTO {
     private Integer healthResultId;
-    private String level;
     private String note;
     private String vision;
     private String hearing;
@@ -20,7 +19,9 @@ public class HealthCheckResultDTO {
     private String heartRate;
     private String generalCondition;
     private Boolean isChecked;
-    private Long nurseId;
+    private int nurseId;
+    private int studentId;
     private HealthCheckFormDTO healthCheckFormDTO;
     private StudentDTO studentDTO;
+    private UserDTO nurseDTO;
 }

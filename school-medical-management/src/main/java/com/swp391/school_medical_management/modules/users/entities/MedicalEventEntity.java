@@ -29,6 +29,9 @@ public class MedicalEventEntity {
     @Column(name = "event_id")
     private Integer eventId;
 
+    @Column(name = "event_name", length = 255)
+    private Integer eventName;
+
     @Column(name = "type_event", length = 100)
     private String typeEvent;
 
@@ -46,11 +49,13 @@ public class MedicalEventEntity {
     private LevelCheck levelCheck;
 
     public enum LevelCheck {
-        low, medium, high
+        LOW, MEDIUM, HIGH
     }
 
     @Column(name = "location", length = 100)
     private String location;
+    
+    private String image;
 
     @ManyToOne
     @JoinColumn(name = "student_id", referencedColumnName = "student_id", foreignKey = @ForeignKey(name = "FK_medical_event_student"))

@@ -48,7 +48,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.VaccineN
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
+// import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
@@ -57,7 +57,7 @@ import com.swp391.school_medical_management.modules.users.entities.StudentEntity
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
+// import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
@@ -144,772 +144,800 @@ public class AdminService {
     private VaccineNameRepository vaccineNameRepository;
 
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, long adminId) {
-        UserEntity admin = userRepository.findUserByUserId(adminId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
+        // UserEntity admin = userRepository.findUserByUserId(adminId)
+        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
 
-        Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository
-                .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
+        // Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository
+        //         .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
 
-        if (request.getStartDate().isAfter(request.getEndDate())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
-        }
-
-        if (existingProgramOpt.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chương trình kiểm tra sức khỏe có tên '"
-                    + request.getHealthCheckName() + "' đã tồn tại và chưa bắt đầu.");
-        }
-
-        // kiểm tra chương trình gần nhất trước đó có COMPLETED chưa
-        // Optional<HealthCheckProgramEntity> lastProgramOpt =
-        // healthCheckProgramRepository
-        // .findTopByStartDateLessThanOrderByStartDateDesc(request.getStartDate());
-
-        // if (lastProgramOpt.isPresent()) {
-        // HealthCheckProgramEntity last = lastProgramOpt.get();
-        // if (!HealthCheckProgramStatus.COMPLETED.equals(last.getStatus())) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        // "The last health check program is not COMPLETED.");
-        // }
+        // if (request.getStartDate().isAfter(request.getEndDate())) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
         // }
 
-        // kiểm tra có chương trình nào vẫn còn hiệu lực vào thời điểm bắt đầu chương
-        // trình mới
-
-        // List<HealthCheckProgramEntity> overlappingPrograms =
-        // healthCheckProgramRepository
-        // .findByEndDateAfter(request.getStartDate());
-
-        // boolean hasUncompleted = overlappingPrograms.stream()
-        // .anyMatch(p -> !HealthCheckProgramStatus.COMPLETED.equals(p.getStatus()));
-
-        // if (hasUncompleted) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        // "Another health check program is still active and not COMPLETED.");
+        // if (existingProgramOpt.isPresent()) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chương trình kiểm tra sức khỏe có tên '"
+        //             + request.getHealthCheckName() + "' đã tồn tại và chưa bắt đầu.");
         // }
 
-        HealthCheckProgramEntity healthCheckProgramEntity = new HealthCheckProgramEntity();
-        healthCheckProgramEntity.setHealthCheckName(request.getHealthCheckName());
-        healthCheckProgramEntity.setDescription(request.getDescription());
-        healthCheckProgramEntity.setStartDate(request.getStartDate());
-        healthCheckProgramEntity.setEndDate(request.getEndDate());
-        healthCheckProgramEntity.setNote(request.getNote());
-        healthCheckProgramEntity.setAdmin(admin);
-        healthCheckProgramEntity.setStatus(HealthCheckProgramStatus.NOT_STARTED);
-        healthCheckProgramRepository.save(healthCheckProgramEntity);
-        return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
+        // // kiểm tra chương trình gần nhất trước đó có COMPLETED chưa
+        // // Optional<HealthCheckProgramEntity> lastProgramOpt =
+        // // healthCheckProgramRepository
+        // // .findTopByStartDateLessThanOrderByStartDateDesc(request.getStartDate());
+
+        // // if (lastProgramOpt.isPresent()) {
+        // // HealthCheckProgramEntity last = lastProgramOpt.get();
+        // // if (!HealthCheckProgramStatus.COMPLETED.equals(last.getStatus())) {
+        // // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // // "The last health check program is not COMPLETED.");
+        // // }
+        // // }
+
+        // // kiểm tra có chương trình nào vẫn còn hiệu lực vào thời điểm bắt đầu chương
+        // // trình mới
+
+        // // List<HealthCheckProgramEntity> overlappingPrograms =
+        // // healthCheckProgramRepository
+        // // .findByEndDateAfter(request.getStartDate());
+
+        // // boolean hasUncompleted = overlappingPrograms.stream()
+        // // .anyMatch(p -> !HealthCheckProgramStatus.COMPLETED.equals(p.getStatus()));
+
+        // // if (hasUncompleted) {
+        // // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // // "Another health check program is still active and not COMPLETED.");
+        // // }
+
+        // HealthCheckProgramEntity healthCheckProgramEntity = new HealthCheckProgramEntity();
+        // healthCheckProgramEntity.setHealthCheckName(request.getHealthCheckName());
+        // healthCheckProgramEntity.setDescription(request.getDescription());
+        // healthCheckProgramEntity.setStartDate(request.getStartDate());
+        // healthCheckProgramEntity.setEndDate(request.getEndDate());
+        // healthCheckProgramEntity.setNote(request.getNote());
+        // healthCheckProgramEntity.setAdmin(admin);
+        // healthCheckProgramEntity.setStatus(HealthCheckProgramStatus.NOT_STARTED);
+        // healthCheckProgramRepository.save(healthCheckProgramEntity);
+        // return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
+        return null;
     }
 
     public HealthCheckProgramDTO updateHealthCheckProgram(Long id, HealthCheckProgramRequest request) {
-        Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository.findById(id);
+        // Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository.findById(id);
 
-        if (existingProgramOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình kiểm tra sức khỏe");
+        // if (existingProgramOpt.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình kiểm tra sức khỏe");
 
-        HealthCheckProgramEntity existingProgram = existingProgramOpt.get();
+        // HealthCheckProgramEntity existingProgram = existingProgramOpt.get();
 
-        if (existingProgram.getStatus() == HealthCheckProgramStatus.COMPLETED
-                || existingProgram.getStatus() == HealthCheckProgramStatus.ON_GOING)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Không thể cập nhật chương trình đã hoàn thành hoặc đang diễn ra");
+        // if (existingProgram.getStatus() == HealthCheckProgramStatus.COMPLETED
+        //         || existingProgram.getStatus() == HealthCheckProgramStatus.ON_GOING)
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //             "Không thể cập nhật chương trình đã hoàn thành hoặc đang diễn ra");
 
-        if (request.getStartDate().isAfter(request.getEndDate()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
+        // if (request.getStartDate().isAfter(request.getEndDate()))
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
 
-        if (!existingProgram.getHealthCheckName().equals(request.getHealthCheckName())) {
-            Optional<HealthCheckProgramEntity> duplicateProgramOpt = healthCheckProgramRepository
-                    .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
-            if (duplicateProgramOpt.isPresent()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Chương trình kiểm tra sức khỏe có tên '" + request.getHealthCheckName()
-                                + "' đã tồn tại và chưa bắt đầu.");
-            }
-        }
+        // if (!existingProgram.getHealthCheckName().equals(request.getHealthCheckName())) {
+        //     Optional<HealthCheckProgramEntity> duplicateProgramOpt = healthCheckProgramRepository
+        //             .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
+        //     if (duplicateProgramOpt.isPresent()) {
+        //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //                 "Chương trình kiểm tra sức khỏe có tên '" + request.getHealthCheckName()
+        //                         + "' đã tồn tại và chưa bắt đầu.");
+        //     }
+        // }
 
-        existingProgram.setHealthCheckName(request.getHealthCheckName());
-        existingProgram.setDescription(request.getDescription());
-        existingProgram.setStartDate(request.getStartDate());
-        existingProgram.setEndDate(request.getEndDate());
-        existingProgram.setNote(request.getNote());
+        // existingProgram.setHealthCheckName(request.getHealthCheckName());
+        // existingProgram.setDescription(request.getDescription());
+        // existingProgram.setStartDate(request.getStartDate());
+        // existingProgram.setEndDate(request.getEndDate());
+        // existingProgram.setNote(request.getNote());
 
-        healthCheckProgramRepository.save(existingProgram);
-        return modelMapper.map(existingProgram, HealthCheckProgramDTO.class);
+        // healthCheckProgramRepository.save(existingProgram);
+        // return modelMapper.map(existingProgram, HealthCheckProgramDTO.class);
+        return null;
     }
 
     public HealthCheckProgramDTO updateHealthCheckProgramStatus(Long id, String status) {
-        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
-        if (healthCheckProgramOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
-        HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
+        // Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
+        // if (healthCheckProgramOpt.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
+        // HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
 
-        HealthCheckProgramStatus newStatus;
-        try {
-            newStatus = HealthCheckProgramStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + status);
-        }
+        // HealthCheckProgramStatus newStatus;
+        // try {
+        //     newStatus = HealthCheckProgramStatus.valueOf(status.toUpperCase());
+        // } catch (IllegalArgumentException e) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + status);
+        // }
 
-        if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Program is already COMPLETED and cannot be updated");
-        }
+        // if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //             "Program is already COMPLETED and cannot be updated");
+        // }
 
-        if (healthCheckProgramEntity.getStatus() == (newStatus)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already in status: " + newStatus);
-        }
+        // if (healthCheckProgramEntity.getStatus() == (newStatus)) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already in status: " + newStatus);
+        // }
 
-        if (newStatus == HealthCheckProgramStatus.COMPLETED
-                && healthCheckProgramEntity.getStatus() != HealthCheckProgramStatus.ON_GOING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Cannot mark as COMPLETED unless the program is ON_GOING");
-        }
+        // if (newStatus == HealthCheckProgramStatus.COMPLETED
+        //         && healthCheckProgramEntity.getStatus() != HealthCheckProgramStatus.ON_GOING) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //             "Cannot mark as COMPLETED unless the program is ON_GOING");
+        // }
 
-        healthCheckProgramEntity.setStatus(newStatus);
-        healthCheckProgramRepository.save(healthCheckProgramEntity);
+        // healthCheckProgramEntity.setStatus(newStatus);
+        // healthCheckProgramRepository.save(healthCheckProgramEntity);
 
-        if (newStatus == HealthCheckProgramStatus.ON_GOING) {
-            createHealthCheckForm(healthCheckProgramEntity);
-        }
+        // if (newStatus == HealthCheckProgramStatus.ON_GOING) {
+        //     createHealthCheckForm(healthCheckProgramEntity);
+        // }
 
-        return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
+        // return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
+        return null;
     }
 
     public void createHealthCheckForm(HealthCheckProgramEntity programEntity) {
 
-        List<StudentEntity> students = studentRepository.findAll();
+        // List<StudentEntity> students = studentRepository.findAll();
 
-        for (StudentEntity studentEntity : students) {
-            UserEntity parent = studentEntity.getParent();
-            if (parent == null)
-                continue;
+        // for (StudentEntity studentEntity : students) {
+        //     UserEntity parent = studentEntity.getParent();
+        //     if (parent == null)
+        //         continue;
 
-            List<HealthCheckFormEntity> existingForms = healthCheckFormRepository
-                    .findHealthCheckFormEntityByHealthCheckProgramAndStudent(programEntity, studentEntity);
-            boolean hasUncommittedForm = existingForms.stream()
-                    .anyMatch(form -> form.getCommit() == null);
-            if (hasUncommittedForm)
-                continue;
+        //     List<HealthCheckFormEntity> existingForms = healthCheckFormRepository
+        //             .findHealthCheckFormEntityByHealthCheckProgramAndStudent(programEntity, studentEntity);
+        //     boolean hasUncommittedForm = existingForms.stream()
+        //             .anyMatch(form -> form.getCommit() == null);
+        //     if (hasUncommittedForm)
+        //         continue;
 
-            HealthCheckFormEntity healthCheckFormEntity = new HealthCheckFormEntity();
-            healthCheckFormEntity.setStudent(studentEntity);
-            healthCheckFormEntity.setParent(parent);
-            healthCheckFormEntity.setNotes(null);
-            healthCheckFormEntity.setCommit(null);
-            healthCheckFormEntity.setFormDate(programEntity.getStartDate().minusDays(7));
-            healthCheckFormEntity.setStatus(HealthCheckFormStatus.DRAFT);
-            healthCheckFormEntity.setHealthCheckProgram(programEntity);
-            healthCheckFormRepository.save(healthCheckFormEntity);
-        }
+        //     HealthCheckFormEntity healthCheckFormEntity = new HealthCheckFormEntity();
+        //     healthCheckFormEntity.setStudent(studentEntity);
+        //     healthCheckFormEntity.setParent(parent);
+        //     healthCheckFormEntity.setNotes(null);
+        //     healthCheckFormEntity.setCommit(null);
+        //     healthCheckFormEntity.setFormDate(programEntity.getStartDate().minusDays(7));
+        //     healthCheckFormEntity.setStatus(HealthCheckFormStatus.DRAFT);
+        //     healthCheckFormEntity.setHealthCheckProgram(programEntity);
+        //     healthCheckFormRepository.save(healthCheckFormEntity);
+        // }
     }
 
     public List<HealthCheckProgramDTO> getAllHealthCheckProgram(long adminId) {
-        List<HealthCheckProgramEntity> healthCheckProgramEntityList = healthCheckProgramRepository.findAll();
-        if (healthCheckProgramEntityList.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check programs found");
-        List<HealthCheckProgramDTO> healthCheckProgramDTOList = healthCheckProgramEntityList.stream()
-                .map(entity -> modelMapper.map(entity, HealthCheckProgramDTO.class))
-                .toList();
-        for (HealthCheckProgramDTO healthCheckProgramDTO : healthCheckProgramDTOList) {
-            Long programId = healthCheckProgramDTO.getId();
-            List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository
-                    .findAllByHealthCheckProgram_Id(programId);
-            if (healthCheckFormEntitieList.isEmpty()) {
-                healthCheckProgramDTO.setSended(0);
-            } else {
-                boolean allStatusOne = healthCheckFormEntitieList.stream()
-                        .allMatch(form -> form.getStatus().equals(HealthCheckFormStatus.DRAFT));
-                healthCheckProgramDTO.setSended(allStatusOne ? 0 : 1);
-            }
-        }
-        return healthCheckProgramDTOList;
+        // List<HealthCheckProgramEntity> healthCheckProgramEntityList = healthCheckProgramRepository.findAll();
+        // if (healthCheckProgramEntityList.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check programs found");
+        // List<HealthCheckProgramDTO> healthCheckProgramDTOList = healthCheckProgramEntityList.stream()
+        //         .map(entity -> modelMapper.map(entity, HealthCheckProgramDTO.class))
+        //         .toList();
+        // for (HealthCheckProgramDTO healthCheckProgramDTO : healthCheckProgramDTOList) {
+        //     Long programId = healthCheckProgramDTO.getId();
+        //     List<HealthCheckFormEntity> healthCheckFormEntitieList = healthCheckFormRepository
+        //             .findAllByHealthCheckProgram_Id(programId);
+        //     if (healthCheckFormEntitieList.isEmpty()) {
+        //         healthCheckProgramDTO.setSended(0);
+        //     } else {
+        //         boolean allStatusOne = healthCheckFormEntitieList.stream()
+        //                 .allMatch(form -> form.getStatus().equals(HealthCheckFormStatus.DRAFT));
+        //         healthCheckProgramDTO.setSended(allStatusOne ? 0 : 1);
+        //     }
+        // }
+        // return healthCheckProgramDTOList;
+        return null;
     }
 
     public HealthCheckProgramDTO getHealthCheckProgramById(Long id) {
-        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
-        if (healthCheckProgramOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
-        HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
-        return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
+        // Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
+        // if (healthCheckProgramOpt.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
+        // HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
+        // return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
+        return null;
     }
 
     public void deleteHealthCheckProgram(Long id) {
-        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
-        if (healthCheckProgramOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
+        // Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
+        // if (healthCheckProgramOpt.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program not found");
 
-        HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
+        // HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
 
-        if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED
-                || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Cannot delete 'COMPLETED' or 'ON_GOING' program");
-        }
+        // if (healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.COMPLETED
+        //         || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //             "Cannot delete 'COMPLETED' or 'ON_GOING' program");
+        // }
 
-        healthCheckProgramRepository.delete(healthCheckProgramEntity);
+        // healthCheckProgramRepository.delete(healthCheckProgramEntity);
+        
     }
 
     public VaccineProgramDTO createVaccineProgram(VaccineProgramRequest request, long adminId) {
-        UserEntity admin = userRepository.findUserByUserId(adminId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+        // UserEntity admin = userRepository.findUserByUserId(adminId)
+        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
 
-        VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(request.getVaccineNameId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name not found"));
+        // VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(request.getVaccineNameId())
+        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name not found"));
 
-        Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository
-                .findByVaccineNameAndStatus(vaccineNameEntity, VaccineProgramStatus.NOT_STARTED);
+        // Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository
+        //         .findByVaccineNameAndStatus(vaccineNameEntity, VaccineProgramStatus.NOT_STARTED);
 
-        // Optional<VaccineProgramEntity> lastVaccineProgramOpt =
-        // vaccineProgramRepository
-        // .findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(request.getVaccineDate());
+        // // Optional<VaccineProgramEntity> lastVaccineProgramOpt =
+        // // vaccineProgramRepository
+        // // .findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(request.getVaccineDate());
 
-        // if (lastVaccineProgramOpt.isPresent()) {
-        // VaccineProgramEntity lastVaccineProgramEntity = lastVaccineProgramOpt.get();
-        // logger.info(lastVaccineProgramEntity.getVaccineName().getVaccineName() + " "
-        // + lastVaccineProgramEntity.getStatus());
-        // if
-        // (!VaccineProgramStatus.COMPLETED.equals(lastVaccineProgramEntity.getStatus()))
-        // {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Last vaccine is
-        // not COMPLETED!");
+        // // if (lastVaccineProgramOpt.isPresent()) {
+        // // VaccineProgramEntity lastVaccineProgramEntity = lastVaccineProgramOpt.get();
+        // // logger.info(lastVaccineProgramEntity.getVaccineName().getVaccineName() + " "
+        // // + lastVaccineProgramEntity.getStatus());
+        // // if
+        // // (!VaccineProgramStatus.COMPLETED.equals(lastVaccineProgramEntity.getStatus()))
+        // // {
+        // // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Last vaccine is
+        // // not COMPLETED!");
+        // // }
+        // // }
+
+        // if (existingProgramOpt.isPresent()) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //             "Vaccine program with name '" + vaccineNameEntity.getVaccineName()
+        //                     + "' already exists and not started.");
         // }
-        // }
 
-        if (existingProgramOpt.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Vaccine program with name '" + vaccineNameEntity.getVaccineName()
-                            + "' already exists and not started.");
-        }
+        // VaccineProgramEntity entity = new VaccineProgramEntity();
+        // entity.setVaccineName(vaccineNameEntity);
+        // entity.setDescription(request.getDescription());
+        // entity.setVaccineDate(request.getVaccineDate());
+        // entity.setNote(request.getNote());
+        // entity.setStatus(VaccineProgramStatus.NOT_STARTED);
+        // entity.setAdmin(admin);
 
-        VaccineProgramEntity entity = new VaccineProgramEntity();
-        entity.setVaccineName(vaccineNameEntity);
-        entity.setDescription(request.getDescription());
-        entity.setVaccineDate(request.getVaccineDate());
-        entity.setNote(request.getNote());
-        entity.setStatus(VaccineProgramStatus.NOT_STARTED);
-        entity.setAdmin(admin);
+        // vaccineProgramRepository.save(entity);
 
-        vaccineProgramRepository.save(entity);
+        // VaccineNameDTO vaccineNameDTO = new VaccineNameDTO();
+        // vaccineNameDTO.setId(vaccineNameEntity.getVaccineNameId());
+        // vaccineNameDTO.setVaccineName(vaccineNameEntity.getVaccineName());
+        // vaccineNameDTO.setManufacture(vaccineNameEntity.getManufacture());
+        // vaccineNameDTO.setUrl(vaccineNameEntity.getUrl());
+        // vaccineNameDTO.setNote(vaccineNameEntity.getNote());
 
-        VaccineNameDTO vaccineNameDTO = new VaccineNameDTO();
-        vaccineNameDTO.setId(vaccineNameEntity.getVaccineNameId());
-        vaccineNameDTO.setVaccineName(vaccineNameEntity.getVaccineName());
-        vaccineNameDTO.setManufacture(vaccineNameEntity.getManufacture());
-        vaccineNameDTO.setUrl(vaccineNameEntity.getUrl());
-        vaccineNameDTO.setNote(vaccineNameEntity.getNote());
+        // VaccineProgramDTO dto = new VaccineProgramDTO();
+        // dto.setVaccineId(entity.getVaccineId());
+        // dto.setVaccineName(vaccineNameDTO);
+        // dto.setDescription(entity.getDescription());
+        // dto.setVaccineDate(entity.getVaccineDate());
+        // dto.setStatus(entity.getStatus().name());
+        // dto.setNote(entity.getNote());
 
-        VaccineProgramDTO dto = new VaccineProgramDTO();
-        dto.setVaccineId(entity.getVaccineId());
-        dto.setVaccineName(vaccineNameDTO);
-        dto.setDescription(entity.getDescription());
-        dto.setVaccineDate(entity.getVaccineDate());
-        dto.setStatus(entity.getStatus().name());
-        dto.setNote(entity.getNote());
-
-        return dto;
-
+        // return dto;
+        return null;
     }
 
     public VaccineProgramDTO updateVaccineProgram(VaccineProgramRequest request, long id) {
-        Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository.findVaccineProgramByVaccineId(id);
-        if (existingProgramOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
-        }
+        // Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository.findVaccineProgramByVaccineId(id);
+        // if (existingProgramOpt.isEmpty()) {
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
+        // }
 
-        VaccineProgramEntity existingProgram = existingProgramOpt.get();
+        // VaccineProgramEntity existingProgram = existingProgramOpt.get();
 
-        if (existingProgram.getStatus() == VaccineProgramStatus.COMPLETED
-                || existingProgram.getStatus() == VaccineProgramStatus.ON_GOING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Cannot update 'COMPLETED' or 'ON_GOING' program");
-        }
+        // if (existingProgram.getStatus() == VaccineProgramStatus.COMPLETED
+        //         || existingProgram.getStatus() == VaccineProgramStatus.ON_GOING) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //             "Cannot update 'COMPLETED' or 'ON_GOING' program");
+        // }
 
-        VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(request.getVaccineNameId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name not found"));
+        // VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(request.getVaccineNameId())
+        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name not found"));
 
-        existingProgram.setVaccineName(vaccineNameEntity);
-        existingProgram.setDescription(request.getDescription());
-        existingProgram.setVaccineDate(request.getVaccineDate());
-        existingProgram.setNote(request.getNote());
+        // existingProgram.setVaccineName(vaccineNameEntity);
+        // existingProgram.setDescription(request.getDescription());
+        // existingProgram.setVaccineDate(request.getVaccineDate());
+        // existingProgram.setNote(request.getNote());
 
-        vaccineProgramRepository.save(existingProgram);
+        // vaccineProgramRepository.save(existingProgram);
 
-        return modelMapper.map(existingProgram, VaccineProgramDTO.class);
+        // return modelMapper.map(existingProgram, VaccineProgramDTO.class);
+        return null;
     }
 
     public VaccineProgramDTO updateVaccineProgramStatus(Long id, String status) {
-        Optional<VaccineProgramEntity> vaccineProgramOpt = vaccineProgramRepository.findById(id);
-        if (vaccineProgramOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
-        VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
+        // Optional<VaccineProgramEntity> vaccineProgramOpt = vaccineProgramRepository.findById(id);
+        // if (vaccineProgramOpt.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
+        // VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
 
-        VaccineProgramStatus newStatus;
-        try {
-            newStatus = VaccineProgramStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + status);
-        }
+        // VaccineProgramStatus newStatus;
+        // try {
+        //     newStatus = VaccineProgramStatus.valueOf(status.toUpperCase());
+        // } catch (IllegalArgumentException e) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + status);
+        // }
 
-        if (vaccineProgramEntity.getStatus() == VaccineProgramStatus.COMPLETED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Program is already COMPLETED and cannot be updated");
-        }
+        // if (vaccineProgramEntity.getStatus() == VaccineProgramStatus.COMPLETED) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //             "Program is already COMPLETED and cannot be updated");
+        // }
 
-        if (vaccineProgramEntity.getStatus() == (newStatus)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already in status: " + newStatus);
-        }
+        // if (vaccineProgramEntity.getStatus() == (newStatus)) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already in status: " + newStatus);
+        // }
 
-        if (newStatus == VaccineProgramStatus.COMPLETED
-                && vaccineProgramEntity.getStatus() != VaccineProgramStatus.ON_GOING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Cannot mark as COMPLETED unless the program is ON_GOING");
-        }
+        // if (newStatus == VaccineProgramStatus.COMPLETED
+        //         && vaccineProgramEntity.getStatus() != VaccineProgramStatus.ON_GOING) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        //             "Cannot mark as COMPLETED unless the program is ON_GOING");
+        // }
 
-        vaccineProgramEntity.setStatus(newStatus);
-        vaccineProgramRepository.save(vaccineProgramEntity);
+        // vaccineProgramEntity.setStatus(newStatus);
+        // vaccineProgramRepository.save(vaccineProgramEntity);
 
-        if (newStatus == VaccineProgramStatus.ON_GOING) {
-            createVaccineForm(vaccineProgramEntity);
-        }
+        // if (newStatus == VaccineProgramStatus.ON_GOING) {
+        //     createVaccineForm(vaccineProgramEntity);
+        // }
 
-        return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
+        // return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
+        return null;
     }
 
     public void createVaccineForm(VaccineProgramEntity programEntity) {
-        VaccineNameEntity vaccineNameEntity = programEntity.getVaccineName();
-        Long programId = programEntity.getVaccineId();
+        // VaccineNameEntity vaccineNameEntity = programEntity.getVaccineName();
+        // Long programId = programEntity.getVaccineId();
 
-        List<StudentEntity> students = studentRepository.findStudentsNeverVaccinatedByProgramId(programId);
+        // List<StudentEntity> students = studentRepository.findStudentsNeverVaccinatedByProgramId(programId);
 
-        for (StudentEntity studentEntity : students) {
-            UserEntity parent = studentEntity.getParent();
-            if (parent == null)
-                continue;
+        // for (StudentEntity studentEntity : students) {
+        //     UserEntity parent = studentEntity.getParent();
+        //     if (parent == null)
+        //         continue;
 
-            List<VaccineFormEntity> existingForms = vaccineFormRepository
-                    .findVaccineFormEntityByVaccineProgramAndStudent(programEntity, studentEntity);
+        //     List<VaccineFormEntity> existingForms = vaccineFormRepository
+        //             .findVaccineFormEntityByVaccineProgramAndStudent(programEntity, studentEntity);
 
-            boolean hasUncommittedForm = existingForms.stream()
-                    .anyMatch(form -> form.getCommit() == null);
-            if (hasUncommittedForm)
-                continue;
+        //     boolean hasUncommittedForm = existingForms.stream()
+        //             .anyMatch(form -> form.getCommit() == null);
+        //     if (hasUncommittedForm)
+        //         continue;
 
-            VaccineFormEntity vaccineFormEntity = new VaccineFormEntity();
-            vaccineFormEntity.setStudent(studentEntity);
-            vaccineFormEntity.setParent(parent);
-            vaccineFormEntity.setNote(null);
-            vaccineFormEntity.setCommit(null);
-            vaccineFormEntity.setFormDate(programEntity.getVaccineDate().minusDays(7));
-            vaccineFormEntity.setStatus(VaccineFormStatus.DRAFT);
-            vaccineFormEntity.setVaccineProgram(programEntity);
+        //     VaccineFormEntity vaccineFormEntity = new VaccineFormEntity();
+        //     vaccineFormEntity.setStudent(studentEntity);
+        //     vaccineFormEntity.setParent(parent);
+        //     vaccineFormEntity.setNote(null);
+        //     vaccineFormEntity.setCommit(null);
+        //     vaccineFormEntity.setFormDate(programEntity.getVaccineDate().minusDays(7));
+        //     vaccineFormEntity.setStatus(VaccineFormStatus.DRAFT);
+        //     vaccineFormEntity.setVaccineProgram(programEntity);
 
-            vaccineFormRepository.save(vaccineFormEntity);
-        }
+        //     vaccineFormRepository.save(vaccineFormEntity);
+        // }
     }
 
     public List<VaccineProgramDTO> getAllVaccineProgram() {
-        List<VaccineProgramEntity> vaccineProgramEntitieList = vaccineProgramRepository.findAll();
-        if (vaccineProgramEntitieList.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine programs found");
-        List<VaccineProgramDTO> vaccineProgramDTOList = vaccineProgramEntitieList.stream()
-                .map(entity -> modelMapper.map(entity, VaccineProgramDTO.class))
-                .toList();
-        for (VaccineProgramDTO v : vaccineProgramDTOList) {
-            Long programId = v.getVaccineId();
-            List<VaccineFormEntity> vaccineFormEntityList = vaccineFormRepository
-                    .findAllByVaccineProgram_VaccineId(programId);
-            if (vaccineFormEntityList.isEmpty()) {
-                v.setSended(0);
-            } else {
-                boolean allStatusOne = vaccineFormEntityList.stream()
-                        .allMatch(form -> form.getStatus().equals(VaccineFormStatus.DRAFT));
-                v.setSended(allStatusOne ? 0 : 1);
-            }
-        }
-        return vaccineProgramDTOList;
+        // List<VaccineProgramEntity> vaccineProgramEntitieList = vaccineProgramRepository.findAll();
+        // if (vaccineProgramEntitieList.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine programs found");
+        // List<VaccineProgramDTO> vaccineProgramDTOList = vaccineProgramEntitieList.stream()
+        //         .map(entity -> modelMapper.map(entity, VaccineProgramDTO.class))
+        //         .toList();
+        // for (VaccineProgramDTO v : vaccineProgramDTOList) {
+        //     Long programId = v.getVaccineId();
+        //     List<VaccineFormEntity> vaccineFormEntityList = vaccineFormRepository
+        //             .findAllByVaccineProgram_VaccineId(programId);
+        //     if (vaccineFormEntityList.isEmpty()) {
+        //         v.setSended(0);
+        //     } else {
+        //         boolean allStatusOne = vaccineFormEntityList.stream()
+        //                 .allMatch(form -> form.getStatus().equals(VaccineFormStatus.DRAFT));
+        //         v.setSended(allStatusOne ? 0 : 1);
+        //     }
+        // }
+        // return vaccineProgramDTOList;
+        return null;
     }
 
     public VaccineProgramDTO getVaccineProgramById(long id) {
-        Optional<VaccineProgramEntity> vaccineProgramOpt = vaccineProgramRepository.findVaccineProgramByVaccineId(id);
-        if (vaccineProgramOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
-        VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
-        return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
+        // Optional<VaccineProgramEntity> vaccineProgramOpt = vaccineProgramRepository.findVaccineProgramByVaccineId(id);
+        // if (vaccineProgramOpt.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
+        // VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
+        // return modelMapper.map(vaccineProgramEntity, VaccineProgramDTO.class);
+        return null;
     }
 
     public void deleteVaccineProgram(long id) {
-        Optional<VaccineProgramEntity> vaccineProgramOpt = vaccineProgramRepository.findVaccineProgramByVaccineId(id);
-        if (vaccineProgramOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
-        VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
-        vaccineProgramRepository.delete(vaccineProgramEntity);
+        // Optional<VaccineProgramEntity> vaccineProgramOpt = vaccineProgramRepository.findVaccineProgramByVaccineId(id);
+        // if (vaccineProgramOpt.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found");
+        // VaccineProgramEntity vaccineProgramEntity = vaccineProgramOpt.get();
+        // vaccineProgramRepository.delete(vaccineProgramEntity);
     }
 
     public List<ClassDTO> getAllClass() {
-        List<ClassEntity> classEntityList = classRepository.findAll();
-        if (classEntityList.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found");
-        List<ClassDTO> classDTOList = classEntityList.stream()
-                .map(classEntity -> modelMapper.map(classEntity, ClassDTO.class))
-                .collect(Collectors.toList());
-        return classDTOList;
+        // List<ClassEntity> classEntityList = classRepository.findAll();
+        // if (classEntityList.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found");
+        // List<ClassDTO> classDTOList = classEntityList.stream()
+        //         .map(classEntity -> modelMapper.map(classEntity, ClassDTO.class))
+        //         .collect(Collectors.toList());
+        // return classDTOList;
+        return null;    
     }
 
     public List<StudentDTO> getAllStudentInClass(Long classId) {
-        Optional<ClassEntity> classOpt = classRepository.findByClassId(classId);
-        if (classOpt.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found");
-        ClassEntity classEntity = classOpt.get();
+        // Optional<ClassEntity> classOpt = classRepository.findByClassId(classId);
+        // if (classOpt.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found");
+        // ClassEntity classEntity = classOpt.get();
 
-        List<StudentEntity> studentEntitieList = studentRepository.findByClassEntity(classEntity);
-        if (studentEntitieList.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class is empty");
+        // List<StudentEntity> studentEntitieList = studentRepository.findByClassEntity(classEntity);
+        // if (studentEntitieList.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class is empty");
 
-        List<StudentDTO> studentDTOList = studentEntitieList.stream()
-                .map(studentEntitie -> modelMapper.map(studentEntitie, StudentDTO.class))
-                .collect(Collectors.toList());
-        return studentDTOList;
+        // List<StudentDTO> studentDTOList = studentEntitieList.stream()
+        //         .map(studentEntitie -> modelMapper.map(studentEntitie, StudentDTO.class))
+        //         .collect(Collectors.toList());
+        // return studentDTOList;
+        return null;
     }
 
     public MedicalRecordDTO getMedicalRecordByStudentId(Long parentId, Long studentId) {
-        Optional<MedicalRecordEntity> optMedicalRecord = medicalRecordsRepository
-                .findMedicalRecordByStudent_Id(studentId);
-        if (optMedicalRecord.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical record not found");
-        MedicalRecordEntity medicalRecord = optMedicalRecord.get();
-        return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+        // Optional<MedicalRecordEntity> optMedicalRecord = medicalRecordsRepository
+        //         .findMedicalRecordByStudent_Id(studentId);
+        // if (optMedicalRecord.isEmpty())
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical record not found");
+        // MedicalRecordEntity medicalRecord = optMedicalRecord.get();
+        // return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+        return null;
     }
 
     public UserDTO createAccount(NurseAccountRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists!");
-        }
-        String password = passwordService.generateStrongRandomPassword();
-        String encodedPassword = passwordEncoder.encode(password);
-        UserEntity user = new UserEntity();
-        user.setEmail(request.getEmail());
-        user.setFullName(request.getName());
-        user.setPassword(encodedPassword);
-        user.setPhone(request.getPhone());
-        user.setAddress(request.getAddress());
-        user.setActive(true);
-        user.setRole(UserRole.NURSE);
-        userRepository.save(user);
-        emailService.sendEmail(
-                request.getEmail(),
-                "Thông tin tài khoản",
-                "Tài khoản của bạn đã được tạo thành công.\n\n"
-                        + "Email: " + request.getEmail() + "\n"
-                        + "Password: " + password + "\n\n"
-                        + "Vui lòng đăng nhập và đổi mật khẩu ngay để bảo mật tài khoản.");
-        return modelMapper.map(user, UserDTO.class);
+        // if (userRepository.existsByEmail(request.getEmail())) {
+        //     throw new RuntimeException("Email already exists!");
+        // }
+        // String password = passwordService.generateStrongRandomPassword();
+        // String encodedPassword = passwordEncoder.encode(password);
+        // UserEntity user = new UserEntity();
+        // user.setEmail(request.getEmail());
+        // user.setFullName(request.getName());
+        // user.setPassword(encodedPassword);
+        // user.setPhone(request.getPhone());
+        // user.setAddress(request.getAddress());
+        // user.setActive(true);
+        // user.setRole(UserRole.NURSE);
+        // userRepository.save(user);
+        // emailService.sendEmail(
+        //         request.getEmail(),
+        //         "Thông tin tài khoản",
+        //         "Tài khoản của bạn đã được tạo thành công.\n\n"
+        //                 + "Email: " + request.getEmail() + "\n"
+        //                 + "Password: " + password + "\n\n"
+        //                 + "Vui lòng đăng nhập và đổi mật khẩu ngay để bảo mật tài khoản.");
+        // return modelMapper.map(user, UserDTO.class);
+        return null;
     }
 
     public List<UserDTO> getAllAccounts() {
-        List<UserEntity> userEntities = userRepository.findAll();
-        if (userEntities.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No accounts found");
-        }
-        return userEntities.stream()
-                .map(user -> modelMapper.map(user, UserDTO.class))
-                .collect(Collectors.toList());
+        // List<UserEntity> userEntities = userRepository.findAll();
+        // if (userEntities.isEmpty()) {
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No accounts found");
+        // }
+        // return userEntities.stream()
+        //         .map(user -> modelMapper.map(user, UserDTO.class))
+        //         .collect(Collectors.toList());
+        return null;
     }
 
     public UserDTO updateAccount(long userId, UpdateProfileRequest request) {
-        UserEntity user = userRepository.findUserByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        // UserEntity user = userRepository.findUserByUserId(userId)
+        //         .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        user.setFullName(request.getFullName());
-        if (!user.getEmail().equals(request.getEmail())) {
-            boolean emailExists = userRepository.existsByEmail(request.getEmail());
-            if (emailExists) {
-                throw new RuntimeException("Email already in use");
-            }
-            user.setEmail(request.getEmail());
-        }
+        // user.setFullName(request.getFullName());
+        // // if (!user.getEmail().equals(request.getEmail())) {
+        // //     boolean emailExists = userRepository.existsByEmail(request.getEmail());
+        // //     if (emailExists) {
+        // //         throw new RuntimeException("Email already in use");
+        // //     }
+        //     user.setEmail(request.getEmail());
+        // // }
 
-        if (!user.getPhone().equals(request.getPhone())) {
-            boolean phoneExists = userRepository.existsByPhone(request.getPhone());
-            if (phoneExists) {
-                throw new RuntimeException("Phone already in use");
-            }
-            user.setPhone(request.getPhone());
-        }
-        user.setAddress(request.getAddress());
+        // // if (!user.getPhone().equals(request.getPhone())) {
+        // //     boolean phoneExists = userRepository.existsByPhone(request.getPhone());
+        // //     if (phoneExists) {
+        // //         throw new RuntimeException("Phone already in use");
+        // //     }
+        //     user.setPhone(request.getPhone());
+        // // }
+        // user.setAddress(request.getAddress());
 
-        userRepository.save(user);
-        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-        return userDTO;
+        // userRepository.save(user);
+        // UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+        // return userDTO;
+        return null;
     }
 
     public void deleteAccount(Long userId, String token) {
-        Optional<UserEntity> userOpt = userRepository.findUserByUserId(userId);
-        if (userOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
-        }
-        UserEntity user = userOpt.get();
-        if (user.getRole() == UserRole.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể xoá tài khoản ADMIN");
-        }
+        // Optional<UserEntity> userOpt = userRepository.findUserByUserId(userId);
+        // if (userOpt.isEmpty()) {
+        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        // }
+        // UserEntity user = userOpt.get();
+        // if (user.getRole() == UserRole.ADMIN) {
+        //     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể xoá tài khoản ADMIN");
+        // }
 
-        if (user.getRole() == UserRole.PARENT) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể xoá tài khoản PHỤ HUYNH");
-        }
+        // if (user.getRole() == UserRole.PARENT) {
+        //     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể xoá tài khoản PHỤ HUYNH");
+        // }
 
-        BlacklistTokenRequest blacklistRequest = new BlacklistTokenRequest();
-        blacklistRequest.setToken(token);
+        // BlacklistTokenRequest blacklistRequest = new BlacklistTokenRequest();
+        // blacklistRequest.setToken(token);
 
-        refreshTokenRepository.deleteByUser(user);
-        blacklistService.create(blacklistRequest);
+        // refreshTokenRepository.deleteByUser(user);
+        // blacklistService.create(blacklistRequest);
 
-        userRepository.delete(user);
+        // userRepository.delete(user);
     }
 
     @Transactional
     public void importStudentFromExcel(MultipartFile file) {
-        try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
-            Sheet sheet = workbook.getSheetAt(0);
-            DataFormatter formatter = new DataFormatter();
-            int importedCount = 0;
+        // try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
+        //     Sheet sheet = workbook.getSheetAt(0);
+        //     DataFormatter formatter = new DataFormatter();
+        //     int importedCount = 0;
 
-            for (Row row : sheet) {
-                int rowNum = row.getRowNum();
-                if (rowNum == 0)
-                    continue;
-                if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK)
-                    continue;
+        //     for (Row row : sheet) {
+        //         int rowNum = row.getRowNum();
+        //         if (rowNum == 0)
+        //             continue;
+        //         if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK)
+        //             continue;
 
-                String studentName = row.getCell(0).getStringCellValue();
-                LocalDate dob = row.getCell(1).getLocalDateTimeCellValue().toLocalDate();
-                String gender = row.getCell(2).getStringCellValue();
-                String relationship = row.getCell(3).getStringCellValue();
-                String className = row.getCell(4).getStringCellValue();
-                String teacherName = row.getCell(5).getStringCellValue();
-                String parentName = row.getCell(6).getStringCellValue();
-                String parentEmail = row.getCell(7).getStringCellValue();
-                String parentPhone = formatter.formatCellValue(row.getCell(8));
-                String parentAddress = row.getCell(9).getStringCellValue();
+        //         String studentName = row.getCell(0).getStringCellValue();
+        //         LocalDate dob = row.getCell(1).getLocalDateTimeCellValue().toLocalDate();
+        //         String gender = row.getCell(2).getStringCellValue();
+        //         String relationship = row.getCell(3).getStringCellValue();
+        //         String className = row.getCell(4).getStringCellValue();
+        //         String teacherName = row.getCell(5).getStringCellValue();
+        //         String parentName = row.getCell(6).getStringCellValue();
+        //         String parentEmail = row.getCell(7).getStringCellValue();
+        //         String parentPhone = formatter.formatCellValue(row.getCell(8));
+        //         String parentAddress = row.getCell(9).getStringCellValue();
 
-                Optional<ClassEntity> classOpt = classRepository.findByClassNameAndTeacherName(className, teacherName);
-                ClassEntity classEntity = classOpt.orElseGet(() -> {
-                    ClassEntity newClass = new ClassEntity();
-                    newClass.setClassName(className);
-                    newClass.setTeacherName(teacherName);
-                    newClass.setQuantity(0);
-                    return classRepository.save(newClass);
-                });
+        //         Optional<ClassEntity> classOpt = classRepository.findByClassNameAndTeacherName(className, teacherName);
+        //         ClassEntity classEntity = classOpt.orElseGet(() -> {
+        //             ClassEntity newClass = new ClassEntity();
+        //             newClass.setClassName(className);
+        //             newClass.setTeacherName(teacherName);
+        //             newClass.setQuantity(0);
+        //             return classRepository.save(newClass);
+        //         });
 
-                // kiểm tra trùng
-                Optional<UserEntity> parentOpt = userRepository.findUserByEmailOrPhone(parentEmail, parentPhone);
-                if (parentOpt.isPresent()) {
-                    UserEntity existing = parentOpt.get();
-                    if (existing.getEmail().equalsIgnoreCase(parentEmail)) {
-                        throw new RuntimeException("Email " + parentEmail + " đã bị trùng.");
-                    } else {
-                        throw new RuntimeException("Số điện thoại " + parentPhone + " đã bị trùng.");
-                    }
-                }
+        //         // kiểm tra trùng
+        //         Optional<UserEntity> parentOpt = userRepository.findUserByEmailOrPhone(parentEmail, parentPhone);
+        //         if (parentOpt.isPresent()) {
+        //             UserEntity existing = parentOpt.get();
+        //             if (existing.getEmail().equalsIgnoreCase(parentEmail)) {
+        //                 throw new RuntimeException("Email " + parentEmail + " đã bị trùng.");
+        //             } else {
+        //                 throw new RuntimeException("Số điện thoại " + parentPhone + " đã bị trùng.");
+        //             }
+        //         }
 
-                UserEntity parent = new UserEntity();
-                parent.setFullName(parentName);
-                parent.setEmail(parentEmail);
-                parent.setPhone(parentPhone);
-                parent.setAddress(parentAddress);
-                parent.setActive(true);
-                parent.setRole(UserRole.PARENT);
-                parent = userRepository.save(parent);
+        //         UserEntity parent = new UserEntity();
+        //         parent.setFullName(parentName);
+        //         parent.setEmail(parentEmail);
+        //         parent.setPhone(parentPhone);
+        //         parent.setAddress(parentAddress);
+        //         parent.setActive(true);
+        //         parent.setRole(UserRole.PARENT);
+        //         parent = userRepository.save(parent);
 
-                StudentEntity student = new StudentEntity();
-                student.setFullName(studentName);
-                student.setDob(dob);
-                student.setGender(gender);
-                student.setRelationship(relationship);
-                student.setClassEntity(classEntity);
-                student.setParent(parent);
+        //         StudentEntity student = new StudentEntity();
+        //         student.setFullName(studentName);
+        //         student.setDob(dob);
+        //         student.setGender(gender);
+        //         student.setRelationship(relationship);
+        //         student.setClassEntity(classEntity);
+        //         student.setParent(parent);
 
-                studentRepository.save(student);
-                importedCount++;
-            }
+        //         studentRepository.save(student);
+        //         importedCount++;
+        //     }
 
-            if (importedCount == 0) {
-                throw new RuntimeException("File không hợp lệ.");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Import thất bại: " + e.getMessage());
-        }
+        //     if (importedCount == 0) {
+        //         throw new RuntimeException("File không hợp lệ.");
+        //     }
+        // } catch (Exception e) {
+        //     throw new RuntimeException("Import thất bại: " + e.getMessage());
+        // }
     }
 
     public long countStudents() {
-        return studentRepository.count();
+        // return studentRepository.count();
+        return 0;
     }
 
     public long countMedicalRecords() {
-        return medicalRecordsRepository.count();
+        // return medicalRecordsRepository.count();
+        return 0;
     }
 
     public long countVaccineProgram() {
-        return vaccineProgramRepository
-                .countByStatusIn(List.of(VaccineProgramStatus.NOT_STARTED, VaccineProgramStatus.ON_GOING));
+        // return vaccineProgramRepository
+        //         .countByStatusIn(List.of(VaccineProgramStatus.NOT_STARTED, VaccineProgramStatus.ON_GOING));
+        return 0;
     }
 
     public long countHealthCheckProgram() {
-        return healthCheckProgramRepository
-                .countByStatusIn(List.of(HealthCheckProgramStatus.NOT_STARTED, HealthCheckProgramStatus.ON_GOING));
+        // return healthCheckProgramRepository
+        //         .countByStatusIn(List.of(HealthCheckProgramStatus.NOT_STARTED, HealthCheckProgramStatus.ON_GOING));
+        return 0;
     }
 
     public long countProcessingMedicalRequest() {
-        return medicalRequestRepository.countByStatusIn(List.of(MedicalRequestStatus.PROCESSING));
+        // return medicalRequestRepository.countByStatusIn(List.of(MedicalRequestStatus.PROCESSING));
+        return 0;
     }
 
     public List<Map<String, Object>> getEventStatsByMonth(int year) {
-        List<EventStatRaw> rawList = medicalEventRepository.getEventStatsByMonth(year);
-        Map<Integer, Map<String, Object>> grouped = new TreeMap<>();
+        // List<EventStatRaw> rawList = medicalEventRepository.getEventStatsByMonth(year);
+        // Map<Integer, Map<String, Object>> grouped = new TreeMap<>();
 
-        for (EventStatRaw raw : rawList) {
-            Integer month = raw.getMonth(); // 1 → 12
-            String type = raw.getTypeEvent();
-            int count = raw.getCount().intValue();
+        // for (EventStatRaw raw : rawList) {
+        //     Integer month = raw.getMonth(); // 1 → 12
+        //     String type = raw.getTypeEvent();
+        //     int count = raw.getCount().intValue();
 
-            Map<String, Object> row = grouped.computeIfAbsent(month, k -> {
-                Map<String, Object> newRow = new HashMap<>();
-                newRow.put("month", "T" + k); // Đổi tên theo format T1, T2,...
-                return newRow;
-            });
+        //     Map<String, Object> row = grouped.computeIfAbsent(month, k -> {
+        //         Map<String, Object> newRow = new HashMap<>();
+        //         newRow.put("month", "T" + k); // Đổi tên theo format T1, T2,...
+        //         return newRow;
+        //     });
 
-            row.put(type, count);
-        }
+        //     row.put(type, count);
+        // }
 
-        return new ArrayList<>(grouped.values());
+        // return new ArrayList<>(grouped.values());
+        return null;
     }
 
     public List<HealthCheckResultStatsDTO> getVaccineResultStatusStatsByProgram() {
-        List<HealthCheckResultByProgramStatsRaw> rawList = vaccineResultRepository
-                .getVaccineResultStatusStatsByProgram();
+        // List<HealthCheckResultByProgramStatsRaw> rawList = vaccineResultRepository
+        //         .getVaccineResultStatusStatsByProgram();
 
-        return rawList.stream()
-                .map(row -> new HealthCheckResultStatsDTO(
-                        row.getProgramId(),
-                        row.getProgramName(),
-                        row.getStatusHealth(),
-                        row.getCount()))
-                .collect(Collectors.toList());
+        // return rawList.stream()
+        //         .map(row -> new HealthCheckResultStatsDTO(
+        //                 row.getProgramId(),
+        //                 row.getProgramName(),
+        //                 row.getStatusHealth(),
+        //                 row.getCount()))
+        //         .collect(Collectors.toList());
+        return null;
     }
 
     public List<HealthCheckResultStatsDTO> getHealthCheckResultStatusStatsByProgram() {
-        List<HealthCheckResultByProgramStatsRaw> rawList = healthCheckResultRepository
-                .getHealthCheckResultStatusStatsByProgram();
+        // List<HealthCheckResultByProgramStatsRaw> rawList = healthCheckResultRepository
+        //         .getHealthCheckResultStatusStatsByProgram();
 
-        return rawList.stream()
-                .map(row -> new HealthCheckResultStatsDTO(
-                        row.getProgramId(),
-                        row.getProgramName(),
-                        row.getStatusHealth(),
-                        row.getCount()))
-                .collect(Collectors.toList());
+        // return rawList.stream()
+        //         .map(row -> new HealthCheckResultStatsDTO(
+        //                 row.getProgramId(),
+        //                 row.getProgramName(),
+        //                 row.getStatusHealth(),
+        //                 row.getCount()))
+        //         .collect(Collectors.toList());
+        return null;
     }
 
     public ParticipationDTO getLatestParticipation() {
-        ParticipationDTO participationDTO = new ParticipationDTO();
-        Optional<VaccineProgramEntity> lastestVaccineProgramOpt = vaccineProgramRepository
-                .findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus.COMPLETED);
-        Optional<HealthCheckProgramEntity> latestHealthCheckProgramOpt = healthCheckProgramRepository
-                .findTopByStatusOrderByEndDateDesc(HealthCheckProgramStatus.COMPLETED);
+        // ParticipationDTO participationDTO = new ParticipationDTO();
+        // Optional<VaccineProgramEntity> lastestVaccineProgramOpt = vaccineProgramRepository
+        //         .findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus.COMPLETED);
+        // Optional<HealthCheckProgramEntity> latestHealthCheckProgramOpt = healthCheckProgramRepository
+        //         .findTopByStatusOrderByEndDateDesc(HealthCheckProgramStatus.COMPLETED);
 
-        if (!lastestVaccineProgramOpt.isPresent()) {
-            participationDTO.setVaccination(new CommitedPercentDTO(null, 0L, 0L));
-        } else {
-            VaccineProgramEntity latestVaccineProgram = lastestVaccineProgramOpt.get();
-            ParticipationRateRaw vaccine = vaccineFormRepository
-                    .getParticipationRateByVaccineId(latestVaccineProgram.getVaccineId());
-            participationDTO
-                    .setVaccination(new CommitedPercentDTO(latestVaccineProgram.getVaccineName().getVaccineName(),
-                            vaccine.getCommittedCount(), vaccine.getTotalSent()));
-        }
+        // if (!lastestVaccineProgramOpt.isPresent()) {
+        //     participationDTO.setVaccination(new CommitedPercentDTO(null, 0L, 0L));
+        // } else {
+        //     VaccineProgramEntity latestVaccineProgram = lastestVaccineProgramOpt.get();
+        //     ParticipationRateRaw vaccine = vaccineFormRepository
+        //             .getParticipationRateByVaccineId(latestVaccineProgram.getVaccineId());
+        //     participationDTO
+        //             .setVaccination(new CommitedPercentDTO(latestVaccineProgram.getVaccineName().getVaccineName(),
+        //                     vaccine.getCommittedCount(), vaccine.getTotalSent()));
+        // }
 
-        if (!latestHealthCheckProgramOpt.isPresent()) {
-            participationDTO.setHealthCheck(new CommitedPercentDTO(null, 0L, 0L));
-        } else {
-            HealthCheckProgramEntity latestHealthCheckProgram = latestHealthCheckProgramOpt.get();
-            ParticipationRateRaw healthCheck = healthCheckFormRepository
-                    .getParticipationRateByHealthCheckId(latestHealthCheckProgram.getId());
-            participationDTO.setHealthCheck(new CommitedPercentDTO(latestHealthCheckProgram.getHealthCheckName(),
-                    healthCheck.getCommittedCount(), healthCheck.getTotalSent()));
-        }
-        return participationDTO;
+        // if (!latestHealthCheckProgramOpt.isPresent()) {
+        //     participationDTO.setHealthCheck(new CommitedPercentDTO(null, 0L, 0L));
+        // } else {
+        //     HealthCheckProgramEntity latestHealthCheckProgram = latestHealthCheckProgramOpt.get();
+        //     ParticipationRateRaw healthCheck = healthCheckFormRepository
+        //             .getParticipationRateByHealthCheckId(latestHealthCheckProgram.getId());
+        //     participationDTO.setHealthCheck(new CommitedPercentDTO(latestHealthCheckProgram.getHealthCheckName(),
+        //             healthCheck.getCommittedCount(), healthCheck.getTotalSent()));
+        // }
+        // return participationDTO;
+        return null;
     }
 
     public VaccineFormStatsDTO getFormStatsByProgram(Long vaccineProgramId) {
-        long total = vaccineFormRepository.countByVaccineProgram_VaccineId(vaccineProgramId);
-        long committed = vaccineFormRepository.countByVaccineProgram_VaccineIdAndCommitTrue(vaccineProgramId);
+        // long total = vaccineFormRepository.countByVaccineProgram_VaccineId(vaccineProgramId);
+        // long committed = vaccineFormRepository.countByVaccineProgram_VaccineIdAndCommitTrue(vaccineProgramId);
 
-        return new VaccineFormStatsDTO(total, committed);
+        // return new VaccineFormStatsDTO(total, committed);
+        return null;
     }
 
     public List<VaccineNameDTO> getAllVaccineNames() {
-        return vaccineNameRepository.findAll()
-                .stream()
-                .map(entity -> modelMapper.map(entity, VaccineNameDTO.class))
-                .collect(Collectors.toList());
+        // return vaccineNameRepository.findAll()
+        //         .stream()
+        //         .map(entity -> modelMapper.map(entity, VaccineNameDTO.class))
+        //         .collect(Collectors.toList());
+        return null;
     }
 
     public VaccineNameDTO createVaccineName(VaccineNameRequest request) {
-        if (vaccineNameRepository.findByVaccineName(request.getVaccineName()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name already exists");
-        }
+        // if (vaccineNameRepository.findByVaccineName(request.getVaccineName()).isPresent()) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name already exists");
+        // }
 
-        VaccineNameEntity entity = modelMapper.map(request, VaccineNameEntity.class);
-        VaccineNameEntity saved = vaccineNameRepository.save(entity);
+        // VaccineNameEntity entity = modelMapper.map(request, VaccineNameEntity.class);
+        // VaccineNameEntity saved = vaccineNameRepository.save(entity);
 
-        return modelMapper.map(saved, VaccineNameDTO.class);
+        // return modelMapper.map(saved, VaccineNameDTO.class);
+        return null;
     }
 
     public void importVaccineNameFromExcel(MultipartFile file) {
-        try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
-            Sheet sheet = workbook.getSheetAt(0);
-            int importedCount = 0;
-            for (Row row : sheet) {
-                int rowNum = row.getRowNum();
-                if (rowNum == 0)
-                    continue;
-                if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK)
-                    continue;
-                try {
+        // try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
+        //     Sheet sheet = workbook.getSheetAt(0);
+        //     int importedCount = 0;
+        //     for (Row row : sheet) {
+        //         int rowNum = row.getRowNum();
+        //         if (rowNum == 0)
+        //             continue;
+        //         if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK)
+        //             continue;
+        //         try {
 
-                    String vaccineName = row.getCell(0).getStringCellValue();
-                    String manufacture = row.getCell(1).getStringCellValue();
-                    String url = row.getCell(2).getStringCellValue();
-                    String note = row.getCell(3).getStringCellValue();
+        //             String vaccineName = row.getCell(0).getStringCellValue();
+        //             String manufacture = row.getCell(1).getStringCellValue();
+        //             String url = row.getCell(2).getStringCellValue();
+        //             String note = row.getCell(3).getStringCellValue();
 
-                    VaccineNameEntity vaccine = new VaccineNameEntity();
-                    vaccine.setVaccineName(vaccineName);
-                    vaccine.setManufacture(manufacture);
-                    vaccine.setUrl(url);
-                    vaccine.setNote(note);
+        //             VaccineNameEntity vaccine = new VaccineNameEntity();
+        //             vaccine.setVaccineName(vaccineName);
+        //             vaccine.setManufacture(manufacture);
+        //             vaccine.setUrl(url);
+        //             vaccine.setNote(note);
 
-                    // student
-                    Optional<VaccineNameEntity> vaccineNameOpt = vaccineNameRepository
-                            .findByVaccineNameAndManufactureAndUrlAndNote(vaccineName, manufacture, url, note);
-                    VaccineNameEntity vaccineNameEntity;
-                    if (vaccineNameOpt.isPresent()) {
-                        vaccineNameEntity = vaccineNameOpt.get();
-                    } else {
-                        vaccineNameEntity = new VaccineNameEntity();
-                        vaccineNameEntity.setVaccineName(vaccineName);
-                        vaccineNameEntity.setManufacture(manufacture);
-                        vaccineNameEntity.setUrl(url);
-                        vaccineNameEntity.setNote(note);
-                    }
+        //             // student
+        //             Optional<VaccineNameEntity> vaccineNameOpt = vaccineNameRepository
+        //                     .findByVaccineNameAndManufactureAndUrlAndNote(vaccineName, manufacture, url, note);
+        //             VaccineNameEntity vaccineNameEntity;
+        //             if (vaccineNameOpt.isPresent()) {
+        //                 vaccineNameEntity = vaccineNameOpt.get();
+        //             } else {
+        //                 vaccineNameEntity = new VaccineNameEntity();
+        //                 vaccineNameEntity.setVaccineName(vaccineName);
+        //                 vaccineNameEntity.setManufacture(manufacture);
+        //                 vaccineNameEntity.setUrl(url);
+        //                 vaccineNameEntity.setNote(note);
+        //             }
 
-                    vaccineNameRepository.save(vaccineNameEntity);
-                    importedCount++;
-                } catch (Exception e) {
-                    throw new RuntimeException("Lỗi ở dòng Excel số " + rowNum + ": "
-                            + row.getCell(0).getStringCellValue() + " - " + e.getMessage());
-                }
-            }
-            if (importedCount == 0) {
-                throw new RuntimeException("File không hợp lệ.");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
+        //             vaccineNameRepository.save(vaccineNameEntity);
+        //             importedCount++;
+        //         } catch (Exception e) {
+        //             throw new RuntimeException("Lỗi ở dòng Excel số " + rowNum + ": "
+        //                     + row.getCell(0).getStringCellValue() + " - " + e.getMessage());
+        //         }
+        //     }
+        //     if (importedCount == 0) {
+        //         throw new RuntimeException("File không hợp lệ.");
+        //     }
+        // } catch (Exception e) {
+        //     throw new RuntimeException(e.getMessage());
+        // }
     }
 }

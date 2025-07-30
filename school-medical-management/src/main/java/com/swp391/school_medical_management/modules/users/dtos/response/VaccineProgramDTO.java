@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.dtos.response;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -12,18 +13,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VaccineProgramDTO {
-    private Long vaccineId;
-    private VaccineNameDTO vaccineName;
+    private int vaccineProgramId;
     private String vaccineProgramName;
     private String description;
+    private int vaccineId;
+    private int unit;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateSendForm;
-    private String location;
     private String status;
-    private String note;
-    private int sended;
-    private UserDTO nurse;
-    private UserDTO admin;
+    private String location;
+    private int nurseId;
+    private int adminId;
+    private UserDTO nurseDTO;
+    private UserDTO adminDTO;
+    private VaccineNameDTO vaccineNameDTO;
+    List<ParticipateClassDTO> participateClassDTOs;
 }

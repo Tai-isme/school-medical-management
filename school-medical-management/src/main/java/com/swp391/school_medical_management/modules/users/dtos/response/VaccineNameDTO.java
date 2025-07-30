@@ -1,5 +1,7 @@
 package com.swp391.school_medical_management.modules.users.dtos.response;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VaccineNameDTO {
-    private Long id;
+    private int id;
+    private int userId;
     private String vaccineName;
     private String manufacture;
     private Integer ageFrom;
@@ -16,6 +19,6 @@ public class VaccineNameDTO {
     private Integer totalUnit;
     private String url;
     private String description;
-    private String note; 
     private UserDTO userDTO;
+    List<VaccineUnitDTO> vaccineUnitDTOs;
 }

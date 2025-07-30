@@ -4,6 +4,8 @@ import lombok.Data;
 
 @Data
 public class VaccineHistoryRequest {
-    private Long vaccineNameId;  
+    private int vaccineNameId;  
+    private int unit;
     private String note;
+    private boolean createBy;
 }

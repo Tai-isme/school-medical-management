@@ -14,11 +14,12 @@ import java.time.LocalDate;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StudentDTO {
-    private long id;
+    private long studentId;
     private String fullName;
     private LocalDate dob;
     private String gender;
-    private String relationship;
+    private int classId;
+    private int parentId;
     private ClassDTO classDTO;
-    private UserDTO  userDTO;
+    private UserDTO userDTO;
 }

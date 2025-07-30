@@ -33,7 +33,7 @@ public class UserEntity {
     private String phone;
     private String address;
     @Column(length = 50)
-    private String relationship; 
+    private String relationship;
     @Column(name = "active")
     private boolean isActive;
     @Column(name = "role")

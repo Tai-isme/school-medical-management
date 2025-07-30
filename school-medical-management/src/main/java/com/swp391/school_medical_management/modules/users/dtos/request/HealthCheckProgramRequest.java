@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.dtos.request;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
 
@@ -17,7 +18,6 @@ public class HealthCheckProgramRequest {
     @Size(max = 100, message = "Tên đợt khám tối đa 100 ký tự")
     private String healthCheckName;
 
-    @Size(max = 500, message = "Mô tả tối đa 500 ký tự")
     private String description;
 
     @NotNull(message = "Ngày bắt đầu không được để trống")
@@ -34,9 +34,11 @@ public class HealthCheckProgramRequest {
     private HealthCheckProgramEntity.HealthCheckProgramStatus status;
 
     @NotNull(message = "ID admin không được để trống")
-    private Long adminId;
+    private int adminId;
 
     @NotNull(message = "ID y tá không được để trống")
-    private Long nurseId;
+    private int nurseId;
+
+    private List<Integer> classIds;
 
 }

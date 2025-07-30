@@ -33,8 +33,11 @@ public class VaccineProgramEntity {
     @JoinColumn(name = "vaccine_name_id", referencedColumnName = "vaccine_name_id")
     private VaccineNameEntity vaccineName;
 
+    private int unit;
+
     @Column(name = "vaccine_program_name", length = 100)
     private String vaccineProgramName;
+    
 
     @Column(name = "description", length = 255)
     private String description;
@@ -49,7 +52,7 @@ public class VaccineProgramEntity {
     @Column(name = "date_send_form")
     private LocalDate dateSendForm;
 
-    @Column(name = "location", length = 100)
+    @Column(name = "location", length = 255)
     private String location;
 
     @ManyToOne(fetch = FetchType.LAZY)

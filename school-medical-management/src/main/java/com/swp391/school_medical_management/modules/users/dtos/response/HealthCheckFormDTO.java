@@ -17,6 +17,8 @@ public class HealthCheckFormDTO {
     private LocalDate expDate;  
     private String notes;
     private Boolean commit;
-    private String status;
-    private HealthCheckProgramDTO healthCheckProgram;
+    private StudentDTO studentDTO;
+    private UserDTO parentDTO;
+    private UserDTO nurseDTO;
+    private HealthCheckProgramDTO healthCheckProgramDTO;
 }

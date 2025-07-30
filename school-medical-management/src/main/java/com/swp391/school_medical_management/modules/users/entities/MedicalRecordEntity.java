@@ -47,13 +47,13 @@ public class MedicalRecordEntity {
     private Double weight;
 
     @Column(name = "height")
-    private Double height;
+    private int height;
 
     @Column(name = "last_update")
     private LocalDateTime lastUpdate;
 
     @Column(name = "create_by")
-    private Byte createBy;
+    private boolean createBy;
 
     @Column(name = "note", length = 255)
     private String note;
@@ -61,7 +61,4 @@ public class MedicalRecordEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", foreignKey = @ForeignKey(name = "medical_record_ibfk_1"))
     private StudentEntity student;
-
-    @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VaccineHistoryEntity> vaccineHistories;
 }

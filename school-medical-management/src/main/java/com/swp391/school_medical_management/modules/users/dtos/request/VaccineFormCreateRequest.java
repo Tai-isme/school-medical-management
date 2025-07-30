@@ -7,5 +7,4 @@ import lombok.Data;
 @Data
 public class VaccineFormCreateRequest {
     private long vaccineProgramId;
-    private List<Long> studentIds;
 }

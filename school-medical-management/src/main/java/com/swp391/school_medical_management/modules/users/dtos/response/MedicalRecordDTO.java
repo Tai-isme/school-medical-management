@@ -16,17 +16,15 @@ import lombok.NoArgsConstructor;
 public class MedicalRecordDTO {
     private Long recordId;
     private Long studentId;
-    private String studentName; 
     private String allergies;
     private String chronicDisease;
-    private String treatmentHistory;
     private String vision;
     private String hearing;
     private Double weight;
     private Double height;
-    private Byte createBy;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdate;
+    private boolean createBy;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String note;
-    private List<VaccineHistoryDTO> vaccineHistories;
+    private StudentDTO studentDTO;
 }

@@ -11,27 +11,27 @@ import com.swp391.school_medical_management.modules.users.entities.VaccineResult
 import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
 
 public interface VaccineResultRepository extends JpaRepository<VaccineResultEntity, Long> {
-    Optional<VaccineResultEntity> findByVaccineFormEntity(VaccineFormEntity vaccineFormEntity);
+    // Optional<VaccineResultEntity> findByVaccineFormEntity(VaccineFormEntity vaccineFormEntity);
 
-    Optional<VaccineResultEntity> findById(Long id);
-    List<VaccineResultEntity> findByVaccineFormEntity_Student_Id(Long studentId);
-    List<VaccineResultEntity> findAll();
+    // Optional<VaccineResultEntity> findById(Long id);
+    // List<VaccineResultEntity> findByVaccineFormEntity_Student_Id(Long studentId);
+    // List<VaccineResultEntity> findAll();
 
-    Optional<VaccineResultEntity> findByVaccineFormEntity_Id(Long formId);
+    // Optional<VaccineResultEntity> findByVaccineFormEntity_Id(Long formId);
 
-    List<VaccineResultEntity> findByVaccineFormEntity_VaccineProgram_VaccineId(Long programId);
+    // List<VaccineResultEntity> findByVaccineFormEntity_VaccineProgram_VaccineId(Long programId);
 
-    @Query("""
-                SELECT
-                    p.vaccineId AS programId,
-                    p.vaccineName AS programName,
-                    vr.statusHealth AS statusHealth,
-                    COUNT(vr) AS count
-                FROM VaccineResultEntity vr
-                JOIN vr.vaccineFormEntity vf
-                JOIN vf.vaccineProgram p
-                GROUP BY p.vaccineId, p.vaccineName, vr.statusHealth
-                ORDER BY p.vaccineId
-            """)
-    List<HealthCheckResultByProgramStatsRaw> getVaccineResultStatusStatsByProgram();
+    // @Query("""
+    //             SELECT
+    //                 p.vaccineId AS programId,
+    //                 p.vaccineName AS programName,
+    //                 vr.statusHealth AS statusHealth,
+    //                 COUNT(vr) AS count
+    //             FROM VaccineResultEntity vr
+    //             JOIN vr.vaccineFormEntity vf
+    //             JOIN vf.vaccineProgram p
+    //             GROUP BY p.vaccineId, p.vaccineName, vr.statusHealth
+    //             ORDER BY p.vaccineId
+    //         """)
+    // List<HealthCheckResultByProgramStatsRaw> getVaccineResultStatusStatsByProgram();
 }

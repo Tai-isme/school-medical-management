@@ -10,11 +10,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VaccineResultDTO {
-    private Integer vaccineResultId;
-    private String resultNote;
+    private int vaccineResultId;
+    private int vaccineFormId;
+    private int nurseId;
+    private int studentId;
     private String reaction;
     private String actionsTaken;
+    private String resultNote;
     private Boolean isRejected;
     private LocalDateTime createdAt;
     private VaccineFormDTO vaccineFormDTO;
+    private StudentDTO studentDTO;
+    private UserDTO nurseDTO;
 }

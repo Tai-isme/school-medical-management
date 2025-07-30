@@ -12,24 +12,26 @@ import com.swp391.school_medical_management.modules.users.entities.VaccineProgra
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 
 public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEntity, Long> {
-    Optional<VaccineProgramEntity> findByVaccineNameAndStatus(VaccineNameEntity vaccineName, VaccineProgramStatus status);
+    // Optional<VaccineProgramEntity> findByVaccineNameAndStatus(VaccineNameEntity vaccineName,
+    //         VaccineProgramStatus status);
 
-    Optional<VaccineProgramEntity> findVaccineProgramByVaccineId(long vaccineId);
+    // Optional<VaccineProgramEntity> findVaccineProgramByVaccineId(long vaccineId);
 
-    List<VaccineProgramEntity> findAll();
+    // List<VaccineProgramEntity> findAll();
 
-    List<VaccineProgramEntity> findByStatus(VaccineProgramStatus status);
+    // List<VaccineProgramEntity> findByStatus(VaccineProgramStatus status);
 
-    long countByStatusIn(List<VaccineProgramStatus> statuses);
+    // long countByStatusIn(List<VaccineProgramStatus> statuses);
 
-    Optional<VaccineProgramEntity> findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus status);
+    // Optional<VaccineProgramEntity> findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus status);
 
-    Optional<VaccineProgramEntity> findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(LocalDate date);
-    
-    public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Long> {
-    
-    Optional<VaccineProgramEntity> findByVaccineNameAndStatus(VaccineNameEntity vaccineName, VaccineProgramStatus status);
-    
-}
+    // Optional<VaccineProgramEntity> findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(LocalDate date);
+
+    // public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Long> {
+
+    //     Optional<VaccineProgramEntity> findByVaccineNameAndStatus(VaccineNameEntity vaccineName,
+    //             VaccineProgramStatus status);
+
+    // }
 
 }

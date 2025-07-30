@@ -6,12 +6,13 @@ import lombok.Data;
 
 @Data
 public class MedicalEventRequest {
+    private String eventName;
     private String typeEvent;
+    private LocalDateTime date;
     private String description;
     private String actionsTaken;
+    private String levelCheck;
     private String location;
-    private String level;
-    private LocalDateTime date;
-    private Long studentId;
-    private Long nurseId;
+    private String image;
+    private int studentId;
 }

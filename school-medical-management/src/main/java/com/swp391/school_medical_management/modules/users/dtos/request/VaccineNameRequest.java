@@ -8,16 +8,13 @@ public class VaccineNameRequest {
 
     private String manufacture;
 
-    private Integer ageFrom;
+    private int ageFrom;
 
-    private Integer ageTo;
+    private int ageTo;
 
-    private Integer totalUnit;
+    private int totalUnit;
 
     private String url;
 
     private String description;
-    
-    private Long userId;
-
 }

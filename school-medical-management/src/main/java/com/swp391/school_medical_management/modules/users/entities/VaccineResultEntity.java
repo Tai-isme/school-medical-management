@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -42,7 +43,15 @@ public class VaccineResultEntity {
     @Column(name = "is_rejected")
     private Boolean isRejected;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "nurse_id", referencedColumnName = "user_id")
+    private UserEntity nurseEntity;
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", referencedColumnName = "student_id")
+    private StudentEntity studentEntity;
+
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vaccine_form_id", referencedColumnName = "vaccine_form_id")
     private VaccineFormEntity vaccineFormEntity;
 }

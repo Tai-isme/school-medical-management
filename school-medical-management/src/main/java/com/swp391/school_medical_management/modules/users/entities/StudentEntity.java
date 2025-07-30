@@ -29,7 +29,12 @@ public class StudentEntity {
     private LocalDate dob;
     @Column(name = "avatar_url")
     private String avatarUrl;
-    private String gender;
+    private Gender gender;
+
+    private enum Gender{
+        MALE, FEMALE
+    }
+
     @ManyToOne
     @JoinColumn(name = "class_id", referencedColumnName = "class_id")
     private ClassEntity classEntity;

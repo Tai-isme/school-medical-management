@@ -56,12 +56,4 @@ public class VaccineFormEntity {
 
     @Column(name = "commit")
     private Boolean commit;
-
-    @Column(name = "status", length = 10)
-    @Enumerated(EnumType.STRING)
-    private VaccineFormStatus status;
-
-    public enum VaccineFormStatus {
-        DRAFT, SENT
-    }
 }

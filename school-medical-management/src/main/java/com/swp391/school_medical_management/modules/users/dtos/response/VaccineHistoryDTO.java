@@ -9,7 +9,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VaccineHistoryDTO {
     private Long id;
-    private VaccineNameDTO vaccineName;
+    private int vaccineNameId;
     private String note;
-    private Byte createBy;
+    private boolean createBy;
+    private int unit;
+    private int studentId;
+    private StudentDTO studentDTO;
+    private VaccineNameDTO vaccineNameDTO;
 }

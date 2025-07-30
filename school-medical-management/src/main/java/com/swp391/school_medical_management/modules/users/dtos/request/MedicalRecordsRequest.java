@@ -1,5 +1,6 @@
 package com.swp391.school_medical_management.modules.users.dtos.request;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.validation.constraints.DecimalMax;
@@ -12,10 +13,10 @@ import lombok.Data;
 @Data
 public class MedicalRecordsRequest {
 
-    @NotNull(message = "Student ID is required")
-    private Long studentId;
+    @NotNull(message = "Chọn học sinh để khai báo")
+    private int studentId;
 
-    @Size(max = 255, message = "Allergies must be at most 255 characters")
+    @Size(max = 255, message = "Vui lòng nhập tiền sử dị ứng (nếu có)")
     private String allergies;
 
     @Size(max = 255, message = "Chronic disease must be at most 255 characters")
@@ -35,13 +36,14 @@ public class MedicalRecordsRequest {
 
     @DecimalMin(value = "30.0", message = "Height must be at least 30cm")
     @DecimalMax(value = "250.0", message = "Height must be less than or equal to 250cm")
-    private Double height;
-    // private LocalDateTime lastUpdate;
+    private int height;
+    
+    private LocalDateTime lastUpdate;
 
     @Size(max = 500, message = "Note must be at most 500 characters")
     private String note;
 
-    private Byte createBy;
+    private boolean createBy;
 
     private List<VaccineHistoryRequest> vaccineHistories;
 }

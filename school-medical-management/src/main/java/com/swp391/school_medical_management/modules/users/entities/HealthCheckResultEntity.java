@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,7 +38,7 @@ public class HealthCheckResultEntity {
     private Double weight;
 
     @Column(name = "height", length = 50)
-    private Double height;
+    private int height;
 
     @Column(name = "dental_status", length = 100)
     private String dentalStatus;
@@ -46,7 +47,7 @@ public class HealthCheckResultEntity {
     private String bloodPressure;
 
     @Column(name = "heart_rate", length = 50)
-    private String heartRate;
+    private int heartRate;
 
     @Column(name = "general_condition", length = 50)
     private String generalCondition;
@@ -57,17 +58,13 @@ public class HealthCheckResultEntity {
     @Column(name = "is_checked")
     private Boolean isChecked;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "level", length = 50)
-    private Level level;
-
-    public enum Level {
-        GOOD, FAIR, AVERAGE, POOR
-    }
-
     @ManyToOne
     @JoinColumn(name = "health_check_form_id", referencedColumnName = "health_check_form_id", foreignKey = @ForeignKey(name = "FK_health_check_result_form"))
     private HealthCheckFormEntity healthCheckForm;
+
+    @OneToOne
+    @JoinColumn(name = "student_id", referencedColumnName = "student_id", foreignKey = @ForeignKey(name = "FK_health_check_result_student"))
+    private StudentEntity student;
 
     @ManyToOne
     @JoinColumn(name = "nurse_id", referencedColumnName = "user_id", foreignKey = @ForeignKey(name = "FK_health_check_result_nurse"))

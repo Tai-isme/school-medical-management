@@ -33,7 +33,13 @@ public class VaccineHistoryEntity {
     private MedicalRecordEntity medicalRecord;
 
     @Column(name = "create_by")
-    private Byte createBy;
+    private boolean createBy;
+
+    private int unit;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", referencedColumnName = "student_id")
+    private StudentEntity student;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vaccine_name_id", referencedColumnName = "vaccine_name_id")

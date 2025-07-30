@@ -138,7 +138,7 @@ public class AuthService {
         // }
         user.setAddress(request.getAddress());
 
-        userRepository.save(user);
+        userRepository.save(user);  
     }
 
     public RefreshTokenDTO refreshToken(String refreshToken) {

@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MedicalEventDTO {
     private Integer eventId;
+    
     private String typeEvent;
     private LocalDateTime date;
     private String description;
@@ -19,6 +20,8 @@ public class MedicalEventDTO {
     private String location;
     private StudentDTO studentDTO;
     private UserDTO parentDTO;
+    private int studentId;
+    private int nurseId;
     private UserDTO nurseDTO;
     private ClassDTO classDTO;
 }

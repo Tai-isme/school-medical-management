@@ -20,8 +20,8 @@ import com.swp391.school_medical_management.modules.users.entities.HealthCheckFo
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
+// import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
+// import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
@@ -68,10 +68,10 @@ public class NotifyController {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Parent not found with student ID: " + studentEntity.getId());
 
-            if (healthCheckFormEntity.getStatus() == HealthCheckFormStatus.SENT) {
-                skippedForms.add(formId);
-                continue;
-            }
+            // if (healthCheckFormEntity.getStatus() == HealthCheckFormStatus.SENT) {
+            //     skippedForms.add(formId);
+            //     continue;
+            // }
 
             notificationService.sendNotificationToParent(
                     parentEntity.getUserId(),
@@ -81,7 +81,7 @@ public class NotifyController {
                     formId,
                     false);
 
-            healthCheckFormEntity.setStatus(HealthCheckFormStatus.SENT);
+            // healthCheckFormEntity.setStatus(HealthCheckFormStatus.SENT);
             healthCheckFormRepository.save(healthCheckFormEntity);
         }
         return ResponseEntity.ok("Đã gửi thông báo. Các form đã skip: " + skippedForms);
@@ -109,10 +109,10 @@ public class NotifyController {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Parent not found with student ID: " + studentEntity.getId());
 
-            if (vaccineFormEntity.getStatus() == VaccineFormStatus.SENT) {
-                skippedForms.add(formId);
-                continue;
-            }
+            // if (vaccineFormEntity.getStatus() == VaccineFormStatus.SENT) {
+            //     skippedForms.add(formId);
+            //     continue;
+            // }
 
             notificationService.sendNotificationToParent(
                     parentEntity.getUserId(),
@@ -122,7 +122,7 @@ public class NotifyController {
                     formId,
                     false);
 
-            vaccineFormEntity.setStatus(VaccineFormStatus.SENT);
+            // vaccineFormEntity.setStatus(VaccineFormStatus.SENT);
             vaccineFormRepository.save(vaccineFormEntity);
         }
         return ResponseEntity.ok("Đã gửi thông báo. Các form đã skip: " + skippedForms);
