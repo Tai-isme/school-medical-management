@@ -5,6 +5,7 @@ import { Select } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
+import HealthCheckProgramModal from "./HealthCheckProgramModal"; // Import component mới tạo
 
 
 const HealthCheckProgramList = () => {
@@ -726,54 +727,18 @@ const handleUpdate = async (values) => {
                     </Descriptions>
                   )}
                 </Modal>
-                <Modal
-                  title={editMode ? "Sửa chương trình tiêm chủng" : "Lên lịch khám định kỳ"}
+                <HealthCheckProgramModal
                   open={createVisible}
                   onCancel={() => {
                     setCreateVisible(false);
                     setEditMode(false);
                     setProgram(null);
                   }}
-                  footer={null}
-                  destroyOnClose
-                >
-                  <Form
-                    layout="vertical"
-                    onFinish={editMode ? handleUpdate : handleCreate}
-                    initialValues={
-                      editMode && program
-                        ? {
-                            name: program.name,
-                            description: program.description,
-                            startDate: dayjs(program.startDate),
-                            endDate: dayjs(program.endDate),
-                            note: program.note,
-                          }
-                        : {}
-                    }
-                  >
-                    <Form.Item label="Tên chương trình" name="name" rules={[{ required: true, message: "Nhập tên chương trình" }]}>
-                      <Input />
-                    </Form.Item>
-                    <Form.Item label="Mô tả" name="description">
-                      <Input.TextArea rows={2} />
-                    </Form.Item>
-                    <Form.Item label="Ngày bắt đầu" name="startDate" rules={[{ required: true, message: "Chọn ngày bắt đầu" }]}>
-                      <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
-                    </Form.Item>
-                    <Form.Item label="Ngày kết thúc" name="endDate" rules={[{ required: true, message: "Chọn ngày kết thúc" }]}>
-                      <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
-                    </Form.Item>
-                    <Form.Item label="Ghi chú" name="note">
-                      <Input.TextArea rows={2} />
-                    </Form.Item>
-                    <Form.Item>
-                      <Button type="primary" htmlType="submit" loading={loading} style={{ width: "100%" }}>
-                        {editMode ? "Cập nhật" : "Tạo chương trình"}
-                      </Button>
-                    </Form.Item>
-                  </Form>
-                </Modal>
+                  onFinish={editMode ? handleUpdate : handleCreate}
+                  loading={loading}
+                  editMode={editMode}
+                  program={program}
+                />
               </React.Fragment>
             ),
           },

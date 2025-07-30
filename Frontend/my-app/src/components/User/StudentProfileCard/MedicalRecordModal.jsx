@@ -323,6 +323,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
               </div>
               <div style={{ display: 'flex', gap: 16, marginBottom: 8, fontWeight: 500, background: '#e3f2fd', borderRadius: 6, padding: '8px 0', color: '#1976d2' }}>
                 <div style={{ flex: 2, textAlign: 'left', paddingLeft: 8 }}>Tên Vaccin (nếu có)</div>
+                <div style={{ width: 100, textAlign: 'left', paddingLeft: 8 }}>Mũi thứ</div>
                 <div style={{ flex: 3, textAlign: 'left', paddingLeft: 8 }}>Mô tả (nếu có)</div>
                 <div style={{ width: 60, textAlign: 'center' }}>Xóa</div>
               </div>
@@ -330,14 +331,14 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                 const isSchoolVaccine = editMode && item.createBy === 1;
                 return (
                   <div key={idx} style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
+                    {/* Tên vaccine */}
                     <Form.Item
                       name={['vaccineHistories', idx, 'vaccineNameId']}
                       style={{ flex: 2, marginBottom: 0 }}
                       rules={[
-                        // Bỏ dòng required
                         {
                           validator: (_, value) => {
-                            if (!value) return Promise.resolve(); // Cho phép bỏ trống
+                            if (!value) return Promise.resolve();
                             const duplicate = vaccineHistories.some(
                               (v, i) => i !== idx && v.vaccineNameId === value
                             );
@@ -355,8 +356,8 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                         value={item.vaccineNameId}
                         onChange={value => {
                           const selectedVac = vaccineOptions.find(v => v.id === value);
-                          handleVaccineChange(selectedVac, idx, 'vaccineName'); // lưu object nếu cần hiển thị
-                          handleVaccineChange(selectedVac.id, idx, 'vaccineNameId'); // lưu id để gửi backend
+                          handleVaccineChange(selectedVac, idx, 'vaccineName');
+                          handleVaccineChange(selectedVac.id, idx, 'vaccineNameId');
                         }}
                         filterOption={(input, option) =>
                           option.children.toLowerCase().includes(input.toLowerCase())
@@ -370,6 +371,27 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                         ))}
                       </Select>
                     </Form.Item>
+                    {/* Mũi thứ */}
+                    <Form.Item
+                      name={['vaccineHistories', idx, 'doseNumber']}
+                      style={{ width: 100, marginBottom: 0 }}
+                      rules={[
+                        { required: true, message: 'Chọn mũi tiêm' }
+                      ]}
+                      initialValue={item.doseNumber || 1}
+                    >
+                      <Select
+                        placeholder="Mũi thứ"
+                        disabled={isSchoolVaccine}
+                      >
+                        {[1, 2, 3, 4, 5].map(num => (
+                          <Select.Option key={num} value={num}>
+                            Mũi {num}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                    {/* Mô tả */}
                     <Form.Item
                       name={['vaccineHistories', idx, 'note']}
                       style={{ flex: 3, marginBottom: 0, minWidth: 200, maxWidth: 350 }}
@@ -397,6 +419,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                         disabled={isSchoolVaccine}
                       />
                     </Form.Item>
+                    {/* Xóa */}
                     <div style={{ width: 60, textAlign: "center" }}>
                       {(!editMode || item.createBy !== 1) ? (
                         <Button danger onClick={() => handleRemoveVaccine(idx)}>Xóa</Button>

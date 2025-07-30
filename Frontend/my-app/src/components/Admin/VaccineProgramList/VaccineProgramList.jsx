@@ -25,6 +25,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
 import { Table } from "antd"; // Thêm import này
+import VaccineProgramModal from "./VaccineProgramModal"; // Import component mới tạo
 
 const VaccineProgramList = () => {
   const [programs, setPrograms] = useState([]);
@@ -1049,102 +1050,19 @@ const VaccineProgramList = () => {
                     </Descriptions>
                   )}
                 </Modal>
-                <Modal
-                  title={
-                    editMode
-                      ? "Sửa chương trình tiêm chủng"
-                      : "Lên lịch tiêm chủng"
-                  }
+                <VaccineProgramModal
                   open={createVisible}
                   onCancel={() => {
                     setCreateVisible(false);
                     setEditMode(false);
                     setProgram(null);
                   }}
-                  footer={null}
-                  destroyOnClose
-                >
-                  <Form
-                    layout="vertical"
-                    onFinish={editMode ? handleUpdate : handleCreate}
-                    initialValues={
-                      editMode && program
-                        ? {
-                            vaccineName: program.vaccineName,
-                            manufacture: program.manufacture,
-                            description: program.description,
-                            vaccineDate: dayjs(program.vaccineDate),
-                            note: program.note,
-                          }
-                        : {}
-                    }
-                  >
-                    <Form.Item
-                      label="Tên vaccine"
-                      name="vaccineNameId"
-                      rules={[{ required: true, message: "Chọn vaccine" }]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Chọn vaccine"
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                      >
-                        {vaccineList.map((v) => (
-                          <Select.Option key={v.id} value={v.id}>
-                            {v.vaccineName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                    <Form.Item label="Mô tả" name="description">
-                      <Input.TextArea rows={2} />
-                    </Form.Item>
-                    <Form.Item
-                      label="Ngày tiêm"
-                      name="vaccineDate"
-                      rules={[
-                        { required: true, message: "Chọn ngày tiêm" },
-                        {
-                          validator: (_, value) => {
-                            if (!value) return Promise.resolve();
-                            if (value.isBefore(dayjs(), "day")) {
-                              return Promise.reject(
-                                "Chỉ được chọn ngày trong tương lai!"
-                              );
-                            }
-                            return Promise.resolve();
-                          },
-                        },
-                      ]}
-                    >
-                      <DatePicker
-                        style={{ width: "100%" }}
-                        format="YYYY-MM-DD"
-                        disabledDate={(current) =>
-                          current && current < dayjs().startOf("day")
-                        }
-                      />
-                    </Form.Item>
-                    <Form.Item label="Ghi chú" name="note">
-                      <Input.TextArea rows={2} />
-                    </Form.Item>
-                    <Form.Item>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={loading}
-                        style={{ width: "100%" }}
-                      >
-                        {editMode ? "Cập nhật" : "Tạo chương trình"}
-                      </Button>
-                    </Form.Item>
-                  </Form>
-                </Modal>
+                  onFinish={editMode ? handleUpdate : handleCreate}
+                  loading={loading}
+                  editMode={editMode}
+                  program={program}
+                  vaccineList={vaccineList}
+                />
                 <Modal
                   title="Kết quả tiêm chủng"
                   open={resultVisible}
