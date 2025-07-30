@@ -4,9 +4,10 @@ import com.swp391.school_medical_management.modules.users.entities.HealthCheckPr
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
-public interface HealthCheckProgramRepository extends JpaRepository<HealthCheckProgramEntity, Long> {
+public interface HealthCheckProgramRepository extends JpaRepository<HealthCheckProgramEntity, Integer> {
     Optional<HealthCheckProgramEntity> findByHealthCheckNameAndStatus(String healthCheckName, HealthCheckProgramStatus status);
 
 
@@ -24,4 +25,6 @@ public interface HealthCheckProgramRepository extends JpaRepository<HealthCheckP
 
     //Thien
     Optional<HealthCheckProgramEntity> findTopByStatusOrderByStartDateDesc(HealthCheckProgramStatus status);
+
+    List<HealthCheckProgramEntity> findByAdmin_UserId(int userId);
 }

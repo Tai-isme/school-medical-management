@@ -1,15 +1,14 @@
 package com.swp391.school_medical_management.modules.users.dtos.request;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
-
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class HealthCheckProgramRequest {
@@ -34,10 +33,10 @@ public class HealthCheckProgramRequest {
     private HealthCheckProgramEntity.HealthCheckProgramStatus status;
 
     @NotNull(message = "ID admin không được để trống")
-    private Long adminId;
+    private int adminId;
 
     @NotNull(message = "ID y tá không được để trống")
-    private Long nurseId;
+    private int nurseId;
 
     private List<Integer> classIds;
 

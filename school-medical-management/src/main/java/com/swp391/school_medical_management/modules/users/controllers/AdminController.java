@@ -1,45 +1,20 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import java.util.List;
-import java.util.Map;
-
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.services.impl.AdminService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineNameRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ParticipationDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormStatsDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
-import com.swp391.school_medical_management.modules.users.services.impl.AdminService;
-
-import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
 
 @Validated
 @RestController
@@ -79,28 +54,27 @@ public class AdminController {
     public ResponseEntity<HealthCheckProgramDTO> createHealthCheckProgram(
             @Valid @RequestBody HealthCheckProgramRequest request) {
         String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        HealthCheckProgramDTO healthCheckProgramDTO = adminService.createHealthCheckProgram(request,
-                Long.parseLong(adminId));
+        HealthCheckProgramDTO healthCheckProgramDTO = adminService.createHealthCheckProgram(request, Integer.parseInt(adminId));
         return ResponseEntity.status(HttpStatus.CREATED).body(healthCheckProgramDTO);
     }
 
     @PutMapping("/health-check-program/{id}")
     public ResponseEntity<HealthCheckProgramDTO> updateHealthCheckProgram(
-            @Valid @RequestBody HealthCheckProgramRequest request, @PathVariable Long id) {
+            @Valid @RequestBody HealthCheckProgramRequest request, @PathVariable int id) {
         HealthCheckProgramDTO healthCheckProgramDTO = adminService.updateHealthCheckProgram(id, request);
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 
     @PatchMapping("/health-check-program/{id}")
-    public ResponseEntity<HealthCheckProgramDTO> updateHealthCheckProgramStatus(@PathVariable Long id,
-            @RequestParam("status") String status) {
+    public ResponseEntity<HealthCheckProgramDTO> updateHealthCheckProgramStatus(@PathVariable int id,
+                                                                                @RequestParam("status") String status) {
         HealthCheckProgramDTO healthCheckProgramDTO = adminService.updateHealthCheckProgramStatus(id, status);
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 
     @PatchMapping("/vaccine-program/{id}")
     public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(@PathVariable Long id,
-            @RequestParam("status") String status) {
+                                                                        @RequestParam("status") String status) {
         VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgramStatus(id, status);
         return ResponseEntity.ok(vaccineProgramDTO);
     }
@@ -110,18 +84,18 @@ public class AdminController {
     public ResponseEntity<List<HealthCheckProgramDTO>> getAllHealthCheckProgram() {
         String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
         List<HealthCheckProgramDTO> healthCheckProgramList = adminService
-                .getAllHealthCheckProgram(Long.parseLong(adminId));
+                .getAllHealthCheckProgram(Integer.parseInt(adminId));
         return ResponseEntity.ok(healthCheckProgramList);
     }
 
     @GetMapping("/health-check-program/{id}")
-    public ResponseEntity<HealthCheckProgramDTO> getAllHealthCheckProgramById(@PathVariable Long id) {
+    public ResponseEntity<HealthCheckProgramDTO> getAllHealthCheckProgramById(@PathVariable int id) {
         HealthCheckProgramDTO healthCheckProgramDTO = adminService.getHealthCheckProgramById(id);
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 
     @DeleteMapping("/health-check-program/{id}")
-    public ResponseEntity<Void> deleteHealthCheckProgram(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteHealthCheckProgram(@PathVariable int id) {
         adminService.deleteHealthCheckProgram(id);
         return ResponseEntity.noContent().build();
     }
@@ -135,7 +109,7 @@ public class AdminController {
 
     @PutMapping("/vaccine-program/{vaccineProgramId}")
     public ResponseEntity<VaccineProgramDTO> updateVaccineProgram(@RequestBody VaccineProgramRequest request,
-            @PathVariable long vaccineProgramId) {
+                                                                  @PathVariable long vaccineProgramId) {
         VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgram(request, vaccineProgramId);
         return ResponseEntity.ok(vaccineProgramDTO);
     }

@@ -2,8 +2,7 @@ package com.swp391.school_medical_management.modules.users.services.impl;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.*;
 import com.swp391.school_medical_management.modules.users.repositories.*;
 import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
 import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
@@ -14,11 +13,16 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -87,239 +91,339 @@ public class AdminService {
     @Autowired
     private ParticipateClassRepository participateClassRepository;
 
-    public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, long adminId) {
-//        UserEntity admin = userRepository.findById(request.getAdminId())
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
-//
-//        UserEntity nurse = userRepository.findUserByUserId(request.getNurseId())
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Y tá"));
-//
-//        if (request.getStartDate().isBefore(LocalDate.now())) {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-//                    "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
-//        }
-//
-//        Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository
-//                .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramStatus.NOT_STARTED);
-//
-//        if (existingProgramOpt.isPresent()) {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-//                    "Chương trình '" + request.getHealthCheckName() + "' đã tồn tại và chưa bắt đầu.");
-//        }
-//
-//        HealthCheckProgramEntity healthCheckProgramEntity = new HealthCheckProgramEntity();
-//        healthCheckProgramEntity.setHealthCheckName(request.getHealthCheckName());
-//        healthCheckProgramEntity.setDescription(request.getDescription());
-//        healthCheckProgramEntity.setStartDate(request.getStartDate());
-//        healthCheckProgramEntity.setDateSendForm(request.getDateSendForm());
-//        healthCheckProgramEntity.setLocation(request.getLocation());
-//        healthCheckProgramEntity.setStatus(request.getStatus());
-//        healthCheckProgramEntity.setAdmin(admin);
-//        healthCheckProgramEntity.setNurse(nurse);
-//
-//        healthCheckProgramRepository.save(healthCheckProgramEntity);
-//
-//        if (request.getClassIds() != null && !request.getClassIds().isEmpty()) {
-//            for (Integer classId : request.getClassIds()) {
-//                ClassEntity clazz = classRepository.findById(classId)
-//                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-//                                "Không tìm thấy lớp với ID: " + classId));
-//
-//                ParticipateClassEntity participate = new ParticipateClassEntity();
-//                participate.setClazz(clazz);
-//                participate.setHealthCheckProgram(healthCheckProgramEntity);
-//                participate.setType("HEALTH_CHECK");
-//
-//                participateClassRepository.save(participate);
-//            }
-//        }
-//
-//        return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
-        return null;
+    public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, int adminId) {
+        UserEntity admin = userRepository.findById(request.getAdminId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
+
+
+        UserEntity nurse = userRepository.findById(request.getNurseId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Y tá"));
+
+
+        if (request.getStartDate().isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
+        }
+
+
+        Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository
+                .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramEntity.HealthCheckProgramStatus.NOT_STARTED);
+
+
+        if (existingProgramOpt.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chương trình '" + request.getHealthCheckName() + "' đã tồn tại và chưa bắt đầu.");
+        }
+
+
+        HealthCheckProgramEntity healthCheckProgramEntity = new HealthCheckProgramEntity();
+        healthCheckProgramEntity.setHealthCheckName(request.getHealthCheckName());
+        healthCheckProgramEntity.setDescription(request.getDescription());
+        healthCheckProgramEntity.setStartDate(request.getStartDate());
+        healthCheckProgramEntity.setDateSendForm(request.getDateSendForm());
+        healthCheckProgramEntity.setLocation(request.getLocation());
+        healthCheckProgramEntity.setStatus(request.getStatus());
+        healthCheckProgramEntity.setAdmin(admin);
+        healthCheckProgramEntity.setNurse(nurse);
+
+
+        healthCheckProgramRepository.save(healthCheckProgramEntity);
+
+
+        if (request.getClassIds() != null && !request.getClassIds().isEmpty()) {
+            for (Integer classId : request.getClassIds()) {
+                ClassEntity clazz = classRepository.findById(classId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Không tìm thấy lớp với ID: " + classId));
+
+
+                ParticipateClassEntity participate = new ParticipateClassEntity();
+                participate.setClazz(clazz);
+                participate.setHealthCheckProgram(healthCheckProgramEntity);
+                participate.setType("HEALTH_CHECK");
+
+
+                participateClassRepository.save(participate);
+            }
+        }
+
+
+        return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
     }
 
-    public HealthCheckProgramDTO updateHealthCheckProgram(Long id, HealthCheckProgramRequest request) {
-        // Optional<HealthCheckProgramEntity> existingProgramOpt =
-        // healthCheckProgramRepository.findById(id);
 
-        // if (existingProgramOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy
-        // chương trình kiểm tra sức khỏe");
+    public HealthCheckProgramDTO updateHealthCheckProgram(int id, HealthCheckProgramRequest request) {
+        HealthCheckProgramEntity existingProgram = healthCheckProgramRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Không tìm thấy chương trình kiểm tra sức khỏe"));
 
-        // HealthCheckProgramEntity existingProgram = existingProgramOpt.get();
 
-        // if (existingProgram.getStatus() == HealthCheckProgramStatus.COMPLETED
-        // || existingProgram.getStatus() == HealthCheckProgramStatus.ON_GOING)
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        // "Không thể cập nhật chương trình đã hoàn thành hoặc đang diễn ra");
+        if (existingProgram.getStatus() == HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED
+                || existingProgram.getStatus() == HealthCheckProgramEntity.HealthCheckProgramStatus.ON_GOING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Không thể cập nhật chương trình đã hoàn thành hoặc đang diễn ra");
+        }
 
-        // if (request.getStartDate().isAfter(request.getEndDate()))
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải
-        // trước ngày kết thúc");
 
-        // if
-        // (!existingProgram.getHealthCheckName().equals(request.getHealthCheckName()))
-        // {
-        // Optional<HealthCheckProgramEntity> duplicateProgramOpt =
-        // healthCheckProgramRepository
-        // .findByHealthCheckNameAndStatus(request.getHealthCheckName(),
-        // HealthCheckProgramStatus.NOT_STARTED);
-        // if (duplicateProgramOpt.isPresent()) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        // "Chương trình kiểm tra sức khỏe có tên '" + request.getHealthCheckName()
-        // + "' đã tồn tại và chưa bắt đầu.");
-        // }
-        // }
+        if (request.getStartDate().isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
+        }
 
-        // existingProgram.setHealthCheckName(request.getHealthCheckName());
-        // existingProgram.setDescription(request.getDescription());
-        // existingProgram.setStartDate(request.getStartDate());
-        // existingProgram.setEndDate(request.getEndDate());
-        // existingProgram.setNote(request.getNote());
 
-        // healthCheckProgramRepository.save(existingProgram);
-        // return modelMapper.map(existingProgram, HealthCheckProgramDTO.class);
-        return null;
+        if (!existingProgram.getHealthCheckName().equals(request.getHealthCheckName())) {
+            Optional<HealthCheckProgramEntity> duplicateProgramOpt = healthCheckProgramRepository
+                    .findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramEntity.HealthCheckProgramStatus.NOT_STARTED);
+            if (duplicateProgramOpt.isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Chương trình '" + request.getHealthCheckName() + "' đã tồn tại và chưa bắt đầu.");
+            }
+        }
+
+
+        UserEntity admin = userRepository.findById(request.getAdminId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
+        existingProgram.setAdmin(admin);
+
+
+        UserEntity nurse = userRepository.findById(request.getNurseId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Y tá"));
+        existingProgram.setNurse(nurse);
+
+
+        existingProgram.setHealthCheckName(request.getHealthCheckName());
+        existingProgram.setDescription(request.getDescription());
+        existingProgram.setStartDate(request.getStartDate());
+        existingProgram.setDateSendForm(request.getDateSendForm());
+        existingProgram.setLocation(request.getLocation());
+        existingProgram.setStatus(request.getStatus());
+
+
+        healthCheckProgramRepository.save(existingProgram);
+
+
+        participateClassRepository.deleteByHealthCheckProgramId(existingProgram.getId());
+
+
+        if (request.getClassIds() != null && !request.getClassIds().isEmpty()) {
+            for (Integer classId : request.getClassIds()) {
+                ClassEntity clazz = classRepository.findById(classId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Không tìm thấy lớp với ID: " + classId));
+
+
+                ParticipateClassEntity participate = new ParticipateClassEntity();
+                participate.setClazz(clazz);
+                participate.setHealthCheckProgram(existingProgram);
+                participate.setType("HEALTH_CHECK");
+
+
+                participateClassRepository.save(participate);
+            }
+        }
+
+
+        return modelMapper.map(existingProgram, HealthCheckProgramDTO.class);
     }
 
-    public HealthCheckProgramDTO updateHealthCheckProgramStatus(Long id, String status) {
-        // Optional<HealthCheckProgramEntity> healthCheckProgramOpt =
-        // healthCheckProgramRepository.findById(id);
-        // if (healthCheckProgramOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program
-        // not found");
-        // HealthCheckProgramEntity healthCheckProgramEntity =
-        // healthCheckProgramOpt.get();
 
-        // HealthCheckProgramStatus newStatus;
-        // try {
-        // newStatus = HealthCheckProgramStatus.valueOf(status.toUpperCase());
-        // } catch (IllegalArgumentException e) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: "
-        // + status);
-        // }
+    public HealthCheckProgramDTO updateHealthCheckProgramStatus(int id, String status) {
+        HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Không tìm thấy chương trình kiểm tra sức khỏe"));
 
-        // if (healthCheckProgramEntity.getStatus() ==
-        // HealthCheckProgramStatus.COMPLETED) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        // "Program is already COMPLETED and cannot be updated");
-        // }
 
-        // if (healthCheckProgramEntity.getStatus() == (newStatus)) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Program is already
-        // in status: " + newStatus);
-        // }
+        HealthCheckProgramEntity.HealthCheckProgramStatus newStatus;
+        try {
+            newStatus = HealthCheckProgramEntity.HealthCheckProgramStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ: " + status);
+        }
 
-        // if (newStatus == HealthCheckProgramStatus.COMPLETED
-        // && healthCheckProgramEntity.getStatus() != HealthCheckProgramStatus.ON_GOING)
-        // {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        // "Cannot mark as COMPLETED unless the program is ON_GOING");
-        // }
 
-        // healthCheckProgramEntity.setStatus(newStatus);
-        // healthCheckProgramRepository.save(healthCheckProgramEntity);
+        if (healthCheckProgramEntity.getStatus() == HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chương trình đã hoàn thành và không thể cập nhật");
+        }
 
-        // if (newStatus == HealthCheckProgramStatus.ON_GOING) {
-        // createHealthCheckForm(healthCheckProgramEntity);
-        // }
 
-        // return modelMapper.map(healthCheckProgramEntity,
-        // HealthCheckProgramDTO.class);
-        return null;
+        if (healthCheckProgramEntity.getStatus() == newStatus) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chương trình đã ở trạng thái: " + newStatus);
+        }
+
+
+        if (newStatus == HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED
+                && healthCheckProgramEntity.getStatus() != HealthCheckProgramEntity.HealthCheckProgramStatus.ON_GOING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chỉ có thể chuyển sang COMPLETED nếu chương trình đang ở trạng thái ON_GOING");
+        }
+
+
+        healthCheckProgramEntity.setStatus(newStatus);
+        healthCheckProgramRepository.save(healthCheckProgramEntity);
+
+
+        if (newStatus == HealthCheckProgramEntity.HealthCheckProgramStatus.FORM_SENT) {
+            createHealthCheckForm(healthCheckProgramEntity);
+        }
+
+
+        return modelMapper.map(healthCheckProgramEntity, HealthCheckProgramDTO.class);
     }
+
 
     public void createHealthCheckForm(HealthCheckProgramEntity programEntity) {
+        String nurseEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity nurse = userRepository.findUserByEmail(nurseEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy y tá với email: " + nurseEmail));
 
-        // List<StudentEntity> students = studentRepository.findAll();
 
-        // for (StudentEntity studentEntity : students) {
-        // UserEntity parent = studentEntity.getParent();
-        // if (parent == null)
-        // continue;
+        List<StudentEntity> students = studentRepository.findAll();
 
-        // List<HealthCheckFormEntity> existingForms = healthCheckFormRepository
-        // .findHealthCheckFormEntityByHealthCheckProgramAndStudent(programEntity,
-        // studentEntity);
-        // boolean hasUncommittedForm = existingForms.stream()
-        // .anyMatch(form -> form.getCommit() == null);
-        // if (hasUncommittedForm)
-        // continue;
 
-        // HealthCheckFormEntity healthCheckFormEntity = new HealthCheckFormEntity();
-        // healthCheckFormEntity.setStudent(studentEntity);
-        // healthCheckFormEntity.setParent(parent);
-        // healthCheckFormEntity.setNotes(null);
-        // healthCheckFormEntity.setCommit(null);
-        // healthCheckFormEntity.setFormDate(programEntity.getStartDate().minusDays(7));
-        // healthCheckFormEntity.setStatus(HealthCheckFormStatus.DRAFT);
-        // healthCheckFormEntity.setHealthCheckProgram(programEntity);
-        // healthCheckFormRepository.save(healthCheckFormEntity);
-        // }
+        for (StudentEntity student : students) {
+            UserEntity parent = student.getParent();
+            if (parent == null)
+                continue;
+
+
+            List<HealthCheckFormEntity> existingForms = healthCheckFormRepository
+                    .findHealthCheckFormEntityByHealthCheckProgramAndStudent(programEntity, student);
+            boolean hasUncommittedForm = existingForms.stream()
+                    .anyMatch(form -> form.getCommit() == null);
+            if (hasUncommittedForm)
+                continue;
+
+
+            HealthCheckFormEntity healthCheckFormEntity = new HealthCheckFormEntity();
+            healthCheckFormEntity.setStudent(student);
+            healthCheckFormEntity.setParent(parent);
+            healthCheckFormEntity.setNotes(null);
+            healthCheckFormEntity.setCommit(null);
+            healthCheckFormEntity.setExpDate(programEntity.getStartDate().minusDays(7));
+            healthCheckFormEntity.setHealthCheckProgram(programEntity);
+            healthCheckFormEntity.setNurse(nurse);
+
+
+            healthCheckFormRepository.save(healthCheckFormEntity);
+        }
     }
 
-    public List<HealthCheckProgramDTO> getAllHealthCheckProgram(long adminId) {
-        // List<HealthCheckProgramEntity> healthCheckProgramEntityList =
-        // healthCheckProgramRepository.findAll();
-        // if (healthCheckProgramEntityList.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check
-        // programs found");
-        // List<HealthCheckProgramDTO> healthCheckProgramDTOList =
-        // healthCheckProgramEntityList.stream()
-        // .map(entity -> modelMapper.map(entity, HealthCheckProgramDTO.class))
-        // .toList();
-        // for (HealthCheckProgramDTO healthCheckProgramDTO : healthCheckProgramDTOList)
-        // {
-        // Long programId = healthCheckProgramDTO.getId();
-        // List<HealthCheckFormEntity> healthCheckFormEntitieList =
-        // healthCheckFormRepository
-        // .findAllByHealthCheckProgram_Id(programId);
-        // if (healthCheckFormEntitieList.isEmpty()) {
-        // healthCheckProgramDTO.setSended(0);
-        // } else {
-        // boolean allStatusOne = healthCheckFormEntitieList.stream()
-        // .allMatch(form -> form.getStatus().equals(HealthCheckFormStatus.DRAFT));
-        // healthCheckProgramDTO.setSended(allStatusOne ? 0 : 1);
-        // }
-        // }
-        // return healthCheckProgramDTOList;
-        return null;
+
+    public List<HealthCheckProgramDTO> getAllHealthCheckProgram(int adminId) {
+        List<HealthCheckProgramEntity> healthCheckProgramEntityList = healthCheckProgramRepository
+                .findByAdmin_UserId(adminId);
+
+
+        if (healthCheckProgramEntityList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình kiểm tra sức khỏe");
+        }
+
+
+        List<HealthCheckProgramDTO> healthCheckProgramDTOList = healthCheckProgramEntityList.stream()
+                .map(entity -> {
+                    HealthCheckProgramDTO dto = modelMapper.map(entity, HealthCheckProgramDTO.class);
+
+
+                    dto.setAdminId(entity.getAdmin().getUserId());
+                    dto.setNurseId(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
+                    dto.setStatus(entity.getStatus().name());
+
+
+                    UserDTO adminDTO = modelMapper.map(entity.getAdmin(), UserDTO.class);
+                    dto.setAdminDTO(adminDTO);
+
+
+                    if (entity.getNurse() != null) {
+                        UserDTO nurseDTO = modelMapper.map(entity.getNurse(), UserDTO.class);
+                        dto.setNurseDTO(nurseDTO);
+                    }
+
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+
+        return healthCheckProgramDTOList;
     }
 
-    public HealthCheckProgramDTO getHealthCheckProgramById(Long id) {
-        // Optional<HealthCheckProgramEntity> healthCheckProgramOpt =
-        // healthCheckProgramRepository.findById(id);
-        // if (healthCheckProgramOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program
-        // not found");
-        // HealthCheckProgramEntity healthCheckProgramEntity =
-        // healthCheckProgramOpt.get();
-        // return modelMapper.map(healthCheckProgramEntity,
-        // HealthCheckProgramDTO.class);
-        return null;
+
+    public HealthCheckProgramDTO getHealthCheckProgramById(int id) {
+        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
+
+
+        if (healthCheckProgramOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình kiểm tra sức khỏe");
+        }
+
+
+        HealthCheckProgramEntity entity = healthCheckProgramOpt.get();
+
+
+        HealthCheckProgramDTO dto = modelMapper.map(entity, HealthCheckProgramDTO.class);
+
+
+        // Set thêm các field phụ
+        dto.setAdminId(entity.getAdmin().getUserId());
+        dto.setNurseId(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
+        dto.setStatus(entity.getStatus().name());
+
+
+        // Map adminDTO
+        dto.setAdminDTO(modelMapper.map(entity.getAdmin(), UserDTO.class));
+
+
+        // Map nurseDTO nếu có
+        if (entity.getNurse() != null) {
+            dto.setNurseDTO(modelMapper.map(entity.getNurse(), UserDTO.class));
+        }
+
+
+        // (Tùy chọn) Nếu bạn muốn map thêm healthCheckFormDTOs:
+        List<HealthCheckFormEntity> formEntities = healthCheckFormRepository.findAllByHealthCheckProgram_Id(id);
+        List<HealthCheckFormDTO> formDTOs = formEntities.stream()
+                .map(form -> modelMapper.map(form, HealthCheckFormDTO.class))
+                .collect(Collectors.toList());
+        dto.setHealthCheckFormDTOs(formDTOs);
+
+
+        // (Tùy chọn) Nếu bạn muốn map thêm participateClasses:
+        List<ParticipateClassEntity> participateEntities = participateClassRepository
+                .findAllByHealthCheckProgram_Id(id);
+        List<ParticipateClassDTO> participateDTOs = participateEntities.stream()
+                .map(pc -> modelMapper.map(pc, ParticipateClassDTO.class))
+                .collect(Collectors.toList());
+        dto.setParticipateClasses(participateDTOs);
+
+
+        return dto;
     }
 
-    public void deleteHealthCheckProgram(Long id) {
-        // Optional<HealthCheckProgramEntity> healthCheckProgramOpt =
-        // healthCheckProgramRepository.findById(id);
-        // if (healthCheckProgramOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check program
-        // not found");
 
-        // HealthCheckProgramEntity healthCheckProgramEntity =
-        // healthCheckProgramOpt.get();
+    public void deleteHealthCheckProgram(int id) {
+        Optional<HealthCheckProgramEntity> healthCheckProgramOpt = healthCheckProgramRepository.findById(id);
 
-        // if (healthCheckProgramEntity.getStatus() ==
-        // HealthCheckProgramStatus.COMPLETED
-        // || healthCheckProgramEntity.getStatus() == HealthCheckProgramStatus.ON_GOING)
-        // {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        // "Cannot delete 'COMPLETED' or 'ON_GOING' program");
-        // }
 
-        // healthCheckProgramRepository.delete(healthCheckProgramEntity);
+        if (healthCheckProgramOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình kiểm tra sức khỏe");
+        }
 
+
+        HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramOpt.get();
+
+
+        HealthCheckProgramEntity.HealthCheckProgramStatus status = healthCheckProgramEntity.getStatus();
+        if (status == HealthCheckProgramEntity.HealthCheckProgramStatus.ON_GOING || status == HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Không thể xoá chương trình đang diễn ra hoặc đã hoàn thành");
+        }
+
+
+        healthCheckProgramRepository.delete(healthCheckProgramEntity);
     }
+
 
     public VaccineProgramDTO createVaccineProgram(VaccineProgramRequest request, long adminId) {
         // UserEntity admin = userRepository.findUserByUserId(adminId)
@@ -870,8 +974,7 @@ public class AdminService {
         if (!latestHealthCheckProgramOpt.isPresent()) {
             participationDTO.setHealthCheck(new CommitedPercentDTO(null, 0L, 0L));
         } else {
-            HealthCheckProgramEntity latestHealthCheckProgram =
-                    latestHealthCheckProgramOpt.get();
+            HealthCheckProgramEntity latestHealthCheckProgram = latestHealthCheckProgramOpt.get();
             ParticipationRateRaw healthCheck = healthCheckFormRepository.getParticipationRateByHealthCheckId(latestHealthCheckProgram.getId());
             participationDTO.setHealthCheck(new
                     CommitedPercentDTO(latestHealthCheckProgram.getHealthCheckName(),

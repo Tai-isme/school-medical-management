@@ -1,21 +1,11 @@
 package com.swp391.school_medical_management.modules.users.entities;
 
-import java.time.LocalDate;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -27,7 +17,7 @@ public class VaccineProgramEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "vaccine_id")
-    private Long vaccineId;
+    private int vaccineId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vaccine_name_id", referencedColumnName = "vaccine_name_id")
@@ -37,7 +27,7 @@ public class VaccineProgramEntity {
 
     @Column(name = "vaccine_program_name", length = 100)
     private String vaccineProgramName;
-    
+
 
     @Column(name = "description", length = 255)
     private String description;
