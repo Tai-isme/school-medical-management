@@ -679,42 +679,45 @@ public class AdminService {
         return null;
     }
 
-    public MedicalRecordDTO getMedicalRecordByStudentId(Long parentId, Long studentId) {
-        // Optional<MedicalRecordEntity> optMedicalRecord = medicalRecordsRepository
-        // .findMedicalRecordByStudent_Id(studentId);
-        // if (optMedicalRecord.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical record not
-        // found");
-        // MedicalRecordEntity medicalRecord = optMedicalRecord.get();
-        // return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
-        return null;
+    //Thien
+    public MedicalRecordDTO getMedicalRecordByStudentId(int parentId, int studentId) {
+        Optional<MedicalRecordEntity> optMedicalRecord = medicalRecordsRepository
+                .findByStudent_Id(studentId);
+        if (optMedicalRecord.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ y tế cho học sinh với ID: " + studentId);
+        MedicalRecordEntity medicalRecord = optMedicalRecord.get();
+        return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
+        // return null;
     }
 
+
+    //Thien
     public UserDTO createAccount(NurseAccountRequest request) {
-        // if (userRepository.existsByEmail(request.getEmail())) {
-        // throw new RuntimeException("Email already exists!");
-        // }
-        // String password = passwordService.generateStrongRandomPassword();
-        // String encodedPassword = passwordEncoder.encode(password);
-        // UserEntity user = new UserEntity();
-        // user.setEmail(request.getEmail());
-        // user.setFullName(request.getName());
-        // user.setPassword(encodedPassword);
-        // user.setPhone(request.getPhone());
-        // user.setAddress(request.getAddress());
-        // user.setActive(true);
-        // user.setRole(UserRole.NURSE);
-        // userRepository.save(user);
-        // emailService.sendEmail(
-        // request.getEmail(),
-        // "Thông tin tài khoản",
-        // "Tài khoản của bạn đã được tạo thành công.\n\n"
-        // + "Email: " + request.getEmail() + "\n"
-        // + "Password: " + password + "\n\n"
-        // + "Vui lòng đăng nhập và đổi mật khẩu ngay để bảo mật tài khoản.");
-        // return modelMapper.map(user, UserDTO.class);
-        return null;
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email đã tồn tại, Vui lòng sử dụng email khác");
+        }
+        String password = passwordService.generateStrongRandomPassword();
+        String encodedPassword = passwordEncoder.encode(password);
+        UserEntity user = new UserEntity();
+        user.setEmail(request.getEmail());
+        user.setFullName(request.getName());
+        user.setPassword(encodedPassword);
+        user.setPhone(request.getPhone());
+        user.setAddress(request.getAddress());
+        user.setActive(true);
+        user.setRole(UserEntity.UserRole.NURSE);
+        userRepository.save(user);
+        emailService.sendEmail(
+                request.getEmail(),
+                "Thông tin tài khoản",
+                "Tài khoản của bạn đã được tạo thành công.\n\n"
+                        + "Email: " + request.getEmail() + "\n"
+                        + "Password: " + password + "\n\n"
+                        + "Vui lòng đăng nhập và đổi mật khẩu ngay để bảo mật tài khoản.");
+        return modelMapper.map(user, UserDTO.class);
+        // return null;
     }
+
 
     public List<UserDTO> getAllAccounts() {
         // List<UserEntity> userEntities = userRepository.findAll();
@@ -727,34 +730,39 @@ public class AdminService {
         return null;
     }
 
-    public UserDTO updateAccount(long userId, UpdateProfileRequest request) {
-        // UserEntity user = userRepository.findUserByUserId(userId)
-        // .orElseThrow(() -> new RuntimeException("User not found with ID: " +
-        // userId));
+    //Thien
+    public UserDTO updateAccount(int userId, UpdateProfileRequest request) {
+        UserEntity user = userRepository.findUserByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " +
+                        userId));
 
-        // user.setFullName(request.getFullName());
-        // // if (!user.getEmail().equals(request.getEmail())) {
-        // // boolean emailExists = userRepository.existsByEmail(request.getEmail());
-        // // if (emailExists) {
-        // // throw new RuntimeException("Email already in use");
-        // // }
-        // user.setEmail(request.getEmail());
-        // // }
 
-        // // if (!user.getPhone().equals(request.getPhone())) {
-        // // boolean phoneExists = userRepository.existsByPhone(request.getPhone());
-        // // if (phoneExists) {
-        // // throw new RuntimeException("Phone already in use");
-        // // }
-        // user.setPhone(request.getPhone());
-        // // }
-        // user.setAddress(request.getAddress());
+        user.setFullName(request.getFullName());
+        // if (!user.getEmail().equals(request.getEmail())) {
+        // boolean emailExists = userRepository.existsByEmail(request.getEmail());
+        // if (emailExists) {
+        // throw new RuntimeException("Email already in use");
+        // }
+        user.setEmail(request.getEmail());
+        // }
 
-        // userRepository.save(user);
-        // UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-        // return userDTO;
-        return null;
+
+        // if (!user.getPhone().equals(request.getPhone())) {
+        // boolean phoneExists = userRepository.existsByPhone(request.getPhone());
+        // if (phoneExists) {
+        // throw new RuntimeException("Phone already in use");
+        // }
+        user.setPhone(request.getPhone());
+        // }
+        user.setAddress(request.getAddress());
+
+
+        userRepository.save(user);
+        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+        return userDTO;
+        // return null;
     }
+
 
     public void deleteAccount(Long userId, String token) {
         // Optional<UserEntity> userOpt = userRepository.findUserByUserId(userId);

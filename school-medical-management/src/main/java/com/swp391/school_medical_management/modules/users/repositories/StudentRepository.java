@@ -1,5 +1,6 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
+import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -41,7 +42,7 @@ public interface StudentRepository extends JpaRepository<StudentEntity, Integer>
 
     // long count();
 
-    // List<StudentEntity> findByClassEntity_ClassId(Long classId);
+    List<StudentEntity> findByClassEntity(ClassEntity classEntity);
 
     // List<StudentEntity> findByFullNameContainingIgnoreCase(String keyword);
 

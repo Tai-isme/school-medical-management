@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VaccineHistoryDTO {
-    private Long id;
+    private int id;
     private int vaccineNameId;
     private String note;
     private boolean createBy;

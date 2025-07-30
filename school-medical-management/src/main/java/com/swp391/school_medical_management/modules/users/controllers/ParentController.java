@@ -53,58 +53,48 @@ public class ParentController {
     @GetMapping("/medical-records")
     public ResponseEntity<List<MedicalRecordDTO>> getAllMedicalRecords() {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<MedicalRecordDTO> medicalRecordDTOList = parentService
-                .getAllMedicalRecordByParentId(Long.parseLong(parentId));
+        List<MedicalRecordDTO> medicalRecordDTOList = parentService.getAllMedicalRecordByParentId(Integer.parseInt(parentId));
         if (medicalRecordDTOList.isEmpty())
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(medicalRecordDTOList);
     }
 
     @GetMapping("/medical-records/{studentId}")
-    @PreAuthorize("hasAnyRole('ROLE_PARENT', 'ROLE_ADMIN', 'ROLE_NURSE')")
-    public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable long studentId) {
+//    @PreAuthorize("hasAnyRole('ROLE_PARENT', 'ROLE_ADMIN', 'ROLE_NURSE')")
+    public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable int studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRecordDTO medicalRecordDTO = parentService.getMedicalRecordByStudentId(Long.parseLong(parentId),
-                studentId);
+        MedicalRecordDTO medicalRecordDTO = parentService.getMedicalRecordByStudentId(Integer.parseInt(parentId), studentId);
         if (medicalRecordDTO == null)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(medicalRecordDTO);
     }
 
     @DeleteMapping("/medical-records/{studentId}")
-    public ResponseEntity<Void> deleteMedicalRecords(@PathVariable long studentId) {
+    public ResponseEntity<Void> deleteMedicalRecords(@PathVariable int studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        parentService.deleteMedicalRecord(Long.parseLong(parentId), studentId);
+        parentService.deleteMedicalRecord(Integer.parseInt(parentId), studentId);
         return ResponseEntity.noContent().build();
     }
-
-    /**
-     * Medical request for a student.
-     *
-     * @param request the request containing medical request details
-     * @return ResponseEntity with the created MedicalRequestDTO
-     */
 
     @PostMapping("/medical-request")
     public ResponseEntity<MedicalRequestDTO> createMedicalRequest(@RequestBody MedicalRequest request) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRequestDTO medicalRequestDTO = parentService.createMedicalRequest(Long.parseLong(parentId), request);
+        MedicalRequestDTO medicalRequestDTO = parentService.createMedicalRequest(Integer.parseInt(parentId), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(medicalRequestDTO);
     }
 
     @GetMapping("/medical-request/by-request/{requestId}")
     public ResponseEntity<MedicalRequestDTO> getMedicalRequestByRequestId(@PathVariable int requestId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRequestDTO medicalRequestDTO = parentService.getMedicalRequestByRequestId(Long.parseLong(parentId),
+        MedicalRequestDTO medicalRequestDTO = parentService.getMedicalRequestByRequestId(Integer.parseInt(parentId),
                 requestId);
         return ResponseEntity.ok(medicalRequestDTO);
     }
 
     @GetMapping("/medical-request/by-student/{studentId}")
-    public ResponseEntity<List<MedicalRequestDTO>> getMedicalRequestByStudent(@PathVariable Long studentId) {
+    public ResponseEntity<List<MedicalRequestDTO>> getMedicalRequestByStudent(@PathVariable int studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<MedicalRequestDTO> medicalRequestDtoList = parentService
-                .getMedicalRequestByStudent(Long.parseLong(parentId), studentId);
+        List<MedicalRequestDTO> medicalRequestDtoList = parentService.getMedicalRequestByStudent(Integer.parseInt(parentId), studentId);
         return ResponseEntity.ok(medicalRequestDtoList);
     }
 
@@ -112,7 +102,7 @@ public class ParentController {
     public ResponseEntity<List<MedicalRequestDTO>> getMedicalRequestByParent() {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         List<MedicalRequestDTO> medicalRequestDtoList = parentService
-                .getMedicalRequestByParent(Long.parseLong(parentId));
+                .getMedicalRequestByParent(Integer.parseInt(parentId));
         return ResponseEntity.ok(medicalRequestDtoList);
     }
 
@@ -120,7 +110,7 @@ public class ParentController {
     public ResponseEntity<MedicalRequestDTO> updateMedicalRequest(@Valid @RequestBody MedicalRequest request,
                                                                   @PathVariable int requestId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRequestDTO medicalRequestDTO = parentService.updateMedicalRequest(Long.parseLong(parentId), request,
+        MedicalRequestDTO medicalRequestDTO = parentService.updateMedicalRequest(Integer.parseInt(parentId), request,
                 requestId);
         return ResponseEntity.ok(medicalRequestDTO);
     }
@@ -128,54 +118,53 @@ public class ParentController {
     @DeleteMapping("/medical-request/{requestId}")
     public ResponseEntity<Void> deleteMedicalRequest(@PathVariable int requestId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        parentService.deleteMedicalRequest(Long.parseLong(parentId), requestId);
+        parentService.deleteMedicalRequest(Integer.parseInt(parentId), requestId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/health-check-forms/student/{studentId}")
-    public ResponseEntity<List<HealthCheckFormDTO>> getAllHealthCheckForm(@PathVariable Long studentId) {
+    public ResponseEntity<List<HealthCheckFormDTO>> getAllHealthCheckForm(@PathVariable int studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<HealthCheckFormDTO> healthCheckFormDTOList = parentService.getAllHealthCheckFormCommited(Long.parseLong(parentId),
+        List<HealthCheckFormDTO> healthCheckFormDTOList = parentService.getAllHealthCheckFormCommited(Integer.parseInt(parentId),
                 studentId);
         return ResponseEntity.ok(healthCheckFormDTOList);
     }
 
-    // DANG DUNG
     @GetMapping("/vaccine-forms/student/{studentId}")
-    public ResponseEntity<List<VaccineFormDTO>> getAllVaccineForm(@PathVariable Long studentId) {
+    public ResponseEntity<List<VaccineFormDTO>> getAllVaccineForm(@PathVariable int studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<VaccineFormDTO> vaccineFormDTOList = parentService.getAllVaccineFormCommited(Long.parseLong(parentId), studentId);
+        List<VaccineFormDTO> vaccineFormDTOList = parentService.getAllVaccineFormCommited(Integer.parseInt(parentId), studentId);
         return ResponseEntity.ok(vaccineFormDTOList);
     }
 
     @GetMapping("/health-check-forms/form/{healthCheckFormId}")
-    public ResponseEntity<HealthCheckFormDTO> getHealthCheckForm(@PathVariable Long healthCheckFormId) {
+    public ResponseEntity<HealthCheckFormDTO> getHealthCheckForm(@PathVariable int healthCheckFormId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        HealthCheckFormDTO healthCheckFormDTO = parentService.getHealthCheckForm(Long.parseLong(parentId),
+        HealthCheckFormDTO healthCheckFormDTO = parentService.getHealthCheckForm(Integer.parseInt(parentId),
                 healthCheckFormId);
         return ResponseEntity.ok(healthCheckFormDTO);
     }
 
     @GetMapping("/vaccine-forms/form/{vaccineFormId}")
-    public ResponseEntity<VaccineFormDTO> getVaccineForm(@PathVariable Long vaccineFormId) {
+    public ResponseEntity<VaccineFormDTO> getVaccineForm(@PathVariable int vaccineFormId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        VaccineFormDTO vaccineFormDTO = parentService.getVaccineForm(Long.parseLong(parentId), vaccineFormId);
+        VaccineFormDTO vaccineFormDTO = parentService.getVaccineForm(Integer.parseInt(parentId), vaccineFormId);
         return ResponseEntity.ok(vaccineFormDTO);
     }
 
     @PatchMapping("/health-check-forms/{healCheckFormId}/commit")
     public ResponseEntity<Void> commitHealthCheckForm(@RequestBody CommitHealthCheckFormRequest request,
-                                                      @PathVariable Long healCheckFormId) {
+                                                      @PathVariable int healCheckFormId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        parentService.commitHealthCheckForm(Long.parseLong(parentId), healCheckFormId, request);
+        parentService.commitHealthCheckForm(Integer.parseInt(parentId), healCheckFormId, request);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/vaccine-forms/{vaccineFormId}/commit")
     public ResponseEntity<Void> commitVaccineForm(@RequestBody CommitVaccineFormRequest request,
-                                                  @PathVariable Long vaccineFormId) {
+                                                  @PathVariable int vaccineFormId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        parentService.commitVaccineForm(Long.parseLong(parentId), vaccineFormId, request);
+        parentService.commitVaccineForm(Integer.parseInt(parentId), vaccineFormId, request);
         return ResponseEntity.noContent().build();
     }
 
@@ -186,58 +175,58 @@ public class ParentController {
     }
 
     @GetMapping("/getfeedback/{parentId}")
-    public ResponseEntity<List<FeedbackDTO>> getParentFeedbacks(@PathVariable Long parentId) {
+    public ResponseEntity<List<FeedbackDTO>> getParentFeedbacks(@PathVariable int parentId) {
         return ResponseEntity.ok(parentService.getFeedbacksByParent(parentId));
     }
 
     @GetMapping("/medical-events/{studentId}")
-    public ResponseEntity<List<MedicalEventDTO>> getMedicalEventsByStudent(@PathVariable Long studentId) {
+    public ResponseEntity<List<MedicalEventDTO>> getMedicalEventsByStudent(@PathVariable int studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<MedicalEventDTO> events = parentService.getMedicalEventsByStudent(Long.parseLong(parentId), studentId);
+        List<MedicalEventDTO> events = parentService.getMedicalEventsByStudent(Integer.parseInt(parentId), studentId);
         return ResponseEntity.ok(events);
     }
 
     @GetMapping("/all-forms/{studentId}")
     @PreAuthorize("hasAnyRole('ROLE_PARENT', 'ROLE_NURSE')")
-    public ResponseEntity<AllFormsByStudentDTO> getAllFormByStudent(@PathVariable Long studentId) {
+    public ResponseEntity<AllFormsByStudentDTO> getAllFormByStudent(@PathVariable int studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        AllFormsByStudentDTO allFormsByStudentDTOList = parentService.getAllFormByStudent(Long.parseLong(parentId),
+        AllFormsByStudentDTO allFormsByStudentDTOList = parentService.getAllFormByStudent(Integer.parseInt(parentId),
                 studentId);
         return ResponseEntity.ok(allFormsByStudentDTOList);
     }
 
-    @GetMapping("/vaccine-result/{studentId}")
-    public ResponseEntity<List<VaccineResultDTO>> getVaccineResult(@PathVariable Long studentId) {
+    @GetMapping("/vaccine-result/student/{studentId}")
+    public ResponseEntity<List<VaccineResultDTO>> getVaccineResult(@PathVariable int studentId) {
         List<VaccineResultDTO> vaccineResultDTOs = parentService.getVaccineResults(studentId);
         return ResponseEntity.ok(vaccineResultDTOs);
     }
 
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<HealthCheckResultDTO>> getHealthCheckResultsByStudent(@PathVariable Long studentId) {
+    @GetMapping("/health-check-result/student/{studentId}")
+    public ResponseEntity<List<HealthCheckResultDTO>> getHealthCheckResultsByStudent(@PathVariable int studentId) {
         List<HealthCheckResultDTO> resultList = parentService.getHealthCheckResults(studentId);
         return ResponseEntity.ok(resultList);
     }
 
     @GetMapping("/health-check-result/form/{formId}")
-    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResultByFormId(@PathVariable Long formId) {
+    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResultByFormId(@PathVariable int formId) {
         HealthCheckResultDTO dto = parentService.getHealthCheckResultByFormId(formId);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/vaccine-result/form/{formId}")
-    public ResponseEntity<VaccineResultDTO> getVaccineResultByFormId(@PathVariable Long formId) {
+    public ResponseEntity<VaccineResultDTO> getVaccineResultByFormId(@PathVariable int formId) {
         VaccineResultDTO dto = parentService.getVaccineResultByFormId(formId);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/health-check-result/{healCheckResultId}")
-    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResultByResultID(@PathVariable Long healCheckResultId) {
+    public ResponseEntity<HealthCheckResultDTO> getHealthCheckResultByResultID(@PathVariable int healCheckResultId) {
         HealthCheckResultDTO healthCheckResultDTO = nurseService.getHealthCheckResult(healCheckResultId);
         return ResponseEntity.ok(healthCheckResultDTO);
     }
 
     @GetMapping("/vaccine-result/{vaccineResultId}")
-    public ResponseEntity<VaccineResultDTO> getVaccineResultByResultID(@PathVariable Long vaccineResultId) {
+    public ResponseEntity<VaccineResultDTO> getVaccineResultByResultID(@PathVariable int vaccineResultId) {
         VaccineResultDTO vaccineResultDTO = nurseService.getVaccineResult(vaccineResultId);
         return ResponseEntity.ok(vaccineResultDTO);
     }

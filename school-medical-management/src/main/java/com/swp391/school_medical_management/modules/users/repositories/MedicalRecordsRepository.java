@@ -11,6 +11,4 @@ public interface MedicalRecordsRepository extends JpaRepository<MedicalRecordEnt
     // long count();
 
     // List<MedicalRecordEntity> findAllByStudent_Id(long studentId);
-
-
 }

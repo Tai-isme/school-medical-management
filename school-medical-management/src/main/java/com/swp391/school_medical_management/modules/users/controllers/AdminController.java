@@ -39,7 +39,7 @@ public class AdminController {
     }
 
     @PutMapping("/account/{userId}")
-    public ResponseEntity<UserDTO> updateAccount(@PathVariable long userId, @RequestBody UpdateProfileRequest request) {
+    public ResponseEntity<UserDTO> updateAccount(@PathVariable int userId, @RequestBody UpdateProfileRequest request) {
         UserDTO userDTO = adminService.updateAccount(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
     }

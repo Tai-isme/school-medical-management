@@ -1,5 +1,6 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
 import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +15,7 @@ public interface VaccineResultRepository extends JpaRepository<VaccineResultEnti
     // List<VaccineResultEntity> findByVaccineFormEntity_Student_Id(Long studentId);
     // List<VaccineResultEntity> findAll();
 
-    // Optional<VaccineResultEntity> findByVaccineFormEntity_Id(Long formId);
+    List<VaccineResultEntity> findByStudentEntity(StudentEntity studentEntity);
 
     // List<VaccineResultEntity> findByVaccineFormEntity_VaccineProgram_VaccineId(Long programId);
 

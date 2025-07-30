@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,7 +17,7 @@ public interface HealthCheckResultRepository extends JpaRepository<HealthCheckRe
 
     // Optional<HealthCheckResultEntity> findByHealthCheckFormEntity_Id(Long formId);
 
-    // List<HealthCheckResultEntity> findByHealthCheckFormEntity_Student_Id(Long studentId);
+    List<HealthCheckResultEntity> findByStudent(StudentEntity studentEntity);
 
     // List<HealthCheckResultEntity> findByHealthCheckFormEntity_HealthCheckProgram_Id(Long programId);
 
