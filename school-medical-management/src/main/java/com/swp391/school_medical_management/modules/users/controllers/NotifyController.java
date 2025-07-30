@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,19 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.NotifyToParentRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.NotificationMessageDTO;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-// import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity.HealthCheckFormStatus;
-// import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity.VaccineFormStatus;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
 import com.swp391.school_medical_management.service.NotificationService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api")
@@ -128,12 +122,12 @@ public class NotifyController {
         return ResponseEntity.ok("Đã gửi thông báo. Các form đã skip: " + skippedForms);
     }
 
-    @GetMapping("/notify/{userId}")
-    public ResponseEntity<List<NotificationMessageDTO>> getAllNotify(@PathVariable Long userId) {
-        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<NotificationMessageDTO> notificationMessageDTOList = notificationService
-                .getNotificationByUserId(Long.parseLong(parentId));
-        return ResponseEntity.ok(notificationMessageDTOList);
-    }
+    // @GetMapping("/notify/{userId}")
+    // public ResponseEntity<List<NotificationMessageDTO>> getAllNotify(@PathVariable Long userId) {
+    //     String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+    //     List<NotificationMessageDTO> notificationMessageDTOList = notificationService
+    //             .getNotificationByUserId(Long.parseLong(parentId));
+    //     return ResponseEntity.ok(notificationMessageDTOList);
+    // }
 
 }

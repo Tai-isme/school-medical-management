@@ -25,5 +25,4 @@ public class HealthCheckProgramDTO {
     private UserDTO nurseDTO;
     List<ParticipateClassDTO> participateClasses;
     List<HealthCheckFormDTO> healthCheckFormDTOs;
-    
 }

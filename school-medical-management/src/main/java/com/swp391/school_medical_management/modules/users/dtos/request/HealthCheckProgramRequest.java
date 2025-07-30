@@ -34,10 +34,10 @@ public class HealthCheckProgramRequest {
     private HealthCheckProgramEntity.HealthCheckProgramStatus status;
 
     @NotNull(message = "ID admin không được để trống")
-    private int adminId;
+    private Long adminId;
 
     @NotNull(message = "ID y tá không được để trống")
-    private int nurseId;
+    private Long nurseId;
 
     private List<Integer> classIds;
 
