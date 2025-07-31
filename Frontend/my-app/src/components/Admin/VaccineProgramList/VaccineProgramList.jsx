@@ -98,21 +98,24 @@ const VaccineProgramList = () => {
         }
       );
       // Chuẩn hóa dữ liệu để tương thích với render
-      const programs = res.data.map((item) => ({
-        vaccineId: item.vaccineProgramId,
-        vaccineName: item.vaccineNameDTO?.vaccineName || "",
-        description: item.description,
-        vaccineDate: item.startDate,
-        status: item.status,
-        note: item.vaccineFormDTOs?.[0]?.note || "",
-        nurse: item.nurseDTO,
-        manufacture: item.vaccineNameDTO?.manufacture || "",
-        totalUnit: item.vaccineNameDTO?.totalUnit || "",
-        location: item.location,
-        vaccineFormDTOs: item.vaccineFormDTOs || [],
-        participateClassDTOs: item.participateClassDTOs || [],
-        // Thêm các trường khác nếu cần
-      }));
+      // ...existing code...
+        const programs = res.data.map((item) => ({
+          vaccineId: item.vaccineProgramId,
+          vaccineName: item.vaccineNameDTO?.vaccineName || "",
+          description: item.description,
+          vaccineDate: item.startDate,
+          dateSendForm: item.dateSendForm, // Thêm dòng này để lấy ngày gửi thông báo
+          status: item.status,
+          note: item.vaccineFormDTOs?.[0]?.note || "",
+          nurse: item.nurseDTO,
+          manufacture: item.vaccineNameDTO?.manufacture || "",
+          totalUnit: item.vaccineNameDTO?.totalUnit || "",
+          location: item.location,
+          vaccineFormDTOs: item.vaccineFormDTOs || [],
+          participateClassDTOs: item.participateClassDTOs || [],
+          // Thêm các trường khác nếu cần
+        }));
+// ...existing code...
       setPrograms(programs);
     } catch (error) {
       setPrograms([]);
@@ -624,30 +627,7 @@ const VaccineProgramList = () => {
                       marginLeft: "auto",
                     }}
                   >
-                    {/* Nút Lấy biểu mẫu căn trái */}
-                    {userRole === "ADMIN" && (
-                      <Button
-                        type="default"
-                        icon={<DownloadOutlined />}
-                        style={{
-                          border: "1.5px solid #21ba45",
-                          color: "#21ba45",
-                          background: "#fff",
-                          fontWeight: 600,
-                          marginRight: 12,
-                        }}
-                        onClick={() => {
-                          const link = document.createElement("a");
-                          link.href = "/vaccine_name_import.xlsx";
-                          link.setAttribute("download", "vaccine_name_import.xlsx");
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }}
-                      >
-                        Lấy biểu mẫu
-                      </Button>
-                    )}
+                    
 
                     {/* Nhóm filter và các nút khác căn phải */}
                     <div
@@ -687,6 +667,8 @@ const VaccineProgramList = () => {
                           { value: "COMPLETED", label: "Đã hoàn thành" },
                         ]}
                       />
+
+                      
                       {userRole === "ADMIN" && (
                         <>
                           <Button
@@ -707,6 +689,31 @@ const VaccineProgramList = () => {
                           >
                             Thêm mới vaccine
                           </Button>
+
+                          {/* Nút Lấy biểu mẫu căn trái */}
+                          {userRole === "ADMIN" && (
+                            <Button
+                              type="default"
+                              icon={<DownloadOutlined />}
+                              style={{
+                                border: "1.5px solid #21ba45",
+                                color: "#21ba45",
+                                background: "#fff",
+                                fontWeight: 600,
+                                marginRight: 12,
+                              }}
+                              onClick={() => {
+                                const link = document.createElement("a");
+                                link.href = "/vaccine_name_import.xlsx";
+                                link.setAttribute("download", "vaccine_name_import.xlsx");
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }}
+                            >
+                              Lấy biểu mẫu
+                            </Button>
+                          )}
                           <Button
                             type="default"
                             icon={<UploadOutlined />}
@@ -774,21 +781,23 @@ const VaccineProgramList = () => {
                             >
                               {program.vaccineName}
                             </div>
-                            <div style={{ color: "#555", marginBottom: 2 }}>
-                              Mô tả: {program.description}
-                            </div>
+                            
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              Ngày tiêm: {program.vaccineDate}
+                              Ngày thực hiện: {program.vaccineDate}
                             </div>
+
                             <div style={{ color: "#555", marginBottom: 8 }}>
+                              Ngày gửi thông báo cho phụ huynh: {program.dateSendForm}
+                            </div>
+                            {/* <div style={{ color: "#555", marginBottom: 8 }}>
                               Nhà sản xuất: {program.manufacture}
-                            </div>
+                            </div> */}
                             <div style={{ color: "#555", marginBottom: 8 }}>
                               Địa điểm: {program.location}
                             </div>
-                            <div style={{ color: "#555", marginBottom: 8 }}>
+                            {/* <div style={{ color: "#555", marginBottom: 8 }}>
                               Tổng số mũi: {program.totalUnit}
-                            </div>
+                            </div> */}
                             <div style={{ color: "#555", marginBottom: 8 }}>
                               Người phụ trách: {program.nurse?.fullName} -
                               {program.nurse?.phone}

@@ -3,6 +3,34 @@ import { Modal, Form, Input, Select, DatePicker, Button } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
 
+const vaccineOptions = [
+  { value: 1, label: "Viêm gan B" },
+  { value: 2, label: "Viêm gan A" },
+  { value: 3, label: "Sởi" },
+];
+
+const doseOptions = [
+  { value: 1, label: "Mũi 1" },
+  { value: 2, label: "Mũi 2" },
+  { value: 3, label: "Mũi 3" },
+  { value: 4, label: "Mũi 4" },
+  { value: 5, label: "Mũi 5" },
+];
+
+// Giả lập dữ liệu lớp
+const classOptions = [
+  { value: "1A", label: "Lớp 1A" },
+  { value: "1B", label: "Lớp 1B" },
+  { value: "2A", label: "Lớp 2A" },
+  { value: "2B", label: "Lớp 2B" },
+  { value: "3A", label: "Lớp 3A" },
+  { value: "3B", label: "Lớp 3B" },
+  { value: "4A", label: "Lớp 4A" },
+  { value: "4B", label: "Lớp 4B" },
+  { value: "5A", label: "Lớp 5A" },
+  { value: "5B", label: "Lớp 5B" },
+];
+
 const VaccineProgramModal = ({
   open,
   onCancel,
@@ -11,52 +39,8 @@ const VaccineProgramModal = ({
   initialValues = {},
 }) => {
   const [form] = Form.useForm();
-  const [selectedClasses, setSelectedClasses] = React.useState(initialValues.classes || []);
+  const [selectedClasses, setSelectedClasses] = useState([]);
   const [nurseOptions, setNurseOptions] = useState([]);
-  const [classOptions, setClassOptions] = useState([]);
-  const [vaccineOptions, setVaccineOptions] = useState([]);
-  const [doseOptions, setDoseOptions] = useState([]);
-  const [vaccineData, setVaccineData] = useState([]);
-
-  // Fetch vaccine list from API
-  useEffect(() => {
-    const fetchVaccines = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:8080/api/admin/get=all-VaccineName", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setVaccineData(res.data || []);
-        setVaccineOptions(
-          (res.data || []).map(vac => ({
-            value: vac.id,
-            label: vac.vaccineName,
-          }))
-        );
-      } catch {
-        setVaccineOptions([]);
-        setVaccineData([]);
-      }
-    };
-    fetchVaccines();
-  }, []);
-
-  // Update dose options when vaccine changes
-  const handleVaccineChange = (vaccineId) => {
-    const selected = vaccineData.find(v => v.id === vaccineId);
-    if (selected && Array.isArray(selected.vaccineUnitDTOs)) {
-      setDoseOptions(
-        selected.vaccineUnitDTOs.map(unit => ({
-          value: unit.unit,
-          label: `Mũi ${unit.unit} (${unit.schedule})`,
-        }))
-      );
-    } else {
-      setDoseOptions([]);
-    }
-    // Reset dose field when vaccine changes
-    form.setFieldsValue({ dose: undefined });
-  };
 
   // Fetch nurse list from API
   useEffect(() => {
@@ -77,27 +61,6 @@ const VaccineProgramModal = ({
       }
     };
     fetchNurses();
-  }, []);
-
-  // Fetch class list from API
-  useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:8080/api/nurse/class-list", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setClassOptions(
-          (res.data || []).map(cls => ({
-            value: cls.classId,
-            label: cls.className,
-          }))
-        );
-      } catch (err) {
-        setClassOptions([]);
-      }
-    };
-    fetchClasses();
   }, []);
 
   // Đảm bảo đồng bộ khi mở modal chỉnh sửa
@@ -130,26 +93,12 @@ const VaccineProgramModal = ({
       <Form
         layout="vertical"
         form={form}
-        onFinish={values => {
-          // Chuẩn hóa payload theo API yêu cầu
-          const payload = {
-            vaccineProgramName: values.programName,
-            vaccineNameId: values.vaccineType,
-            unit: values.dose,
-            description: values.description,
-            startDate: values.vaccineDate ? values.vaccineDate.format("YYYY-MM-DD") : null,
-            dateSendForm: values.sendFormDate ? values.sendFormDate.format("YYYY-MM-DD") : null,
-            location: values.location,
-            nurseId: values.nurse,
-            classIds: values.classes,
-          };
-          onFinish(payload); // Truyền payload chuẩn hóa lên component cha
-        }}
+        onFinish={onFinish}
         initialValues={{
-          ...initialValues,
-          vaccineDate: initialValues.vaccineDate ? dayjs(initialValues.vaccineDate) : null,
-          sendFormDate: initialValues.sendFormDate ? dayjs(initialValues.sendFormDate) : null,
-          classes: initialValues.classes || [],
+          ...(initialValues || {}),
+          startDate: initialValues?.startDate ? dayjs(initialValues.startDate) : null,
+          sendFormDate: initialValues?.sendFormDate ? dayjs(initialValues.sendFormDate) : null,
+          classes: initialValues?.classes || [],
         }}
       >
         <Form.Item
@@ -173,19 +122,16 @@ const VaccineProgramModal = ({
               options={vaccineOptions}
               showSearch
               optionFilterProp="label"
-              onChange={handleVaccineChange}
             />
           </Form.Item>
           <Form.Item
             label="Mũi vaccine"
-            name="dose"
             rules={[{ required: true, message: "Chọn mũi vaccine" }]}
             style={{ flex: 1, marginBottom: 0 }}
           >
             <Select
               placeholder="Chọn mũi tiêm"
               options={doseOptions}
-              disabled={doseOptions.length === 0}
             />
           </Form.Item>
         </div>
@@ -194,7 +140,7 @@ const VaccineProgramModal = ({
         <div style={{ display: "flex", gap: 16 }}>
           <Form.Item
             label="Ngày thực hiện"
-            name="vaccineDate"
+            name="startDate"
             rules={[
               { required: true, message: "Chọn ngày thực hiện" },
               {
