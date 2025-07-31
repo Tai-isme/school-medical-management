@@ -104,13 +104,13 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                   }}
                 >
                   {notification.type === 'healthcheck'
-                    ? `Khảo sát sức khỏe: ${notification.healthCheckProgram?.name || ''}`
-                    : `Tiêm phòng: ${notification.vaccineProgram?.vaccineName.vaccineName || ''}`}
+                    ? `Khảo sát sức khỏe: ${notification.healthCheckProgramDTO?.healthCheckName || ''}`
+                    : `Tiêm phòng: ${notification.vaccineProgramDTO?.vaccineProgramName || ''}`}
                 </p>
               </div>
               <div className="notification-info-row-bottom">
                 <p className="notification-date">
-                  Ngày: {notification.formDate}
+                  Ngày hết hạn: {notification.expDate}
                 </p>
                 <span
                   className="notification-status"
@@ -119,12 +119,14 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                     color: '#fff',
                     background:
                       notification.commit === true
-                        ? '#52c41a' // Màu xanh cho "Đã đăng ký"
+                        ? '#52c41a'
                         : notification.commit === false
+                        ? '#bfbfbf'
+                        : new Date(notification.expDate) < new Date(new Date().toDateString()) && notification.commit == null
                         ? '#bfbfbf' // Màu xám cho "Không tham gia"
                         : new Date(notification.formDate) < new Date()
-                        ? '#ff4d4f' // Màu đỏ cho "Đã hết hạn"
-                        : '#1890ff', // Màu xanh dương cho "Chưa đăng ký"
+                        ? '#ff4d4f'
+                        : '#1890ff',
                     borderRadius: 8,
                     padding: '2px 12px',
                     display: 'inline-block',
@@ -134,6 +136,8 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                     notification.commit === true
                       ? 'Đã đăng ký'
                       : notification.commit === false
+                      ? 'Không tham gia'
+                      : new Date(notification.expDate) < new Date(new Date().toDateString()) && notification.commit == null
                       ? 'Không tham gia'
                       : new Date(notification.formDate) < new Date()
                       ? 'Đã hết hạn'
@@ -151,8 +155,8 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
         open={modalOpen}
         onCancel={handleModalClose}
         footer={null}
-        width={900} // Đặt chiều rộng modal là 1200px
-        centered // Căn giữa modal trên màn hình
+        width={600} // Đổi từ 900 thành 600 để modal hẹp hơn
+        centered
         title={
           modalNotification
             ? modalNotification.type === 'vaccine'
@@ -162,7 +166,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
         }
       >
         {modalNotification && modalNotification.type === 'vaccine' && (
-          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ maxWidth: 540, margin: '0 auto' }}>
             <VaccineNotificationModalContent
               notification={modalNotification}
               checked={checked}
@@ -177,7 +181,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
           </div>
         )}
         {modalNotification && modalNotification.type === 'healthcheck' && (
-          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ maxWidth: 540, margin: '0 auto' }}>
             <HealthCheckNotificationModalContent
               notification={modalNotification}
               checked={checked}
