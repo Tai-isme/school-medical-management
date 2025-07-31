@@ -1,10 +1,12 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.*;
-import com.swp391.school_medical_management.modules.users.dtos.response.*;
-import com.swp391.school_medical_management.modules.users.entities.*;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
-import com.swp391.school_medical_management.modules.users.repositories.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +17,59 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.ReplyFeedbackRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.OnGoingProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ParticipateClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
+import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
+import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.ParticipateClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
+import com.swp391.school_medical_management.modules.users.repositories.BlogRepository;
+import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
+import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
+import com.swp391.school_medical_management.modules.users.repositories.ParticipateClassRepository;
+import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineHistoryRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
 
 @Service
 public class NurseService {
@@ -213,7 +263,6 @@ public class NurseService {
         List<MedicalEventDTO> medicalEventDTOList = medicalEventEntitieList.stream().map(event -> {
             MedicalEventDTO dto = modelMapper.map(event, MedicalEventDTO.class);
 
-
             if (event.getNurse() != null) {
                 UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
                 dto.setNurseDTO(nurseDTO);
@@ -336,7 +385,8 @@ public class NurseService {
 
     public HealthCheckFormDTO getHealthCheckFormById(int healthCheckFormId) {
         HealthCheckFormEntity formEntity = healthCheckFormRepository.findById(healthCheckFormId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy health check form id"));
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy health check form id"));
 
         HealthCheckFormDTO formDTO = new HealthCheckFormDTO();
         formDTO.setId(formEntity.getId());
@@ -346,7 +396,6 @@ public class NurseService {
         formDTO.setStudentId(formEntity.getStudent().getId());
         formDTO.setParentId(formEntity.getParent().getUserId());
         formDTO.setNurseId(formEntity.getNurse().getUserId());
-
 
         StudentEntity student = formEntity.getStudent();
         StudentDTO studentDTO = new StudentDTO();
@@ -666,48 +715,61 @@ public class NurseService {
     }
 
     public List<MedicalEventDTO> getAllMedicalEvent() {
-        // List<MedicalEventEntity> events = medicalEventRepository.findAll();
+        List<MedicalEventEntity> events = medicalEventRepository.findAll();
 
-        // if (events.isEmpty()) {
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not
-        // found");
-        // }
+        if (events.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sự kiện y tế.");
+        }
 
-        // List<MedicalEventDTO> medicalEventDTOList = new ArrayList<>();
+        List<MedicalEventDTO> medicalEventDTOList = new ArrayList<>();
 
-        // for (MedicalEventEntity event : events) {
-        // MedicalEventDTO dto = new MedicalEventDTO();
-        // dto.setEventId(event.getEventId());
-        // dto.setTypeEvent(event.getTypeEvent());
-        // dto.setDate(event.getDate());
-        // dto.setDescription(event.getDescription());
-        // if (event.getNurse() != null) {
-        // UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
-        // dto.setNurseDTO(nurseDTO);
-        // }
-        // StudentEntity student = event.getStudent();
-        // if (student != null) {
-        // dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
-        // ClassEntity classEntity = student.getClassEntity();
-        // dto.setClassDTO(modelMapper.map(classEntity, ClassDTO.class));
-        // UserEntity parent = student.getParent();
-        // if (parent != null) {
-        // UserDTO userDTO = UserDTO.builder()
-        // .id(parent.getUserId())
-        // .fullName(parent.getFullName())
-        // .email(parent.getEmail())
-        // .phone(parent.getPhone())
-        // .address(parent.getAddress())
-        // .role(parent.getRole())
-        // .build();
+        for (MedicalEventEntity event : events) {
+            MedicalEventDTO dto = new MedicalEventDTO();
 
-        // dto.setParentDTO(userDTO);
-        // }
-        // }
-        // medicalEventDTOList.add(dto);
-        // }
-        // return medicalEventDTOList;
-        return null;
+            dto.setEventId(event.getEventId());
+            dto.setTypeEvent(event.getTypeEvent());
+            dto.setEventName(event.getEventName());
+            dto.setDate(event.getDate());
+            dto.setDescription(event.getDescription());
+            dto.setActionsTaken(event.getActionsTaken());
+            dto.setLocation(event.getLocation());
+
+            dto.setLevelCheck(event.getLevelCheck() != null ? event.getLevelCheck().name() : null);
+
+            if (event.getNurse() != null) {
+                UserEntity nurse = event.getNurse();
+                dto.setNurseDTO(modelMapper.map(nurse, UserDTO.class));
+                dto.setNurseId(nurse.getUserId());
+            }
+
+            StudentEntity student = event.getStudent();
+            if (student != null) {
+                dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
+                dto.setStudentId(student.getId());
+
+                ClassEntity classEntity = student.getClassEntity();
+                if (classEntity != null) {
+                    ClassDTO classDTO = modelMapper.map(classEntity, ClassDTO.class);
+                    classDTO.setStudents(null); 
+                    dto.setClassDTO(classDTO);
+                }
+
+                UserEntity parent = student.getParent();
+                if (parent != null) {
+                    UserDTO parentDTO = UserDTO.builder()
+                            .id(parent.getUserId())
+                            .fullName(parent.getFullName())
+                            .email(parent.getEmail())
+                            .phone(parent.getPhone())
+                            .address(parent.getAddress())
+                            .role(parent.getRole())
+                            .build();
+                    dto.setParentDTO(parentDTO);
+                }
+            }
+            medicalEventDTOList.add(dto);
+        }
+        return medicalEventDTOList;
     }
 
     public void deleteMedicalEvent(int meidcalEventId) {
@@ -1417,30 +1479,32 @@ public class NurseService {
         // .map(user -> modelMapper.map(user, UserDTO.class))
         // .collect(Collectors.toList());
         /*
-         // Lấy toàn bộ danh sách user từ database
-         List<UserEntity> userList = userRepository.findAll();
-         // Lọc bỏ user có role là ADMIN và theo điều kiện keyword/roleFilter
-         List<UserDTO> result = userList.stream()
-                 .filter(user -> user.getRole() != UserEntity.UserRole.ADMIN)
-                 .filter(user -> {
-                     boolean matchesKeyword = true;
-                     if (keyword != null && !keyword.isBlank()) {
-                         String lowerKeyword = keyword.toLowerCase();
-                         matchesKeyword = (user.getFullName() != null
-                                 && user.getFullName().toLowerCase().contains(lowerKeyword))
-                                 || (user.getEmail() != null && user.getEmail().toLowerCase().contains(lowerKeyword))
-                                 || (user.getPhone() != null && user.getPhone().toLowerCase().contains(lowerKeyword));
-                     }
-                     boolean matchesRole = (roleFilter == null || user.getRole() == roleFilter);
-                     return matchesKeyword && matchesRole;
-                 })
-                 .map(user -> modelMapper.map(user, UserDTO.class))
-                 .collect(Collectors.toList());
-         if (result.isEmpty()) {
-             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found");
-         }
-         return result;
-        */
+         * // Lấy toàn bộ danh sách user từ database
+         * List<UserEntity> userList = userRepository.findAll();
+         * // Lọc bỏ user có role là ADMIN và theo điều kiện keyword/roleFilter
+         * List<UserDTO> result = userList.stream()
+         * .filter(user -> user.getRole() != UserEntity.UserRole.ADMIN)
+         * .filter(user -> {
+         * boolean matchesKeyword = true;
+         * if (keyword != null && !keyword.isBlank()) {
+         * String lowerKeyword = keyword.toLowerCase();
+         * matchesKeyword = (user.getFullName() != null
+         * && user.getFullName().toLowerCase().contains(lowerKeyword))
+         * || (user.getEmail() != null &&
+         * user.getEmail().toLowerCase().contains(lowerKeyword))
+         * || (user.getPhone() != null &&
+         * user.getPhone().toLowerCase().contains(lowerKeyword));
+         * }
+         * boolean matchesRole = (roleFilter == null || user.getRole() == roleFilter);
+         * return matchesKeyword && matchesRole;
+         * })
+         * .map(user -> modelMapper.map(user, UserDTO.class))
+         * .collect(Collectors.toList());
+         * if (result.isEmpty()) {
+         * throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found");
+         * }
+         * return result;
+         */
 
         // if (result.isEmpty()) {
         // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found");
@@ -1558,50 +1622,56 @@ public class NurseService {
 
         // // List<HealthCheckFormEntity> forms = new ArrayList<>();
         /*
-         HealthCheckProgramEntity program = healthCheckProgramRepository.findById(programId)
-                 .orElseThrow(() -> new RuntimeException("Program not found"));
-         List<HealthCheckFormEntity> existingForms = healthCheckFormRepository.findByHealthCheckProgram_Id(programId);
-         for (HealthCheckFormEntity form : existingForms) {
-             if (form.getStatus() == HealthCheckFormEntity.HealthCheckFormStatus.SENT) {
-                 throw new RuntimeException("Health check forms already created for this program");
-             } else {
-                 form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.SENT);
-                 healthCheckFormRepository.save(form);
-             }
-         }
-         // List<StudentEntity> students = studentRepository.findAllWithParent();
-         // List<HealthCheckFormEntity> forms = new ArrayList<>();
-         // for (StudentEntity student : students) {
-         // HealthCheckFormEntity form = new HealthCheckFormEntity();
-         // form.setHealthCheckProgram(program);
-         // form.setStudent(student);
-         // form.setParent(student.getParent());
-         // form.setFormDate(LocalDate.now());
-         // form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.SENT);
-         // form.setCommit(false);
-         // forms.add(form);
-         // }
-         // healthCheckFormRepository.saveAll(forms);
-        */
+         * HealthCheckProgramEntity program =
+         * healthCheckProgramRepository.findById(programId)
+         * .orElseThrow(() -> new RuntimeException("Program not found"));
+         * List<HealthCheckFormEntity> existingForms =
+         * healthCheckFormRepository.findByHealthCheckProgram_Id(programId);
+         * for (HealthCheckFormEntity form : existingForms) {
+         * if (form.getStatus() == HealthCheckFormEntity.HealthCheckFormStatus.SENT) {
+         * throw new
+         * RuntimeException("Health check forms already created for this program");
+         * } else {
+         * form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.SENT);
+         * healthCheckFormRepository.save(form);
+         * }
+         * }
+         * // List<StudentEntity> students = studentRepository.findAllWithParent();
+         * // List<HealthCheckFormEntity> forms = new ArrayList<>();
+         * // for (StudentEntity student : students) {
+         * // HealthCheckFormEntity form = new HealthCheckFormEntity();
+         * // form.setHealthCheckProgram(program);
+         * // form.setStudent(student);
+         * // form.setParent(student.getParent());
+         * // form.setFormDate(LocalDate.now());
+         * // form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.SENT);
+         * // form.setCommit(false);
+         * // forms.add(form);
+         * // }
+         * // healthCheckFormRepository.saveAll(forms);
+         */
 
     }
 
     public void createFormsForVaccineProgram(int vaccineProgramId) {
         /*
-         VaccineProgramEntity program = vaccineProgramRepository.findById(vaccineProgramId)
-                 .orElseThrow(() -> new RuntimeException("Vaccine program not found"));
-         List<StudentEntity> students = studentRepository.findAllWithParent();
-         List<VaccineFormEntity> forms = new ArrayList<>();
-         List<VaccineFormEntity> existingForms = vaccineFormRepository.findByVaccineProgram_VaccineId(vaccineProgramId);
-         for (VaccineFormEntity form : existingForms) {
-             if (form.getStatus() == VaccineFormEntity.VaccineFormStatus.SENT) {
-                 throw new RuntimeException("Health check forms already created for this program");
-             } else {
-                 form.setStatus(VaccineFormEntity.VaccineFormStatus.SENT);
-                 vaccineFormRepository.save(form);
-             }
-         }
-        */
+         * VaccineProgramEntity program =
+         * vaccineProgramRepository.findById(vaccineProgramId)
+         * .orElseThrow(() -> new RuntimeException("Vaccine program not found"));
+         * List<StudentEntity> students = studentRepository.findAllWithParent();
+         * List<VaccineFormEntity> forms = new ArrayList<>();
+         * List<VaccineFormEntity> existingForms =
+         * vaccineFormRepository.findByVaccineProgram_VaccineId(vaccineProgramId);
+         * for (VaccineFormEntity form : existingForms) {
+         * if (form.getStatus() == VaccineFormEntity.VaccineFormStatus.SENT) {
+         * throw new
+         * RuntimeException("Health check forms already created for this program");
+         * } else {
+         * form.setStatus(VaccineFormEntity.VaccineFormStatus.SENT);
+         * vaccineFormRepository.save(form);
+         * }
+         * }
+         */
         // VaccineProgramEntity program =
         // vaccineProgramRepository.findById(vaccineProgramId)
         // .orElseThrow(() -> new RuntimeException("Vaccine program not found"));
@@ -1664,80 +1734,98 @@ public class NurseService {
             result.setNurse(nurse);
 
             healthCheckResultRepository.save(result);
+
+            StudentEntity student = form.getStudent();
+            Optional<MedicalRecordEntity> optionalRecord = medicalRecordsRepository.findByStudent(student);
+            MedicalRecordEntity record = optionalRecord.orElse(new MedicalRecordEntity());
+            record.setStudent(student);
+            record.setVision(request.getVision());
+            record.setHearing(request.getHearing());
+            record.setWeight(request.getWeight());
+            record.setHeight(request.getHeight());
+            record.setNote(request.getNote());
+            record.setLastUpdate(LocalDateTime.now());
+            record.setCreateBy(true);
+
+            medicalRecordsRepository.save(record);
         }
     }
 
     public List<HealthCheckResultDTO> createResultsByProgramId(int programId) {
         /*
-         logger.info("Creating health check results for program ID: {}", programId);
-         List<HealthCheckFormEntity> committedForms = healthCheckFormRepository.findCommittedFormsByProgramId(programId);
-         List<HealthCheckResultDTO> resultList = new ArrayList<>();
-         for (HealthCheckFormEntity form : committedForms) {
-             Optional<HealthCheckResultEntity> existingResult = healthCheckResultRepository
-                     .findByHealthCheckFormEntity(form);
-             if (existingResult.isPresent())
-                 continue;
-             HealthCheckResultEntity result = new HealthCheckResultEntity();
-             result.setHealthCheckFormEntity(form);
-             result.setDiagnosis("Không");
-             result.setLevel(HealthCheckResultEntity.Level.GOOD);
-             result.setVision("10/10");
-             result.setHearing("Bình thường");
-             result.setWeight(0.0);
-             result.setHeight(0.0);
-             result.setNote("Không");
-             HealthCheckResultEntity savedResult = healthCheckResultRepository.save(result);
-             StudentEntity student = form.getStudent();
-             Optional<MedicalRecordEntity> medicalRecordOpt = medicalRecordsRepository
-                     .findMedicalRecordByStudent_Id(student.getId());
-             if (medicalRecordOpt.isEmpty()) {
-                 MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
-                 medicalRecord.setStudent(student);
-                 medicalRecord.setVision(result.getVision());
-                 medicalRecord.setHearing(result.getHearing());
-                 medicalRecord.setWeight(result.getWeight());
-                 medicalRecord.setHeight(result.getHeight());
-                 medicalRecord.setNote(result.getNote());
-                 medicalRecord.setCreateBy((byte) 1);
-                 medicalRecord.setLastUpdate(LocalDateTime.now());
-                 medicalRecordsRepository.save(medicalRecord);
-             } else {
-                 MedicalRecordEntity medicalRecord = medicalRecordOpt.get();
-                 medicalRecord.setVision(savedResult.getVision());
-                 medicalRecord.setHearing(savedResult.getHearing());
-                 medicalRecord.setWeight(savedResult.getWeight());
-                 medicalRecord.setHeight(savedResult.getHeight());
-                 medicalRecord.setNote(savedResult.getNote());
-                 medicalRecord.setCreateBy((byte) 1);
-                 medicalRecord.setLastUpdate(LocalDateTime.now());
-                 medicalRecordsRepository.save(medicalRecord);
-             }
-             HealthCheckResultDTO dto = new HealthCheckResultDTO();
-             dto.setHealthResultId(savedResult.getHealthResultId());
-             dto.setDiagnosis(savedResult.getDiagnosis());
-             dto.setLevel(savedResult.getLevel().name());
-             dto.setNote(savedResult.getNote());
-             dto.setVision(savedResult.getVision());
-             dto.setHearing(savedResult.getHearing());
-             dto.setWeight(savedResult.getWeight());
-             dto.setHeight(savedResult.getHeight());
-             HealthCheckFormDTO formDTO = new HealthCheckFormDTO();
-             formDTO.setId(form.getId());
-             formDTO.setFormDate(form.getFormDate());
-             formDTO.setCommit(form.getCommit());
-             formDTO.setStatus(form.getStatus() != null ? form.getStatus().name() : null);
-             dto.setHealthCheckFormDTO(formDTO);
-             StudentDTO studentDTO = modelMapper.map(form.getStudent(), StudentDTO.class);
-             dto.setStudentDTO(studentDTO);
-             resultList.add(dto);
-         }
-         Optional<HealthCheckProgramEntity> programOpt = healthCheckProgramRepository.findById(programId);
-         programOpt.ifPresent(program -> {
-             program.setStatus(HealthCheckProgramStatus.COMPLETED);
-             healthCheckProgramRepository.save(program);
-         });
-         return resultList;
-        */
+         * logger.info("Creating health check results for program ID: {}", programId);
+         * List<HealthCheckFormEntity> committedForms =
+         * healthCheckFormRepository.findCommittedFormsByProgramId(programId);
+         * List<HealthCheckResultDTO> resultList = new ArrayList<>();
+         * for (HealthCheckFormEntity form : committedForms) {
+         * Optional<HealthCheckResultEntity> existingResult =
+         * healthCheckResultRepository
+         * .findByHealthCheckFormEntity(form);
+         * if (existingResult.isPresent())
+         * continue;
+         * HealthCheckResultEntity result = new HealthCheckResultEntity();
+         * result.setHealthCheckFormEntity(form);
+         * result.setDiagnosis("Không");
+         * result.setLevel(HealthCheckResultEntity.Level.GOOD);
+         * result.setVision("10/10");
+         * result.setHearing("Bình thường");
+         * result.setWeight(0.0);
+         * result.setHeight(0.0);
+         * result.setNote("Không");
+         * HealthCheckResultEntity savedResult =
+         * healthCheckResultRepository.save(result);
+         * StudentEntity student = form.getStudent();
+         * Optional<MedicalRecordEntity> medicalRecordOpt = medicalRecordsRepository
+         * .findMedicalRecordByStudent_Id(student.getId());
+         * if (medicalRecordOpt.isEmpty()) {
+         * MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
+         * medicalRecord.setStudent(student);
+         * medicalRecord.setVision(result.getVision());
+         * medicalRecord.setHearing(result.getHearing());
+         * medicalRecord.setWeight(result.getWeight());
+         * medicalRecord.setHeight(result.getHeight());
+         * medicalRecord.setNote(result.getNote());
+         * medicalRecord.setCreateBy((byte) 1);
+         * medicalRecord.setLastUpdate(LocalDateTime.now());
+         * medicalRecordsRepository.save(medicalRecord);
+         * } else {
+         * MedicalRecordEntity medicalRecord = medicalRecordOpt.get();
+         * medicalRecord.setVision(savedResult.getVision());
+         * medicalRecord.setHearing(savedResult.getHearing());
+         * medicalRecord.setWeight(savedResult.getWeight());
+         * medicalRecord.setHeight(savedResult.getHeight());
+         * medicalRecord.setNote(savedResult.getNote());
+         * medicalRecord.setCreateBy((byte) 1);
+         * medicalRecord.setLastUpdate(LocalDateTime.now());
+         * medicalRecordsRepository.save(medicalRecord);
+         * }
+         * HealthCheckResultDTO dto = new HealthCheckResultDTO();
+         * dto.setHealthResultId(savedResult.getHealthResultId());
+         * dto.setDiagnosis(savedResult.getDiagnosis());
+         * dto.setLevel(savedResult.getLevel().name());
+         * dto.setNote(savedResult.getNote());
+         * dto.setVision(savedResult.getVision());
+         * dto.setHearing(savedResult.getHearing());
+         * dto.setWeight(savedResult.getWeight());
+         * dto.setHeight(savedResult.getHeight());
+         * HealthCheckFormDTO formDTO = new HealthCheckFormDTO();
+         * formDTO.setId(form.getId());
+         * formDTO.setFormDate(form.getFormDate());
+         * formDTO.setCommit(form.getCommit());
+         * formDTO.setStatus(form.getStatus() != null ? form.getStatus().name() : null);
+         * dto.setHealthCheckFormDTO(formDTO);
+         * StudentDTO studentDTO = modelMapper.map(form.getStudent(), StudentDTO.class);
+         * dto.setStudentDTO(studentDTO);
+         * resultList.add(dto);
+         * }
+         * Optional<HealthCheckProgramEntity> programOpt =
+         * healthCheckProgramRepository.findById(programId);
+         * programOpt.ifPresent(program -> {
+         * program.setStatus(HealthCheckProgramStatus.COMPLETED);
+         * healthCheckProgramRepository.save(program);
+         * });
+         * return resultList;
+         */
 
         return null;
     }
@@ -1834,82 +1922,89 @@ public class NurseService {
 
         // }
         /*
-         logger.info("Creating vaccine results for program ID: {}", programId);
-         List<VaccineFormEntity> committedForms = vaccineFormRepository.findCommittedFormsByProgramId(programId);
-         List<VaccineResultDTO> resultList = new ArrayList<>();
-         for (VaccineFormEntity form : committedForms) {
-             Optional<VaccineResultEntity> existingResult = vaccineResultRepository.findByVaccineFormEntity(form);
-             if (existingResult.isPresent())
-                 continue;
-             VaccineResultEntity result = new VaccineResultEntity();
-             result.setVaccineFormEntity(form);
-             result.setStatusHealth("Tốt");
-             result.setResultNote("Không");
-             result.setReaction("Không");
-             result.setCreatedAt(LocalDateTime.now());
-             VaccineResultEntity savedResult = vaccineResultRepository.save(result);
-             VaccineResultDTO dto = new VaccineResultDTO();
-             dto.setVaccineResultId(savedResult.getVaccineResultId());
-             dto.setStatusHealth(savedResult.getStatusHealth());
-             dto.setResultNote(savedResult.getResultNote());
-             dto.setReaction(savedResult.getReaction());
-             dto.setCreatedAt(savedResult.getCreatedAt());
-             VaccineFormDTO formDTO = new VaccineFormDTO();
-             formDTO.setId(form.getId());
-             formDTO.setStudentId(form.getStudent() != null ? form.getStudent().getId() : null);
-             formDTO.setParentId(form.getParent() != null ? form.getParent().getUserId() : null);
-             formDTO.setFormDate(form.getFormDate());
-             formDTO.setNote(form.getNote());
-             formDTO.setCommit(form.getCommit());
-             formDTO.setStatus(form.getStatus() != null ? form.getStatus().name() : null);
-             if (form.getVaccineProgram() != null) {
-                 VaccineProgramDTO vaccineProgramDTO = modelMapper.map(form.getVaccineProgram(),
-                         VaccineProgramDTO.class);
-                 formDTO.setVaccineProgram(vaccineProgramDTO);
-             }
-             dto.setVaccineFormDTO(formDTO);
-             if (form.getStudent() != null) {
-                 StudentDTO studentDTO = modelMapper.map(form.getStudent(), StudentDTO.class);
-                 dto.setStudentDTO(studentDTO);
-             }
-             resultList.add(dto);
-             if (form.getVaccineProgram() != null && form.getVaccineProgram().getVaccineName() != null
-                     && form.getStudent() != null) {
-                 int studentId = form.getStudent().getId();
-                 Optional<MedicalRecordEntity> medicalRecordOpt = medicalRecordsRepository
-                         .findMedicalRecordByStudent_Id(studentId);
-                 if (medicalRecordOpt.isPresent()) {
-                     MedicalRecordEntity medicalRecord = medicalRecordOpt.get();
-                     VaccineHistoryEntity history = new VaccineHistoryEntity();
-                     history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
-                     history.setMedicalRecord(medicalRecord);
-                     // logger.info(medicalRecord.getRecordId() + " - " +
-                     // history.getVaccineNameEntity().getVaccineName());
-                     history.setNote(DEFAULT_VACCINE_HS_NOTE);
-                     history.setCreateBy((byte) 1);
-                     vaccineHistoryRepository.save(history);
-                 } else {
-                     MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
-                     medicalRecord.setStudent(form.getStudent());
-                     medicalRecord.setCreateBy((byte) 1);
-                     medicalRecord.setLastUpdate(LocalDateTime.now());
-                     medicalRecordsRepository.save(medicalRecord);
-                     VaccineHistoryEntity history = new VaccineHistoryEntity();
-                     history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
-                     history.setMedicalRecord(medicalRecord);
-                     history.setNote(DEFAULT_VACCINE_HS_NOTE);
-                     history.setCreateBy((byte) 1);
-                     vaccineHistoryRepository.save(history);
-                 }
-             }
-         }
-         Optional<VaccineProgramEntity> programOpt = vaccineProgramRepository.findById(programId);
-         programOpt.ifPresent(program -> {
-             program.setStatus(VaccineProgramStatus.COMPLETED);
-             vaccineProgramRepository.save(program);
-         });
-         return resultList;
-        */
+         * logger.info("Creating vaccine results for program ID: {}", programId);
+         * List<VaccineFormEntity> committedForms =
+         * vaccineFormRepository.findCommittedFormsByProgramId(programId);
+         * List<VaccineResultDTO> resultList = new ArrayList<>();
+         * for (VaccineFormEntity form : committedForms) {
+         * Optional<VaccineResultEntity> existingResult =
+         * vaccineResultRepository.findByVaccineFormEntity(form);
+         * if (existingResult.isPresent())
+         * continue;
+         * VaccineResultEntity result = new VaccineResultEntity();
+         * result.setVaccineFormEntity(form);
+         * result.setStatusHealth("Tốt");
+         * result.setResultNote("Không");
+         * result.setReaction("Không");
+         * result.setCreatedAt(LocalDateTime.now());
+         * VaccineResultEntity savedResult = vaccineResultRepository.save(result);
+         * VaccineResultDTO dto = new VaccineResultDTO();
+         * dto.setVaccineResultId(savedResult.getVaccineResultId());
+         * dto.setStatusHealth(savedResult.getStatusHealth());
+         * dto.setResultNote(savedResult.getResultNote());
+         * dto.setReaction(savedResult.getReaction());
+         * dto.setCreatedAt(savedResult.getCreatedAt());
+         * VaccineFormDTO formDTO = new VaccineFormDTO();
+         * formDTO.setId(form.getId());
+         * formDTO.setStudentId(form.getStudent() != null ? form.getStudent().getId() :
+         * null);
+         * formDTO.setParentId(form.getParent() != null ? form.getParent().getUserId() :
+         * null);
+         * formDTO.setFormDate(form.getFormDate());
+         * formDTO.setNote(form.getNote());
+         * formDTO.setCommit(form.getCommit());
+         * formDTO.setStatus(form.getStatus() != null ? form.getStatus().name() : null);
+         * if (form.getVaccineProgram() != null) {
+         * VaccineProgramDTO vaccineProgramDTO =
+         * modelMapper.map(form.getVaccineProgram(),
+         * VaccineProgramDTO.class);
+         * formDTO.setVaccineProgram(vaccineProgramDTO);
+         * }
+         * dto.setVaccineFormDTO(formDTO);
+         * if (form.getStudent() != null) {
+         * StudentDTO studentDTO = modelMapper.map(form.getStudent(), StudentDTO.class);
+         * dto.setStudentDTO(studentDTO);
+         * }
+         * resultList.add(dto);
+         * if (form.getVaccineProgram() != null &&
+         * form.getVaccineProgram().getVaccineName() != null
+         * && form.getStudent() != null) {
+         * int studentId = form.getStudent().getId();
+         * Optional<MedicalRecordEntity> medicalRecordOpt = medicalRecordsRepository
+         * .findMedicalRecordByStudent_Id(studentId);
+         * if (medicalRecordOpt.isPresent()) {
+         * MedicalRecordEntity medicalRecord = medicalRecordOpt.get();
+         * VaccineHistoryEntity history = new VaccineHistoryEntity();
+         * history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
+         * history.setMedicalRecord(medicalRecord);
+         * // logger.info(medicalRecord.getRecordId() + " - " +
+         * // history.getVaccineNameEntity().getVaccineName());
+         * history.setNote(DEFAULT_VACCINE_HS_NOTE);
+         * history.setCreateBy((byte) 1);
+         * vaccineHistoryRepository.save(history);
+         * } else {
+         * MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
+         * medicalRecord.setStudent(form.getStudent());
+         * medicalRecord.setCreateBy((byte) 1);
+         * medicalRecord.setLastUpdate(LocalDateTime.now());
+         * medicalRecordsRepository.save(medicalRecord);
+         * VaccineHistoryEntity history = new VaccineHistoryEntity();
+         * history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
+         * history.setMedicalRecord(medicalRecord);
+         * history.setNote(DEFAULT_VACCINE_HS_NOTE);
+         * history.setCreateBy((byte) 1);
+         * vaccineHistoryRepository.save(history);
+         * }
+         * }
+         * }
+         * Optional<VaccineProgramEntity> programOpt =
+         * vaccineProgramRepository.findById(programId);
+         * programOpt.ifPresent(program -> {
+         * program.setStatus(VaccineProgramStatus.COMPLETED);
+         * vaccineProgramRepository.save(program);
+         * });
+         * return resultList;
+         */
 
         // Optional<VaccineProgramEntity> programOpt =
         // vaccineProgramRepository.findById(programId);
