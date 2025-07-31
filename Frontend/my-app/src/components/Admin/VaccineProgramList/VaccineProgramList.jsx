@@ -97,7 +97,23 @@ const VaccineProgramList = () => {
           },
         }
       );
-      setPrograms(res.data);
+      // Chuẩn hóa dữ liệu để tương thích với render
+      const programs = res.data.map((item) => ({
+        vaccineId: item.vaccineProgramId,
+        vaccineName: item.vaccineNameDTO?.vaccineName || "",
+        description: item.description,
+        vaccineDate: item.startDate,
+        status: item.status,
+        note: item.vaccineFormDTOs?.[0]?.note || "",
+        nurse: item.nurseDTO,
+        manufacture: item.vaccineNameDTO?.manufacture || "",
+        totalUnit: item.vaccineNameDTO?.totalUnit || "",
+        location: item.location,
+        vaccineFormDTOs: item.vaccineFormDTOs || [],
+        participateClassDTOs: item.participateClassDTOs || [],
+        // Thêm các trường khác nếu cần
+      }));
+      setPrograms(programs);
     } catch (error) {
       setPrograms([]);
     }
@@ -182,29 +198,24 @@ const VaccineProgramList = () => {
     // eslint-disable-next-line
   }, [filteredPrograms]);
 
-  const handleCreate = async (values) => {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    try {
-      await axios.post(
-        "http://localhost:8080/api/admin/vaccine-program",
-        {
-          vaccineNameId: values.vaccineNameId,
-          description: values.description,
-          vaccineDate: values.vaccineDate.format("YYYY-MM-DD"),
-          note: values.note,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      message.success("Tạo chương trình tiêm chủng thành công!");
-      setCreateVisible(false);
-      fetchProgram();
-    } catch (error) {
-      message.error("Tạo chương trình tiêm chủng thất bại!");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleCreate = async (payload) => {
+  setLoading(true);
+  const token = localStorage.getItem("token");
+  try {
+    await axios.post(
+      "http://localhost:8080/api/admin/vaccine-program",
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    message.success("Tạo chương trình tiêm chủng thành công!");
+    setCreateVisible(false);
+    fetchProgram();
+  } catch (error) {
+    message.error("Tạo chương trình tiêm chủng thất bại!");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleUpdate = async (values) => {
     setLoading(true);
@@ -484,10 +495,12 @@ const VaccineProgramList = () => {
   );
 
   // Thêm biến lọc kết quả nurse theo tên chương trình:
-  const filteredNurseResults = nurseResults.filter((item) => {
-    const studentName = item?.studentDTO?.fullName || "";
-    return studentName.toLowerCase().includes(searchTermResult.toLowerCase());
-  });
+ const filteredNurseResults = Array.isArray(nurseResults)
+  ? nurseResults.filter((item) => {
+      const studentName = item?.studentDTO?.fullName || "";
+      return studentName.toLowerCase().includes(searchTermResult.toLowerCase());
+    })
+  : [];
 
   const handleNotifyVaccine = async (formId) => {
     const token = localStorage.getItem("token");
@@ -736,8 +749,8 @@ const VaccineProgramList = () => {
                           background: "#f6fcf7",
                           borderRadius: 10,
                           border: "1px solid #e6f4ea",
-                          width: "100%", // Sửa lại từ "calc(100vw - 260px)"
-                          minWidth: 0,   // Sửa lại từ 1200
+                          width: "100%",
+                          minWidth: 0,
                           margin: "0 auto",
                           transition: "width 0.2s",
                           marginBottom: 16,
@@ -759,14 +772,26 @@ const VaccineProgramList = () => {
                                 marginBottom: 4,
                               }}
                             >
-                              {program.vaccineName?.vaccineName ||
-                                program.vaccineName}
+                              {program.vaccineName}
                             </div>
                             <div style={{ color: "#555", marginBottom: 2 }}>
                               Mô tả: {program.description}
                             </div>
                             <div style={{ color: "#555", marginBottom: 8 }}>
                               Ngày tiêm: {program.vaccineDate}
+                            </div>
+                            <div style={{ color: "#555", marginBottom: 8 }}>
+                              Nhà sản xuất: {program.manufacture}
+                            </div>
+                            <div style={{ color: "#555", marginBottom: 8 }}>
+                              Địa điểm: {program.location}
+                            </div>
+                            <div style={{ color: "#555", marginBottom: 8 }}>
+                              Tổng số mũi: {program.totalUnit}
+                            </div>
+                            <div style={{ color: "#555", marginBottom: 8 }}>
+                              Người phụ trách: {program.nurse?.fullName} -
+                              {program.nurse?.phone}
                             </div>
                           </div>
                           {/* Nếu là ADMIN thì cho phép chỉnh trạng thái, nếu là NURSE thì chỉ hiển thị Tag */}

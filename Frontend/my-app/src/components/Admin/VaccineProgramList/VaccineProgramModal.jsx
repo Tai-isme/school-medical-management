@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, DatePicker, Button } from "antd";
 import dayjs from "dayjs";
+import axios from "axios";
 
 const vaccineOptions = [
   { value: 1, label: "Viêm gan B" },
@@ -16,24 +17,6 @@ const doseOptions = [
   { value: 5, label: "Mũi 5" },
 ];
 
-// Giả lập dữ liệu lớp
-const classOptions = [
-  { value: "1A", label: "Lớp 1A" },
-  { value: "1B", label: "Lớp 1B" },
-  { value: "2A", label: "Lớp 2A" },
-  { value: "2B", label: "Lớp 2B" },
-  { value: "3A", label: "Lớp 3A" },
-  { value: "3B", label: "Lớp 3B" },
-  { value: "4A", label: "Lớp 4A" },
-  { value: "4B", label: "Lớp 4B" },
-  { value: "5A", label: "Lớp 5A" },
-  { value: "5B", label: "Lớp 5B" },
-];
-const nurseOptions = [
-  { value: "nurse1", label: "Nguyễn Thị A" },
-  { value: "nurse2", label: "Trần Văn B" },
-];
-
 const VaccineProgramModal = ({
   open,
   onCancel,
@@ -43,6 +26,50 @@ const VaccineProgramModal = ({
 }) => {
   const [form] = Form.useForm();
   const [selectedClasses, setSelectedClasses] = React.useState(initialValues.classes || []);
+  const [nurseOptions, setNurseOptions] = useState([]);
+  const [classOptions, setClassOptions] = useState([]);
+
+  // Fetch nurse list from API
+  useEffect(() => {
+    const fetchNurses = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:8080/api/nurse/nurse-list", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setNurseOptions(
+          (res.data || []).map(nurse => ({
+            value: nurse.id,
+            label: nurse.fullName + (nurse.phone ? ` (${nurse.phone})` : ""),
+          }))
+        );
+      } catch (err) {
+        setNurseOptions([]);
+      }
+    };
+    fetchNurses();
+  }, []);
+
+  // Fetch class list from API
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:8080/api/nurse/class-list", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setClassOptions(
+          (res.data || []).map(cls => ({
+            value: cls.classId,
+            label: cls.className,
+          }))
+        );
+      } catch (err) {
+        setClassOptions([]);
+      }
+    };
+    fetchClasses();
+  }, []);
 
   // Đảm bảo đồng bộ khi mở modal chỉnh sửa
   React.useEffect(() => {
@@ -74,7 +101,21 @@ const VaccineProgramModal = ({
       <Form
         layout="vertical"
         form={form}
-        onFinish={onFinish}
+        onFinish={values => {
+          // Chuẩn hóa payload theo API yêu cầu
+          const payload = {
+            vaccineProgramName: values.programName,
+            vaccineNameId: values.vaccineType,
+            unit: values.dose,
+            description: values.description,
+            startDate: values.vaccineDate ? values.vaccineDate.format("YYYY-MM-DD") : null,
+            dateSendForm: values.sendFormDate ? values.sendFormDate.format("YYYY-MM-DD") : null,
+            location: values.location,
+            nurseId: values.nurse,
+            classIds: values.classes,
+          };
+          onFinish(payload); // Truyền payload chuẩn hóa lên component cha
+        }}
         initialValues={{
           ...initialValues,
           vaccineDate: initialValues.vaccineDate ? dayjs(initialValues.vaccineDate) : null,
