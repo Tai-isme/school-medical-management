@@ -16,7 +16,8 @@ public interface ParticipateClassRepository extends JpaRepository<ParticipateCla
     @Query("DELETE FROM ParticipateClassEntity p WHERE p.programId = :programId")
     void deleteByHealthCheckProgramId(@Param("programId") int programId);
 
-
     List<ParticipateClassEntity> findByProgramId(int programId);
+
+    List<ParticipateClassEntity> findByProgramIdAndType(int programId, ParticipateClassEntity.Type type);
 
 }

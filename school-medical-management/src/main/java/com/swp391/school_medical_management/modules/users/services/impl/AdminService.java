@@ -243,30 +243,41 @@ public class AdminService {
     public List<HealthCheckProgramDTO> getAllHealthCheckProgram(int adminId) {
         List<HealthCheckProgramEntity> healthCheckProgramEntityList = healthCheckProgramRepository.findAll();
 
-
         if (healthCheckProgramEntityList.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình kiểm tra sức khỏe");
         }
-
-
         List<HealthCheckProgramDTO> healthCheckProgramDTOList = healthCheckProgramEntityList.stream().map(entity -> {
             HealthCheckProgramDTO dto = modelMapper.map(entity, HealthCheckProgramDTO.class);
-
 
             dto.setAdminId(entity.getAdmin().getUserId());
             dto.setNurseId(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
             dto.setStatus(entity.getStatus().name());
 
-
             UserDTO adminDTO = modelMapper.map(entity.getAdmin(), UserDTO.class);
             dto.setAdminDTO(adminDTO);
-
 
             if (entity.getNurse() != null) {
                 UserDTO nurseDTO = modelMapper.map(entity.getNurse(), UserDTO.class);
                 dto.setNurseDTO(nurseDTO);
             }
 
+            List<ParticipateClassEntity> participateClassEntities = participateClassRepository.findByProgramIdAndType(entity.getId(), ParticipateClassEntity.Type.HEALTH_CHECK);
+
+            List<ParticipateClassDTO> participateClassDTOS = participateClassEntities.stream().map(participateClassEntity -> {
+                ParticipateClassDTO participateClassDTO = new ParticipateClassDTO();
+                participateClassDTO.setParticipate_id(participateClassEntity.getParticipateId());
+                participateClassDTO.setClass_id(participateClassEntity.getClazz().getClassId());
+                participateClassDTO.setProgram_id(participateClassEntity.getProgramId());
+                participateClassDTO.setType(participateClassEntity.getType().toString());
+
+                ClassDTO classDTO = modelMapper.map(participateClassEntity.getClazz(), ClassDTO.class);
+                classDTO.setStudents(null);
+
+                participateClassDTO.setClassDTO(classDTO);
+                return participateClassDTO;
+            }).collect(Collectors.toList());
+
+            dto.setParticipateClasses(participateClassDTOS);
 
             List<HealthCheckFormEntity> formEntities = healthCheckFormRepository.findAllByHealthCheckProgram_Id(entity.getId());
             List<HealthCheckFormDTO> formDTOs = formEntities.stream().map(form -> modelMapper.map(form, HealthCheckFormDTO.class)).collect(Collectors.toList());
@@ -525,7 +536,7 @@ public class AdminService {
             dto.setVaccineNameDTO(modelMapper.map(entity.getVaccineName(), VaccineNameDTO.class));
 
 
-            List<ParticipateClassEntity> participateClassEntities = participateClassRepository.findByProgramId(entity.getVaccineId());
+            List<ParticipateClassEntity> participateClassEntities = participateClassRepository.findByProgramIdAndType(entity.getVaccineId(), ParticipateClassEntity.Type.VACCINE);
 
             List<ParticipateClassDTO> participateClassDTOS = participateClassEntities.stream().map(participateClassEntity -> {
                 ParticipateClassDTO participateClassDTO = new ParticipateClassDTO();
