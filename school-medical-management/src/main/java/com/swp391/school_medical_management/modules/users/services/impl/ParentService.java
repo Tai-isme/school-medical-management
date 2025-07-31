@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -140,29 +137,44 @@ public class ParentService {
         medicalRecord.setCreateBy(false);
         medicalRecord.setNote(request.getNote());
         medicalRecord.setStudent(studentOpt.get());
-
-        for (VaccineHistoryRequest vaccineHistoryRequest : request.getVaccineHistories()) {
-            VaccineHistoryEntity exist = vaccineHistoryRepository.findByStudentAndVaccineNameEntity_vaccineNameId(medicalRecord.getStudent(), vaccineHistoryRequest.getVaccineNameId());
-            if (exist != null) {
-                exist.setNote(vaccineHistoryRequest.getNote());
-                vaccineHistoryRepository.save(exist);
-            } else {
-                VaccineHistoryEntity vaccineHistoryEntity = new VaccineHistoryEntity();
-                int vaccineNameId = vaccineHistoryRequest.getVaccineNameId();
-                VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(vaccineNameId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy vaccine!"));
-
-                vaccineHistoryEntity.setNote(vaccineHistoryRequest.getNote());
-                vaccineHistoryEntity.setCreateBy(false);
-                vaccineHistoryEntity.setUnit(vaccineHistoryRequest.getUnit());
-                vaccineHistoryEntity.setStudent(studentOpt.get());
-                vaccineHistoryEntity.setVaccineNameEntity(vaccineNameEntity);
-                vaccineHistoryRepository.save(vaccineHistoryEntity);
-            }
-        }
         medicalRecordsRepository.save(medicalRecord);
 
-        List<VaccineHistoryEntity> historyEntities = vaccineHistoryRepository.findByStudent(studentOpt.get());
-        List<VaccineHistoryDTO> historyDTOS = historyEntities.stream().map(vaccineHistory -> modelMapper.map(vaccineHistory, VaccineHistoryDTO.class)).collect(Collectors.toList());
+        List<VaccineHistoryEntity> vaccineHistoryEntities = vaccineHistoryRepository.findByStudent(studentOpt.get());
+        List<VaccineHistoryRequest> incomingVaccines = request.getVaccineHistories();
+        logger.info("incomingVaccines: " + incomingVaccines.size());
+
+        for (VaccineHistoryEntity existingVaccine : vaccineHistoryEntities) {
+            boolean stillExists = incomingVaccines.stream().anyMatch(req ->
+                    req.getVaccineNameId() == existingVaccine.getVaccineNameEntity().getVaccineNameId()
+                            && req.getUnit() == existingVaccine.getUnit()
+                            && Objects.equals(req.getNote(), existingVaccine.getNote())
+            );
+            if (!stillExists) {
+                vaccineHistoryRepository.delete(existingVaccine);
+            }
+        }
+        for (VaccineHistoryRequest vaccineReq : incomingVaccines) {
+            if (vaccineReq.getVaccineNameId() < 0) continue;
+
+            // Kiểm tra vaccine đã tồn tại y hệt chưa (cùng vaccineNameId, unit, note)
+            boolean alreadyExists = vaccineHistoryEntities.stream().anyMatch(db -> db.getVaccineNameEntity().getVaccineNameId() == vaccineReq.getVaccineNameId() && db.getUnit() == vaccineReq.getUnit() && Objects.equals(db.getNote(), vaccineReq.getNote()));
+
+            if (alreadyExists) continue; // Đã có rồi thì bỏ qua
+
+            // Nếu chưa có y hệt thì tạo mới bản ghi
+            VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(vaccineReq.getVaccineNameId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy vaccine!"));
+
+            VaccineHistoryEntity newVaccine = new VaccineHistoryEntity();
+            newVaccine.setVaccineNameEntity(vaccineNameEntity);
+            newVaccine.setUnit(vaccineReq.getUnit());
+            newVaccine.setNote(vaccineReq.getNote());
+            newVaccine.setCreateBy(false);
+            newVaccine.setStudent(studentOpt.get());
+            vaccineHistoryRepository.save(newVaccine);
+        }
+
+        List<VaccineHistoryEntity> updatedHistories = vaccineHistoryRepository.findByStudent(studentOpt.get());
+        List<VaccineHistoryDTO> historyDTOS = updatedHistories.stream().map(vaccineHistory -> modelMapper.map(vaccineHistory, VaccineHistoryDTO.class)).collect(Collectors.toList());
 
         MedicalRecordDTO medicalRecordDTO = modelMapper.map(medicalRecord, MedicalRecordDTO.class);
         medicalRecordDTO.setStudentDTO(studentDTO);
@@ -721,6 +733,28 @@ public class ParentService {
         }
 
         List<VaccineFormDTO> vaccineForms = getAllVaccineForm(parentId, studentId);
+
+        //Thien lay them VaccineUnitDTO cho VaccineFormDTO
+        for (VaccineFormDTO vaccineForm : vaccineForms) {
+            VaccineProgramDTO programDTO = vaccineForm.getVaccineProgramDTO();
+            if (programDTO != null) {
+                VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(programDTO.getVaccineId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy vaccine!"));
+                programDTO.setVaccineNameDTO(modelMapper.map(vaccineNameEntity, VaccineNameDTO.class));
+
+                VaccineNameDTO vaccineNameDTO = modelMapper.map(vaccineNameEntity, VaccineNameDTO.class);
+
+                List<VaccineUnitEntity> vaccineUnitEntities = vaccineUnitRepository.findByVaccineName_VaccineNameId(vaccineNameDTO.getId());
+                List<VaccineUnitDTO> vaccineUnitDTOS = vaccineUnitEntities.stream()
+                        .map(vaccineUnitEntity -> modelMapper.map(vaccineUnitEntity, VaccineUnitDTO.class))
+                        .collect(Collectors.toList());
+                vaccineNameDTO.setVaccineUnitDTOs(vaccineUnitDTOS);
+
+
+                programDTO.setVaccineNameDTO(vaccineNameDTO);
+            }
+        }
+
         if (!vaccineForms.isEmpty()) {
             allFormsByStudentDTO.setVaccineForms(vaccineForms);
         } else {
@@ -728,6 +762,7 @@ public class ParentService {
         }
         return allFormsByStudentDTO;
     }
+
 
     public HealthCheckResultDTO getHealthCheckResultByFormId(int formId) {
         // Optional<HealthCheckResultEntity> healthCheckResultOpt =

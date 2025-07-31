@@ -9,6 +9,8 @@ import com.swp391.school_medical_management.modules.users.repositories.projectio
 import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
 import com.swp391.school_medical_management.service.EmailService;
 import com.swp391.school_medical_management.service.PasswordService;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -90,6 +93,9 @@ public class AdminService {
 
     @Autowired
     private ParticipateClassRepository participateClassRepository;
+
+    @Autowired
+    private VaccineUnitRepository vaccineUnitRepository;
 
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, int adminId) {
         UserEntity admin = userRepository.findById(request.getAdminId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
@@ -717,109 +723,99 @@ public class AdminService {
 
     @Transactional
     public void importStudentFromExcel(MultipartFile file) {
-        // try (InputStream is = file.getInputStream(); Workbook workbook = new
-        // XSSFWorkbook(is)) {
-        // Sheet sheet = workbook.getSheetAt(0);
-        // DataFormatter formatter = new DataFormatter();
-        // int importedCount = 0;
+        try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            DataFormatter formatter = new DataFormatter();
+            int importedCount = 0;
 
-        // for (Row row : sheet) {
-        // int rowNum = row.getRowNum();
-        // if (rowNum == 0)
-        // continue;
-        // if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK)
-        // continue;
+            for (Row row : sheet) {
+                int rowNum = row.getRowNum();
+                if (rowNum == 0) continue;
+                if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK) continue;
 
-        // String studentName = row.getCell(0).getStringCellValue();
-        // LocalDate dob = row.getCell(1).getLocalDateTimeCellValue().toLocalDate();
-        // String gender = row.getCell(2).getStringCellValue();
-        // String relationship = row.getCell(3).getStringCellValue();
-        // String className = row.getCell(4).getStringCellValue();
-        // String teacherName = row.getCell(5).getStringCellValue();
-        // String parentName = row.getCell(6).getStringCellValue();
-        // String parentEmail = row.getCell(7).getStringCellValue();
-        // String parentPhone = formatter.formatCellValue(row.getCell(8));
-        // String parentAddress = row.getCell(9).getStringCellValue();
+                String studentName = row.getCell(0).getStringCellValue().trim();
+                LocalDate dob = row.getCell(1).getLocalDateTimeCellValue().toLocalDate();
+                String genderStr = row.getCell(2).getStringCellValue().trim().toUpperCase(); // MALE/FEMALE
+                StudentEntity.Gender gender = StudentEntity.Gender.valueOf(genderStr);
+                String className = row.getCell(3).getStringCellValue().trim();
+                String parentName = row.getCell(4).getStringCellValue().trim();
+                String relationship = row.getCell(5).getStringCellValue().trim();
+                String parentPhone = formatter.formatCellValue(row.getCell(6)).trim();
+                String parentEmail = row.getCell(7).getStringCellValue().trim();
+                String parentAddress = row.getCell(8).getStringCellValue().trim();
 
-        // Optional<ClassEntity> classOpt =
-        // classRepository.findByClassNameAndTeacherName(className, teacherName);
-        // ClassEntity classEntity = classOpt.orElseGet(() -> {
-        // ClassEntity newClass = new ClassEntity();
-        // newClass.setClassName(className);
-        // newClass.setTeacherName(teacherName);
-        // newClass.setQuantity(0);
-        // return classRepository.save(newClass);
-        // });
+                Optional<ClassEntity> classOpt = classRepository.findByClassName(className);
+                if (classOpt.isEmpty()) {
+                    throw new RuntimeException("Không tìm thấy lớp \"" + className + "\" tại dòng " + (rowNum + 1));
+                }
+                ClassEntity classEntity = classOpt.get();
 
-        // // kiểm tra trùng
-        // Optional<UserEntity> parentOpt =
-        // userRepository.findUserByEmailOrPhone(parentEmail, parentPhone);
-        // if (parentOpt.isPresent()) {
-        // UserEntity existing = parentOpt.get();
-        // if (existing.getEmail().equalsIgnoreCase(parentEmail)) {
-        // throw new RuntimeException("Email " + parentEmail + " đã bị trùng.");
-        // } else {
-        // throw new RuntimeException("Số điện thoại " + parentPhone + " đã bị trùng.");
-        // }
-        // }
+                UserEntity parent;
 
-        // UserEntity parent = new UserEntity();
-        // parent.setFullName(parentName);
-        // parent.setEmail(parentEmail);
-        // parent.setPhone(parentPhone);
-        // parent.setAddress(parentAddress);
-        // parent.setActive(true);
-        // parent.setRole(UserRole.PARENT);
-        // parent = userRepository.save(parent);
+                Optional<UserEntity> parentOpt = userRepository.findUserByEmailOrPhone(parentEmail, parentPhone);
+                if (parentOpt.isPresent()) {
+                    parent = parentOpt.get(); // Dùng lại phụ huynh cũ
+                } else {
+                    // Tạo mới phụ huynh
+                    parent = new UserEntity();
+                    parent.setFullName(parentName);
+                    parent.setEmail(parentEmail);
+                    parent.setPhone(parentPhone);
+                    parent.setAddress(parentAddress);
+                    parent.setRelationship(relationship);
+                    parent.setActive(true);
+                    parent.setRole(UserEntity.UserRole.PARENT);
+                    parent = userRepository.save(parent);
+                }
 
-        // StudentEntity student = new StudentEntity();
-        // student.setFullName(studentName);
-        // student.setDob(dob);
-        // student.setGender(gender);
-        // student.setRelationship(relationship);
-        // student.setClassEntity(classEntity);
-        // student.setParent(parent);
 
-        // studentRepository.save(student);
-        // importedCount++;
-        // }
+                // Tạo student
+                Optional<StudentEntity> existingStudentOpt = studentRepository.findByFullNameAndDobAndClassEntityAndParent(studentName, dob, classEntity, parent);
+                if (existingStudentOpt.isPresent()) {
+                    continue; // Bỏ qua học sinh đã tồn tại
+                }
+                StudentEntity student = new StudentEntity();
+                student.setFullName(studentName);
+                student.setDob(dob);
+                student.setGender(gender);
+                student.setClassEntity(classEntity);
+                student.setParent(parent);
+                studentRepository.save(student);
 
-        // if (importedCount == 0) {
-        // throw new RuntimeException("File không hợp lệ.");
-        // }
-        // } catch (Exception e) {
-        // throw new RuntimeException("Import thất bại: " + e.getMessage());
-        // }
+                importedCount++;
+            }
+
+            if (importedCount == 0) {
+                throw new RuntimeException("Không có dòng nào được thêm vào.");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Import thất bại: " + e.getMessage());
+        }
     }
 
+
     public long countStudents() {
-        // return studentRepository.count();
-        return 0;
+        return studentRepository.count();
     }
 
     public long countMedicalRecords() {
-        // return medicalRecordsRepository.count();
-        return 0;
+        return medicalRecordsRepository.count();
     }
 
     public long countVaccineProgram() {
-        // return vaccineProgramRepository
-        // .countByStatusIn(List.of(VaccineProgramStatus.NOT_STARTED,
-        // VaccineProgramStatus.ON_GOING));
-        return 0;
+        return vaccineProgramRepository
+                .countByStatusIn((List.of(VaccineProgramEntity.VaccineProgramStatus.NOT_STARTED,
+                        VaccineProgramEntity.VaccineProgramStatus.ON_GOING)));
     }
 
     public long countHealthCheckProgram() {
-        // return healthCheckProgramRepository
-        // .countByStatusIn(List.of(HealthCheckProgramStatus.NOT_STARTED,
-        // HealthCheckProgramStatus.ON_GOING));
-        return 0;
+        return healthCheckProgramRepository
+                .countByStatusIn((List.of(HealthCheckProgramEntity.HealthCheckProgramStatus.NOT_STARTED,
+                        HealthCheckProgramEntity.HealthCheckProgramStatus.ON_GOING)));
     }
 
     public long countProcessingMedicalRequest() {
-        // return
-        // medicalRequestRepository.countByStatusIn(List.of(MedicalRequestStatus.PROCESSING));
-        return 0;
+        return medicalRequestRepository.countByStatusIn((List.of(MedicalRequestEntity.MedicalRequestStatus.PROCESSING)));
     }
 
     // Thien
@@ -840,9 +836,7 @@ public class AdminService {
 
             row.put(type, count);
         }
-
         return new ArrayList<>(grouped.values());
-        // return null;
     }
 
     // Thien
@@ -850,8 +844,8 @@ public class AdminService {
         List<HealthCheckResultByProgramStatsRaw> rawList = vaccineResultRepository.getVaccineResultStatusStatsByProgram();
 
         return rawList.stream().map(row -> new HealthCheckResultStatsDTO(row.getProgramId(), row.getProgramName(), row.getStatusHealth(), row.getCount())).collect(Collectors.toList());
-        // return null;
     }
+
 
     public List<HealthCheckResultStatsDTO> getHealthCheckResultStatusStatsByProgram() {
         List<HealthCheckResultByProgramStatsRaw> rawList = healthCheckResultRepository.getHealthCheckResultStatusStatsByProgram();
@@ -863,6 +857,7 @@ public class AdminService {
 
 
     public ParticipationDTO getLatestParticipation() {
+        logger.info("getLatestParticipation");
         ParticipationDTO participationDTO = new ParticipationDTO();
         Optional<VaccineProgramEntity> lastestVaccineProgramOpt = vaccineProgramRepository.findTopByStatusOrderByStartDateDesc(VaccineProgramEntity.VaccineProgramStatus.COMPLETED);
         Optional<HealthCheckProgramEntity> latestHealthCheckProgramOpt = healthCheckProgramRepository.findTopByStatusOrderByStartDateDesc(HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED);
@@ -883,7 +878,6 @@ public class AdminService {
             participationDTO.setHealthCheck(new CommitedPercentDTO(latestHealthCheckProgram.getHealthCheckName(), healthCheck.getCommittedCount(), healthCheck.getTotalSent()));
         }
         return participationDTO;
-        // return null;
     }
 
     public VaccineFormStatsDTO getFormStatsByProgram(Long vaccineProgramId) {
@@ -897,7 +891,21 @@ public class AdminService {
     }
 
     public List<VaccineNameDTO> getAllVaccineNames() {
-        return vaccineNameRepository.findAll().stream().map(entity -> modelMapper.map(entity, VaccineNameDTO.class)).collect(Collectors.toList());
+        List<VaccineNameEntity> vaccineNameEntities = vaccineNameRepository.findAll();
+        List<VaccineNameDTO> vaccineNameDTOS = new ArrayList<>();
+        for (VaccineNameEntity entity : vaccineNameEntities) {
+            VaccineNameDTO vaccineNameDTO = modelMapper.map(entity, VaccineNameDTO.class);
+
+            List<VaccineUnitEntity> vaccineUnitEntities = vaccineUnitRepository.findByVaccineName_VaccineNameId(entity.getVaccineNameId());
+            List<VaccineUnitDTO> vaccineUnitDTOS = vaccineUnitEntities.stream().map(vaccineUnitEntity -> modelMapper.map(vaccineUnitEntity, VaccineUnitDTO.class)).collect(Collectors.toList());
+
+            UserDTO userDTO = modelMapper.map(entity.getUser(), UserDTO.class);
+
+            vaccineNameDTO.setVaccineUnitDTOs(vaccineUnitDTOS);
+            vaccineNameDTO.setUserDTO(userDTO);
+            vaccineNameDTOS.add(vaccineNameDTO);
+        }
+        return vaccineNameDTOS;
     }
 
     public VaccineNameDTO createVaccineName(VaccineNameRequest request) {

@@ -4,6 +4,7 @@ import com.swp391.school_medical_management.modules.users.entities.VaccineProgra
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEntity, Long> {
@@ -15,8 +16,6 @@ public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEn
     // List<VaccineProgramEntity> findAll();
 
     // List<VaccineProgramEntity> findByStatus(VaccineProgramStatus status);
-
-    // long countByStatusIn(List<VaccineProgramStatus> statuses);
 
     // Optional<VaccineProgramEntity> findTopByStatusOrderByVaccineDateDesc(VaccineProgramStatus status);
 
@@ -31,5 +30,7 @@ public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEn
 
     //Thien
     Optional<VaccineProgramEntity> findTopByStatusOrderByStartDateDesc(VaccineProgramStatus status);
+
+    long countByStatusIn(Collection<VaccineProgramStatus> statuses);
 
 }

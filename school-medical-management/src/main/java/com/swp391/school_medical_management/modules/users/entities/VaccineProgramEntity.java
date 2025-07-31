@@ -56,7 +56,7 @@ public class VaccineProgramEntity {
     public enum VaccineProgramStatus {
         NOT_STARTED,
         FORM_SENT,
-        ONGOING,
+        ON_GOING,
         GENERATED_RESULT,
         COMPLETED
     }
