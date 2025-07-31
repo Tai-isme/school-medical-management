@@ -3,20 +3,6 @@ import { Modal, Form, Input, Select, DatePicker, Button } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
 
-const vaccineOptions = [
-  { value: 1, label: "Viêm gan B" },
-  { value: 2, label: "Viêm gan A" },
-  { value: 3, label: "Sởi" },
-];
-
-const doseOptions = [
-  { value: 1, label: "Mũi 1" },
-  { value: 2, label: "Mũi 2" },
-  { value: 3, label: "Mũi 3" },
-  { value: 4, label: "Mũi 4" },
-  { value: 5, label: "Mũi 5" },
-];
-
 const VaccineProgramModal = ({
   open,
   onCancel,
@@ -28,6 +14,49 @@ const VaccineProgramModal = ({
   const [selectedClasses, setSelectedClasses] = React.useState(initialValues.classes || []);
   const [nurseOptions, setNurseOptions] = useState([]);
   const [classOptions, setClassOptions] = useState([]);
+  const [vaccineOptions, setVaccineOptions] = useState([]);
+  const [doseOptions, setDoseOptions] = useState([]);
+  const [vaccineData, setVaccineData] = useState([]);
+
+  // Fetch vaccine list from API
+  useEffect(() => {
+    const fetchVaccines = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:8080/api/admin/get=all-VaccineName", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setVaccineData(res.data || []);
+        setVaccineOptions(
+          (res.data || []).map(vac => ({
+            value: vac.id,
+            label: vac.vaccineName,
+          }))
+        );
+      } catch {
+        setVaccineOptions([]);
+        setVaccineData([]);
+      }
+    };
+    fetchVaccines();
+  }, []);
+
+  // Update dose options when vaccine changes
+  const handleVaccineChange = (vaccineId) => {
+    const selected = vaccineData.find(v => v.id === vaccineId);
+    if (selected && Array.isArray(selected.vaccineUnitDTOs)) {
+      setDoseOptions(
+        selected.vaccineUnitDTOs.map(unit => ({
+          value: unit.unit,
+          label: `Mũi ${unit.unit} (${unit.schedule})`,
+        }))
+      );
+    } else {
+      setDoseOptions([]);
+    }
+    // Reset dose field when vaccine changes
+    form.setFieldsValue({ dose: undefined });
+  };
 
   // Fetch nurse list from API
   useEffect(() => {
@@ -144,6 +173,7 @@ const VaccineProgramModal = ({
               options={vaccineOptions}
               showSearch
               optionFilterProp="label"
+              onChange={handleVaccineChange}
             />
           </Form.Item>
           <Form.Item
@@ -155,6 +185,7 @@ const VaccineProgramModal = ({
             <Select
               placeholder="Chọn mũi tiêm"
               options={doseOptions}
+              disabled={doseOptions.length === 0}
             />
           </Form.Item>
         </div>
