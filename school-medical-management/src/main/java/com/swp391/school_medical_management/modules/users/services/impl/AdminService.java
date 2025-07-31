@@ -623,15 +623,14 @@ public class AdminService {
 
 
     public List<UserDTO> getAllAccounts() {
-        // List<UserEntity> userEntities = userRepository.findAll();
-        // if (userEntities.isEmpty()) {
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No accounts found");
-        // }
-        // return userEntities.stream()
-        // .map(user -> modelMapper.map(user, UserDTO.class))
-        // .collect(Collectors.toList());
-        return null;
+        List<UserEntity> userEntities = userRepository.findAll();
+        if (userEntities.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản nào");
+        }
+        return userEntities.stream().map(user -> modelMapper.map(user, UserDTO.class)).collect(Collectors.toList());
+        // return null;
     }
+
 
     //Thien
     public UserDTO updateAccount(int userId, UpdateProfileRequest request) {
@@ -829,19 +828,13 @@ public class AdminService {
     }
 
     public List<HealthCheckResultStatsDTO> getHealthCheckResultStatusStatsByProgram() {
-        // List<HealthCheckResultByProgramStatsRaw> rawList =
-        // healthCheckResultRepository
-        // .getHealthCheckResultStatusStatsByProgram();
+        List<HealthCheckResultByProgramStatsRaw> rawList = healthCheckResultRepository.getHealthCheckResultStatusStatsByProgram();
 
-        // return rawList.stream()
-        // .map(row -> new HealthCheckResultStatsDTO(
-        // row.getProgramId(),
-        // row.getProgramName(),
-        // row.getStatusHealth(),
-        // row.getCount()))
-        // .collect(Collectors.toList());
-        return null;
+
+        return rawList.stream().map(row -> new HealthCheckResultStatsDTO(row.getProgramId(), row.getProgramName(), row.getStatusHealth(), row.getCount())).collect(Collectors.toList());
+        // return null;
     }
+
 
     public ParticipationDTO getLatestParticipation() {
         ParticipationDTO participationDTO = new ParticipationDTO();

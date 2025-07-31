@@ -2,18 +2,22 @@ package com.swp391.school_medical_management.modules.users.services.impl;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
-import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.*;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class NurseService {
@@ -93,28 +97,24 @@ public class NurseService {
     }
 
     public List<MedicalRequestDTO> getAllMedicalRequest() {
-        // List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findAll();
-        // if (medicalRequestEntityList.isEmpty()) {
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical requests found");
-        // }
-        // List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
-        // for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
-        //     StudentEntity studentEntity = medicalRequestEntity.getStudent();
-        //     StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
-        //     List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity
-        //             .getMedicalRequestDetailEntities();
-        //     List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
-        //             .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
-        //                     MedicalRequestDetailDTO.class))
-        //             .collect(Collectors.toList());
-        //     MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
-        //     medicalRequestDTO.setStudentDTO(studentDTO);
-        //     medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
-        //     medicalRequestDTOList.add(medicalRequestDTO);
-        // }
-        // return medicalRequestDTOList;
-        return null;
+        List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findAll();
+        if (medicalRequestEntityList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical requests found");
+        }
+        List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
+        for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
+            StudentEntity studentEntity = medicalRequestEntity.getStudent();
+            StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+            List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity.getMedicalRequestDetailEntities();
+            List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream().map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity, MedicalRequestDetailDTO.class)).collect(Collectors.toList());
+            MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+            medicalRequestDTO.setStudentDTO(studentDTO);
+            medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+            medicalRequestDTOList.add(medicalRequestDTO);
+        }
+        return medicalRequestDTOList;
     }
+
 
     public List<MedicalRequestDTO> getAllMedicalRequestByStatus(String statusStr) {
         // MedicalRequestStatus status;
@@ -165,37 +165,36 @@ public class NurseService {
     }
 
     public List<MedicalEventDTO> getMedicalEventsByStudent(int studentId) {
-        // Optional<StudentEntity> studentOpt = studentRepository.findStudentById(studentId);
-        // if (studentOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        Optional<StudentEntity> studentOpt = studentRepository.findById(studentId);
+        if (studentOpt.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
 
-        // StudentEntity studentEntity = studentOpt.get();
-        // UserEntity parent = studentEntity.getParent();
-        // List<MedicalEventEntity> medicalEventEntitieList = medicalEventRepository.findByStudent(studentEntity);
-        // if (medicalEventEntitieList.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found any medical event");
-        // List<MedicalEventDTO> medicalEventDTOList = medicalEventEntitieList.stream()
-        //         .map(event -> {
-        //             MedicalEventDTO dto = modelMapper.map(event, MedicalEventDTO.class);
 
-        //             if (event.getNurse() != null) {
-        //                 UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
-        //                 dto.setNurseDTO(nurseDTO);
-        //             }
-        //             if (event.getStudent() != null) {
-        //                 StudentDTO studentDTO = modelMapper.map(event.getStudent(), StudentDTO.class);
-        //                 dto.setStudentDTO(studentDTO);
-        //             }
-        //             if (parent != null) {
-        //                 UserDTO parentDTO = modelMapper.map(parent, UserDTO.class);
-        //                 dto.setParentDTO(parentDTO);
-        //             }
-        //             return dto;
-        //         })
-        //         .collect(Collectors.toList());
-        // return medicalEventDTOList;
-        return null;
+        StudentEntity studentEntity = studentOpt.get();
+        UserEntity parent = studentEntity.getParent();
+        List<MedicalEventEntity> medicalEventEntitieList = medicalEventRepository.findByStudent(studentEntity);
+        if (medicalEventEntitieList.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found any medical event");
+        List<MedicalEventDTO> medicalEventDTOList = medicalEventEntitieList.stream().map(event -> {
+            MedicalEventDTO dto = modelMapper.map(event, MedicalEventDTO.class);
+
+
+            if (event.getNurse() != null) {
+                UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
+                dto.setNurseDTO(nurseDTO);
+            }
+            if (event.getStudent() != null) {
+                StudentDTO studentDTO = modelMapper.map(event.getStudent(), StudentDTO.class);
+                dto.setStudentDTO(studentDTO);
+            }
+            if (parent != null) {
+                UserDTO parentDTO = modelMapper.map(parent, UserDTO.class);
+                dto.setParentDTO(parentDTO);
+            }
+            return dto;
+        }).collect(Collectors.toList());
+        return medicalEventDTOList;
     }
+
 
     public MedicalRequestDTO updateMedicalRequestStatus(int requestId, UpdateMedicalRequestStatus request) {
         // Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository
@@ -1051,42 +1050,49 @@ public class NurseService {
     }
 
     public List<ClassStudentDTO> getAllStudenttt() {
-        // List<ClassEntity> classList = classRepository.findAll();
+        List<ClassEntity> classList = classRepository.findAll();
 
-        // if (classList.isEmpty()) {
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No classes found");
-        // }
-        // List<ClassStudentDTO> classDTOList = new ArrayList<>();
-        // for (ClassEntity classEntity : classList) {
-        //     List<StudentEntity> students = studentRepository.findByClassEntity(classEntity);
 
-        //     List<StudentDTO> studentDTOs;
-        //     if (students.isEmpty()) {
-        //         studentDTOs = new ArrayList<>();
-        //     } else {
-        //         studentDTOs = students.stream().map(student -> {
-        //             StudentDTO dto = modelMapper.map(student, StudentDTO.class);
-        //             if (student.getClassEntity() != null) {
-        //                 ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
-        //                 dto.setClassDTO(classDTO);
-        //             }
-        //             if (student.getParent() != null) {
-        //                 UserDTO userDTO = modelMapper.map(student.getParent(), UserDTO.class);
-        //                 dto.setUserDTO(userDTO);
-        //             }
-        //             return dto;
-        //         }).collect(Collectors.toList());
-        //     }
+        if (classList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No classes found");
+        }
+        List<ClassStudentDTO> classDTOList = new ArrayList<>();
+        for (ClassEntity classEntity : classList) {
+            List<StudentEntity> students = studentRepository.findByClassEntity(classEntity);
 
-        //     ClassStudentDTO classDTO = modelMapper.map(classEntity, ClassStudentDTO.class);
-        //     classDTO.setStudents(studentDTOs);
 
-        //     classDTOList.add(classDTO);
-        // }
+            List<StudentDTO> studentDTOs;
+            if (students.isEmpty()) {
+                studentDTOs = new ArrayList<>();
+            } else {
+                studentDTOs = students.stream().map(student -> {
+                    StudentDTO dto = modelMapper.map(student, StudentDTO.class);
+                    if (student.getClassEntity() != null) {
+                        ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
+                        dto.setClassDTO(classDTO);
+                    }
+                    if (student.getParent() != null) {
+                        UserDTO userDTO = modelMapper.map(student.getParent(), UserDTO.class);
+                        dto.setParentDTO(userDTO);
+                    }
+                    return dto;
+                }).collect(Collectors.toList());
+            }
 
-        // return classDTOList;
-        return null;
+
+            ClassStudentDTO classDTO = modelMapper.map(classEntity, ClassStudentDTO.class);
+            classDTO.setStudents(studentDTOs);
+
+
+            classDTOList.add(classDTO);
+        }
+
+
+        return classDTOList;
+
+
     }
+
 
     private String toSlug(String title) {
         // return title.toLowerCase()
