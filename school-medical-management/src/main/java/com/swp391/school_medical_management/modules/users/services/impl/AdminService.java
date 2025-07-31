@@ -751,7 +751,6 @@ public class AdminService {
                 ClassEntity classEntity = classOpt.get();
 
                 UserEntity parent;
-
                 Optional<UserEntity> parentOpt = userRepository.findUserByEmailOrPhone(parentEmail, parentPhone);
                 if (parentOpt.isPresent()) {
                     parent = parentOpt.get(); // Dùng lại phụ huynh cũ
