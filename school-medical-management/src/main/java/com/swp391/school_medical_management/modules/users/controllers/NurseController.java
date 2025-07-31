@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -354,6 +355,14 @@ public class NurseController {
     public ResponseEntity<List<VaccineResultDTO>> createVaccineResultsByProgramId(@PathVariable int programId) {
         List<VaccineResultDTO> createdResults = nurseService.createVaccineResultsByProgramId(programId);
         return ResponseEntity.ok(createdResults);
+    }
+
+    //Thien
+    @PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
+    @GetMapping("/class-list")
+    public ResponseEntity<List<ClassDTO>> getAllClasses() {
+        List<ClassDTO> classList = nurseService.getAllClasses();
+        return ResponseEntity.ok(classList);
     }
 
 }

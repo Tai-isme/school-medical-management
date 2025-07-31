@@ -1512,4 +1512,21 @@ public class NurseService {
         return null;
     }
 
+    //Thien
+    public List<ClassDTO> getAllClasses() {
+        List<ClassEntity> classEntities = classRepository.findAll();
+        if (classEntities.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có lớp học nào được tìm thấy");
+        }
+
+        List<ClassDTO> classDTOs = classEntities.stream()
+                .map(classEntity -> modelMapper.map(classEntity, ClassDTO.class))
+                .collect(Collectors.toList());
+
+        for (ClassDTO classDTO : classDTOs) {
+            classDTO.setStudents(null);
+        }
+        return classDTOs;
+    }
+
 }
