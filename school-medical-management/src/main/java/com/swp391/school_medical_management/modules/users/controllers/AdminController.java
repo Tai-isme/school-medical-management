@@ -1,45 +1,25 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import java.util.List;
-import java.util.Map;
-
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.services.impl.AdminService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.BlacklistTokenRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineNameRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ParticipationDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormStatsDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
-import com.swp391.school_medical_management.modules.users.services.impl.AdminService;
-
-import jakarta.validation.Valid;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 @Validated
 @RestController
@@ -123,7 +103,7 @@ public class AdminController {
     @PostMapping("/vaccine-program")
     public ResponseEntity<VaccineProgramDTO> createVaccineProgram(@RequestBody VaccineProgramRequest request) {
         String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        VaccineProgramDTO vaccineProgramDTO = adminService.createVaccineProgram(request, Long.parseLong(adminId));
+        VaccineProgramDTO vaccineProgramDTO = adminService.createVaccineProgram(request, Integer.parseInt(adminId));
         return ResponseEntity.status(HttpStatus.CREATED).body(vaccineProgramDTO);
     }
 
@@ -247,5 +227,18 @@ public class AdminController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/export-vaccine-result-excel-by-vaccine-program/{vaccineProgramId}")
+    public ResponseEntity<InputStreamResource> exportExcel(@PathVariable int vaccineProgramId) throws IOException {
+        ByteArrayInputStream in = adminService.exportVaccineResultToExcel(vaccineProgramId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=vaccine_report.xlsx");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+                .body(new InputStreamResource(in));
     }
 }
