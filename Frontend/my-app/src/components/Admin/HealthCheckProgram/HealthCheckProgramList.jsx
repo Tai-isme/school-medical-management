@@ -54,8 +54,8 @@ const HealthCheckProgramList = () => {
   const pageSize = 3; // Số chương trình mỗi trang
   const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
   const [isViewResult, setIsViewResult] = useState(false);
-  // const [nurseOptions, setNurseOptions] = useState([]);
-  // const [classOptions, setClassOptions] = useState([]);
+  const [nurseOptions, setNurseOptions] = useState([]);
+  const [classOptions, setClassOptions] = useState([]);
 
   useEffect(() => {
     fetchProgram();
@@ -68,54 +68,65 @@ const HealthCheckProgramList = () => {
     }
   }, [programs]);
 
-  useEffect(() => {
-    setEditableResults(healthCheckResults);
-  }, [healthCheckResults]);
-
-  const [nurseOptions, setNurseOptions] = useState([
-    { value: 1, label: "Nguyễn Thị A" },
-    { value: 2, label: "Trần Văn B" },
-  ]);
-  const [classOptions, setClassOptions] = useState([
-    { value: 101, label: "1A1" },
-    { value: 102, label: "1A2" },
-    { value: 201, label: "2B1" },
-  ]);
-
   // useEffect(() => {
-  //   // Fetch y tá
-  //   const fetchNurses = async () => {
-  //     const token = localStorage.getItem("token");
-  //     try {
-  //       const res = await axios.get("http://localhost:8080/api/nurse/list", {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       });
-  //       setNurseOptions(
-  //         res.data.map((nurse) => ({
-  //           value: nurse.id,
-  //           label: nurse.fullName,
-  //         }))
-  //       );
-  //     } catch {}
-  //   };
-  //   // Fetch lớp
-  //   const fetchClasses = async () => {
-  //     const token = localStorage.getItem("token");
-  //     try {
-  //       const res = await axios.get("http://localhost:8080/api/class/list", {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       });
-  //       setClassOptions(
-  //         res.data.map((cls) => ({
-  //           value: cls.id,
-  //           label: cls.name,
-  //         }))
-  //       );
-  //     } catch {}
-  //   };
-  //   fetchNurses();
-  //   fetchClasses();
-  // }, []);
+  //   setEditableResults(healthCheckResults);
+  // }, [healthCheckResults]);
+
+  // const [nurseOptions, setNurseOptions] = useState([
+  //   { value: 1, label: "Nguyễn Thị A" },
+  //   { value: 2, label: "Trần Văn B" },
+  // ]);
+  // const [classOptions, setClassOptions] = useState([
+  //   { value: 101, label: "1A1" },
+  //   { value: 102, label: "1A2" },
+  //   { value: 201, label: "2B1" },
+  // ]);
+
+  useEffect(() => {
+    // Fetch y tá
+    const fetchNurses = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await axios.get(
+          "http://localhost:8080/api/nurse/nurse-list",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setNurseOptions(
+          res.data
+            .filter((nurse) => nurse.role === "NURSE") // Lọc đúng role
+            .map((nurse) => ({
+              value: nurse.id,
+              label: nurse.fullName,
+            }))
+        );
+      } catch {}
+    };
+    // Fetch lớp
+    const fetchClasses = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await axios.get(
+          "http://localhost:8080/api/nurse/class-list",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        console.log(res.data);
+        setClassOptions(
+          res.data.map((cls) => ({
+            value: cls.classId, // đúng với backend
+            label: cls.className, // đúng với backend
+          }))
+        );
+      } catch (err) {
+        setClassOptions([]);
+      }
+    };
+    fetchNurses();
+    fetchClasses();
+  }, []);
 
   const fetchProgram = async () => {
     const token = localStorage.getItem("token");
@@ -128,7 +139,7 @@ const HealthCheckProgramList = () => {
           },
         }
       );
-      setPrograms(res.data);
+      setPrograms(res.data); // Dữ liệu đã đúng cấu trúc mới
     } catch (error) {
       setPrograms([]);
     }
@@ -255,18 +266,21 @@ const HealthCheckProgramList = () => {
   const handleCreate = async (values) => {
     setLoading(true);
     const token = localStorage.getItem("token");
+    const admin = JSON.parse(localStorage.getItem("users"));
+    const adminId = admin?.id;
     try {
       await axios.post(
         "http://localhost:8080/api/admin/health-check-program",
         {
-          healthCheckName: values.name,
+          healthCheckName: values.healthCheckName,
           description: values.description,
           startDate: values.startDate.format("YYYY-MM-DD"),
-          endDate: values.endDate ? values.endDate.format("YYYY-MM-DD") : null,
           dateSendForm: values.dateSendForm.format("YYYY-MM-DD"),
           location: values.location,
-          nurseID: values.nurseID,
+          nurseId: values.nurseId,
+          adminId: adminId, // Sửa lại dòng này
           classIds: values.classIds,
+          status: "NOT_STARTED",
         },
         {
           headers: {
@@ -274,7 +288,13 @@ const HealthCheckProgramList = () => {
           },
         }
       );
-      message.success("Tạo chương trình sức khỏe thành công!");
+await Swal.fire({
+  icon: "success",
+  title: "Thành công!",
+  text: "Tạo chương trình sức khỏe thành công!",
+  showConfirmButton: false,
+  timer: 1500,
+});
       setCreateVisible(false);
       fetchProgram();
     } catch (error) {
@@ -329,48 +349,57 @@ const HealthCheckProgramList = () => {
     );
   };
 
-  const handleUpdate = async (values) => {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    try {
-      await axios.put(
-        `http://localhost:8080/api/admin/health-check-program/${program.id}`,
-        {
-          healthCheckName: values.name,
-          description: values.description,
-          startDate: values.startDate.format("YYYY-MM-DD"),
-          endDate: values.endDate ? values.endDate.format("YYYY-MM-DD") : null,
-          dateSendForm: values.dateSendForm.format("YYYY-MM-DD"),
-          location: values.location,
-          nurseID: values.nurseID,
-          classIds: values.classIds,
+const handleUpdate = async (values) => {
+  setLoading(true);
+  const token = localStorage.getItem("token");
+  const admin = JSON.parse(localStorage.getItem("users"));
+  const adminId = admin?.id; // Thêm dòng này
+  try {
+    await axios.put(
+      `http://localhost:8080/api/admin/health-check-program/${program.id}`,
+      {
+        healthCheckName: values.healthCheckName,
+        description: values.description,
+        startDate: values.startDate.format("YYYY-MM-DD"),
+        dateSendForm: values.dateSendForm.format("YYYY-MM-DD"),
+        location: values.location,
+        nurseId: values.nurseId,
+        adminId: adminId, // Sửa lại dòng này
+        classIds: values.classIds,
+        status: "NOT_STARTED"
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      message.success("Cập nhật chương trình thành công!");
-      setCreateVisible(false);
-      setEditMode(false);
-      fetchProgram();
-    } catch (error) {
-      if (error.response && error.response.status === 400) {
-        const errorMessage = error.response.data.message || "Đã xảy ra lỗi!";
-        Swal.fire({
-          icon: "error",
-          title: "Lỗi!",
-          text: errorMessage,
-          confirmButtonColor: "#3085d6",
-        });
-      } else {
-        message.error("Cập nhật chương trình thất bại!");
       }
-    } finally {
-      setLoading(false);
+    );
+    await Swal.fire({
+      icon: "success",
+      title: "Thành công!",
+      text: "Cập nhật chương trình thành công!",
+      showConfirmButton: false,
+      timer: 1500,
+    });
+    setCreateVisible(false);
+    setEditMode(false);
+    fetchProgram();
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      const errorMessage = error.response.data.message || "Đã xảy ra lỗi!";
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: errorMessage,
+        confirmButtonColor: "#3085d6",
+      });
+    } else {
+      message.error("Cập nhật chương trình thất bại!");
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDelete = async (programId) => {
     const result = await Swal.fire({
@@ -455,11 +484,11 @@ const HealthCheckProgramList = () => {
 
   // Lọc danh sách theo tên chương trình và ngày tiêm
   const filteredPrograms = programs.filter((program) => {
-    const matchName = program.name
+    const matchName = program.healthCheckName
       ?.toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchDate = filterDate
-      ? dayjs(program.startDate).isSame(filterDate, "day") // Sửa ở đây
+      ? dayjs(program.startDate).isSame(filterDate, "day")
       : true;
     const matchStatus = filterStatus ? program.status === filterStatus : true;
     return matchName && matchDate && matchStatus;
@@ -610,35 +639,89 @@ const HealthCheckProgramList = () => {
                     }}
                     bodyStyle={{ padding: 24 }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                      }}
+                    >
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            fontSize: 18,
+                            marginBottom: 4,
+                          }}
+                        >
                           {program.healthCheckName}
                         </div>
                         <div style={{ color: "#555", marginBottom: 2 }}>
                           Mô tả: {program.description}
                         </div>
                         <div style={{ color: "#555", marginBottom: 2 }}>
-                          Ngày gửi biểu mẫu: {program.dateSendForm}
-                        </div>
-                        <div style={{ color: "#555", marginBottom: 8 }}>
                           Ngày bắt đầu: {program.startDate}
                         </div>
-                        <div style={{ color: "#555", marginBottom: 8 }}>
-                          Y tá phụ trách: {program.nurseDTO?.fullName}
-                        </div>
-                        <div style={{ color: "#555", marginBottom: 8 }}>
+                        {/* <div style={{ color: "#555", marginBottom: 2 }}>
+                          Ngày gửi biểu mẫu: {program.dateSendForm}
+                        </div> */}
+                        <div style={{ color: "#555", marginBottom: 2 }}>
                           Địa điểm: {program.location}
                         </div>
+                        <div style={{ color: "#555", marginBottom: 2 }}>
+                          Y tá phụ trách: {program.nurseDTO?.fullName}
+                        </div>
+                        <div style={{ color: "#555", marginBottom: 2 }}>
+                          Lớp tham gia:&nbsp;
+                          {program.participateClasses &&
+                          program.participateClasses.length > 0
+                            ? program.participateClasses
+                                .map((p) =>
+                                  p.classDTO?.className
+                                    ? `${p.classDTO.className} (GV: ${
+                                        p.classDTO.teacherName || "-"
+                                      }, Sĩ số: ${p.classDTO.quantity || "-"})`
+                                    : ""
+                                )
+                                .filter(Boolean)
+                                .join(", ")
+                            : "-"}
+                        </div>
+                        {/* <div style={{ color: "#555", marginBottom: 2 }}>
+                          Admin tạo: {program.adminDTO?.fullName} (ID:{" "}
+                          {program.adminDTO?.id})
+                        </div> */}
+                        {/* <div style={{ color: "#555", marginBottom: 2 }}>
+                          Trạng thái: {getStatusText(program.status)}
+                        </div> */}
+                        <div style={{ color: "#555", marginBottom: 2 }}>
+                          Ghi chú: {program.note || "-"}
+                        </div>
                       </div>
-                      <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
+                      <Tag
+                        color={getStatusColor(program.status)}
+                        style={{ fontSize: 14, marginTop: 4 }}
+                      >
                         {getStatusText(program.status)}
                       </Tag>
                     </div>
                     <Row gutter={32} style={{ margin: "24px 0" }}>
                       <Col span={12}>
-                        <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
-                          <div style={{ color: "#1890ff", fontWeight: 700, fontSize: 32 }}>
+                        <div
+                          style={{
+                            background: "#fff",
+                            borderRadius: 8,
+                            padding: 16,
+                            textAlign: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              color: "#1890ff",
+                              fontWeight: 700,
+                              fontSize: 32,
+                            }}
+                          >
                             {program.healthCheckFormDTOs?.length ?? 0}
                           </div>
                           <div style={{ color: "#888", fontWeight: 500 }}>
@@ -647,9 +730,24 @@ const HealthCheckProgramList = () => {
                         </div>
                       </Col>
                       <Col span={12}>
-                        <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
-                          <div style={{ color: "#21ba45", fontWeight: 700, fontSize: 32 }}>
-                            {program.healthCheckFormDTOs?.filter(f => f.commit)?.length ?? 0}
+                        <div
+                          style={{
+                            background: "#fff",
+                            borderRadius: 8,
+                            padding: 16,
+                            textAlign: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              color: "#21ba45",
+                              fontWeight: 700,
+                              fontSize: 32,
+                            }}
+                          >
+                            {program.healthCheckFormDTOs?.filter(
+                              (f) => f.commit
+                            )?.length ?? 0}
                           </div>
                           <div style={{ color: "#888", fontWeight: 500 }}>
                             Đã xác nhận tham gia
@@ -826,7 +924,7 @@ const HealthCheckProgramList = () => {
                   />
                 </div>
                 <Modal
-                  title="Chi tiết chương trình tiêm chủng"
+                  title="Chi tiết chương trình khám sức khỏe"
                   open={detailVisible}
                   onCancel={() => setDetailVisible(false)}
                   footer={[
@@ -841,7 +939,7 @@ const HealthCheckProgramList = () => {
                         {program.id}
                       </Descriptions.Item>
                       <Descriptions.Item label="Tên chương trình">
-                        {program.name}
+                        {program.healthCheckName}
                       </Descriptions.Item>
                       <Descriptions.Item label="Mô tả">
                         {program.description}
@@ -849,6 +947,13 @@ const HealthCheckProgramList = () => {
                       <Descriptions.Item label="Ngày bắt đầu">
                         {program.startDate}
                       </Descriptions.Item>
+                      <Descriptions.Item label="Ngày gửi biểu mẫu">
+                        {program.dateSendForm}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Địa điểm">
+                        {program.location}
+                      </Descriptions.Item>
+
                       <Descriptions.Item label="Trạng thái">
                         <Tag
                           color={getStatusColor(program.status)}
@@ -856,6 +961,48 @@ const HealthCheckProgramList = () => {
                         >
                           {getStatusText(program.status)}
                         </Tag>
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Y tá phụ trách">
+                        {program.nurseDTO?.fullName} (ID: {program.nurseDTO?.id}
+                        )
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Admin tạo">
+                        {program.adminDTO?.fullName} (ID: {program.adminDTO?.id}
+                        )
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Lớp tham gia">
+                        {program.participateClasses &&
+                        program.participateClasses.length > 0
+                          ? program.participateClasses
+                              .map((p) =>
+                                p.classDTO?.className
+                                  ? `${p.classDTO.className} (GV: ${
+                                      p.classDTO.teacherName || "-"
+                                    }, Sĩ số: ${p.classDTO.quantity || "-"})`
+                                  : ""
+                              )
+                              .filter(Boolean)
+                              .join(", ")
+                          : "-"}
+                      </Descriptions.Item>
+                      {/* <Descriptions.Item label="Danh sách biểu mẫu">
+                        {program.healthCheckFormDTOs &&
+                        program.healthCheckFormDTOs.length > 0
+                          ? program.healthCheckFormDTOs.map((form, idx) => (
+                              <div key={form.id} style={{ marginBottom: 8 }}>
+                                <b>Form ID:</b> {form.id} | <b>Student ID:</b>{" "}
+                                {form.studentId} | <b>Parent ID:</b>{" "}
+                                {form.parentId} | <b>Nurse ID:</b>{" "}
+                                {form.nurseId} | <b>Ngày hết hạn:</b>{" "}
+                                {form.expDate} | <b>Ghi chú:</b> {form.notes} |{" "}
+                                <b>Đã xác nhận:</b>{" "}
+                                {form.commit ? "Có" : "Không"}
+                              </div>
+                            ))
+                          : "Không có"}
+                      </Descriptions.Item> */}
+                      <Descriptions.Item label="Ghi chú">
+                        {program.note || "-"}
                       </Descriptions.Item>
                     </Descriptions>
                   )}
