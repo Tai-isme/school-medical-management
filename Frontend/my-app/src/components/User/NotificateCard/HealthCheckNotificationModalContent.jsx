@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Checkbox, Input, Modal } from 'antd';
+import { Button, Checkbox, Input, Modal, Alert, Descriptions, Typography, Divider } from 'antd';
 import HealthCheckConfirmContentModal from './HealthCheckConfirmContentModal';
+
+const { Text } = Typography;
 
 const HealthCheckNotificationModalContent = ({
   notification,
@@ -29,22 +31,38 @@ const HealthCheckNotificationModalContent = ({
   }, [notification]);
 
   return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <p>
-          <b>Chương trình:</b> {notification.healthCheckProgram?.healthCheckName || notification.healthCheckProgramDTO?.healthCheckName || "--"}
-        </p>
-        <p>
-          <b>Mô tả:</b> {notification.healthCheckProgram?.description || notification.healthCheckProgramDTO?.description || "--"}
-        </p>
-        <p>
-          <b>Thời gian:</b> {notification.healthCheckProgram?.startDate || notification.healthCheckProgramDTO?.startDate || "--"}
-        </p>
-        <p>
-          <b>Địa điểm:</b> {notification.healthCheckProgram?.location || notification.healthCheckProgramDTO?.location || "--"}
-        </p>
-        <p>
-          <b>Người phụ trách:</b> {notification.healthCheckProgram?.nurseDTO?.fullName || notification.healthCheckProgramDTO?.nurseDTO?.fullName || "--"}
+    <div style={{ padding: 12 }}>
+      <Alert
+        message={
+          <span>
+            <b>Lưu ý:</b> Quý phụ huynh không đăng ký (<b>{notification.healthCheckProgram?.healthCheckName || notification.healthCheckProgramDTO?.healthCheckName || "--"}</b>) cho con vui lòng bỏ qua khảo sát này.
+          </span>
+        }
+        type="info"
+        showIcon
+        style={{ marginBottom: 16 }}
+      />
+      <Descriptions
+        bordered
+        column={1}
+        size="small"
+        style={{ marginBottom: 16, background: '#fafcff', borderRadius: 8, padding: 8 }}
+        labelStyle={{ width: 180, fontWeight: 500 }}
+      >
+        <Descriptions.Item label="Chương trình">
+          {notification.healthCheckProgram?.healthCheckName || notification.healthCheckProgramDTO?.healthCheckName || "--"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Mô tả">
+          {notification.healthCheckProgram?.description || notification.healthCheckProgramDTO?.description || "--"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Thời gian">
+          {notification.healthCheckProgram?.startDate || notification.healthCheckProgramDTO?.startDate || "--"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Địa điểm">
+          {notification.healthCheckProgram?.location || notification.healthCheckProgramDTO?.location || "--"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Người phụ trách">
+          {notification.healthCheckProgram?.nurseDTO?.fullName || notification.healthCheckProgramDTO?.nurseDTO?.fullName || "--"}
           {(() => {
             const nurse =
               notification.healthCheckProgram?.nurseDTO ||
@@ -65,21 +83,44 @@ const HealthCheckNotificationModalContent = ({
             }
             return null;
           })()}
-        </p>
-      </div>
+        </Descriptions.Item>
+        <Descriptions.Item label="Ghi chú của phụ huynh">
+          <Text type="secondary">{notification.note || "Không có"}</Text>
+        </Descriptions.Item>
+      </Descriptions>
+      <Divider />
       <Checkbox
         checked={checked}
         onChange={e => setChecked(e.target.checked)}
         disabled={disabled}
-        style={{ marginBottom: 8 }}
+        style={{
+          marginBottom: 8,
+          display: 'block',
+          whiteSpace: 'normal',
+          maxWidth: 320,
+          lineHeight: 1.6,
+          fontSize: 15,
+        }}
       >
-        Tôi đã đọc kỹ <a href="#" onClick={e => { e.preventDefault(); setConfirmModalOpen(true); }}>Nội dung xác nhận miễn trừ trách nhiệm</a> và đồng ý miễn trừ trách nhiệm pháp lý và các giả định rủi ro cho Nhà trường
+        Tôi đã đọc kỹ{' '}
+        <a
+          href="#"
+          style={{ color: '#1890ff', textDecoration: 'underline' }}
+          onClick={e => {
+            e.preventDefault();
+            setConfirmModalOpen(true);
+          }}
+        >
+          Nội dung xác nhận miễn trừ trách nhiệm
+        </a>
+        <br />
+        và đồng ý miễn trừ trách nhiệm pháp lý và các giả định rủi ro cho Nhà trường <Text type="danger">*</Text>
       </Checkbox>
       <Modal
         open={confirmModalOpen}
         onCancel={() => setConfirmModalOpen(false)}
         footer={null}
-        width={500} // Đổi từ 700 thành 500 để modal ngắn hơn
+        width={500}
         centered
         title="Nội dung xác nhận miễn trừ trách nhiệm khảo sát sức khỏe"
       >
