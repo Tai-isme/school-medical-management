@@ -12,7 +12,7 @@ public class HealthCheckResultRequest {
     private int height;
     private String dentalStatus;
     private String bloodPressure;
-    private String heartRate;
+    private int heartRate;
     private String generalCondition;
     private Boolean isChecked;
     private int healthCheckFormId;

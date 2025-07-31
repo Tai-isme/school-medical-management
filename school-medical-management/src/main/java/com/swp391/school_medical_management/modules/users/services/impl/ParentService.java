@@ -1,9 +1,12 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.*;
-import com.swp391.school_medical_management.modules.users.dtos.response.*;
-import com.swp391.school_medical_management.modules.users.entities.*;
-import com.swp391.school_medical_management.modules.users.repositories.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,12 +15,53 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.FeedbackRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineHistoryRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineHistoryDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineUnitDTO;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineUnitEntity;
+import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
+import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineHistoryRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineNameRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineUnitRepository;
 
 @Service
 public class ParentService {
@@ -446,22 +490,47 @@ public class ParentService {
     }
 
     public List<HealthCheckFormDTO> getAllHealthCheckFormCommited(int parentId, int studentId) {
-        // Optional<StudentEntity> studentOpt = studentRepository.findById(studentId);
-        // if (studentOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
-        // StudentEntity studentEntity = studentOpt.get();
-        // List<HealthCheckFormEntity> healthCheckFormEntities =
-        // healthCHeckFormRepository
-        // .findAllByStudentAndStatusAndCommitIsTrue(studentEntity,
-        // HealthCheckFormStatus.SENT);
+        Optional<StudentEntity> studentOpt = studentRepository.findById(studentId);
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy học sinh");
 
-        // List<HealthCheckFormDTO> healthCheckFormDTOs =
-        // healthCheckFormEntities.stream()
-        // .filter(form -> form.getParent().getUserId().equals(parentId))
-        // .map(form -> modelMapper.map(form, HealthCheckFormDTO.class))
-        // .collect(Collectors.toList());
-        // return healthCheckFormDTOs;
-        return null;
+        StudentEntity studentEntity = studentOpt.get();
+
+        List<HealthCheckFormEntity> healthCheckFormEntities = healthCHeckFormRepository
+                .findAllByStudentAndCommitIsTrue(studentEntity);
+
+        List<HealthCheckFormDTO> healthCheckFormDTOs = healthCheckFormEntities.stream()
+                .filter(form -> form.getParent().getUserId() == parentId)
+                .filter(form -> form.getHealthCheckProgram().getStatus() == HealthCheckProgramStatus.FORM_SENT)
+                .map(form -> {
+                    HealthCheckFormDTO dto = modelMapper.map(form, HealthCheckFormDTO.class);
+
+                    if (form.getHealthCheckProgram() != null) {
+                        HealthCheckProgramDTO programDTO = modelMapper.map(form.getHealthCheckProgram(),
+                                HealthCheckProgramDTO.class);
+
+                        if (form.getHealthCheckProgram().getAdmin() != null) {
+                            UserDTO adminDTO = modelMapper.map(form.getHealthCheckProgram().getAdmin(), UserDTO.class);
+                            programDTO.setAdminDTO(adminDTO);
+                        }
+
+                        if (form.getHealthCheckProgram().getNurse() != null) {
+                            UserDTO nurseDTO = modelMapper.map(form.getHealthCheckProgram().getNurse(), UserDTO.class);
+                            programDTO.setNurseDTO(nurseDTO);
+                        }
+
+                        dto.setHealthCheckProgramDTO(programDTO);
+                    }
+
+                    if (form.getParent() != null) {
+                        UserDTO parentDTO = modelMapper.map(form.getParent(), UserDTO.class);
+                        dto.setParentDTO(parentDTO);
+                    }
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        return healthCheckFormDTOs;
     }
 
     public List<VaccineFormDTO> getAllVaccineFormCommited(int parentId, int studentId) {
@@ -516,21 +585,49 @@ public class ParentService {
     }
 
     public HealthCheckFormDTO getHealthCheckForm(int parentId, int healthCheckFormId) {
-        // Optional<HealthCheckFormEntity> healthCheckFormOpt =
-        // healthCHeckFormRepository
-        // .findByIdAndStatus(healthCheckFormId, HealthCheckFormStatus.SENT);
-        // if (healthCheckFormOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form
-        // not found");
-        // HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
+        HealthCheckFormEntity form = healthCHeckFormRepository.findById(healthCheckFormId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy form khám sức khỏe."));
 
-        // if (healthCheckFormEntity.getParent() == null
-        // || !healthCheckFormEntity.getParent().getUserId().equals(parentId))
-        // throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        // HealthCheckFormDTO healthCheckFormDTO =
-        // modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
-        // return healthCheckFormDTO;
-        return null;
+        if (form.getParent() == null || form.getParent().getUserId() != parentId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền truy cập form này.");
+        }
+
+        HealthCheckFormDTO dto = modelMapper.map(form, HealthCheckFormDTO.class);
+
+        if (form.getStudent() != null) {
+            StudentDTO studentDTO = modelMapper.map(form.getStudent(), StudentDTO.class);
+            dto.setStudentDTO(studentDTO);
+        }
+
+        if (form.getParent() != null) {
+            UserDTO parentDTO = modelMapper.map(form.getParent(), UserDTO.class);
+            dto.setParentDTO(parentDTO);
+        }
+
+        if (form.getNurse() != null) {
+            UserDTO nurseDTO = modelMapper.map(form.getNurse(), UserDTO.class);
+            dto.setNurseDTO(nurseDTO);
+        }
+
+        if (form.getHealthCheckProgram() != null) {
+            HealthCheckProgramDTO programDTO = modelMapper.map(form.getHealthCheckProgram(),
+                    HealthCheckProgramDTO.class);
+
+            if (form.getHealthCheckProgram().getAdmin() != null) {
+                UserDTO adminDTO = modelMapper.map(form.getHealthCheckProgram().getAdmin(), UserDTO.class);
+                programDTO.setAdminDTO(adminDTO);
+            }
+
+            if (form.getHealthCheckProgram().getNurse() != null) {
+                UserDTO nurseProgramDTO = modelMapper.map(form.getHealthCheckProgram().getNurse(), UserDTO.class);
+                programDTO.setNurseDTO(nurseProgramDTO);
+            }
+
+            dto.setHealthCheckProgramDTO(programDTO);
+        }
+
+        return dto;
     }
 
     public VaccineFormDTO getVaccineForm(int parentId, int vaccineFormId) {
