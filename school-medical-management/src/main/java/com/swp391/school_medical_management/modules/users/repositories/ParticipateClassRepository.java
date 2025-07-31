@@ -10,14 +10,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ParticipateClassRepository extends JpaRepository<ParticipateClassEntity, Integer> {
-    List<ParticipateClassEntity> findByHealthCheckProgram_Id(int programId);
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM ParticipateClassEntity p WHERE p.healthCheckProgram.id = :programId")
+    @Query("DELETE FROM ParticipateClassEntity p WHERE p.programId = :programId")
     void deleteByHealthCheckProgramId(@Param("programId") int programId);
 
 
-    List<ParticipateClassEntity> findAllByHealthCheckProgram_Id(int healthCheckProgramId);
+    List<ParticipateClassEntity> findByProgramId(int programId);
 
 }

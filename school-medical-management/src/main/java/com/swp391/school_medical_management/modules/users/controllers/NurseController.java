@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +20,7 @@ import java.util.List;
 @Validated
 @RestController
 @RequestMapping("api/nurse")
-@PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
+//@PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
 public class NurseController {
 
     @Autowired

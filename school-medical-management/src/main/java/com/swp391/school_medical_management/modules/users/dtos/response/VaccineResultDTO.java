@@ -1,10 +1,10 @@
 package com.swp391.school_medical_management.modules.users.dtos.response;
 
-import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +17,7 @@ public class VaccineResultDTO {
     private String reaction;
     private String actionsTaken;
     private String resultNote;
-    private Boolean isRejected;
+    private Boolean isInjected;
     private LocalDateTime createdAt;
     private VaccineFormDTO vaccineFormDTO;
     private StudentDTO studentDTO;

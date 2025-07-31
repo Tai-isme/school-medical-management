@@ -31,8 +31,8 @@ public class VaccineResultEntity {
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
-    @Column(name = "is_rejected")
-    private Boolean isRejected;
+    @Column(name = "is_injected")
+    private Boolean isInjected;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nurse_id", referencedColumnName = "user_id")

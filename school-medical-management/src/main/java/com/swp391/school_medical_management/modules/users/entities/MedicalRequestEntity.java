@@ -40,6 +40,8 @@ public class MedicalRequestEntity {
         SUBMITTED, COMPLETED, PROCESSING, CANCELLED
     }
 
+    private String image;
+
     @ManyToOne
     @JoinColumn(name = "student_id", referencedColumnName = "student_id")
     private StudentEntity student;

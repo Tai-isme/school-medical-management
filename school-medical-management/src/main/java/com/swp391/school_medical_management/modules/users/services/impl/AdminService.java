@@ -124,8 +124,8 @@ public class AdminService {
 
                 ParticipateClassEntity participate = new ParticipateClassEntity();
                 participate.setClazz(clazz);
-                participate.setHealthCheckProgram(healthCheckProgramEntity);
-                participate.setType("HEALTH_CHECK");
+                participate.setProgramId(healthCheckProgramEntity.getId());
+                participate.setType(ParticipateClassEntity.Type.HEALTH_CHECK);
 
                 participateClassRepository.save(participate);
             }
@@ -175,8 +175,8 @@ public class AdminService {
 
                 ParticipateClassEntity participate = new ParticipateClassEntity();
                 participate.setClazz(clazz);
-                participate.setHealthCheckProgram(existingProgram);
-                participate.setType("HEALTH_CHECK");
+                participate.setProgramId(existingProgram.getId());
+                participate.setType(ParticipateClassEntity.Type.HEALTH_CHECK);
 
                 participateClassRepository.save(participate);
             }
@@ -311,7 +311,7 @@ public class AdminService {
         dto.setHealthCheckFormDTOs(formDTOs);
 
         // (Tùy chọn) Nếu bạn muốn map thêm participateClasses:
-        List<ParticipateClassEntity> participateEntities = participateClassRepository.findAllByHealthCheckProgram_Id(id);
+        List<ParticipateClassEntity> participateEntities = participateClassRepository.findByProgramId(id);
         List<ParticipateClassDTO> participateDTOs = participateEntities.stream().map(pc -> modelMapper.map(pc, ParticipateClassDTO.class)).collect(Collectors.toList());
         dto.setParticipateClasses(participateDTOs);
 
@@ -514,29 +514,44 @@ public class AdminService {
     }
 
     public List<VaccineProgramDTO> getAllVaccineProgram() {
-        // List<VaccineProgramEntity> vaccineProgramEntitieList =
-        // vaccineProgramRepository.findAll();
-        // if (vaccineProgramEntitieList.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine programs
-        // found");
-        // List<VaccineProgramDTO> vaccineProgramDTOList =
-        // vaccineProgramEntitieList.stream()
-        // .map(entity -> modelMapper.map(entity, VaccineProgramDTO.class))
-        // .toList();
-        // for (VaccineProgramDTO v : vaccineProgramDTOList) {
-        // Long programId = v.getVaccineId();
-        // List<VaccineFormEntity> vaccineFormEntityList = vaccineFormRepository
-        // .findAllByVaccineProgram_VaccineId(programId);
-        // if (vaccineFormEntityList.isEmpty()) {
-        // v.setSended(0);
-        // } else {
-        // boolean allStatusOne = vaccineFormEntityList.stream()
-        // .allMatch(form -> form.getStatus().equals(VaccineFormStatus.DRAFT));
-        // v.setSended(allStatusOne ? 0 : 1);
-        // }
-        // }
-        // return vaccineProgramDTOList;
-        return null;
+        List<VaccineProgramEntity> vaccineProgramEntitieList = vaccineProgramRepository.findAll();
+        if (vaccineProgramEntitieList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình tiêm vaccine nào!");
+        }
+        List<VaccineProgramDTO> vaccineProgramDTOList = vaccineProgramEntitieList.stream().map(entity -> {
+            VaccineProgramDTO dto = modelMapper.map(entity, VaccineProgramDTO.class);
+            dto.setNurseDTO(modelMapper.map(entity.getNurse(), UserDTO.class));
+            dto.setAdminDTO(modelMapper.map(entity.getAdmin(), UserDTO.class));
+            dto.setVaccineNameDTO(modelMapper.map(entity.getVaccineName(), VaccineNameDTO.class));
+
+
+            List<ParticipateClassEntity> participateClassEntities = participateClassRepository.findByProgramId(entity.getVaccineId());
+
+            List<ParticipateClassDTO> participateClassDTOS = participateClassEntities.stream().map(participateClassEntity -> {
+                ParticipateClassDTO participateClassDTO = new ParticipateClassDTO();
+                participateClassDTO.setParticipate_id(participateClassEntity.getParticipateId());
+                participateClassDTO.setClass_id(participateClassEntity.getClazz().getClassId());
+                participateClassDTO.setProgram_id(participateClassEntity.getProgramId());
+                participateClassDTO.setType(participateClassEntity.getType().toString());
+
+                ClassDTO classDTO = modelMapper.map(participateClassEntity.getClazz(), ClassDTO.class);
+                classDTO.setStudents(null);
+
+                participateClassDTO.setClassDTO(classDTO);
+                return participateClassDTO;
+            }).collect(Collectors.toList());
+
+            dto.setParticipateClassDTOs(participateClassDTOS);
+
+            List<VaccineFormDTO> vaccineFormDTOS = vaccineFormRepository.findByVaccineProgram(entity).stream().map(vaccineFormEntity -> modelMapper.map(vaccineFormEntity, VaccineFormDTO.class)).collect(Collectors.toList());
+
+            dto.setVaccineFormDTOs(vaccineFormDTOS);
+
+            return dto;
+        }).collect(Collectors.toList());
+
+
+        return vaccineProgramDTOList;
     }
 
     public VaccineProgramDTO getVaccineProgramById(long id) {
@@ -871,11 +886,7 @@ public class AdminService {
     }
 
     public List<VaccineNameDTO> getAllVaccineNames() {
-        // return vaccineNameRepository.findAll()
-        // .stream()
-        // .map(entity -> modelMapper.map(entity, VaccineNameDTO.class))
-        // .collect(Collectors.toList());
-        return null;
+        return vaccineNameRepository.findAll().stream().map(entity -> modelMapper.map(entity, VaccineNameDTO.class)).collect(Collectors.toList());
     }
 
     public VaccineNameDTO createVaccineName(VaccineNameRequest request) {

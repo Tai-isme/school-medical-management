@@ -105,9 +105,21 @@ public class NurseService {
         for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
             StudentEntity studentEntity = medicalRequestEntity.getStudent();
             StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+
+//            ClassDTO classDTO = modelMapper.map(classRepository.findById(studentEntity.getClassEntity().getClassId()).get(), ClassDTO.class);
+//            studentDTO.setClassDTO(classDTO);
+
+            ClassEntity classEntity = classRepository.findById(studentEntity.getClassEntity().getClassId()).get();
+            classEntity.setStudents(null);
+            ClassDTO classDTO = modelMapper.map(classEntity, ClassDTO.class);
+            studentDTO.setClassDTO(classDTO);
+            studentDTO.setParentDTO(modelMapper.map(studentEntity.getParent(), UserDTO.class));
+
             List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity.getMedicalRequestDetailEntities();
             List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream().map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity, MedicalRequestDetailDTO.class)).collect(Collectors.toList());
             MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+
+            medicalRequestDTO.setNurseDTO(modelMapper.map(medicalRequestEntity.getNurse(), UserDTO.class));
             medicalRequestDTO.setStudentDTO(studentDTO);
             medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
             medicalRequestDTOList.add(medicalRequestDTO);
@@ -916,34 +928,28 @@ public class NurseService {
     }
 
     public List<VaccineResultDTO> getVaccineResultByProgram(int programId) {
-        // List<VaccineResultEntity> resultEntities = vaccineResultRepository
-        //         .findByVaccineFormEntity_VaccineProgram_VaccineId(programId);
+        List<VaccineResultEntity> resultEntities = vaccineResultRepository.findByVaccineFormEntity_VaccineProgram_VaccineId(programId);
 
-        // if (resultEntities.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine result found for this program");
+        if (resultEntities.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chưa có kết quả nào cho chương trình tiêm chủng này!");
+        }
 
-        // List<VaccineResultDTO> dtoList = new ArrayList<>();
-        // for (VaccineResultEntity entity : resultEntities) {
-        //     VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
+        List<VaccineResultDTO> dtoList = new ArrayList<>();
+        for (VaccineResultEntity entity : resultEntities) {
+            VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
 
-        //     VaccineFormEntity form = entity.getVaccineFormEntity();
-        //     dto.setVaccineFormDTO(modelMapper.map(form, VaccineFormDTO.class));
+            StudentDTO studentDTO = modelMapper.map(entity.getVaccineFormEntity().getStudent(), StudentDTO.class);
+            ClassDTO classDTO = modelMapper.map(entity.getVaccineFormEntity().getStudent().getClassEntity(), ClassDTO.class);
+            classDTO.setStudents(null);
+            studentDTO.setClassDTO(classDTO);
+            studentDTO.setParentDTO(modelMapper.map(entity.getVaccineFormEntity().getStudent().getParent(), UserDTO.class));
 
-        //     StudentEntity student = form.getStudent();
-        //     StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
+            dto.setStudentDTO(studentDTO);
+            dto.setNurseDTO(modelMapper.map(entity.getVaccineFormEntity().getNurse(), UserDTO.class));
+            dtoList.add(dto);
+        }
 
-        //     if (student.getClassEntity() != null)
-        //         studentDTO.setClassDTO(modelMapper.map(student.getClassEntity(), ClassDTO.class));
-
-        //     if (student.getParent() != null)
-        //         studentDTO.setUserDTO(modelMapper.map(student.getParent(), UserDTO.class));
-
-        //     dto.setStudentDTO(studentDTO);
-        //     dtoList.add(dto);
-        // }
-
-        // return dtoList;
-        return null;
+        return dtoList;
     }
 
     public void deleteVaccineResult(int vaccineResultId) {
@@ -966,6 +972,7 @@ public class NurseService {
         //         ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
         //         dto.setClassDTO(classDTO);
         //     }
+
         //     if (student.getParent() != null) {
         //         UserDTO userDTO = modelMapper.map(student.getParent(), UserDTO.class);
         //         dto.setUserDTO(userDTO);

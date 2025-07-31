@@ -21,10 +21,14 @@ public class ParticipateClassEntity {
     @JoinColumn(name = "class_id", referencedColumnName = "class_id", nullable = false)
     private ClassEntity clazz;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "program_id", referencedColumnName = "health_check_id", nullable = false)
-    private HealthCheckProgramEntity healthCheckProgram;
+    @Column(name = "program_id")
+    private int programId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 20)
-    private String type;
+    private Type type;
+
+    public enum Type {
+        HEALTH_CHECK, VACCINE
+    }
 }
