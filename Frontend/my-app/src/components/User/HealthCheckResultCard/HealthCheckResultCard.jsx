@@ -52,13 +52,13 @@ const HealthCheckResultCard = () => {
 
   // Lọc dữ liệu theo tên chương trình và ngày
   const filteredHistory = vaccineHistory.filter(item => {
-    const programName = item.healthCheckProgram?.name || "";
-    const checkDate = item.healthCheckProgram?.endDate || "";
+    const programName = item.healthCheckFormDTO?.healthCheckProgramDTO?.healthCheckName || "";
+    const checkDate = item.healthCheckFormDTO?.healthCheckProgramDTO?.startDate || "";
     const matchName = programName.toLowerCase().includes(filterName.toLowerCase());
     const matchDate = filterDate ? checkDate === filterDate : true;
-    const matchStatus = item.healthCheckProgram.status === "COMPLETED";
-    const matchCommit = item.commit === true; // chỉ hiện commit=true
-    return matchName && matchDate && matchStatus && matchCommit;
+    // Nếu muốn lọc trạng thái hoàn thành, sửa lại nếu cần
+    // const matchStatus = item.healthCheckFormDTO?.healthCheckProgramDTO?.status === "COMPLETED";
+    return matchName && matchDate;
   });
 
   // const vaccineColumns = [...]; // Không dùng Table nữa
@@ -66,33 +66,27 @@ const HealthCheckResultCard = () => {
   const selectedStudent = students.find(s => s.id === selectedStudentId);
 
   // Hàm lấy chi tiết kết quả khám sức khỏe
-  const handleShowDetail = async (item) => {
-    setModalLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(
-        `http://localhost:8080/api/parent/health-check-result/form/${item.id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!res.ok) throw new Error("Không lấy được dữ liệu chi tiết.");
-      const data = await res.json();
-      setModalData({
-        ...item,
-        ...data,
-        checkName: item.healthCheckProgram?.name,
-        date: item.healthCheckProgram?.endDate,
-        status: item.status,
-        description: item.healthCheckProgram?.description,
-        note: data.note,
-        diagnosis: data.diagnosis,
-        level: data.level,
-      });
-      setModalOpen(true);
-    } catch (err) {
-      alert("Không lấy được chi tiết kết quả khám sức khỏe.");
-    } finally {
-      setModalLoading(false);
-    }
+  const handleShowDetail = (item) => {
+    setModalData({
+      programName: item.healthCheckFormDTO?.healthCheckProgramDTO?.healthCheckName,
+      date: item.healthCheckFormDTO?.healthCheckProgramDTO?.startDate,
+      status: item.healthCheckFormDTO?.healthCheckProgramDTO?.status,
+      description: item.healthCheckFormDTO?.healthCheckProgramDTO?.description,
+      location: item.healthCheckFormDTO?.healthCheckProgramDTO?.location,
+      nurseName: item.healthCheckFormDTO?.nurseDTO?.fullName,
+      note: item.note,
+      vision: item.vision,
+      hearing: item.hearing,
+      weight: item.weight,
+      height: item.height,
+      dentalStatus: item.dentalStatus,
+      bloodPressure: item.bloodPressure,
+      heartRate: item.heartRate,
+      generalCondition: item.generalCondition,
+      diagnosis: item.diagnosis,
+      level: item.level,
+    });
+    setModalOpen(true);
   };
 
   return (
@@ -214,7 +208,7 @@ const HealthCheckResultCard = () => {
                       color: '#1976d2',
                       marginBottom: 8,
                     }}>
-                      {item.healthCheckProgram?.name || "---"}
+                      {item.healthCheckFormDTO?.healthCheckProgramDTO?.healthCheckName || "---"}
                     </div>
                     <div style={{
                       display: 'flex',
@@ -225,23 +219,18 @@ const HealthCheckResultCard = () => {
                       color: '#888',
                     }}>
                       <div>
-                        Ngày: <span style={{color: '#1976d2', fontWeight: 500}}>{item.healthCheckProgram?.endDate || '---'}</span>
+                        Ngày: <span style={{color: '#1976d2', fontWeight: 500}}>
+          {item.healthCheckFormDTO?.healthCheckProgramDTO?.startDate || '---'}
+        </span>
                       </div>
                       <div>
                         Trạng thái:{" "}
                         <span style={{color: '#43a047', fontWeight: 600}}>
-                          {item.healthCheckProgram.status === "COMPLETED"
-                            ? "Đã hoàn thành"
-                            : item.healthCheckProgram.status || "---"}
-                        </span>
+          {item.healthCheckFormDTO?.healthCheckProgramDTO?.status || "---"}
+        </span>
                       </div>
                     </div>
-                    
-                    {item.note && (
-                      <div style={{marginTop: 4, color: "#888", fontSize: 13}}>
-                        Ghi chú: {item.note}
-                      </div>
-                    )}
+   
                   </div>
                 ))
               )}

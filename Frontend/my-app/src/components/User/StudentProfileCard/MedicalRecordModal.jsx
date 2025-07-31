@@ -19,7 +19,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
   const [vaccineOptions, setVaccineOptions] = useState([]);
 
   const handleAddVaccine = () => {
-    setVaccineHistories(prev => [...prev, { vaccineName: "", note: "", key: Date.now() }]);
+    setVaccineHistories(prev => [...prev, { vaccineName: "", vaccineNameId: "", doseNumber: 1, note: "" }]);
   };
   const handleVaccineChange = (value, index, field) => {
     setVaccineHistories(prevVaccines => {
@@ -35,7 +35,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
       .filter(v => v.vaccineNameId)
       .map(v => ({
         vaccineNameId: v.vaccineNameId,
-        unit: v.doseNumber || 1, // lấy đúng mũi tiêm đã chọn
+        unit: v.doseNumber, // lấy đúng giá trị mới nhất từ form
         note: v.note || "",
         createBy: true
       }));
@@ -370,7 +370,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                       name={['vaccineHistories', idx, 'doseNumber']}
                       style={{ width: 100, marginBottom: 0 }}
                       rules={[{ required: true, message: 'Chọn mũi tiêm' }]}
-                      initialValue={item.doseNumber || 1}
+                      initialValue={item.doseNumber}
                     >
                       <Select
                         placeholder="Mũi thứ"

@@ -12,12 +12,11 @@ const VaccineResultCard = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState();
   const [vaccineHistory, setVaccineHistory] = useState([]);
-  const [openDetailIdx, setOpenDetailIdx] = useState(null);
-  const [filterName, setFilterName] = useState('');
-  const [filterDate, setFilterDate] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [modalLoading, setModalLoading] = useState(false); // Thêm state cho loading modal
+  const [filterName, setFilterName] = useState('');
+  const [filterDate, setFilterDate] = useState('');
 
   useEffect(() => {
     const studentsData = JSON.parse(localStorage.getItem('students')) || [];
@@ -49,46 +48,33 @@ const VaccineResultCard = () => {
     }
   };
 
-  // Lọc dữ liệu theo tên vaccine, ngày và trạng thái COMPLETED
+  // Lọc dữ liệu nếu cần
   const filteredHistory = vaccineHistory.filter(item => {
-    const vaccineName = item.vaccineProgram?.vaccineName || "";
-    const vaccineDate = item.vaccineProgram?.vaccineDate || "";
-    const matchName = vaccineName.vaccineName.toLowerCase().includes(filterName.toLowerCase());
-    const matchDate = filterDate ? vaccineDate === filterDate : true;
-    const matchStatus = item.vaccineProgram?.status === "COMPLETED";
-    return matchName && matchDate && matchStatus;
+    const name = item.vaccineFormDTO?.vaccineNameDTO?.vaccineName?.toLowerCase() || '';
+    const date = item.vaccineFormDTO?.vaccineProgramDTO?.startDate || '';
+    const matchName = name.includes(filterName.toLowerCase());
+    const matchDate = filterDate ? date === filterDate : true;
+    return matchName && matchDate;
   });
 
-  // const vaccineColumns = [...]; // Không dùng Table nữa
-
-  const selectedStudent = students.find(s => s.id === selectedStudentId);
-
   // Hàm lấy chi tiết vaccine result
-  const handleShowDetail = async (item) => {
-    setModalLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(
-        `http://localhost:8080/api/parent/vaccine-result/form/${item.id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!res.ok) throw new Error("Không lấy được dữ liệu chi tiết.");
-      const data = await res.json();
-      setModalData({
-        ...item,
-        ...data,
-        vaccineName: item.vaccineProgram?.vaccineName,
-        vaccineDate: item.vaccineProgram?.vaccineDate,
-        status: item.vaccineProgram?.status,
-        description: item.vaccineProgram?.description,
-        note: item.vaccineProgram?.note,
-      });
-      setModalOpen(true);
-    } catch (err) {
-      message.error("Không lấy được chi tiết kết quả tiêm vaccine.");
-    } finally {
-      setModalLoading(false);
-    }
+  const handleShowDetail = (item) => {
+    // Truyền đúng dữ liệu cho modal
+    setModalData({
+      vaccineName: item.vaccineFormDTO?.vaccineNameDTO,
+      vaccineDate: item.vaccineFormDTO?.vaccineProgramDTO?.startDate,
+      status: item.vaccineFormDTO?.vaccineProgramDTO?.status,
+      manufacture: item.vaccineFormDTO?.vaccineNameDTO?.manufacture,
+      reaction: item.reaction,
+      resultNote: item.resultNote,
+      statusHealth: item.statusHealth,
+      actionsTaken: item.actionsTaken,
+      note: item.vaccineFormDTO?.note,
+      unit: item.vaccineFormDTO?.vaccineProgramDTO?.unit,
+      description: item.vaccineFormDTO?.vaccineNameDTO?.description,
+      url: item.vaccineFormDTO?.vaccineNameDTO?.url,
+    });
+    setModalOpen(true);
   };
 
   return (
@@ -212,7 +198,7 @@ const VaccineResultCard = () => {
                         color: '#1976d2',
                         marginBottom: 8,
                       }}>
-                        {item.vaccineProgram?.vaccineName?.vaccineName || "---"} {/* Access vaccineName.vaccineName */}
+                        {item.vaccineFormDTO?.vaccineNameDTO?.vaccineName || "---"}
                       </div>
                       <div style={{
                         display: 'flex',
@@ -223,29 +209,19 @@ const VaccineResultCard = () => {
                         color: '#888',
                       }}>
                         <div>
-                          Ngày: <span style={{color: '#1976d2', fontWeight: 500}}>{item.vaccineProgram?.vaccineDate || '---'}</span>
+                          Ngày: <span style={{color: '#1976d2', fontWeight: 500}}>
+                    {item.vaccineFormDTO?.vaccineProgramDTO?.startDate || '---'}
+                  </span>
                         </div>
                         <div>
                           Trạng thái:{" "}
                           <span style={{ color: '#43a047', fontWeight: 600 }}>
-                            {item.vaccineProgram?.status === "COMPLETED"
+                            {item.vaccineFormDTO?.vaccineProgramDTO?.status === "COMPLETED"
                               ? "Đã hoàn thành"
-                              : item.vaccineProgram?.status || "---"}
+                              : item.vaccineFormDTO?.vaccineProgramDTO?.status || "---"}
                           </span>
                         </div>
                       </div>
-                      {item.vaccineProgram?.vaccineName?.url && (
-                        <div style={{ marginTop: 8 }}>
-                          {/* <a
-                            href={`https://${item.vaccineProgram.vaccineName.url}`} // Ensure the URL is absolute
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: '#1890ff', textDecoration: 'underline' }}
-                          >
-                            Xem thêm thông tin về vắc xin
-                          </a> */}
-                        </div>
-                      )}
                     </div>
                   ))}
                   <VaccineHistoryDetailModal

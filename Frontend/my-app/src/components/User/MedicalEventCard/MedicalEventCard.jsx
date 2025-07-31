@@ -3,16 +3,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 import "./MedicalEventCard.css";
 import axios from "axios";
-import { Table, Tag, Select, Typography, Avatar } from "antd";
+import { Table, Button } from "antd";
 import StudentInfoCard from "../../../common/StudentInfoCard";
-const { Title, Text } = Typography;
+import MedicalEventDetailModal from "./MedicalEventDetailModal"; // Import modal component
 
 const columns = [
   {
     title: "Loại sự kiện",
     dataIndex: "typeEvent",
     key: "typeEvent",
-    width: 200, // Giảm chiều rộng
+    width: 200,
     render: (text) => (
       <span style={{
         fontSize: 15,
@@ -29,7 +29,7 @@ const columns = [
     title: "Ngày diễn ra",
     dataIndex: "date",
     key: "date",
-    width: 110, // Giảm chiều rộng
+    width: 110,
     sorter: (a, b) => new Date(a.date) - new Date(b.date),
     render: (text) => (
       <span style={{
@@ -46,7 +46,7 @@ const columns = [
   {
     title: "Y tá phụ trách",
     key: "nurseDTO",
-    width: 110, // Giảm chiều rộng
+    width: 110,
     render: (_, record) => (
       <span style={{
         fontSize: 15,
@@ -63,7 +63,7 @@ const columns = [
     title: "Mô tả",
     dataIndex: "description",
     key: "description",
-    width: 320, // Tăng chiều rộng
+    width: 320,
     render: (text) => {
       const lines = text ? text.split('\n').length : 1;
       const approxLines = Math.max(lines, Math.ceil((text?.length || 0) / 80));
@@ -87,12 +87,24 @@ const columns = [
       );
     },
   },
+  {
+    title: "Thao tác",
+    key: "action",
+    width: 100,
+    render: (_, record) => (
+      <Button type="primary" onClick={() => record.onViewDetail(record)}>
+        Xem chi tiết
+      </Button>
+    ),
+  },
 ];
 
 const MedicalIncident = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState();
   const [events, setEvents] = useState([]);
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // Lấy danh sách học sinh từ localStorage
   useEffect(() => {
@@ -112,7 +124,15 @@ const MedicalIncident = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         console.log(`http://localhost:8080/api/parent/medical-events/${selectedStudentId}`);
-        setEvents(res.data);
+        setEvents(
+          (res.data || []).map(event => ({
+            ...event,
+            onViewDetail: (evt) => {
+              setSelectedEvent(evt);
+              setDetailVisible(true);
+            }
+          }))
+        );
       } catch (err) {
         setEvents([]);
       }
@@ -181,6 +201,13 @@ const MedicalIncident = () => {
           />
         </div>
       </div>
+
+      {/* Modal chi tiết sự kiện y tế */}
+      <MedicalEventDetailModal
+        visible={detailVisible}
+        event={selectedEvent}
+        onClose={() => setDetailVisible(false)}
+      />
     </div>
   );
 };

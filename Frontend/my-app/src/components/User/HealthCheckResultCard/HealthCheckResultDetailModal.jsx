@@ -27,7 +27,7 @@ const HealthCheckResultDetailModal = ({ open, onClose, data, loading }) => (
     open={open}
     title={
       <div style={{ textAlign: 'center', fontWeight: 700, fontSize: 22, color: '#1976d2', letterSpacing: 1 }}>
-        {data?.checkName || 'Chi tiết khám sức khỏe'}
+        {data?.programName || 'Chi tiết khám sức khỏe'}
       </div>
     }
     onCancel={onClose}
@@ -47,7 +47,7 @@ const HealthCheckResultDetailModal = ({ open, onClose, data, loading }) => (
       <div>
         <div style={sectionStyle}>
           <span style={labelStyle}>Chương trình:</span>
-          <span style={valueStyle}>{data.checkName || "---"}</span>
+          <span style={valueStyle}>{data.programName || "---"}</span>
         </div>
         <div style={sectionStyle}>
           <span style={labelStyle}>Ngày:</span>
@@ -55,24 +55,19 @@ const HealthCheckResultDetailModal = ({ open, onClose, data, loading }) => (
         </div>
         <div style={sectionStyle}>
           <span style={labelStyle}>Trạng thái:</span>
-          <span style={{
-            ...valueStyle,
-            color: data.status === "DONE" ? "#43a047" : "#fbc02d"
-          }}>
-            {data.healthCheckProgram.status || "---"}
-          </span>
+          <span style={valueStyle}>{data.status || "---"}</span>
         </div>
         <div style={sectionStyle}>
           <span style={labelStyle}>Mô tả:</span>
           <span style={valueStyle}>{data.description || "Không có mô tả."}</span>
         </div>
         <div style={sectionStyle}>
-          <span style={labelStyle}>Chẩn đoán:</span>
-          <span style={valueStyle}>{data.diagnosis || "---"}</span>
+          <span style={labelStyle}>Địa điểm:</span>
+          <span style={valueStyle}>{data.location || "---"}</span>
         </div>
         <div style={sectionStyle}>
-          <span style={labelStyle}>Mức độ:</span>
-          <span style={valueStyle}>{data.level || "---"}</span>
+          <span style={labelStyle}>Y tá phụ trách:</span>
+          <span style={valueStyle}>{data.nurseName || "---"}</span>
         </div>
         <div style={sectionStyle}>
           <span style={labelStyle}>Ghi chú:</span>
@@ -93,6 +88,26 @@ const HealthCheckResultDetailModal = ({ open, onClose, data, loading }) => (
         <div style={sectionStyle}>
           <span style={labelStyle}>Chiều cao:</span>
           <span style={valueStyle}>{data.height != null ? `${data.height} cm` : "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Tình trạng răng:</span>
+          <span style={valueStyle}>{data.dentalStatus || "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Huyết áp:</span>
+          <span style={valueStyle}>{data.bloodPressure || "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Nhịp tim:</span>
+          <span style={valueStyle}>{data.heartRate || "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Tình trạng chung:</span>
+          <span style={valueStyle}>{data.generalCondition || "---"}</span>
+        </div>
+        <div style={sectionStyle}>
+          <span style={labelStyle}>Ghi chú:</span>
+          <span style={valueStyle}>{data.note || "---"}</span>
         </div>
       </div>
     ) : null}

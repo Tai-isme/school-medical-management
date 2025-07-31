@@ -65,7 +65,7 @@ const StudentProfile = () => {
         medicalHistory: data.treatmentHistory || '',
         lastUpdated: data.lastUpdate || '',
         note: data.note || '',
-        createBy: data.createBy || 0,
+        createBy: data.createBy || false,
       });
       setVaccineHistory(data.vaccineHistoryDTOS || []);
     } catch (err) {
@@ -143,54 +143,38 @@ const StudentProfile = () => {
 
   const vaccineColumns = [
     {
-      title: 'Tên vaccin',
+      title: 'Loại Vaccin đã tiêm',
       dataIndex: 'vaccineName',
       key: 'vaccineName',
       align: 'center',
-      minWidth: 250,
+      width: 200,
       render: (text) => <span style={{ fontWeight: 500 }}>{text}</span>,
-    },
-    {
-      title: 'Mô tả',
-      dataIndex: 'description',
-      key: 'description',
-      align: 'center',
-      minWidth: 400,
-      render: (text) => (
-        <textarea
-          value={text}
-          readOnly
-          rows={Math.max(1, Math.ceil((text?.length || 0) / 80))}
-          style={{
-            width: '100%',
-            border: 'none',
-            background: 'transparent',
-            fontSize: 15,
-            color: '#333',
-            padding: 4,
-            whiteSpace: 'pre-wrap',
-            overflowWrap: 'break-word',
-            resize: 'none',
-          }}
-        />
-      ),
     },
     {
       title: 'Mũi thứ',
       dataIndex: 'unit',
       key: 'unit',
       align: 'center',
-      minWidth: 100,
-      render: (unit) => <span style={{ fontWeight: 500 }}>{unit}</span>,
+      width: 100,
+      render: (unit) => unit ? <span style={{ fontWeight: 500 }}>{`Mũi ${unit}`}</span> : "--",
     },
     {
-      title: 'Ghi chú tiêm',
+      title: 'Mô tả',
       dataIndex: 'note',
       key: 'note',
       align: 'center',
-      minWidth: 200,
+      width: 250,
       render: (text) => (
-        <span style={{ color: '#1976d2' }}>{text}</span>
+        <span style={{
+          whiteSpace: 'pre-wrap',
+          color: '#333',
+          fontSize: 15,
+          padding: '2px 0',
+          display: 'inline-block',
+          minWidth: 80,
+          maxWidth: 250,
+          wordBreak: 'break-word'
+        }}>{text || "--"}</span>
       ),
     },
   ];
@@ -416,14 +400,13 @@ const StudentProfile = () => {
                     columns={vaccineColumns}
                     dataSource={vaccineHistory.map((item, idx) => ({
                       key: idx,
-                      vaccineName: item.vaccineNameDTO?.vaccineName || '',
-                      description: item.vaccineNameDTO?.description || '',
-                      unit: item.unit || '',
-                      note: item.note || '',
+                      vaccineName: item.vaccineNameDTO?.vaccineName || "--",
+                      unit: item.unit,
+                      note: item.note,
                     }))}
                     pagination={{ pageSize: 5 }}
                     bordered
-                    style={{ background: '#fff', borderRadius: 8 }}
+                    style={{ background: '#fff', borderRadius: 8, minWidth: 900 }}
                   />
                 </div>
               )}
@@ -452,32 +435,31 @@ const StudentProfile = () => {
       </div>
 
       <MedicalRecordModal
-        open={openMedicalForm}
-        onCancel={handleCloseMedicalForm}
-        loading={loading}
-        studentId={selectedStudentId}
-        fetchStudentInfo={fetchStudentInfo}
-        initialValues={{
-          allergies: studentInfo.allergies,
-          chronicDisease: studentInfo.chronicDiseases,
-          treatmentHistory: studentInfo.medicalHistory,
-          vision: studentInfo.eyes,
-          hearing: studentInfo.ears,
-          weight: studentInfo.weight,
-          height: studentInfo.height,
-          note: studentInfo.note,
-          vaccineHistories: vaccineHistory.length > 0
-            ? vaccineHistory.map(item => ({
-                vaccineName: item.vaccineNameDTO?.vaccineName || "",
-                vaccineNameId: item.vaccineNameDTO?.id || item.vaccineNameId || "",
-                doseNumber: item.unit || 1,
-                note: item.note || "",
-                key: item.id || item.vaccineNameId || Math.random()
-              }))
-            : [{ vaccineName: "", vaccineNameId: "", doseNumber: 1, note: "" }]
-        }}
-        editMode={editMode}
-      />
+  open={openMedicalForm}
+  onCancel={handleCloseMedicalForm}
+  loading={loading}
+  studentId={selectedStudentId}
+  fetchStudentInfo={fetchStudentInfo}
+  initialValues={{
+    allergies: studentInfo.allergies,
+    chronicDisease: studentInfo.chronicDiseases,
+    treatmentHistory: studentInfo.medicalHistory,
+    vision: studentInfo.eyes,
+    hearing: studentInfo.ears,
+    weight: studentInfo.weight,
+    height: studentInfo.height,
+    note: studentInfo.note,
+    vaccineHistories: vaccineHistory.length > 0
+      ? vaccineHistory.map(v => ({
+          vaccineName: v.vaccineNameDTO?.vaccineName || "",
+          vaccineNameId: v.vaccineNameDTO?.id || v.vaccineNameId || "",
+          doseNumber: v.unit || v.doseNumber || 1,
+          note: v.note || "",
+        }))
+      : [{ vaccineName: "", vaccineNameId: "", doseNumber: undefined, note: "" }]
+  }}
+  editMode={editMode}
+/>
     </div>
   );
 };

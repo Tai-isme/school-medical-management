@@ -116,10 +116,22 @@ export default function StudentInfoCard({ onChange }) {
         Mã học sinh: {selectedStudent?.studentId || "--"}
       </Text>
       <Text type="secondary" style={{ fontSize: 16, marginBottom: 8 }}>
-        {/* Lớp: {selectedStudent?.className || selectedStudent?.classID || "--"} */}
+        Ngày sinh: {
+          selectedStudent?.dob
+            ? `${selectedStudent.dob} (${new Date().getFullYear() - new Date(selectedStudent.dob).getFullYear()} tuổi)`
+            : "--"
+        }
       </Text>
+      <Text type="secondary" style={{ fontSize: 16, marginBottom: 8 }}>
+        Lớp: {selectedStudent?.className || selectedStudent?.classID || "--"}
+      </Text>
+      
       <Text type="secondary" style={{ fontSize: 16 }}>
-        Giới tính: {selectedStudent?.gender || "--"}
+        Giới tính: {
+          selectedStudent?.gender === "MALE" ? "Nam"
+          : selectedStudent?.gender === "FEMALE" ? "Nữ"
+          : "--"
+        }
       </Text>
     </div>
   );
