@@ -770,7 +770,7 @@ const VaccineProgramList = () => {
                                 marginBottom: 4,
                               }}
                             >
-                              {program.vaccineName}
+                              {program.vaccineProgramName}
                             </div>
                             
                             <div style={{ color: "#555", marginBottom: 8 }}>
@@ -819,7 +819,7 @@ const VaccineProgramList = () => {
                                   fontSize: 32,
                                 }}
                               >
-                                0 {/* Hiển thị mặc định là 0 */}
+                                {program.vaccineFormDTOs?.length || 0}
                               </div>
                               <div style={{ color: "#888", fontWeight: 500 }}>
                                 Tổng học sinh
@@ -842,7 +842,11 @@ const VaccineProgramList = () => {
                                   fontSize: 32,
                                 }}
                               >
-                                0 {/* Hiển thị mặc định là 0 */}
+                                {
+                                  program.vaccineFormDTOs
+                                    ? program.vaccineFormDTOs.filter(form => form.commit === true).length
+                                    : 0
+                                }
                               </div>
                               <div style={{ color: "#888", fontWeight: 500 }}>
                                 Đã xác nhận
