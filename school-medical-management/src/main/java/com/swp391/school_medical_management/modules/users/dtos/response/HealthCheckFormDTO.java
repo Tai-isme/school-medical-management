@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HealthCheckFormDTO {
-    private Long id;
-    private Long studentId;
-    private Long parentId;
-    private Long nurseId;
+    private int id;
+    private int studentId;
+    private int parentId;
+    private int nurseId;
     private LocalDate expDate;  
     private String notes;
     private Boolean commit;

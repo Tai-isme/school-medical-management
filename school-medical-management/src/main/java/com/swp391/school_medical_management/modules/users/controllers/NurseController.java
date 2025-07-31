@@ -1,21 +1,54 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.*;
-import com.swp391.school_medical_management.modules.users.dtos.response.*;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
-import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
-import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.util.List;
+import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultListRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.ReplyFeedbackRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.OnGoingProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
+
+import jakarta.validation.Valid;
 
 @Validated
 @RestController
@@ -345,15 +378,53 @@ public class NurseController {
     // }
 
     @PostMapping("/create-healthCheckResult-byProgram-/{programId}")
-    public ResponseEntity<List<HealthCheckResultDTO>> createResultsByProgramId(@PathVariable int programId) {
-        List<HealthCheckResultDTO> createdResults = nurseService.createResultsByProgramId(programId);
-        return ResponseEntity.ok(createdResults);
+    public ResponseEntity<String> createHealthCheckResults(@RequestBody HealthCheckResultListRequest requestList) {
+        nurseService.createResultsByProgramId(requestList.getProgramId(), requestList.getResults());
+        return ResponseEntity.ok("Tạo kết quả khám sức khỏe thành công.");
     }
 
     @PostMapping("/create-vaccineResults-byProgram/{programId}")
     public ResponseEntity<List<VaccineResultDTO>> createVaccineResultsByProgramId(@PathVariable int programId) {
         List<VaccineResultDTO> createdResults = nurseService.createVaccineResultsByProgramId(programId);
         return ResponseEntity.ok(createdResults);
+    }
+
+    //Thien
+    @PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
+    @GetMapping("/class-list")
+    public ResponseEntity<List<ClassDTO>> getAllClasses() {
+        List<ClassDTO> classList = nurseService.getAllClasses();
+        return ResponseEntity.ok(classList);
+    }
+
+    //Thien
+    @PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
+    @GetMapping("/nurse-list")
+    public ResponseEntity<List<UserDTO>> getAllNurses() {
+        List<UserDTO> nurseList = nurseService.getAllNurses();
+        return ResponseEntity.ok(nurseList);
+    }
+
+    @PostMapping("/health-check-form/{programId}")
+    public ResponseEntity<String> createFormsForProgram(
+        @PathVariable int programId,
+        @RequestParam("expDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expDate) {
+
+        nurseService.createHealthCheckForm(programId, expDate);
+        return ResponseEntity.ok("Tạo form thành công.");
+    }
+
+    //Update status
+    @PatchMapping("/health-check-program/{id}")
+    public ResponseEntity<HealthCheckProgramDTO> updateHealthCheckProgramStatus(@PathVariable int id, @RequestParam("status") String status) {
+        HealthCheckProgramDTO healthCheckProgramDTO = nurseService.updateHealthCheckProgramStatus(id, status);
+        return ResponseEntity.ok(healthCheckProgramDTO);
+    }
+
+    @GetMapping("/health-check-programs/{programId}/committed-forms")
+    public ResponseEntity<List<HealthCheckFormDTO>> getCommittedForms(@PathVariable int programId) {
+        List<HealthCheckFormDTO> dtos = nurseService.getCommittedFormsByProgramId(programId);
+        return ResponseEntity.ok(dtos);
     }
 
 }

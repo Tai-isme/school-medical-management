@@ -2,12 +2,15 @@ package com.swp391.school_medical_management.modules.users.repositories;
 
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity.VaccineProgramStatus;
+
+import jakarta.persistence.criteria.CriteriaBuilder.In;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
 import java.util.Optional;
 
-public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEntity, Long> {
+public interface VaccineProgramRepository extends JpaRepository<VaccineProgramEntity, Integer> {
     // Optional<VaccineProgramEntity> findByVaccineNameAndStatus(VaccineNameEntity vaccineName,
     //         VaccineProgramStatus status);
 

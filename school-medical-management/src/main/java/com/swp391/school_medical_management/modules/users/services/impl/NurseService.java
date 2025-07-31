@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -72,23 +74,32 @@ public class NurseService {
     @Autowired
     private BlogRepository blogRepository;
 
+    @Autowired
+    private ParticipateClassRepository participateClassRepository;
+
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
-        // List<MedicalRequestEntity> pendingMedicalRequestList = medicalRequestRepository
-        //         .findByStatus(MedicalRequestStatus.PROCESSING);
+        // List<MedicalRequestEntity> pendingMedicalRequestList =
+        // medicalRequestRepository
+        // .findByStatus(MedicalRequestStatus.PROCESSING);
         // if (pendingMedicalRequestList.isEmpty()) {
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No processing medical requests found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No processing
+        // medical requests found");
         // }
         // List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
         // for (MedicalRequestEntity medicalRequestEntity : pendingMedicalRequestList) {
-        //     List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity
-        //             .getMedicalRequestDetailEntities();
-        //     List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
-        //             .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
-        //                     MedicalRequestDetailDTO.class))
-        //             .collect(Collectors.toList());
-        //     MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
-        //     medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
-        //     medicalRequestDTOList.add(medicalRequestDTO);
+        // List<MedicalRequestDetailEntity> medicalRequestDetailEntityList =
+        // medicalRequestEntity
+        // .getMedicalRequestDetailEntities();
+        // List<MedicalRequestDetailDTO> medicalRequestDetailDTOList =
+        // medicalRequestDetailEntityList.stream()
+        // .map(medicalRequestDetailEntity ->
+        // modelMapper.map(medicalRequestDetailEntity,
+        // MedicalRequestDetailDTO.class))
+        // .collect(Collectors.toList());
+        // MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
+        // MedicalRequestDTO.class);
+        // medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+        // medicalRequestDTOList.add(medicalRequestDTO);
         // }
         // return medicalRequestDTOList;
         return null;
@@ -104,8 +115,10 @@ public class NurseService {
             StudentEntity studentEntity = medicalRequestEntity.getStudent();
             StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
 
-//            ClassDTO classDTO = modelMapper.map(classRepository.findById(studentEntity.getClassEntity().getClassId()).get(), ClassDTO.class);
-//            studentDTO.setClassDTO(classDTO);
+            // ClassDTO classDTO =
+            // modelMapper.map(classRepository.findById(studentEntity.getClassEntity().getClassId()).get(),
+            // ClassDTO.class);
+            // studentDTO.setClassDTO(classDTO);
 
             ClassEntity classEntity = classRepository.findById(studentEntity.getClassEntity().getClassId()).get();
             classEntity.setStudents(null);
@@ -113,8 +126,12 @@ public class NurseService {
             studentDTO.setClassDTO(classDTO);
             studentDTO.setParentDTO(modelMapper.map(studentEntity.getParent(), UserDTO.class));
 
-            List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity.getMedicalRequestDetailEntities();
-            List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream().map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity, MedicalRequestDetailDTO.class)).collect(Collectors.toList());
+            List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity
+                    .getMedicalRequestDetailEntities();
+            List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
+                    .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
+                            MedicalRequestDetailDTO.class))
+                    .collect(Collectors.toList());
             MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
 
             medicalRequestDTO.setNurseDTO(modelMapper.map(medicalRequestEntity.getNurse(), UserDTO.class));
@@ -125,32 +142,38 @@ public class NurseService {
         return medicalRequestDTOList;
     }
 
-
     public List<MedicalRequestDTO> getAllMedicalRequestByStatus(String statusStr) {
         // MedicalRequestStatus status;
         // try {
-        //     status = MedicalRequestStatus.valueOf(statusStr.toUpperCase());
+        // status = MedicalRequestStatus.valueOf(statusStr.toUpperCase());
         // } catch (IllegalArgumentException e) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status value");
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status
+        // value");
         // }
-        // List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findByStatus(status);
+        // List<MedicalRequestEntity> medicalRequestEntityList =
+        // medicalRequestRepository.findByStatus(status);
         // if (medicalRequestEntityList.isEmpty()) {
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical requests found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical requests
+        // found");
         // }
         // List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
         // for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
-        //     StudentEntity studentEntity = medicalRequestEntity.getStudent();
-        //     StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
-        //     List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity
-        //             .getMedicalRequestDetailEntities();
-        //     List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
-        //             .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
-        //                     MedicalRequestDetailDTO.class))
-        //             .collect(Collectors.toList());
-        //     MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
-        //     medicalRequestDTO.setStudentDTO(studentDTO);
-        //     medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
-        //     medicalRequestDTOList.add(medicalRequestDTO);
+        // StudentEntity studentEntity = medicalRequestEntity.getStudent();
+        // StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+        // List<MedicalRequestDetailEntity> medicalRequestDetailEntityList =
+        // medicalRequestEntity
+        // .getMedicalRequestDetailEntities();
+        // List<MedicalRequestDetailDTO> medicalRequestDetailDTOList =
+        // medicalRequestDetailEntityList.stream()
+        // .map(medicalRequestDetailEntity ->
+        // modelMapper.map(medicalRequestDetailEntity,
+        // MedicalRequestDetailDTO.class))
+        // .collect(Collectors.toList());
+        // MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
+        // MedicalRequestDTO.class);
+        // medicalRequestDTO.setStudentDTO(studentDTO);
+        // medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+        // medicalRequestDTOList.add(medicalRequestDTO);
         // }
         // return medicalRequestDTOList;
         return null;
@@ -158,26 +181,29 @@ public class NurseService {
 
     public List<MedicalRequestDetailDTO> getMedicalRequestDetail(int requestId) {
         // Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository
-        //         .findMedicalRequestEntityByRequestId(requestId);
+        // .findMedicalRequestEntityByRequestId(requestId);
         // if (medicalRequestOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not
+        // found");
         // MedicalRequestEntity medicalRequest = medicalRequestOpt.get();
-        // List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequest
-        //         .getMedicalRequestDetailEntities();
+        // List<MedicalRequestDetailEntity> medicalRequestDetailEntityList =
+        // medicalRequest
+        // .getMedicalRequestDetailEntities();
         // if (medicalRequestDetailEntityList.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-        //             "No medical request details found for this request");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+        // "No medical request details found for this request");
         // return medicalRequestDetailEntityList.stream()
-        //         .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
-        //                 MedicalRequestDetailDTO.class))
-        //         .collect(Collectors.toList());
+        // .map(medicalRequestDetailEntity ->
+        // modelMapper.map(medicalRequestDetailEntity,
+        // MedicalRequestDetailDTO.class))
+        // .collect(Collectors.toList());
         return null;
     }
 
     public List<MedicalEventDTO> getMedicalEventsByStudent(int studentId) {
         Optional<StudentEntity> studentOpt = studentRepository.findById(studentId);
-        if (studentOpt.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
-
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
 
         StudentEntity studentEntity = studentOpt.get();
         UserEntity parent = studentEntity.getParent();
@@ -205,99 +231,103 @@ public class NurseService {
         return medicalEventDTOList;
     }
 
-
     public MedicalRequestDTO updateMedicalRequestStatus(int requestId, UpdateMedicalRequestStatus request) {
         // Optional<MedicalRequestEntity> medicalRequestOpt = medicalRequestRepository
-        //         .findMedicalRequestEntityByRequestId(requestId);
+        // .findMedicalRequestEntityByRequestId(requestId);
         // if (medicalRequestOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not
+        // found");
         // MedicalRequestEntity medicalRequest = medicalRequestOpt.get();
         // StudentEntity student = medicalRequest.getStudent();
         // logger.info(medicalRequest.getStatus().toString());
         // MedicalRequestStatus statusEnum;
         // try {
-        //     statusEnum = MedicalRequestEntity.MedicalRequestStatus.valueOf(request.getStatus().name().toUpperCase());
+        // statusEnum =
+        // MedicalRequestEntity.MedicalRequestStatus.valueOf(request.getStatus().name().toUpperCase());
         // } catch (IllegalArgumentException ex) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
         // }
 
         // if (medicalRequest.getStatus() == MedicalRequestStatus.PROCESSING
-        //         && (statusEnum == MedicalRequestStatus.PROCESSING)) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Cannot update PROCESSING to PROCESSING");
+        // && (statusEnum == MedicalRequestStatus.PROCESSING)) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Cannot update PROCESSING to PROCESSING");
         // }
 
         // if (medicalRequest.getStatus() == MedicalRequestStatus.PROCESSING
-        //         && (statusEnum == MedicalRequestStatus.COMPLETED)) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Cannot update PROCESSING to COMPLETED");
+        // && (statusEnum == MedicalRequestStatus.COMPLETED)) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Cannot update PROCESSING to COMPLETED");
         // }
 
         // if (medicalRequest.getStatus() == MedicalRequestStatus.PROCESSING
-        //         && (statusEnum == MedicalRequestStatus.CANCELLED)) {
+        // && (statusEnum == MedicalRequestStatus.CANCELLED)) {
 
-        //             logger.info(medicalRequest.getReason() + "   " + request.getReason_rejected());
-        //     if (request.getReason_rejected().isBlank()) {
-        //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //                 "Reason is required when cancelling a PROCESSING request");
-        //     }
+        // logger.info(medicalRequest.getReason() + " " + request.getReason_rejected());
+        // if (request.getReason_rejected().isBlank()) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Reason is required when cancelling a PROCESSING request");
+        // }
 
-        //     medicalRequest.setReason(request.getReason_rejected());
+        // medicalRequest.setReason(request.getReason_rejected());
         // }
 
         // if (medicalRequest.getStatus() == MedicalRequestStatus.SUBMITTED
-        //         && (statusEnum == MedicalRequestStatus.SUBMITTED)) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Cannot update SUBMITTED to SUBMITTED");
+        // && (statusEnum == MedicalRequestStatus.SUBMITTED)) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Cannot update SUBMITTED to SUBMITTED");
         // }
 
         // if (medicalRequest.getStatus() == MedicalRequestStatus.SUBMITTED
-        //         && (statusEnum == MedicalRequestStatus.PROCESSING)) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Cannot update SUBMITTED to PROCESSING");
+        // && (statusEnum == MedicalRequestStatus.PROCESSING)) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Cannot update SUBMITTED to PROCESSING");
         // }
 
         // if (medicalRequest.getStatus() == MedicalRequestStatus.SUBMITTED
-        //         && (statusEnum == MedicalRequestStatus.CANCELLED)) {
+        // && (statusEnum == MedicalRequestStatus.CANCELLED)) {
 
-        //     if (request.getReason_rejected() == null || request.getReason_rejected().isEmpty()) {
-        //         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //                 "Reason is required when cancelling a SUBMITTED request");
-        //     }
-        //     medicalRequest.setReason(request.getReason_rejected());
+        // if (request.getReason_rejected() == null ||
+        // request.getReason_rejected().isEmpty()) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Reason is required when cancelling a SUBMITTED request");
+        // }
+        // medicalRequest.setReason(request.getReason_rejected());
         // }
 
         // if (medicalRequest.getStatus() == MedicalRequestStatus.CANCELLED
-        //         && (statusEnum == MedicalRequestStatus.CANCELLED)) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Cannot update CANCELLED to CANCELLED");
+        // && (statusEnum == MedicalRequestStatus.CANCELLED)) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Cannot update CANCELLED to CANCELLED");
         // }
 
         // if (medicalRequest.getStatus() == MedicalRequestStatus.CANCELLED &&
-        //         (statusEnum == MedicalRequestStatus.PROCESSING ||
-        //                 statusEnum == MedicalRequestStatus.SUBMITTED ||
-        //                 statusEnum == MedicalRequestStatus.CANCELLED ||
-        //                 statusEnum == MedicalRequestStatus.COMPLETED)) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Cannot update CANCELLED to CANCELLED, PROCESSING, SUBMITTED, or COMPLETED");
+        // (statusEnum == MedicalRequestStatus.PROCESSING ||
+        // statusEnum == MedicalRequestStatus.SUBMITTED ||
+        // statusEnum == MedicalRequestStatus.CANCELLED ||
+        // statusEnum == MedicalRequestStatus.COMPLETED)) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Cannot update CANCELLED to CANCELLED, PROCESSING, SUBMITTED, or COMPLETED");
         // }
 
         // if (medicalRequest.getStatus() == MedicalRequestStatus.COMPLETED &&
-        //         (statusEnum == MedicalRequestStatus.PROCESSING ||
-        //                 statusEnum == MedicalRequestStatus.COMPLETED ||
-        //                 statusEnum == MedicalRequestStatus.CANCELLED ||
-        //                 statusEnum == MedicalRequestStatus.SUBMITTED)) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Cannot update COMPLETED to COMPLETED, PROCESSING or SUBMITTED");
+        // (statusEnum == MedicalRequestStatus.PROCESSING ||
+        // statusEnum == MedicalRequestStatus.COMPLETED ||
+        // statusEnum == MedicalRequestStatus.CANCELLED ||
+        // statusEnum == MedicalRequestStatus.SUBMITTED)) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Cannot update COMPLETED to COMPLETED, PROCESSING or SUBMITTED");
         // }
 
         // medicalRequest.setStatus(statusEnum);
         // medicalRequestRepository.save(medicalRequest);
-        // List<MedicalRequestDetailDTO> detailDTOs = medicalRequest.getMedicalRequestDetailEntities()
-        //         .stream()
-        //         .map(entity -> modelMapper.map(entity, MedicalRequestDetailDTO.class))
-        //         .collect(Collectors.toList());
-        // MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequest, MedicalRequestDTO.class);
+        // List<MedicalRequestDetailDTO> detailDTOs =
+        // medicalRequest.getMedicalRequestDetailEntities()
+        // .stream()
+        // .map(entity -> modelMapper.map(entity, MedicalRequestDetailDTO.class))
+        // .collect(Collectors.toList());
+        // MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequest,
+        // MedicalRequestDTO.class);
         // medicalRequestDTO.setMedicalRequestDetailDTO(detailDTOs);
         // medicalRequestDTO.setStudentDTO(modelMapper.map(student, StudentDTO.class));
         // return medicalRequestDTO;
@@ -305,30 +335,132 @@ public class NurseService {
     }
 
     public HealthCheckFormDTO getHealthCheckFormById(int healthCheckFormId) {
-        //     Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCheckFormRepository.findById(healthCheckFormId);
-        //     if (healthCheckFormOpt.isEmpty())
-        //         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
+        HealthCheckFormEntity formEntity = healthCheckFormRepository.findById(healthCheckFormId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy health check form id"));
 
-        //     HealthCheckFormEntity healthCheckFormEntity = healthCheckFormOpt.get();
+        HealthCheckFormDTO formDTO = new HealthCheckFormDTO();
+        formDTO.setId(formEntity.getId());
+        formDTO.setExpDate(formEntity.getExpDate());
+        formDTO.setNotes(formEntity.getNotes());
+        formDTO.setCommit(formEntity.getCommit());
+        formDTO.setStudentId(formEntity.getStudent().getId());
+        formDTO.setParentId(formEntity.getParent().getUserId());
+        formDTO.setNurseId(formEntity.getNurse().getUserId());
 
-        //     return modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
-        return null;
+
+        StudentEntity student = formEntity.getStudent();
+        StudentDTO studentDTO = new StudentDTO();
+        studentDTO.setStudentId(student.getId());
+        studentDTO.setFullName(student.getFullName());
+        studentDTO.setDob(student.getDob());
+        studentDTO.setGender(student.getGender().toString());
+        studentDTO.setClassId(student.getClassEntity().getClassId());
+        studentDTO.setParentId(student.getParent().getUserId());
+
+        ClassEntity clazz = student.getClassEntity();
+        ClassDTO classDTO = new ClassDTO();
+        classDTO.setClassId(clazz.getClassId());
+        classDTO.setClassName(clazz.getClassName());
+        classDTO.setTeacherName(clazz.getTeacherName());
+        classDTO.setQuantity(clazz.getQuantity());
+
+        studentDTO.setClassDTO(classDTO);
+        formDTO.setStudentDTO(studentDTO);
+
+        UserEntity parent = formEntity.getParent();
+        if (parent != null) {
+            UserDTO parentDTO = new UserDTO();
+            parentDTO.setId(parent.getUserId());
+            parentDTO.setFullName(parent.getFullName());
+            parentDTO.setEmail(parent.getEmail());
+            parentDTO.setPassword(parent.getPassword());
+            parentDTO.setPhone(parent.getPhone());
+            parentDTO.setRelationship(parent.getRelationship());
+            parentDTO.setAddress(parent.getAddress());
+            parentDTO.setRole(parent.getRole());
+
+            formDTO.setParentDTO(parentDTO);
+            studentDTO.setParentDTO(parentDTO);
+        }
+
+        UserEntity nurse = formEntity.getNurse();
+        if (nurse != null) {
+            UserDTO nurseDTO = new UserDTO();
+            nurseDTO.setId(nurse.getUserId());
+            nurseDTO.setFullName(nurse.getFullName());
+            nurseDTO.setEmail(nurse.getEmail());
+            nurseDTO.setPassword(nurse.getPassword());
+            nurseDTO.setPhone(nurse.getPhone());
+            nurseDTO.setRelationship(nurse.getRelationship());
+            nurseDTO.setAddress(nurse.getAddress());
+            nurseDTO.setRole(nurse.getRole());
+            nurseDTO.setStudentDTOs(null);
+
+            formDTO.setNurseDTO(nurseDTO);
+        }
+
+        HealthCheckProgramEntity program = formEntity.getHealthCheckProgram();
+        HealthCheckProgramDTO programDTO = new HealthCheckProgramDTO();
+        programDTO.setId(program.getId());
+        programDTO.setHealthCheckName(program.getHealthCheckName());
+        programDTO.setDescription(program.getDescription());
+        programDTO.setDateSendForm(program.getDateSendForm());
+        programDTO.setStartDate(program.getStartDate());
+        programDTO.setStatus(program.getStatus().toString());
+        programDTO.setLocation(program.getLocation());
+        programDTO.setAdminId(program.getAdmin().getUserId());
+        programDTO.setNurseId(program.getNurse().getUserId());
+
+        // Map thủ công adminDTO
+        UserEntity admin = program.getAdmin();
+        UserDTO adminDTO = new UserDTO();
+        adminDTO.setId(admin.getUserId());
+        adminDTO.setFullName(admin.getFullName());
+        adminDTO.setEmail(admin.getEmail());
+        adminDTO.setPassword(admin.getPassword());
+        adminDTO.setPhone(admin.getPhone());
+        adminDTO.setRelationship(admin.getRelationship());
+        adminDTO.setAddress(admin.getAddress());
+        adminDTO.setRole(admin.getRole());
+        adminDTO.setStudentDTOs(null); // Nếu không cần students
+
+        programDTO.setAdminDTO(adminDTO);
+
+        UserDTO nurseDTO = new UserDTO();
+        nurseDTO.setId(nurse.getUserId());
+        nurseDTO.setFullName(nurse.getFullName());
+        nurseDTO.setEmail(nurse.getEmail());
+        nurseDTO.setPassword(nurse.getPassword());
+        nurseDTO.setPhone(nurse.getPhone());
+        nurseDTO.setRelationship(nurse.getRelationship());
+        nurseDTO.setAddress(nurse.getAddress());
+        nurseDTO.setRole(nurse.getRole());
+        nurseDTO.setStudentDTOs(null);
+
+        programDTO.setNurseDTO(nurseDTO);
+
+        formDTO.setHealthCheckProgramDTO(programDTO);
+
+        return formDTO;
     }
 
     public List<HealthCheckFormDTO> getHealthCheckFormsByProgram(int programId, Boolean committed) {
         // List<HealthCheckFormEntity> healthCheckForms;
         // if (Boolean.TRUE.equals(committed)) {
-        //     healthCheckForms = healthCheckFormRepository.findByCommitTrueAndHealthCheckProgram_Id(programId);
+        // healthCheckForms =
+        // healthCheckFormRepository.findByCommitTrueAndHealthCheckProgram_Id(programId);
         // } else {
-        //     healthCheckForms = healthCheckFormRepository.findByHealthCheckProgram_Id(programId);
+        // healthCheckForms =
+        // healthCheckFormRepository.findByHealthCheckProgram_Id(programId);
         // }
 
         // if (healthCheckForms.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check forms found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check
+        // forms found");
 
         // return healthCheckForms.stream()
-        //         .map(entity -> modelMapper.map(entity, HealthCheckFormDTO.class))
-        //         .collect(Collectors.toList());
+        // .map(entity -> modelMapper.map(entity, HealthCheckFormDTO.class))
+        // .collect(Collectors.toList());
         return null;
     }
 
@@ -336,17 +468,20 @@ public class NurseService {
         // List<VaccineFormEntity> vaccineForms;
 
         // if (Boolean.TRUE.equals(committed)) {
-        //     vaccineForms = vaccineFormRepository.findByCommitTrueAndVaccineProgram_VaccineId(programId);
+        // vaccineForms =
+        // vaccineFormRepository.findByCommitTrueAndVaccineProgram_VaccineId(programId);
         // } else {
-        //     vaccineForms = vaccineFormRepository.findByVaccineProgram_VaccineId(programId);
+        // vaccineForms =
+        // vaccineFormRepository.findByVaccineProgram_VaccineId(programId);
         // }
 
         // if (vaccineForms.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine forms found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No vaccine forms
+        // found");
 
         // return vaccineForms.stream()
-        //         .map(form -> modelMapper.map(form, VaccineFormDTO.class))
-        //         .collect(Collectors.toList());
+        // .map(form -> modelMapper.map(form, VaccineFormDTO.class))
+        // .collect(Collectors.toList());
         return null;
     }
 
@@ -363,45 +498,53 @@ public class NurseService {
     // }
 
     public VaccineFormDTO getVaccinFormById(int vaccineFormId) {
-        // Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(vaccineFormId);
+        // Optional<VaccineFormEntity> vaccineFormOpt =
+        // vaccineFormRepository.findById(vaccineFormId);
         // if (vaccineFormOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not
+        // found");
         // VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
         // return modelMapper.map(vaccineFormEntity, VaccineFormDTO.class);
         return null;
     }
 
     public List<VaccineFormDTO> getNotSentVaccineFormsByProgram(int programId) {
-        // List<VaccineFormEntity> vaccineForms = vaccineFormRepository.findByStatusAndVaccineProgram_VaccineId(
-        //         VaccineFormStatus.DRAFT,
-        //         programId);
+        // List<VaccineFormEntity> vaccineForms =
+        // vaccineFormRepository.findByStatusAndVaccineProgram_VaccineId(
+        // VaccineFormStatus.DRAFT,
+        // programId);
         // return vaccineForms.stream()
-        //         .map(form -> modelMapper.map(form, VaccineFormDTO.class))
-        //         .collect(Collectors.toList());
+        // .map(form -> modelMapper.map(form, VaccineFormDTO.class))
+        // .collect(Collectors.toList());
         return null;
     }
 
     public List<HealthCheckFormDTO> getNotSentHealthCheckFormsByProgram(int programId) {
         // List<HealthCheckFormEntity> healthCheckForms = healthCheckFormRepository
-        //         .findByStatusAndHealthCheckProgram_Id(HealthCheckFormStatus.DRAFT, programId);
+        // .findByStatusAndHealthCheckProgram_Id(HealthCheckFormStatus.DRAFT,
+        // programId);
 
         // return healthCheckForms.stream()
-        //         .map(form -> modelMapper.map(form, HealthCheckFormDTO.class))
-        //         .collect(Collectors.toList());
+        // .map(form -> modelMapper.map(form, HealthCheckFormDTO.class))
+        // .collect(Collectors.toList());
         return null;
     }
 
     public OnGoingProgramDTO getOnGoingPrograms() {
-        // List<VaccineProgramDTO> vaccinePrograms = vaccineProgramRepository.findByStatus(VaccineProgramStatus.ON_GOING)
-        //         .stream()
-        //         .map(vaccineprogram -> modelMapper.map(vaccineprogram, VaccineProgramDTO.class))
-        //         .collect(Collectors.toList());
+        // List<VaccineProgramDTO> vaccinePrograms =
+        // vaccineProgramRepository.findByStatus(VaccineProgramStatus.ON_GOING)
+        // .stream()
+        // .map(vaccineprogram -> modelMapper.map(vaccineprogram,
+        // VaccineProgramDTO.class))
+        // .collect(Collectors.toList());
 
-        // List<HealthCheckProgramDTO> healthCheckPrograms = healthCheckProgramRepository
-        //         .findByStatus(HealthCheckProgramStatus.ON_GOING)
-        //         .stream()
-        //         .map(healthCheckProgram -> modelMapper.map(healthCheckProgram, HealthCheckProgramDTO.class))
-        //         .collect(Collectors.toList());
+        // List<HealthCheckProgramDTO> healthCheckPrograms =
+        // healthCheckProgramRepository
+        // .findByStatus(HealthCheckProgramStatus.ON_GOING)
+        // .stream()
+        // .map(healthCheckProgram -> modelMapper.map(healthCheckProgram,
+        // HealthCheckProgramDTO.class))
+        // .collect(Collectors.toList());
 
         // return new OnGoingProgramDTO(vaccinePrograms, healthCheckPrograms);
         return null;
@@ -410,20 +553,23 @@ public class NurseService {
     public MedicalEventDTO createMedicalEvent(int nurseId, MedicalEventRequest request) {
         // Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
         // if (nurseOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
 
         // UserEntity nurse = nurseOpt.get();
 
-        // Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+        // Optional<StudentEntity> studentOpt =
+        // studentRepository.findStudentById(request.getStudentId());
         // if (studentOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
 
         // StudentEntity student = studentOpt.get();
 
         // Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository
-        //         .findByStudentAndTypeEventAndDescription(student, request.getTypeEvent(), request.getDescription());
+        // .findByStudentAndTypeEventAndDescription(student, request.getTypeEvent(),
+        // request.getDescription());
         // if (medicalEventOpt.isPresent())
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical event already exists");
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical event
+        // already exists");
 
         // MedicalEventEntity medicalEventEntity = new MedicalEventEntity();
         // medicalEventEntity.setTypeEvent(request.getTypeEvent());
@@ -434,21 +580,22 @@ public class NurseService {
 
         // medicalEventRepository.save(medicalEventEntity);
 
-        // MedicalEventDTO dto = modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
+        // MedicalEventDTO dto = modelMapper.map(medicalEventEntity,
+        // MedicalEventDTO.class);
         // dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
 
         // UserEntity parent = student.getParent();
         // if (parent != null) {
-        //     UserDTO userDTO = UserDTO.builder()
-        //             .id(parent.getUserId())
-        //             .fullName(parent.getFullName())
-        //             .email(parent.getEmail())
-        //             .phone(parent.getPhone())
-        //             .address(parent.getAddress())
-        //             .role(parent.getRole())
-        //             .build();
+        // UserDTO userDTO = UserDTO.builder()
+        // .id(parent.getUserId())
+        // .fullName(parent.getFullName())
+        // .email(parent.getEmail())
+        // .phone(parent.getPhone())
+        // .address(parent.getAddress())
+        // .role(parent.getRole())
+        // .build();
 
-        //     dto.setParentDTO(userDTO);
+        // dto.setParentDTO(userDTO);
         // }
 
         // return dto;
@@ -456,21 +603,24 @@ public class NurseService {
     }
 
     public MedicalEventDTO updateMedicalEvent(int nurseId, int medicalEventId, MedicalEventRequest request) {
-        // Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findByEventId(medicalEventId);
+        // Optional<MedicalEventEntity> medicalEventOpt =
+        // medicalEventRepository.findByEventId(medicalEventId);
         // if (medicalEventOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not
+        // found");
 
         // MedicalEventEntity medicalEventEntity = medicalEventOpt.get();
 
         // Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
         // if (nurseOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
 
         // UserEntity nurse = nurseOpt.get();
 
-        // Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+        // Optional<StudentEntity> studentOpt =
+        // studentRepository.findStudentById(request.getStudentId());
         // if (studentOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
 
         // StudentEntity student = studentOpt.get();
 
@@ -487,23 +637,29 @@ public class NurseService {
     }
 
     public MedicalEventDTO getMedicalEvent(int medicalEventId) {
-        // Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findByEventId(medicalEventId);
+        // Optional<MedicalEventEntity> medicalEventOpt =
+        // medicalEventRepository.findByEventId(medicalEventId);
         // if (medicalEventOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not
+        // found");
         // MedicalEventEntity medicalEventEntity = medicalEventOpt.get();
-        // MedicalEventDTO medicalEventDTO = modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
+        // MedicalEventDTO medicalEventDTO = modelMapper.map(medicalEventEntity,
+        // MedicalEventDTO.class);
         // if (medicalEventEntity.getNurse() != null) {
-        //     UserDTO nurseDTO = modelMapper.map(medicalEventEntity.getNurse(), UserDTO.class);
-        //     medicalEventDTO.setNurseDTO(nurseDTO);
+        // UserDTO nurseDTO = modelMapper.map(medicalEventEntity.getNurse(),
+        // UserDTO.class);
+        // medicalEventDTO.setNurseDTO(nurseDTO);
         // }
         // if (medicalEventEntity.getStudent() != null) {
-        //     StudentDTO studentDTO = modelMapper.map(medicalEventEntity.getStudent(), StudentDTO.class);
-        //     medicalEventDTO.setStudentDTO(studentDTO);
+        // StudentDTO studentDTO = modelMapper.map(medicalEventEntity.getStudent(),
+        // StudentDTO.class);
+        // medicalEventDTO.setStudentDTO(studentDTO);
 
-        //     if (medicalEventEntity.getStudent().getParent() != null) {
-        //         UserDTO parentDTO = modelMapper.map(medicalEventEntity.getStudent().getParent(), UserDTO.class);
-        //         medicalEventDTO.setParentDTO(parentDTO);
-        //     }
+        // if (medicalEventEntity.getStudent().getParent() != null) {
+        // UserDTO parentDTO =
+        // modelMapper.map(medicalEventEntity.getStudent().getParent(), UserDTO.class);
+        // medicalEventDTO.setParentDTO(parentDTO);
+        // }
         // }
         // return medicalEventDTO;
         return null;
@@ -513,50 +669,53 @@ public class NurseService {
         // List<MedicalEventEntity> events = medicalEventRepository.findAll();
 
         // if (events.isEmpty()) {
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not
+        // found");
         // }
 
         // List<MedicalEventDTO> medicalEventDTOList = new ArrayList<>();
 
         // for (MedicalEventEntity event : events) {
-        //     MedicalEventDTO dto = new MedicalEventDTO();
-        //     dto.setEventId(event.getEventId());
-        //     dto.setTypeEvent(event.getTypeEvent());
-        //     dto.setDate(event.getDate());
-        //     dto.setDescription(event.getDescription());
-        //     if (event.getNurse() != null) {
-        //         UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
-        //         dto.setNurseDTO(nurseDTO);
-        //     }
-        //     StudentEntity student = event.getStudent();
-        //     if (student != null) {
-        //         dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
-        //         ClassEntity classEntity = student.getClassEntity();
-        //         dto.setClassDTO(modelMapper.map(classEntity, ClassDTO.class));
-        //         UserEntity parent = student.getParent();
-        //         if (parent != null) {
-        //             UserDTO userDTO = UserDTO.builder()
-        //                     .id(parent.getUserId())
-        //                     .fullName(parent.getFullName())
-        //                     .email(parent.getEmail())
-        //                     .phone(parent.getPhone())
-        //                     .address(parent.getAddress())
-        //                     .role(parent.getRole())
-        //                     .build();
+        // MedicalEventDTO dto = new MedicalEventDTO();
+        // dto.setEventId(event.getEventId());
+        // dto.setTypeEvent(event.getTypeEvent());
+        // dto.setDate(event.getDate());
+        // dto.setDescription(event.getDescription());
+        // if (event.getNurse() != null) {
+        // UserDTO nurseDTO = modelMapper.map(event.getNurse(), UserDTO.class);
+        // dto.setNurseDTO(nurseDTO);
+        // }
+        // StudentEntity student = event.getStudent();
+        // if (student != null) {
+        // dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
+        // ClassEntity classEntity = student.getClassEntity();
+        // dto.setClassDTO(modelMapper.map(classEntity, ClassDTO.class));
+        // UserEntity parent = student.getParent();
+        // if (parent != null) {
+        // UserDTO userDTO = UserDTO.builder()
+        // .id(parent.getUserId())
+        // .fullName(parent.getFullName())
+        // .email(parent.getEmail())
+        // .phone(parent.getPhone())
+        // .address(parent.getAddress())
+        // .role(parent.getRole())
+        // .build();
 
-        //             dto.setParentDTO(userDTO);
-        //         }
-        //     }
-        //     medicalEventDTOList.add(dto);
+        // dto.setParentDTO(userDTO);
+        // }
+        // }
+        // medicalEventDTOList.add(dto);
         // }
         // return medicalEventDTOList;
         return null;
     }
 
     public void deleteMedicalEvent(int meidcalEventId) {
-        // Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findByEventId(meidcalEventId);
+        // Optional<MedicalEventEntity> medicalEventOpt =
+        // medicalEventRepository.findByEventId(meidcalEventId);
         // if (medicalEventOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not
+        // found");
         // MedicalEventEntity medicalEventEntity = medicalEventOpt.get();
         // medicalEventRepository.delete(medicalEventEntity);
 
@@ -565,90 +724,102 @@ public class NurseService {
     public HealthCheckResultDTO createHealthCheckResult(HealthCheckResultRequest request) {
 
         // Optional<HealthCheckFormEntity> healCheckFormOpt = healthCheckFormRepository
-        //         .findById(request.getHealthCheckFormId());
+        // .findById(request.getHealthCheckFormId());
         // if (healCheckFormOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form
+        // not found");
         // HealthCheckFormEntity healthCheckFormEntity = healCheckFormOpt.get();
 
-        // if (healthCheckFormEntity.getCommit() == null || !healthCheckFormEntity.getCommit()) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Parent has not committed the health check form yet");
+        // if (healthCheckFormEntity.getCommit() == null ||
+        // !healthCheckFormEntity.getCommit()) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Parent has not committed the health check form yet");
         // }
 
-        // HealthCheckFormDTO healthCheckFormDTO = modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
+        // HealthCheckFormDTO healthCheckFormDTO =
+        // modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
 
-        // Optional<HealthCheckResultEntity> existingResultOpt = healthCheckResultRepository
-        //         .findByHealthCheckFormEntity(healthCheckFormEntity);
+        // Optional<HealthCheckResultEntity> existingResultOpt =
+        // healthCheckResultRepository
+        // .findByHealthCheckFormEntity(healthCheckFormEntity);
         // if (existingResultOpt.isPresent()) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Health check result already exists for this student: "
-        //                     + healthCheckFormEntity.getStudent().getId());
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Health check result already exists for this student: "
+        // + healthCheckFormEntity.getStudent().getId());
         // }
 
-        // HealthCheckResultEntity healthCheckResultEntity = new HealthCheckResultEntity();
+        // HealthCheckResultEntity healthCheckResultEntity = new
+        // HealthCheckResultEntity();
         // healthCheckResultEntity.setDiagnosis(request.getDiagnosis());
         // healthCheckResultEntity.setLevel(HealthCheckResultEntity.Level.valueOf(request.getLevel().toUpperCase()));
         // healthCheckResultEntity.setNote(request.getNote());
         // healthCheckResultEntity.setHealthCheckFormEntity(healthCheckFormEntity);
         // healthCheckResultRepository.save(healthCheckResultEntity);
 
-        // HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,
-        //         HealthCheckResultDTO.class);
+        // HealthCheckResultDTO healthCheckResultDTO =
+        // modelMapper.map(healthCheckResultEntity,
+        // HealthCheckResultDTO.class);
         // healthCheckResultDTO.setHealthCheckFormDTO(healthCheckFormDTO);
         // healthCheckResultDTO.setStudentDTO(
-        //         modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
+        // modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
 
         // return healthCheckResultDTO;
         return null;
     }
 
     public List<HealthCheckResultDTO> createDefaultHealthCheckResultsForAllCommittedForms() {
-        // List<HealthCheckFormEntity> committedForms = healthCheckFormRepository.findByCommitTrue();
+        // List<HealthCheckFormEntity> committedForms =
+        // healthCheckFormRepository.findByCommitTrue();
         // List<HealthCheckResultDTO> resultList = new ArrayList<>();
 
         // for (HealthCheckFormEntity form : committedForms) {
-        //     boolean exists = healthCheckResultRepository.findByHealthCheckFormEntity(form).isPresent();
-        //     if (exists)
-        //         continue;
+        // boolean exists =
+        // healthCheckResultRepository.findByHealthCheckFormEntity(form).isPresent();
+        // if (exists)
+        // continue;
 
-        //     HealthCheckResultRequest defaultRequest = new HealthCheckResultRequest();
-        //     defaultRequest.setDiagnosis("GOOD");
-        //     defaultRequest.setLevel("GOOD");
-        //     defaultRequest.setNote("No problem");
-        //     defaultRequest.setHealthCheckFormId(form.getId());
+        // HealthCheckResultRequest defaultRequest = new HealthCheckResultRequest();
+        // defaultRequest.setDiagnosis("GOOD");
+        // defaultRequest.setLevel("GOOD");
+        // defaultRequest.setNote("No problem");
+        // defaultRequest.setHealthCheckFormId(form.getId());
 
-        //     try {
-        //         HealthCheckResultDTO resultDTO = createHealthCheckResult(defaultRequest);
-        //         resultList.add(resultDTO);
-        //     } catch (ResponseStatusException ex) {
-        //         System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " + ex.getReason());
-        //     }
+        // try {
+        // HealthCheckResultDTO resultDTO = createHealthCheckResult(defaultRequest);
+        // resultList.add(resultDTO);
+        // } catch (ResponseStatusException ex) {
+        // System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " +
+        // ex.getReason());
+        // }
         // }
         // return resultList;
         return null;
     }
 
     public List<HealthCheckResultDTO> createDefaultHealthCheckResultsByProgramId(int programId) {
-        // List<HealthCheckFormEntity> committedForms = healthCheckFormRepository.findCommittedFormsByProgramId(programId);
+        // List<HealthCheckFormEntity> committedForms =
+        // healthCheckFormRepository.findCommittedFormsByProgramId(programId);
         // List<HealthCheckResultDTO> resultList = new ArrayList<>();
 
         // for (HealthCheckFormEntity form : committedForms) {
-        //     boolean exists = healthCheckResultRepository.findByHealthCheckFormEntity(form).isPresent();
-        //     if (exists)
-        //         continue;
+        // boolean exists =
+        // healthCheckResultRepository.findByHealthCheckFormEntity(form).isPresent();
+        // if (exists)
+        // continue;
 
-        //     HealthCheckResultRequest defaultRequest = new HealthCheckResultRequest();
-        //     defaultRequest.setDiagnosis("GOOD");
-        //     defaultRequest.setLevel("GOOD");
-        //     defaultRequest.setNote("No problem");
-        //     defaultRequest.setHealthCheckFormId(form.getId());
+        // HealthCheckResultRequest defaultRequest = new HealthCheckResultRequest();
+        // defaultRequest.setDiagnosis("GOOD");
+        // defaultRequest.setLevel("GOOD");
+        // defaultRequest.setNote("No problem");
+        // defaultRequest.setHealthCheckFormId(form.getId());
 
-        //     try {
-        //         HealthCheckResultDTO resultDTO = createHealthCheckResult(defaultRequest);
-        //         resultList.add(resultDTO);
-        //     } catch (ResponseStatusException ex) {
-        //         System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " + ex.getReason());
-        //     }
+        // try {
+        // HealthCheckResultDTO resultDTO = createHealthCheckResult(defaultRequest);
+        // resultList.add(resultDTO);
+        // } catch (ResponseStatusException ex) {
+        // System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " +
+        // ex.getReason());
+        // }
         // }
 
         // return resultList;
@@ -657,25 +828,30 @@ public class NurseService {
 
     public HealthCheckResultDTO updateHealthCheckResult(int healCheckResultId, HealthCheckResultRequest request) {
 
-        // Optional<HealthCheckResultEntity> existingResultOpt = healthCheckResultRepository
-        //         .findByHealthResultId(healCheckResultId);
+        // Optional<HealthCheckResultEntity> existingResultOpt =
+        // healthCheckResultRepository
+        // .findByHealthResultId(healCheckResultId);
         // if (existingResultOpt.isEmpty()) {
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check result not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check result
+        // not found");
         // }
 
         // Optional<HealthCheckFormEntity> healCheckFormOpt = healthCheckFormRepository
-        //         .findById(request.getHealthCheckFormId());
+        // .findById(request.getHealthCheckFormId());
         // if (healCheckFormOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check form
+        // not found");
 
         // HealthCheckFormEntity healthCheckFormEntity = healCheckFormOpt.get();
 
-        // if (healthCheckFormEntity.getCommit() == null || !healthCheckFormEntity.getCommit()) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Parent has not committed the health check form yet");
+        // if (healthCheckFormEntity.getCommit() == null ||
+        // !healthCheckFormEntity.getCommit()) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Parent has not committed the health check form yet");
         // }
 
-        // HealthCheckFormDTO healthCheckFormDTO = modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
+        // HealthCheckFormDTO healthCheckFormDTO =
+        // modelMapper.map(healthCheckFormEntity, HealthCheckFormDTO.class);
         // HealthCheckResultEntity healthCheckResultEntity = existingResultOpt.get();
         // healthCheckResultEntity.setDiagnosis(request.getDiagnosis());
         // healthCheckResultEntity.setLevel(HealthCheckResultEntity.Level.valueOf(request.getLevel().toUpperCase()));
@@ -687,26 +863,28 @@ public class NurseService {
         // healthCheckResultRepository.save(healthCheckResultEntity);
 
         // try {
-        //     MedicalRecordEntity medicalRecordEntity = medicalRecordsRepository
-        //             .findMedicalRecordByStudent_Id(healthCheckFormEntity.getStudent().getId())
-        //             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //                     "Not found medical record by student"));
+        // MedicalRecordEntity medicalRecordEntity = medicalRecordsRepository
+        // .findMedicalRecordByStudent_Id(healthCheckFormEntity.getStudent().getId())
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Not found medical record by student"));
 
-        //     medicalRecordEntity.setVision(healthCheckResultEntity.getVision());
-        //     medicalRecordEntity.setHearing(healthCheckResultEntity.getHearing());
-        //     medicalRecordEntity.setWeight(healthCheckResultEntity.getWeight());
-        //     medicalRecordEntity.setHeight(healthCheckResultEntity.getHeight());
-        //     medicalRecordEntity.setCreateBy((byte) 1);
-        //     medicalRecordsRepository.save(medicalRecordEntity);
+        // medicalRecordEntity.setVision(healthCheckResultEntity.getVision());
+        // medicalRecordEntity.setHearing(healthCheckResultEntity.getHearing());
+        // medicalRecordEntity.setWeight(healthCheckResultEntity.getWeight());
+        // medicalRecordEntity.setHeight(healthCheckResultEntity.getHeight());
+        // medicalRecordEntity.setCreateBy((byte) 1);
+        // medicalRecordsRepository.save(medicalRecordEntity);
         // } catch (Exception e) {
-        //     throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error updating medical record", e);
+        // throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error
+        // updating medical record", e);
         // }
 
-        // HealthCheckResultDTO healthCheckResultDTO = modelMapper.map(healthCheckResultEntity,
-        //         HealthCheckResultDTO.class);
+        // HealthCheckResultDTO healthCheckResultDTO =
+        // modelMapper.map(healthCheckResultEntity,
+        // HealthCheckResultDTO.class);
         // healthCheckResultDTO.setHealthCheckFormDTO(healthCheckFormDTO);
         // healthCheckResultDTO.setStudentDTO(
-        //         modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
+        // modelMapper.map(healthCheckFormEntity.getStudent(), StudentDTO.class));
 
         // return healthCheckResultDTO;
         return null;
@@ -714,23 +892,28 @@ public class NurseService {
 
     public HealthCheckResultDTO getHealthCheckResult(int healthCheckResultId) {
         // HealthCheckResultEntity healthCheckResultEntity = healthCheckResultRepository
-        //         .findByHealthResultId(healthCheckResultId)
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check result not found"));
-        // HealthCheckResultDTO dto = modelMapper.map(healthCheckResultEntity, HealthCheckResultDTO.class);
+        // .findByHealthResultId(healthCheckResultId)
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Health
+        // check result not found"));
+        // HealthCheckResultDTO dto = modelMapper.map(healthCheckResultEntity,
+        // HealthCheckResultDTO.class);
 
-        // HealthCheckFormEntity formEntity = healthCheckResultEntity.getHealthCheckFormEntity();
-        // HealthCheckFormDTO formDTO = modelMapper.map(formEntity, HealthCheckFormDTO.class);
+        // HealthCheckFormEntity formEntity =
+        // healthCheckResultEntity.getHealthCheckFormEntity();
+        // HealthCheckFormDTO formDTO = modelMapper.map(formEntity,
+        // HealthCheckFormDTO.class);
         // dto.setHealthCheckFormDTO(formDTO);
 
         // StudentEntity student = formEntity.getStudent();
         // StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
 
         // if (student.getClassEntity() != null) {
-        //     studentDTO.setClassDTO(modelMapper.map(student.getClassEntity(), ClassDTO.class));
+        // studentDTO.setClassDTO(modelMapper.map(student.getClassEntity(),
+        // ClassDTO.class));
         // }
 
         // if (student.getParent() != null) {
-        //     studentDTO.setUserDTO(modelMapper.map(student.getParent(), UserDTO.class));
+        // studentDTO.setUserDTO(modelMapper.map(student.getParent(), UserDTO.class));
         // }
 
         // dto.setStudentDTO(studentDTO);
@@ -740,43 +923,46 @@ public class NurseService {
     }
 
     public List<HealthCheckResultDTO> getHealthCheckResultByProgram(int programId) {
-        // List<HealthCheckResultEntity> resultEntityList = healthCheckResultRepository
-        //         .findByHealthCheckFormEntity_HealthCheckProgram_Id(programId);
+        List<HealthCheckResultEntity> resultEntityList = healthCheckResultRepository
+                .findByHealthCheckForm_HealthCheckProgram_Id(programId);
 
-        // if (resultEntityList.isEmpty()) {
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check result found for this program");
-        // }
+        if (resultEntityList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No health check result found for this program");
+        }
 
-        // List<HealthCheckResultDTO> dtoList = new ArrayList<>();
+        List<HealthCheckResultDTO> dtoList = new ArrayList<>();
 
-        // for (HealthCheckResultEntity entity : resultEntityList) {
-        //     HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
+        for (HealthCheckResultEntity entity : resultEntityList) {
+            HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
 
-        //     HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
-        //     dto.setHealthCheckFormDTO(modelMapper.map(form, HealthCheckFormDTO.class));
+            HealthCheckFormEntity form = entity.getHealthCheckForm();
+            HealthCheckFormDTO formDTO = modelMapper.map(form, HealthCheckFormDTO.class);
+            dto.setHealthCheckFormDTO(formDTO);
 
-        //     StudentEntity student = form.getStudent();
-        //     StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
+            StudentEntity student = form.getStudent();
+            StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
+            if (student.getClassEntity() != null)
+                studentDTO.setClassDTO(modelMapper.map(student.getClassEntity(), ClassDTO.class));
+            if (student.getParent() != null)
+                studentDTO.setParentDTO(modelMapper.map(student.getParent(), UserDTO.class));
+            dto.setStudentDTO(studentDTO);
 
-        //     if (student.getClassEntity() != null)
-        //         studentDTO.setClassDTO(modelMapper.map(student.getClassEntity(), ClassDTO.class));
+            if (form.getNurse() != null)
+                dto.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
 
-        //     if (student.getParent() != null)
-        //         studentDTO.setUserDTO(modelMapper.map(student.getParent(), UserDTO.class));
+            dtoList.add(dto);
+        }
 
-        //     dto.setStudentDTO(studentDTO);
-        //     dtoList.add(dto);
-        // }
-
-        // return dtoList;
-        return null;
+        return dtoList;
     }
 
     public void deleteHealthCheckResult(int healthCheckResultId) {
-        // Optional<HealthCheckResultEntity> healthCheckResultOpt = healthCheckResultRepository
-        //         .findByHealthResultId(healthCheckResultId);
+        // Optional<HealthCheckResultEntity> healthCheckResultOpt =
+        // healthCheckResultRepository
+        // .findByHealthResultId(healthCheckResultId);
         // if (healthCheckResultOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check result not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Health check result
+        // not found");
         // HealthCheckResultEntity healthCheckResultEntity = healthCheckResultOpt.get();
         // healthCheckResultRepository.delete(healthCheckResultEntity);
 
@@ -784,28 +970,32 @@ public class NurseService {
 
     public VaccineResultDTO createVaccineResult(VaccineResultRequest request) {
 
-        // Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(request.getVaccineFormId());
+        // Optional<VaccineFormEntity> vaccineFormOpt =
+        // vaccineFormRepository.findById(request.getVaccineFormId());
         // if (vaccineFormOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not
+        // found");
 
         // VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
 
         // if (Boolean.FALSE.equals(vaccineFormEntity.getCommit())) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent has not committed the vaccine form yet");
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent has not
+        // committed the vaccine form yet");
         // }
 
         // Optional<VaccineResultEntity> existingResultOpt = vaccineResultRepository
-        //         .findByVaccineFormEntity(vaccineFormEntity);
+        // .findByVaccineFormEntity(vaccineFormEntity);
         // if (existingResultOpt.isPresent()) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Vaccine result already exists for this student: " + vaccineFormEntity.getStudent().getId());
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Vaccine result already exists for this student: " +
+        // vaccineFormEntity.getStudent().getId());
         // }
 
         // int studentId = vaccineFormEntity.getStudent().getId();
         // MedicalRecordEntity medicalRecordEntity = medicalRecordsRepository
-        //         .findMedicalRecordByStudent_Id(studentId)
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //                 "Not found medical record by student"));
+        // .findMedicalRecordByStudent_Id(studentId)
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Not found medical record by student"));
 
         // VaccineResultEntity vaccineResultEntity = new VaccineResultEntity();
         // vaccineResultEntity.setStatusHealth(request.getStatusHealth());
@@ -821,8 +1011,8 @@ public class NurseService {
         // VaccineNameEntity vaccineNameEntity = program.getVaccineName();
 
         // if (vaccineNameEntity == null) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        //             "Vaccine program missing vaccine name entity");
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        // "Vaccine program missing vaccine name entity");
         // }
 
         // history.setVaccineNameEntity(vaccineNameEntity);
@@ -831,34 +1021,40 @@ public class NurseService {
 
         // vaccineHistoryRepository.save(history);
 
-        // VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
-        // vaccineResultDTO.setVaccineFormDTO(modelMapper.map(vaccineFormEntity, VaccineFormDTO.class));
-        // vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
+        // VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity,
+        // VaccineResultDTO.class);
+        // vaccineResultDTO.setVaccineFormDTO(modelMapper.map(vaccineFormEntity,
+        // VaccineFormDTO.class));
+        // vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(),
+        // StudentDTO.class));
         // return vaccineResultDTO;
         return null;
     }
 
     public List<VaccineResultDTO> createDefaultVaccineResultsForAllCommittedForms() {
-        // List<VaccineFormEntity> committedForms = vaccineFormRepository.findByCommitTrue();
+        // List<VaccineFormEntity> committedForms =
+        // vaccineFormRepository.findByCommitTrue();
         // List<VaccineResultDTO> resultList = new ArrayList<>();
 
         // for (VaccineFormEntity form : committedForms) {
-        //     boolean exists = vaccineResultRepository.findByVaccineFormEntity(form).isPresent();
-        //     if (exists)
-        //         continue;
+        // boolean exists =
+        // vaccineResultRepository.findByVaccineFormEntity(form).isPresent();
+        // if (exists)
+        // continue;
 
-        //     VaccineResultRequest defaultRequest = new VaccineResultRequest();
-        //     defaultRequest.setReaction("No reaction");
-        //     defaultRequest.setStatusHealth("GOOD");
-        //     defaultRequest.setResultNote("No problem");
-        //     defaultRequest.setVaccineFormId(form.getId());
+        // VaccineResultRequest defaultRequest = new VaccineResultRequest();
+        // defaultRequest.setReaction("No reaction");
+        // defaultRequest.setStatusHealth("GOOD");
+        // defaultRequest.setResultNote("No problem");
+        // defaultRequest.setVaccineFormId(form.getId());
 
-        //     try {
-        //         VaccineResultDTO resultDTO = createVaccineResult(defaultRequest);
-        //         resultList.add(resultDTO);
-        //     } catch (ResponseStatusException ex) {
-        //         System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " + ex.getReason());
-        //     }
+        // try {
+        // VaccineResultDTO resultDTO = createVaccineResult(defaultRequest);
+        // resultList.add(resultDTO);
+        // } catch (ResponseStatusException ex) {
+        // System.out.println("Lỗi tạo result cho formId=" + form.getId() + ": " +
+        // ex.getReason());
+        // }
         // }
 
         // return resultList;
@@ -866,19 +1062,25 @@ public class NurseService {
     }
 
     public VaccineResultDTO updateVaccineResult(int vaccineResultId, VaccineResultRequest request) {
-        // Optional<VaccineResultEntity> existingResultOpt = vaccineResultRepository.findById(vaccineResultId);
+        // Optional<VaccineResultEntity> existingResultOpt =
+        // vaccineResultRepository.findById(vaccineResultId);
         // if (existingResultOpt.isEmpty()) {
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not
+        // found");
         // }
 
-        // Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(request.getVaccineFormId());
+        // Optional<VaccineFormEntity> vaccineFormOpt =
+        // vaccineFormRepository.findById(request.getVaccineFormId());
         // if (vaccineFormOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine form not
+        // found");
 
         // VaccineFormEntity vaccineFormEntity = vaccineFormOpt.get();
 
-        // if (vaccineFormEntity.getCommit() == null || !vaccineFormEntity.getCommit()) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent has not committed the vaccine form yet");
+        // if (vaccineFormEntity.getCommit() == null || !vaccineFormEntity.getCommit())
+        // {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent has not
+        // committed the vaccine form yet");
         // }
 
         // VaccineResultEntity vaccineResultEntity = existingResultOpt.get();
@@ -890,19 +1092,25 @@ public class NurseService {
         // vaccineResultEntity.setVaccineFormEntity(vaccineFormEntity);
         // vaccineResultRepository.save(vaccineResultEntity);
 
-        // VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
-        // vaccineResultDTO.setVaccineFormDTO(modelMapper.map(vaccineFormEntity, VaccineFormDTO.class));
-        // vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(), StudentDTO.class));
+        // VaccineResultDTO vaccineResultDTO = modelMapper.map(vaccineResultEntity,
+        // VaccineResultDTO.class);
+        // vaccineResultDTO.setVaccineFormDTO(modelMapper.map(vaccineFormEntity,
+        // VaccineFormDTO.class));
+        // vaccineResultDTO.setStudentDTO(modelMapper.map(vaccineFormEntity.getStudent(),
+        // StudentDTO.class));
 
         // return vaccineResultDTO;
         return null;
     }
 
     public VaccineResultDTO getVaccineResult(int vaccineResultId) {
-        // VaccineResultEntity vaccineResultEntity = vaccineResultRepository.findById(vaccineResultId)
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not found"));
+        // VaccineResultEntity vaccineResultEntity =
+        // vaccineResultRepository.findById(vaccineResultId)
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine
+        // result not found"));
 
-        // VaccineResultDTO dto = modelMapper.map(vaccineResultEntity, VaccineResultDTO.class);
+        // VaccineResultDTO dto = modelMapper.map(vaccineResultEntity,
+        // VaccineResultDTO.class);
 
         // VaccineFormEntity formEntity = vaccineResultEntity.getVaccineFormEntity();
         // VaccineFormDTO formDTO = modelMapper.map(formEntity, VaccineFormDTO.class);
@@ -912,11 +1120,12 @@ public class NurseService {
         // StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
 
         // if (student.getClassEntity() != null) {
-        //     studentDTO.setClassDTO(modelMapper.map(student.getClassEntity(), ClassDTO.class));
+        // studentDTO.setClassDTO(modelMapper.map(student.getClassEntity(),
+        // ClassDTO.class));
         // }
 
         // if (student.getParent() != null) {
-        //     studentDTO.setUserDTO(modelMapper.map(student.getParent(), UserDTO.class));
+        // studentDTO.setUserDTO(modelMapper.map(student.getParent(), UserDTO.class));
         // }
 
         // dto.setStudentDTO(studentDTO);
@@ -926,10 +1135,12 @@ public class NurseService {
     }
 
     public List<VaccineResultDTO> getVaccineResultByProgram(int programId) {
-        List<VaccineResultEntity> resultEntities = vaccineResultRepository.findByVaccineFormEntity_VaccineProgram_VaccineId(programId);
+        List<VaccineResultEntity> resultEntities = vaccineResultRepository
+                .findByVaccineFormEntity_VaccineProgram_VaccineId(programId);
 
         if (resultEntities.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chưa có kết quả nào cho chương trình tiêm chủng này!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Chưa có kết quả nào cho chương trình tiêm chủng này!");
         }
 
         List<VaccineResultDTO> dtoList = new ArrayList<>();
@@ -937,10 +1148,12 @@ public class NurseService {
             VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
 
             StudentDTO studentDTO = modelMapper.map(entity.getVaccineFormEntity().getStudent(), StudentDTO.class);
-            ClassDTO classDTO = modelMapper.map(entity.getVaccineFormEntity().getStudent().getClassEntity(), ClassDTO.class);
+            ClassDTO classDTO = modelMapper.map(entity.getVaccineFormEntity().getStudent().getClassEntity(),
+                    ClassDTO.class);
             classDTO.setStudents(null);
             studentDTO.setClassDTO(classDTO);
-            studentDTO.setParentDTO(modelMapper.map(entity.getVaccineFormEntity().getStudent().getParent(), UserDTO.class));
+            studentDTO.setParentDTO(
+                    modelMapper.map(entity.getVaccineFormEntity().getStudent().getParent(), UserDTO.class));
 
             dto.setStudentDTO(studentDTO);
             dto.setNurseDTO(modelMapper.map(entity.getVaccineFormEntity().getNurse(), UserDTO.class));
@@ -951,9 +1164,11 @@ public class NurseService {
     }
 
     public void deleteVaccineResult(int vaccineResultId) {
-        // Optional<VaccineResultEntity> vaccineResultOpt = vaccineResultRepository.findById(vaccineResultId);
+        // Optional<VaccineResultEntity> vaccineResultOpt =
+        // vaccineResultRepository.findById(vaccineResultId);
         // if (vaccineResultOpt.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine result not
+        // found");
         // VaccineResultEntity vaccineResultEntity = vaccineResultOpt.get();
         // vaccineResultRepository.delete(vaccineResultEntity);
 
@@ -962,20 +1177,21 @@ public class NurseService {
     public List<StudentDTO> getAllStudent() {
         // List<StudentEntity> studentEntityList = studentRepository.findAll();
         // if (studentEntityList.isEmpty())
-        //     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No students found");
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No students found");
 
         // List<StudentDTO> studentDTOList = studentEntityList.stream().map(student -> {
-        //     StudentDTO dto = modelMapper.map(student, StudentDTO.class);
-        //     if (student.getClassEntity() != null) {
-        //         ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
-        //         dto.setClassDTO(classDTO);
-        //     }
+        // StudentDTO dto = modelMapper.map(student, StudentDTO.class);
+        // if (student.getClassEntity() != null) {
+        // ClassDTO classDTO = modelMapper.map(student.getClassEntity(),
+        // ClassDTO.class);
+        // dto.setClassDTO(classDTO);
+        // }
 
-        //     if (student.getParent() != null) {
-        //         UserDTO userDTO = modelMapper.map(student.getParent(), UserDTO.class);
-        //         dto.setUserDTO(userDTO);
-        //     }
-        //     return dto;
+        // if (student.getParent() != null) {
+        // UserDTO userDTO = modelMapper.map(student.getParent(), UserDTO.class);
+        // dto.setUserDTO(userDTO);
+        // }
+        // return dto;
         // }).collect(Collectors.toList());
         // return studentDTOList;
         return null;
@@ -983,19 +1199,22 @@ public class NurseService {
 
     public FeedbackDTO replyToFeedback(Integer feedbackId, ReplyFeedbackRequest request) {
         // FeedbackEntity feedback = feedbackRepository.findById(feedbackId)
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DON'T FIND TO RESPONSE."));
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "DON'T
+        // FIND TO RESPONSE."));
 
         // if (feedback.getStatus() == FeedbackStatus.REPLIED) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "RESPONSE WAS REPLIED");
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "RESPONSE WAS
+        // REPLIED");
         // }
 
         // feedback.setResponseNurse(request.getResponse());
         // feedback.setStatus(FeedbackStatus.REPLIED);
 
         // if (request.getNurseId() != null) {
-        //     UserEntity nurse = userRepository.findById(request.getNurseId())
-        //             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NURSE NOT FOUND"));
-        //     feedback.setNurse(nurse);
+        // UserEntity nurse = userRepository.findById(request.getNurseId())
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NURSE
+        // NOT FOUND"));
+        // feedback.setNurse(nurse);
         // }
 
         // feedbackRepository.save(feedback);
@@ -1006,11 +1225,13 @@ public class NurseService {
 
     public List<FeedbackDTO> getFeedbacksForNurse(Integer nurseId) {
         // UserEntity nurse = userRepository.findById(nurseId.intValue())
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NURSE NOT FOUND."));
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NURSE
+        // NOT FOUND."));
         // List<FeedbackEntity> feedbackList = feedbackRepository.findByNurse(nurse);
 
         // List<FeedbackDTO> feedbackDTOList = feedbackList.stream()
-        //         .map(feedback -> modelMapper.map(feedback, FeedbackDTO.class)).collect(Collectors.toList());
+        // .map(feedback -> modelMapper.map(feedback,
+        // FeedbackDTO.class)).collect(Collectors.toList());
 
         // return feedbackDTOList;
         return null;
@@ -1020,18 +1241,22 @@ public class NurseService {
         // List<FeedbackEntity> feedbackList = feedbackRepository.findAll();
 
         // List<FeedbackDTO> feedbackDTOList = feedbackList.stream()
-        //         .map(feedback -> {
-        //             FeedbackDTO dto = modelMapper.map(feedback, FeedbackDTO.class);
-        //             dto.setParentId(feedback.getParent() != null ? feedback.getParent().getUserId() : null);
-        //             dto.setNurseId(feedback.getNurse() != null ? feedback.getNurse().getUserId() : null);
-        //             dto.setVaccineResultId(
-        //                     feedback.getVaccineResult() != null ? feedback.getVaccineResult().getVaccineResultId()
-        //                             : null);
-        //             dto.setHealthResultId(
-        //                     feedback.getHealthResult() != null ? feedback.getHealthResult().getHealthResultId() : null);
-        //             return dto;
-        //         })
-        //         .collect(Collectors.toList());
+        // .map(feedback -> {
+        // FeedbackDTO dto = modelMapper.map(feedback, FeedbackDTO.class);
+        // dto.setParentId(feedback.getParent() != null ?
+        // feedback.getParent().getUserId() : null);
+        // dto.setNurseId(feedback.getNurse() != null ? feedback.getNurse().getUserId()
+        // : null);
+        // dto.setVaccineResultId(
+        // feedback.getVaccineResult() != null ?
+        // feedback.getVaccineResult().getVaccineResultId()
+        // : null);
+        // dto.setHealthResultId(
+        // feedback.getHealthResult() != null ?
+        // feedback.getHealthResult().getHealthResultId() : null);
+        // return dto;
+        // })
+        // .collect(Collectors.toList());
 
         // return feedbackDTOList;
         return null;
@@ -1041,22 +1266,24 @@ public class NurseService {
         // List<StudentEntity> students;
 
         // if (vaccineProgramId != null) {
-        //     students = studentRepository.findStudentsNeverVaccinatedByProgramId(vaccineProgramId);
+        // students =
+        // studentRepository.findStudentsNeverVaccinatedByProgramId(vaccineProgramId);
         // } else if (vaccineNameId != null) {
-        //     students = studentRepository.findStudentsNeverVaccinatedByVaccineNameId(vaccineNameId);
+        // students =
+        // studentRepository.findStudentsNeverVaccinatedByVaccineNameId(vaccineNameId);
         // } else {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing filter condition");
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing filter
+        // condition");
         // }
 
         // return students.stream()
-        //         .map(s -> modelMapper.map(s, StudentDTO.class))
-        //         .collect(Collectors.toList());
+        // .map(s -> modelMapper.map(s, StudentDTO.class))
+        // .collect(Collectors.toList());
         return null;
     }
 
     public List<ClassStudentDTO> getAllStudenttt() {
         List<ClassEntity> classList = classRepository.findAll();
-
 
         if (classList.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No classes found");
@@ -1064,7 +1291,6 @@ public class NurseService {
         List<ClassStudentDTO> classDTOList = new ArrayList<>();
         for (ClassEntity classEntity : classList) {
             List<StudentEntity> students = studentRepository.findByClassEntity(classEntity);
-
 
             List<StudentDTO> studentDTOs;
             if (students.isEmpty()) {
@@ -1084,32 +1310,28 @@ public class NurseService {
                 }).collect(Collectors.toList());
             }
 
-
             ClassStudentDTO classDTO = modelMapper.map(classEntity, ClassStudentDTO.class);
             classDTO.setStudents(studentDTOs);
-
 
             classDTOList.add(classDTO);
         }
 
-
         return classDTOList;
-
 
     }
 
-
     private String toSlug(String title) {
         // return title.toLowerCase()
-        //         .replaceAll("[^a-z0-9\\s]", "")
-        //         .replaceAll("\\s+", "-");
+        // .replaceAll("[^a-z0-9\\s]", "")
+        // .replaceAll("\\s+", "-");
         return null;
     }
 
     public BlogResponse create(BlogRequest request) {
         // // Lấy thông tin người viết
         // UserEntity author = userRepository.findById(request.getUserId())
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User
+        // not found"));
 
         // // Tạo bài viết mới
         // BlogEntity post = new BlogEntity();
@@ -1134,17 +1356,20 @@ public class NurseService {
 
     public BlogResponse getBySlug(String slug) {
         // BlogEntity post = blogRepository.findBySlug(slug)
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post
+        // not found"));
         // return toResponse(post);
         return null;
     }
 
     public BlogResponse update(int id, BlogRequest request) {
         // BlogEntity post = blogRepository.findById(id)
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post
+        // not found"));
 
         // UserEntity author = userRepository.findById(request.getUserId())
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User
+        // not found"));
 
         // post.setTitle(request.getTitle());
         // post.setSlug(toSlug(request.getTitle()));
@@ -1169,6 +1394,28 @@ public class NurseService {
     }
 
     public List<UserDTO> searchUsers(String keyword, UserRole roleFilter) {
+        // // Lấy toàn bộ danh sách user từ database
+        // List<UserEntity> userList = userRepository.findAll();
+
+        // // Lọc bỏ user có role là ADMIN và theo điều kiện keyword/roleFilter
+        // List<UserDTO> result = userList.stream()
+        // .filter(user -> user.getRole() != UserEntity.UserRole.ADMIN)
+        // .filter(user -> {
+        // boolean matchesKeyword = true;
+        // if (keyword != null && !keyword.isBlank()) {
+        // String lowerKeyword = keyword.toLowerCase();
+        // matchesKeyword = (user.getFullName() != null
+        // && user.getFullName().toLowerCase().contains(lowerKeyword))
+        // || (user.getEmail() != null &&
+        // user.getEmail().toLowerCase().contains(lowerKeyword))
+        // || (user.getPhone() != null &&
+        // user.getPhone().toLowerCase().contains(lowerKeyword));
+        // }
+        // boolean matchesRole = (roleFilter == null || user.getRole() == roleFilter);
+        // return matchesKeyword && matchesRole;
+        // })
+        // .map(user -> modelMapper.map(user, UserDTO.class))
+        // .collect(Collectors.toList());
         /*
          // Lấy toàn bộ danh sách user từ database
          List<UserEntity> userList = userRepository.findAll();
@@ -1195,31 +1442,38 @@ public class NurseService {
          return result;
         */
 
+        // if (result.isEmpty()) {
+        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found");
+        // }
+
+        // return result;
         return null;
     }
 
     public List<StudentDTO> getStudentsByClass(int classId) {
-        // List<StudentEntity> students = studentRepository.findByClassEntity_ClassId(classId);
+        // List<StudentEntity> students =
+        // studentRepository.findByClassEntity_ClassId(classId);
         // return students.stream()
-        //         .map(student -> modelMapper.map(student, StudentDTO.class))
-        //         .collect(Collectors.toList());
+        // .map(student -> modelMapper.map(student, StudentDTO.class))
+        // .collect(Collectors.toList());
         return null;
     }
 
     public List<MedicalRecordDTO> searchMedicalRecordsByStudentName(String keyword) {
-        // List<StudentEntity> students = studentRepository.findByFullNameContainingIgnoreCase(keyword);
+        // List<StudentEntity> students =
+        // studentRepository.findByFullNameContainingIgnoreCase(keyword);
 
         // List<MedicalRecordDTO> medicalRecords = new ArrayList<>();
 
         // for (StudentEntity student : students) {
-        //     Optional<MedicalRecordEntity> recordOpt = medicalRecordsRepository
-        //             .findMedicalRecordByStudent_Id(student.getId());
+        // Optional<MedicalRecordEntity> recordOpt = medicalRecordsRepository
+        // .findMedicalRecordByStudent_Id(student.getId());
 
-        //     recordOpt.ifPresent(record -> {
-        //         MedicalRecordDTO dto = modelMapper.map(record, MedicalRecordDTO.class);
-        //         dto.setStudentId(student.getId());
-        //         medicalRecords.add(dto);
-        //     });
+        // recordOpt.ifPresent(record -> {
+        // MedicalRecordDTO dto = modelMapper.map(record, MedicalRecordDTO.class);
+        // dto.setStudentId(student.getId());
+        // medicalRecords.add(dto);
+        // });
         // }
 
         // return medicalRecords;
@@ -1227,49 +1481,50 @@ public class NurseService {
     }
 
     public List<MedicalRequestDTO> getByStatus(MedicalRequestEntity.MedicalRequestStatus status) {
-        // List<MedicalRequestEntity> entities = medicalRequestRepository.findByStatus(status);
+        // List<MedicalRequestEntity> entities =
+        // medicalRequestRepository.findByStatus(status);
         // return entities.stream()
-        //         .map(this::convertToDTO)
-        //         .collect(Collectors.toList());
+        // .map(this::convertToDTO)
+        // .collect(Collectors.toList());
         return null;
     }
 
     public List<MedicalRequestDTO> getByDate(LocalDate date) {
         // List<MedicalRequestEntity> entities = medicalRequestRepository.findAll()
-        //         .stream()
-        //         .filter(r -> r.getDate().isEqual(date))
-        //         .collect(Collectors.toList());
+        // .stream()
+        // .filter(r -> r.getDate().isEqual(date))
+        // .collect(Collectors.toList());
         // return entities.stream()
-        //         .map(this::convertToDTO)
-        //         .collect(Collectors.toList());
+        // .map(this::convertToDTO)
+        // .collect(Collectors.toList());
         return null;
     }
 
     public List<MedicalRequestDTO> getByClass(int classId) {
         // List<MedicalRequestEntity> entities = medicalRequestRepository.findAll()
-        //         .stream()
-        //         .filter(r -> r.getStudent().getClassEntity().getClassId() == classId)
-        //         .collect(Collectors.toList());
+        // .stream()
+        // .filter(r -> r.getStudent().getClassEntity().getClassId() == classId)
+        // .collect(Collectors.toList());
         // return entities.stream()
-        //         .map(this::convertToDTO)
-        //         .collect(Collectors.toList());
+        // .map(this::convertToDTO)
+        // .collect(Collectors.toList());
         return null;
     }
 
     public List<MedicalRequestDTO> searchByDateRange(LocalDate from, LocalDate to) {
         // List<MedicalRequestEntity> entities = medicalRequestRepository.findAll()
-        //         .stream()
-        //         .filter(r -> !r.getDate().isBefore(from) && !r.getDate().isAfter(to))
-        //         .collect(Collectors.toList());
+        // .stream()
+        // .filter(r -> !r.getDate().isBefore(from) && !r.getDate().isAfter(to))
+        // .collect(Collectors.toList());
         // return entities.stream()
-        //         .map(this::convertToDTO)
-        //         .collect(Collectors.toList());
+        // .map(this::convertToDTO)
+        // .collect(Collectors.toList());
         return null;
     }
 
     public void updateStatus(int requestId, MedicalRequestEntity.MedicalRequestStatus newStatus) {
         // MedicalRequestEntity entity = medicalRequestRepository.findById(requestId)
-        //         .orElseThrow(() -> new NoSuchElementException("Request not found"));
+        // .orElseThrow(() -> new NoSuchElementException("Request not found"));
         // entity.setStatus(newStatus);
         // medicalRequestRepository.save(entity);
     }
@@ -1283,6 +1538,25 @@ public class NurseService {
     }
 
     public void createFormsForHealthCheckProgram(int programId) {
+        // HealthCheckProgramEntity program =
+        // healthCheckProgramRepository.findById(programId)
+        // .orElseThrow(() -> new RuntimeException("Program not found"));
+
+        // List<HealthCheckFormEntity> existingForms =
+        // healthCheckFormRepository.findByHealthCheckProgram_Id(programId);
+        // for (HealthCheckFormEntity form : existingForms) {
+        // if (form.getStatus() == HealthCheckFormEntity.HealthCheckFormStatus.SENT) {
+        // throw new RuntimeException("Health check forms already created for this
+        // program");
+        // } else {
+        // form.setStatus(HealthCheckFormEntity.HealthCheckFormStatus.SENT);
+        // healthCheckFormRepository.save(form);
+        // }
+        // }
+
+        // // List<StudentEntity> students = studentRepository.findAllWithParent();
+
+        // // List<HealthCheckFormEntity> forms = new ArrayList<>();
         /*
          HealthCheckProgramEntity program = healthCheckProgramRepository.findById(programId)
                  .orElseThrow(() -> new RuntimeException("Program not found"));
@@ -1328,7 +1602,69 @@ public class NurseService {
              }
          }
         */
+        // VaccineProgramEntity program =
+        // vaccineProgramRepository.findById(vaccineProgramId)
+        // .orElseThrow(() -> new RuntimeException("Vaccine program not found"));
 
+        // List<StudentEntity> students = studentRepository.findAllWithParent();
+
+        // List<VaccineFormEntity> forms = new ArrayList<>();
+
+        // List<VaccineFormEntity> existingForms =
+        // vaccineFormRepository.findByVaccineProgram_VaccineId(vaccineProgramId);
+        // for (VaccineFormEntity form : existingForms) {
+        // if (form.getStatus() == VaccineFormEntity.VaccineFormStatus.SENT) {
+        // throw new RuntimeException("Health check forms already created for this
+        // program");
+        // } else {
+        // form.setStatus(VaccineFormEntity.VaccineFormStatus.SENT);
+        // vaccineFormRepository.save(form);
+        // }
+        // }
+    }
+
+    public void createResultsByProgramId(int programId, List<HealthCheckResultRequest> resultRequests) {
+        int nurseId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
+        UserEntity nurse = userRepository.findById(nurseId)
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy y tá."));
+
+        for (HealthCheckResultRequest request : resultRequests) {
+            HealthCheckFormEntity form = healthCheckFormRepository.findById(request.getHealthCheckFormId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            "Không tìm thấy form với ID: " + request.getHealthCheckFormId()));
+
+            if (form.getHealthCheckProgram() == null || form.getHealthCheckProgram().getId() != programId) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Form không thuộc chương trình ID: " + programId);
+            }
+
+            if (form.getCommit() == null || !form.getCommit()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Form chưa được commit (ID: " + request.getHealthCheckFormId() + ")");
+            }
+
+            Optional<HealthCheckResultEntity> existed = healthCheckResultRepository.findByHealthCheckForm(form);
+            if (existed.isPresent()) {
+                continue;
+            }
+
+            HealthCheckResultEntity result = new HealthCheckResultEntity();
+            result.setVision(request.getVision());
+            result.setHearing(request.getHearing());
+            result.setWeight(request.getWeight());
+            result.setHeight(request.getHeight());
+            result.setDentalStatus(request.getDentalStatus());
+            result.setBloodPressure(request.getBloodPressure());
+            result.setHeartRate(request.getHeartRate());
+            result.setGeneralCondition(request.getGeneralCondition());
+            result.setNote(request.getNote());
+            result.setIsChecked(request.getIsChecked());
+            result.setHealthCheckForm(form);
+            result.setStudent(form.getStudent());
+            result.setNurse(nurse);
+
+            healthCheckResultRepository.save(result);
+        }
     }
 
     public List<HealthCheckResultDTO> createResultsByProgramId(int programId) {
@@ -1407,6 +1743,96 @@ public class NurseService {
     }
 
     public List<VaccineResultDTO> createVaccineResultsByProgramId(int programId) {
+        // logger.info("Creating vaccine results for program ID: {}", programId);
+        // List<VaccineFormEntity> committedForms =
+        // vaccineFormRepository.findCommittedFormsByProgramId(programId);
+        // List<VaccineResultDTO> resultList = new ArrayList<>();
+
+        // for (VaccineFormEntity form : committedForms) {
+        // Optional<VaccineResultEntity> existingResult =
+        // vaccineResultRepository.findByVaccineFormEntity(form);
+        // if (existingResult.isPresent())
+        // continue;
+
+        // VaccineResultEntity result = new VaccineResultEntity();
+        // result.setVaccineFormEntity(form);
+        // result.setStatusHealth("Tốt");
+        // result.setResultNote("Không");
+        // result.setReaction("Không");
+        // result.setCreatedAt(LocalDateTime.now());
+
+        // VaccineResultEntity savedResult = vaccineResultRepository.save(result);
+
+        // VaccineResultDTO dto = new VaccineResultDTO();
+        // dto.setVaccineResultId(savedResult.getVaccineResultId());
+        // dto.setStatusHealth(savedResult.getStatusHealth());
+        // dto.setResultNote(savedResult.getResultNote());
+        // dto.setReaction(savedResult.getReaction());
+        // dto.setCreatedAt(savedResult.getCreatedAt());
+
+        // VaccineFormDTO formDTO = new VaccineFormDTO();
+        // formDTO.setId(form.getId());
+        // formDTO.setStudentId(form.getStudent() != null ? form.getStudent().getId() :
+        // null);
+        // formDTO.setParentId(form.getParent() != null ? form.getParent().getUserId() :
+        // null);
+        // formDTO.setFormDate(form.getFormDate());
+        // formDTO.setNote(form.getNote());
+        // formDTO.setCommit(form.getCommit());
+        // formDTO.setStatus(form.getStatus() != null ? form.getStatus().name() : null);
+
+        // if (form.getVaccineProgram() != null) {
+        // VaccineProgramDTO vaccineProgramDTO =
+        // modelMapper.map(form.getVaccineProgram(),
+        // VaccineProgramDTO.class);
+        // formDTO.setVaccineProgram(vaccineProgramDTO);
+        // }
+
+        // dto.setVaccineFormDTO(formDTO);
+
+        // if (form.getStudent() != null) {
+        // StudentDTO studentDTO = modelMapper.map(form.getStudent(), StudentDTO.class);
+        // dto.setStudentDTO(studentDTO);
+        // }
+
+        // resultList.add(dto);
+        // if (form.getVaccineProgram() != null &&
+        // form.getVaccineProgram().getVaccineName() != null
+        // && form.getStudent() != null) {
+        // int studentId = form.getStudent().getId();
+        // Optional<MedicalRecordEntity> medicalRecordOpt = medicalRecordsRepository
+        // .findMedicalRecordByStudent_Id(studentId);
+
+        // if (medicalRecordOpt.isPresent()) {
+        // MedicalRecordEntity medicalRecord = medicalRecordOpt.get();
+
+        // VaccineHistoryEntity history = new VaccineHistoryEntity();
+        // history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
+        // history.setMedicalRecord(medicalRecord);
+        // // logger.info(medicalRecord.getRecordId() + " - " +
+        // // history.getVaccineNameEntity().getVaccineName());
+        // history.setNote(DEFAULT_VACCINE_HS_NOTE);
+        // history.setCreateBy((byte) 1);
+
+        // vaccineHistoryRepository.save(history);
+        // } else {
+        // MedicalRecordEntity medicalRecord = new MedicalRecordEntity();
+        // medicalRecord.setStudent(form.getStudent());
+        // medicalRecord.setCreateBy((byte) 1);
+        // medicalRecord.setLastUpdate(LocalDateTime.now());
+        // medicalRecordsRepository.save(medicalRecord);
+
+        // VaccineHistoryEntity history = new VaccineHistoryEntity();
+        // history.setVaccineNameEntity(form.getVaccineProgram().getVaccineName());
+        // history.setMedicalRecord(medicalRecord);
+        // history.setNote(DEFAULT_VACCINE_HS_NOTE);
+        // history.setCreateBy((byte) 1);
+
+        // vaccineHistoryRepository.save(history);
+        // }
+        // }
+
+        // }
         /*
          logger.info("Creating vaccine results for program ID: {}", programId);
          List<VaccineFormEntity> committedForms = vaccineFormRepository.findCommittedFormsByProgramId(programId);
@@ -1485,7 +1911,285 @@ public class NurseService {
          return resultList;
         */
 
+        // Optional<VaccineProgramEntity> programOpt =
+        // vaccineProgramRepository.findById(programId);
+        // programOpt.ifPresent(program -> {
+        // program.setStatus(VaccineProgramStatus.COMPLETED);
+        // vaccineProgramRepository.save(program);
+        // });
+
+        // return resultList;
         return null;
     }
 
+    // Thien
+    public List<ClassDTO> getAllClasses() {
+        List<ClassEntity> classEntities = classRepository.findAll();
+        if (classEntities.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có lớp học nào được tìm thấy");
+        }
+
+        List<ClassDTO> classDTOs = classEntities.stream()
+                .map(classEntity -> modelMapper.map(classEntity, ClassDTO.class))
+                .collect(Collectors.toList());
+
+        for (ClassDTO classDTO : classDTOs) {
+            classDTO.setStudents(null);
+        }
+        return classDTOs;
+    }
+
+    // Thien
+    public List<UserDTO> getAllNurses() {
+        List<UserEntity> nurseEntities = userRepository.findByRole(UserRole.NURSE);
+        if (nurseEntities.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có y tá nào được tìm thấy");
+        }
+
+        List<UserDTO> nurseDTOs = nurseEntities.stream()
+                .map(nurseEntity -> modelMapper.map(nurseEntity, UserDTO.class))
+                .collect(Collectors.toList());
+        return nurseDTOs;
+    }
+
+    public void createHealthCheckForm(int programId, LocalDate expDate) {
+        HealthCheckProgramEntity programEntity = healthCheckProgramRepository.findById(programId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình"));
+
+        if (!expDate.isBefore(programEntity.getStartDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ngày hết hạn phải trước ngày thực hiện chương trình");
+        }
+
+        int nurseId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
+        UserEntity nurse = userRepository.findById(nurseId)
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy y tá với ID: " + nurseId));
+
+        if (!expDate.isBefore(programEntity.getStartDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ngày hết hạn phải trước ngày thực hiện chương trình");
+        }
+
+        List<ParticipateClassEntity> participateClasses = participateClassRepository
+                .findAllByProgramId(programId);
+
+        for (ParticipateClassEntity pc : participateClasses) {
+            List<StudentEntity> students = studentRepository.findByClassEntity(pc.getClazz());
+
+            for (StudentEntity student : students) {
+                UserEntity parent = student.getParent();
+                if (parent == null)
+                    continue;
+
+                boolean hasUncommittedForm = healthCheckFormRepository
+                        .findHealthCheckFormEntityByHealthCheckProgramAndStudent(programEntity, student)
+                        .stream().anyMatch(form -> form.getCommit() == null);
+
+                if (hasUncommittedForm)
+                    continue;
+                HealthCheckFormEntity form = new HealthCheckFormEntity();
+                form.setStudent(student);
+                form.setParent(parent);
+                form.setNotes(null);
+                form.setCommit(null);
+                form.setExpDate(expDate);
+                form.setHealthCheckProgram(programEntity);
+                form.setNurse(nurse);
+                healthCheckFormRepository.save(form);
+            }
+        }
+    }
+
+    public HealthCheckProgramDTO updateHealthCheckProgramStatus(int id, String status) {
+        HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Không tìm thấy chương trình kiểm tra sức khỏe"));
+
+        HealthCheckProgramEntity.HealthCheckProgramStatus newStatus;
+        try {
+            newStatus = HealthCheckProgramEntity.HealthCheckProgramStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ: " + status);
+        }
+
+        if (healthCheckProgramEntity.getStatus() == HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chương trình đã hoàn thành và không thể cập nhật");
+        }
+
+        if (healthCheckProgramEntity.getStatus() == newStatus) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chương trình đã ở trạng thái: " + newStatus);
+        }
+
+        healthCheckProgramEntity.setStatus(newStatus);
+        healthCheckProgramRepository.save(healthCheckProgramEntity);
+
+        UserEntity admin = healthCheckProgramEntity.getAdmin();
+        UserDTO adminDTO = new UserDTO();
+        adminDTO.setId(admin.getUserId());
+        adminDTO.setFullName(admin.getFullName());
+        adminDTO.setEmail(admin.getEmail());
+        adminDTO.setPhone(admin.getPhone());
+        adminDTO.setAddress(admin.getAddress());
+        adminDTO.setRole(admin.getRole());
+
+        UserEntity nurse = healthCheckProgramEntity.getNurse();
+        UserDTO nurseDTO = new UserDTO();
+        nurseDTO.setId(nurse.getUserId());
+        nurseDTO.setFullName(nurse.getFullName());
+        nurseDTO.setEmail(nurse.getEmail());
+        nurseDTO.setPhone(nurse.getPhone());
+        nurseDTO.setAddress(nurse.getAddress());
+        nurseDTO.setRole(nurse.getRole());
+
+        List<ParticipateClassEntity> participateEntities = participateClassRepository
+                .findAllByProgramId(healthCheckProgramEntity.getId());
+
+        List<ParticipateClassDTO> participateClassDTOs = new ArrayList<>();
+        for (ParticipateClassEntity participate : participateEntities) {
+            ParticipateClassDTO participateDTO = new ParticipateClassDTO();
+            participateDTO.setParticipate_id(participate.getParticipateId());
+            participateDTO.setProgram_id(healthCheckProgramEntity.getId());
+            participateDTO.setClass_id(participate.getClazz().getClassId());
+            participateDTO.setType(participate.getType().toString());
+
+            ClassEntity clazz = participate.getClazz();
+            ClassDTO classDTO = new ClassDTO();
+            classDTO.setClassId(clazz.getClassId());
+            classDTO.setClassName(clazz.getClassName());
+            classDTO.setTeacherName(clazz.getTeacherName());
+            classDTO.setQuantity(clazz.getQuantity());
+
+            participateDTO.setClassDTO(classDTO);
+            participateClassDTOs.add(participateDTO);
+        }
+
+        HealthCheckProgramDTO programDTO = new HealthCheckProgramDTO();
+        programDTO.setId(healthCheckProgramEntity.getId());
+        programDTO.setHealthCheckName(healthCheckProgramEntity.getHealthCheckName());
+        programDTO.setDescription(healthCheckProgramEntity.getDescription());
+        programDTO.setDateSendForm(healthCheckProgramEntity.getDateSendForm());
+        programDTO.setStartDate(healthCheckProgramEntity.getStartDate());
+        programDTO.setStatus(healthCheckProgramEntity.getStatus().toString());
+        programDTO.setLocation(healthCheckProgramEntity.getLocation());
+
+        programDTO.setAdminId(admin.getUserId());
+        programDTO.setNurseId(nurse.getUserId());
+        programDTO.setAdminDTO(adminDTO);
+        programDTO.setNurseDTO(nurseDTO);
+        programDTO.setParticipateClasses(participateClassDTOs);
+
+        return programDTO;
+    }
+
+    public List<HealthCheckFormDTO> getCommittedFormsByProgramId(int programId) {
+        List<HealthCheckFormEntity> formEntities = healthCheckFormRepository
+                .findAllByHealthCheckProgram_IdAndCommitTrue(programId);
+
+        List<HealthCheckFormDTO> result = new ArrayList<>();
+
+        for (HealthCheckFormEntity formEntity : formEntities) {
+            HealthCheckFormDTO formDTO = new HealthCheckFormDTO();
+            formDTO.setId(formEntity.getId());
+            formDTO.setExpDate(formEntity.getExpDate());
+            formDTO.setNotes(formEntity.getNotes());
+            formDTO.setCommit(formEntity.getCommit());
+            formDTO.setStudentId(formEntity.getStudent().getId());
+            formDTO.setParentId(formEntity.getParent().getUserId());
+            formDTO.setNurseId(formEntity.getNurse().getUserId());
+
+            // Student + Class
+            StudentEntity student = formEntity.getStudent();
+            StudentDTO studentDTO = new StudentDTO();
+            studentDTO.setStudentId(student.getId());
+            studentDTO.setFullName(student.getFullName());
+            studentDTO.setDob(student.getDob());
+            studentDTO.setGender(student.getGender().toString());
+            studentDTO.setClassId(student.getClassEntity().getClassId());
+            studentDTO.setParentId(student.getParent().getUserId());
+
+            ClassEntity clazz = student.getClassEntity();
+            ClassDTO classDTO = new ClassDTO();
+            classDTO.setClassId(clazz.getClassId());
+            classDTO.setClassName(clazz.getClassName());
+            classDTO.setTeacherName(clazz.getTeacherName());
+            classDTO.setQuantity(clazz.getQuantity());
+            studentDTO.setClassDTO(classDTO);
+
+            formDTO.setStudentDTO(studentDTO);
+
+            UserEntity parent = formEntity.getParent();
+            if (parent != null) {
+                UserDTO parentDTO = new UserDTO();
+                parentDTO.setId(parent.getUserId());
+                parentDTO.setFullName(parent.getFullName());
+                parentDTO.setEmail(parent.getEmail());
+                parentDTO.setPassword(parent.getPassword());
+                parentDTO.setPhone(parent.getPhone());
+                parentDTO.setRelationship(parent.getRelationship());
+                parentDTO.setAddress(parent.getAddress());
+                parentDTO.setRole(parent.getRole());
+
+                formDTO.setParentDTO(parentDTO);
+                studentDTO.setParentDTO(parentDTO);
+            }
+
+            UserEntity nurse = formEntity.getNurse();
+            if (nurse != null) {
+                UserDTO nurseDTO = new UserDTO();
+                nurseDTO.setId(nurse.getUserId());
+                nurseDTO.setFullName(nurse.getFullName());
+                nurseDTO.setEmail(nurse.getEmail());
+                nurseDTO.setPassword(nurse.getPassword());
+                nurseDTO.setPhone(nurse.getPhone());
+                nurseDTO.setRelationship(nurse.getRelationship());
+                nurseDTO.setAddress(nurse.getAddress());
+                nurseDTO.setRole(nurse.getRole());
+                nurseDTO.setStudentDTOs(null);
+                formDTO.setNurseDTO(nurseDTO);
+            }
+
+            HealthCheckProgramEntity program = formEntity.getHealthCheckProgram();
+            HealthCheckProgramDTO programDTO = new HealthCheckProgramDTO();
+            programDTO.setId(program.getId());
+            programDTO.setHealthCheckName(program.getHealthCheckName());
+            programDTO.setDescription(program.getDescription());
+            programDTO.setDateSendForm(program.getDateSendForm());
+            programDTO.setStartDate(program.getStartDate());
+            programDTO.setStatus(program.getStatus().toString());
+            programDTO.setLocation(program.getLocation());
+            programDTO.setAdminId(program.getAdmin().getUserId());
+            programDTO.setNurseId(program.getNurse().getUserId());
+
+            UserEntity admin = program.getAdmin();
+            UserDTO adminDTO = new UserDTO();
+            adminDTO.setId(admin.getUserId());
+            adminDTO.setFullName(admin.getFullName());
+            adminDTO.setEmail(admin.getEmail());
+            adminDTO.setPassword(admin.getPassword());
+            adminDTO.setPhone(admin.getPhone());
+            adminDTO.setRelationship(admin.getRelationship());
+            adminDTO.setAddress(admin.getAddress());
+            adminDTO.setRole(admin.getRole());
+            adminDTO.setStudentDTOs(null);
+            programDTO.setAdminDTO(adminDTO);
+
+            UserDTO nurseDTO = new UserDTO();
+            nurseDTO.setId(nurse.getUserId());
+            nurseDTO.setFullName(nurse.getFullName());
+            nurseDTO.setEmail(nurse.getEmail());
+            nurseDTO.setPassword(nurse.getPassword());
+            nurseDTO.setPhone(nurse.getPhone());
+            nurseDTO.setRelationship(nurse.getRelationship());
+            nurseDTO.setAddress(nurse.getAddress());
+            nurseDTO.setRole(nurse.getRole());
+            nurseDTO.setStudentDTOs(null);
+            programDTO.setNurseDTO(nurseDTO);
+
+            formDTO.setHealthCheckProgramDTO(programDTO);
+
+            result.add(formDTO);
+        }
+        return result;
+    }
 }
