@@ -14,6 +14,8 @@ public class VaccineProgramRequest {
     private LocalDate startDate;
     private LocalDate dateSendForm;
     private String location;
+    private LocalDate expDate; 
     private int nurseId;
+    private int adminId;
     private List<Integer> classIds;
 }

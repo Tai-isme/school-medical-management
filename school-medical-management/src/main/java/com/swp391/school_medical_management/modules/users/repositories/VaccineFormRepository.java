@@ -1,14 +1,15 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
-import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
-import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
 
 public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, Integer> {
     // List<VaccineFormEntity> findVaccineFormEntityByVaccineProgramAndStudent(VaccineProgramEntity vaccineProgramEntity,
@@ -25,7 +26,7 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
 
     // List<VaccineFormEntity> findByCommitTrue();
 
-    // List<VaccineFormEntity> findByCommitTrueAndVaccineProgram_VaccineId(Long programId);
+    List<VaccineFormEntity> findByCommitTrueAndVaccineProgram_VaccineId(int programId);
 
     // List<VaccineFormEntity> findByVaccineProgram_VaccineId(Long programId);
 
@@ -33,6 +34,9 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
     // // VaccineFormStatus status);
 
     List<VaccineFormEntity> findByVaccineProgram(VaccineProgramEntity vaccineProgram);
+
+    List<VaccineFormEntity> findVaccineFormEntityByVaccineProgramAndStudent(
+        VaccineProgramEntity program, StudentEntity student);
 
     // Optional<VaccineFormEntity> findByStudentAndStatus(StudentEntity student, VaccineFormStatus status);
 
@@ -63,4 +67,7 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
             WHERE vf.vaccineProgram.vaccineId = :vaccineId
             """)
     ParticipationRateRaw getParticipationRateByVaccineId(@Param("vaccineId") int vaccineId);
+
+    List<VaccineFormEntity> findByVaccineProgram_VaccineId(int id);
+
 }

@@ -49,6 +49,8 @@ public interface StudentRepository extends JpaRepository<StudentEntity, Integer>
 
     Optional<StudentEntity> findByFullNameAndDobAndClassEntityAndParent(String fullName, LocalDate dob, ClassEntity classEntity, UserEntity parent);
 
+    List<StudentEntity> findAllByClassEntity_ClassId(Integer classId);
+
     // List<StudentEntity> findByFullNameContainingIgnoreCase(String keyword);
 
     // @Query("SELECT s FROM StudentEntity s WHERE s.parent IS NOT NULL")
