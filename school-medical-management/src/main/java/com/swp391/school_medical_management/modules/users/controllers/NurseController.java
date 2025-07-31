@@ -365,4 +365,12 @@ public class NurseController {
         return ResponseEntity.ok(classList);
     }
 
+    //Thien
+    @PreAuthorize("hasAnyRole('ROLE_NURSE', 'ROLE_ADMIN')")
+    @GetMapping("/nurse-list")
+    public ResponseEntity<List<UserDTO>> getAllNurses() {
+        List<UserDTO> nurseList = nurseService.getAllNurses();
+        return ResponseEntity.ok(nurseList);
+    }
+
 }

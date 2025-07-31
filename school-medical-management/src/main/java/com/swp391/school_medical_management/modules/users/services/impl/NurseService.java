@@ -1529,4 +1529,16 @@ public class NurseService {
         return classDTOs;
     }
 
+    //Thien
+    public List<UserDTO> getAllNurses() {
+        List<UserEntity> nurseEntities = userRepository.findByRole(UserRole.NURSE);
+        if (nurseEntities.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có y tá nào được tìm thấy");
+        }
+
+        List<UserDTO> nurseDTOs = nurseEntities.stream()
+                .map(nurseEntity -> modelMapper.map(nurseEntity, UserDTO.class))
+                .collect(Collectors.toList());
+        return nurseDTOs;
+    }
 }
