@@ -95,7 +95,7 @@ public class AdminController {
     }
 
     @PatchMapping("/vaccine-program/{id}")
-    public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(@PathVariable Long id, @RequestParam("status") String status) {
+    public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(@PathVariable int id, @RequestParam("status") String status) {
         VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgramStatus(id, status);
         return ResponseEntity.ok(vaccineProgramDTO);
     }
@@ -123,12 +123,12 @@ public class AdminController {
     @PostMapping("/vaccine-program")
     public ResponseEntity<VaccineProgramDTO> createVaccineProgram(@RequestBody VaccineProgramRequest request) {
         String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
-        VaccineProgramDTO vaccineProgramDTO = adminService.createVaccineProgram(request, Long.parseLong(adminId));
+        VaccineProgramDTO vaccineProgramDTO = adminService.createVaccineProgram(request, Integer.parseInt(adminId));
         return ResponseEntity.status(HttpStatus.CREATED).body(vaccineProgramDTO);
     }
 
     @PutMapping("/vaccine-program/{vaccineProgramId}")
-    public ResponseEntity<VaccineProgramDTO> updateVaccineProgram(@RequestBody VaccineProgramRequest request, @PathVariable long vaccineProgramId) {
+    public ResponseEntity<VaccineProgramDTO> updateVaccineProgram(@RequestBody VaccineProgramRequest request, @PathVariable int vaccineProgramId) {
         VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgram(request, vaccineProgramId);
         return ResponseEntity.ok(vaccineProgramDTO);
     }
@@ -141,13 +141,13 @@ public class AdminController {
     }
 
     @GetMapping("/vaccine-program/{vaccineProgramId}")
-    public ResponseEntity<VaccineProgramDTO> getVaccineProgramById(@PathVariable long vaccineProgramId) {
+    public ResponseEntity<VaccineProgramDTO> getVaccineProgramById(@PathVariable int vaccineProgramId) {
         VaccineProgramDTO vaccineProgramDTO = adminService.getVaccineProgramById(vaccineProgramId);
         return ResponseEntity.ok(vaccineProgramDTO);
     }
 
     @DeleteMapping("/vaccine-program/{vaccineProgramId}")
-    public ResponseEntity<Void> deleteVaccineProgram(@PathVariable long vaccineProgramId) {
+    public ResponseEntity<Void> deleteVaccineProgram(@PathVariable int vaccineProgramId) {
         adminService.deleteVaccineProgram(vaccineProgramId);
         return ResponseEntity.noContent().build();
     }
