@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import { Button, Radio, Input } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Checkbox, Input, Modal } from 'antd';
+import HealthCheckConfirmContentModal from './HealthCheckConfirmContentModal';
 
 const HealthCheckNotificationModalContent = ({
   notification,
@@ -11,15 +12,17 @@ const HealthCheckNotificationModalContent = ({
   loading,
   disabled,
 }) => {
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+
   useEffect(() => {
     if (notification?.commit === true) {
-      setChecked("agree");
+      setChecked(true);
       setNote(notification?.notes || "");
     } else if (notification?.commit === false) {
-      setChecked("disagree");
+      setChecked(false);
       setNote(notification?.notes || "");
     } else {
-      setChecked(null);
+      setChecked(false);
       setNote("");
     }
     // eslint-disable-next-line
@@ -27,66 +30,68 @@ const HealthCheckNotificationModalContent = ({
 
   return (
     <div>
-      <p>Thông tin khảo sát sức khỏe: <b>{notification.healthCheckProgram?.name}</b></p>
-      <p>Mô tả: {notification.healthCheckProgram?.description}</p>
-      <p>Thời gian: {notification.healthCheckProgram?.startDate} - {notification.healthCheckProgram?.endDate}</p>
-      {/* <p>Ghi chú: {notification.notes}</p> */}
-      <div
-        style={{
-          background: "#f6fcf7",
-          border: "1px solid #e6f4ea",
-          borderRadius: 8,
-          padding: 16,
-          marginBottom: 16,
-        }}
-      >
-        <b style={{ color: "#21ba45" }}>Nội dung xác nhận miễn trừ trách nhiệm</b>
-        <ol style={{ marginTop: 8, paddingLeft: 18 }}>
-          <li>
-            Khi tôi đồng ý cho con tôi tham gia khám sức khỏe định kỳ được tổ chức vào ngày {notification.healthCheckProgram?.startDate} tại trường, tôi đồng ý với đơn xác nhận này, miễn trừ trách nhiệm pháp lý và các giả định rủi ro.
-          </li>
-          <li>
-            Tôi đã đọc và tìm hiểu các thông tin liên quan tới hoạt động khám sức khỏe định kỳ cho học sinh trước khi đồng ý xác nhận cho con tham gia hoạt động này tại trường.
-          </li>
-          <li>
-            Tôi cam kết đã cho con ăn sáng đầy đủ (đối với học sinh khám vào buổi sáng) và khai báo đầy đủ thông tin được yêu cầu trong thư mời về tình trạng sức khỏe của con.
-          </li>
-          <li>
-            Tôi ý thức được việc đồng ý cho con tham gia khám sức khỏe tại trường có thể gặp phải một số rủi ro như: khó chịu, choáng váng, căng thẳng tâm lý khi thực hiện một số kiểm tra y tế, hoặc những phát hiện bất thường cần can thiệp y tế tiếp theo. Tôi xin chấp nhận và tự chịu trách nhiệm nếu con tôi gặp phải các vấn đề phát sinh trong quá trình khám.
-          </li>
-          <li>
-            Tôi xin đồng ý rằng nếu con tôi cần hỗ trợ y tế hoặc can thiệp khẩn cấp trong quá trình khám, phía Ban Tổ chức và nhà trường có thể sắp xếp việc điều trị và sơ tán khẩn cấp nếu cần thiết và tôi xin chịu trách nhiệm chi trả cho mọi chi phí y tế và chi phí xe cứu thương.
-          </li>
-          <li>
-            Tôi chấp nhận trong trường hợp con tôi gặp sự cố y tế trong quá trình khám sức khỏe tại trường, tôi sẽ không làm đơn khiếu nại nhà trường.
-          </li>
-        </ol>
+      <div style={{ marginBottom: 16 }}>
+        <p>
+          <b>Chương trình:</b> {notification.healthCheckProgram?.healthCheckName || notification.healthCheckProgramDTO?.healthCheckName || "--"}
+        </p>
+        <p>
+          <b>Mô tả:</b> {notification.healthCheckProgram?.description || notification.healthCheckProgramDTO?.description || "--"}
+        </p>
+        <p>
+          <b>Thời gian:</b> {notification.healthCheckProgram?.startDate || notification.healthCheckProgramDTO?.startDate || "--"}
+        </p>
+        <p>
+          <b>Địa điểm:</b> {notification.healthCheckProgram?.location || notification.healthCheckProgramDTO?.location || "--"}
+        </p>
+        <p>
+          <b>Người phụ trách:</b> {notification.healthCheckProgram?.nurseDTO?.fullName || notification.healthCheckProgramDTO?.nurseDTO?.fullName || "--"}
+          {(() => {
+            const nurse =
+              notification.healthCheckProgram?.nurseDTO ||
+              notification.healthCheckProgramDTO?.nurseDTO;
+            if (nurse) {
+              return (
+                <>
+                  <br />
+                  <span style={{ marginLeft: 16 }}>
+                    <b>SĐT:</b> {nurse.phone || "--"}
+                  </span>
+                  <br />
+                  <span style={{ marginLeft: 16 }}>
+                    <b>Email:</b> {nurse.email || "--"}
+                  </span>
+                </>
+              );
+            }
+            return null;
+          })()}
+        </p>
       </div>
-      <Radio.Group
-        onChange={e => setChecked(e.target.value)}
-        value={checked}
+      <Checkbox
+        checked={checked}
+        onChange={e => setChecked(e.target.checked)}
+        disabled={disabled}
         style={{ marginBottom: 8 }}
-        disabled={notification?.commit !== null && notification?.commit !== undefined}
       >
-        <Radio value="agree" disabled={notification?.commit !== null && notification?.commit !== undefined}>
-          Tôi đồng ý với đơn xác nhận này, miễn trừ trách nhiệm pháp lý và các giả định rủi ro cho Nhà trường
-        </Radio>
-        <Radio value="disagree" disabled={notification?.commit !== null && notification?.commit !== undefined}>
-          Tôi không đồng ý với đơn xác nhận miễn trừ trách nhiệm này
-        </Radio>
-      </Radio.Group>
-      {checked && (
+        Tôi đã đọc kỹ <a href="#" onClick={e => { e.preventDefault(); setConfirmModalOpen(true); }}>Nội dung xác nhận miễn trừ trách nhiệm</a> và đồng ý miễn trừ trách nhiệm pháp lý và các giả định rủi ro cho Nhà trường
+      </Checkbox>
+      <Modal
+        open={confirmModalOpen}
+        onCancel={() => setConfirmModalOpen(false)}
+        footer={null}
+        width={500} // Đổi từ 700 thành 500 để modal ngắn hơn
+        centered
+        title="Nội dung xác nhận miễn trừ trách nhiệm khảo sát sức khỏe"
+      >
+        <HealthCheckConfirmContentModal />
+      </Modal>
+      {checked && !disabled && (
         <Input.TextArea
-          placeholder={
-            checked === 'disagree'
-              ? 'Lý do không đồng ý (nếu có)'
-              : 'Ghi chú (nếu có, ví dụ: không được làm gì với học sinh của tôi)'
-          }
+          placeholder="Ghi chú (nếu có, ví dụ: không được làm gì với học sinh của tôi)"
           value={note}
           onChange={e => setNote(e.target.value)}
           rows={3}
           style={{ marginBottom: 16 }}
-          disabled={notification?.commit !== null && notification?.commit !== undefined}
         />
       )}
       <div style={{ textAlign: 'right', marginTop: 8 }}>
