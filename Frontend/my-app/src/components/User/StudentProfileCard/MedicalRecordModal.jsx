@@ -30,11 +30,12 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
   };
 
   const handleFinish = async (values) => {
-    const filteredVaccineHistories = vaccineHistories
+    // Lấy vaccineHistories từ form để đảm bảo lấy đúng doseNumber mới nhất
+    const filteredVaccineHistories = (values.vaccineHistories || [])
       .filter(v => v.vaccineNameId)
       .map(v => ({
         vaccineNameId: v.vaccineNameId,
-        unit: v.doseNumber || 1, // Luôn có giá trị unit
+        unit: v.doseNumber || 1, // lấy đúng mũi tiêm đã chọn
         note: v.note || "",
         createBy: true
       }));
@@ -54,7 +55,6 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
 
     try {
       if (editMode) {
-        // Gọi PUT để cập nhật
         await axios.put(
           `http://localhost:8080/api/parent/medical-records/${studentId}`,
           payload,
@@ -66,7 +66,6 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
         );
         message.success(`Cập nhật hồ sơ cho học sinh ${studentId} thành công`);
       } else {
-        // Gọi POST để tạo mới
         await axios.post(
           "http://localhost:8080/api/parent/medical-records",
           payload,
