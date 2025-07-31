@@ -30,23 +30,27 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
   };
 
   const handleFinish = async (values) => {
-    const filteredVaccineHistories = vaccineHistories.filter(
-    v => v.vaccineNameId // chỉ giữ dòng có chọn vaccine
-  );
+    const filteredVaccineHistories = vaccineHistories
+      .filter(v => v.vaccineNameId)
+      .map(v => ({
+        vaccineNameId: v.vaccineNameId,
+        unit: v.doseNumber || 1, // Luôn có giá trị unit
+        note: v.note || "",
+        createBy: true
+      }));
 
-  const payload = {
-    studentId,
-    allergies: values.allergies || "",
-    chronicDisease: values.chronicDisease || "",
-    treatmentHistory: values.treatmentHistory || "",
-    vision: values.vision || "",
-    hearing: values.hearing || "",
-    weight: Number(values.weight) || 0,
-    height: Number(values.height) || 0,
-    note: values.note || "",
-    createBy: "0",
-    vaccineHistories: filteredVaccineHistories,
-  };
+    const payload = {
+      studentId,
+      allergies: values.allergies || "",
+      chronicDisease: values.chronicDisease || "",
+      vision: values.vision || "",
+      hearing: values.hearing || "",
+      weight: Number(values.weight) || 0,
+      height: Number(values.height) || 0,
+      lastUpdate: new Date().toISOString(),
+      note: values.note || "",
+      vaccineHistories: filteredVaccineHistories,
+    };
 
     try {
       if (editMode) {
@@ -100,6 +104,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
     }
   }, [initialValues, open, form]);
 
+  // Khi nhận response từ API, lưu vào vaccineOptions
   useEffect(() => {
     if (open) {
       axios.get('http://localhost:8080/api/parent/get=all-VaccineName', {
@@ -127,7 +132,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
         <Select
           value={text}
           onChange={value => handleVaccineChange(value, idx, "vaccineNameId")}
-          placeholder="Chọn vaccin"
+          placeholder="Chọn vaccine"
           style={{ width: 150 }}
           options={vaccineOptions.map(v => ({ label: v, value: v }))}
         />
@@ -328,26 +333,17 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                 <div style={{ width: 60, textAlign: 'center' }}>Xóa</div>
               </div>
               {vaccineHistories.map((item, idx) => {
-                const isSchoolVaccine = editMode && item.createBy === 1;
+                // Tìm vaccine đã chọn để lấy số mũi tiêm từ vaccineUnitDTOs
+                const selectedVaccine = vaccineOptions.find(v => v.id === item.vaccineNameId);
+                const unitCount = selectedVaccine?.vaccineUnitDTOs?.length || 1;
+
                 return (
                   <div key={idx} style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
                     {/* Tên vaccine */}
                     <Form.Item
                       name={['vaccineHistories', idx, 'vaccineNameId']}
                       style={{ flex: 2, marginBottom: 0 }}
-                      rules={[
-                        {
-                          validator: (_, value) => {
-                            if (!value) return Promise.resolve();
-                            const duplicate = vaccineHistories.some(
-                              (v, i) => i !== idx && v.vaccineNameId === value
-                            );
-                            return duplicate
-                              ? Promise.reject('Không được chọn trùng loại vaccin!')
-                              : Promise.resolve();
-                          }
-                        }
-                      ]}
+                      rules={[{ required: true, message: 'Chọn loại vaccine' }]}
                     >
                       <Select
                         showSearch
@@ -356,13 +352,12 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                         value={item.vaccineNameId}
                         onChange={value => {
                           const selectedVac = vaccineOptions.find(v => v.id === value);
-                          handleVaccineChange(selectedVac, idx, 'vaccineName');
+                          handleVaccineChange(selectedVac.vaccineName, idx, 'vaccineName');
                           handleVaccineChange(selectedVac.id, idx, 'vaccineNameId');
                         }}
                         filterOption={(input, option) =>
                           option.children.toLowerCase().includes(input.toLowerCase())
                         }
-                        disabled={isSchoolVaccine}
                       >
                         {vaccineOptions.map(vac => (
                           <Select.Option key={vac.id} value={vac.id}>
@@ -375,18 +370,17 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                     <Form.Item
                       name={['vaccineHistories', idx, 'doseNumber']}
                       style={{ width: 100, marginBottom: 0 }}
-                      rules={[
-                        { required: true, message: 'Chọn mũi tiêm' }
-                      ]}
+                      rules={[{ required: true, message: 'Chọn mũi tiêm' }]}
                       initialValue={item.doseNumber || 1}
                     >
                       <Select
                         placeholder="Mũi thứ"
-                        disabled={isSchoolVaccine}
+                        value={item.doseNumber}
+                        onChange={value => handleVaccineChange(value, idx, 'doseNumber')}
                       >
-                        {[1, 2, 3, 4, 5].map(num => (
-                          <Select.Option key={num} value={num}>
-                            Mũi {num}
+                        {Array.from({ length: unitCount }, (_, i) => (
+                          <Select.Option key={i + 1} value={i + 1}>
+                            Mũi {i + 1}
                           </Select.Option>
                         ))}
                       </Select>
@@ -395,20 +389,6 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                     <Form.Item
                       name={['vaccineHistories', idx, 'note']}
                       style={{ flex: 3, marginBottom: 0, minWidth: 200, maxWidth: 350 }}
-                      rules={[
-                        {
-      validator: (_, value, callback) => {
-        const vaccineId = vaccineHistories[idx]?.vaccineNameId;
-        if (value && value.length > 255) {
-          return Promise.reject('Mô tả không được vượt quá 255 ký tự');
-        }
-        if (value && !vaccineId) {
-          return Promise.reject('Vui lòng chọn loại vaccine');
-        }
-        return Promise.resolve();
-      }
-    }
-                      ]}
                     >
                       <Input.TextArea
                         placeholder="Mô tả"
@@ -416,14 +396,11 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                         onChange={e => handleVaccineChange(e.target.value, idx, 'note')}
                         autoSize={{ minRows: 1, maxRows: 3 }}
                         style={{ width: "100%" }}
-                        disabled={isSchoolVaccine}
                       />
                     </Form.Item>
                     {/* Xóa */}
                     <div style={{ width: 60, textAlign: "center" }}>
-                      {(!editMode || item.createBy !== 1) ? (
-                        <Button danger onClick={() => handleRemoveVaccine(idx)}>Xóa</Button>
-                      ) : null}
+                      <Button danger onClick={() => handleRemoveVaccine(idx)}>Xóa</Button>
                     </div>
                   </div>
                 );

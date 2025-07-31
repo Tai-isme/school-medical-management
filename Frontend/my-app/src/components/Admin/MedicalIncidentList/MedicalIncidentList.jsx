@@ -1,5 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Input, message, Row, Col, DatePicker, Card, Pagination, Select } from "antd";
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  message,
+  Row,
+  Col,
+  DatePicker,
+  Card,
+  Pagination,
+  Select,
+  Upload,
+} from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
 import "./MedicalIncidentList.css";
@@ -18,6 +33,9 @@ const MedicalIncidentList = () => {
   const [studentList, setStudentList] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [fileList, setFileList] = useState([]);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
   const pageSize = 3;
 
   // Tải danh sách sự kiện y tế từ API
@@ -89,10 +107,24 @@ const MedicalIncidentList = () => {
     try {
       const values = await form.validateFields();
 
+      // Nếu upload nhiều ảnh, lấy danh sách url hoặc file
+      // Nếu upload 1 ảnh, lấy fileList[0]
+      let imageUrl = "";
+      if (fileList.length > 0) {
+        // Nếu backend nhận file, dùng FormData, nếu chỉ cần url thì lấy url
+        // Ví dụ: imageUrl = fileList[0].thumbUrl hoặc fileList[0].originFileObj
+        imageUrl = fileList[0].thumbUrl || "";
+      }
+
       const payload = {
         typeEvent: values.typeEvent,
         description: values.description,
         studentId: Number(values.studentId),
+        actionsTaken: values.actionsTaken,
+        level: values.level,
+        location: values.location,
+        nurseID: values.nurseID,
+        imageUrl, // Thêm trường ảnh vào payload
       };
 
       const token = localStorage.getItem("token");
@@ -109,13 +141,17 @@ const MedicalIncidentList = () => {
       );
 
       // Tìm học sinh vừa chọn trong studentList để lấy tên và lớp
-      const selectedStudent = studentList.find(stu => stu.id === values.studentId);
+      const selectedStudent = studentList.find(
+        (stu) => stu.id === values.studentId
+      );
 
       const created = {
         ...res.data,
         eventId: res.data.eventId || Date.now(),
         date: dayjs().format("YYYY-MM-DD"),
-        studentName: selectedStudent ? selectedStudent.fullName : `ID ${values.studentId}`,
+        studentName: selectedStudent
+          ? selectedStudent.fullName
+          : `ID ${values.studentId}`,
         className: selectedStudent ? selectedStudent.className : "Không rõ",
         nurseId: `ID ${res.data.nurseId || "---"}`,
         parentPhone: res.data.parentPhone || "Chưa có",
@@ -160,6 +196,12 @@ const MedicalIncidentList = () => {
     setCurrentPage(1);
   }, [searchEvent, searchDate, searchStudent]);
 
+  // Hàm xử lý preview
+  const handlePreview = async (file) => {
+    setPreviewImage(file.thumbUrl || file.url || "");
+    setPreviewVisible(true);
+  };
+
   return (
     <div className="incident-container">
       <div className="incident-header">
@@ -201,7 +243,9 @@ const MedicalIncidentList = () => {
       {/* Danh sách card */}
       <div style={{ padding: 8 }}>
         {pagedData.length === 0 ? (
-          <div style={{ textAlign: "center", color: "#888" }}>Không có sự kiện nào</div>
+          <div style={{ textAlign: "center", color: "#888" }}>
+            Không có sự kiện nào
+          </div>
         ) : (
           pagedData.map((item) => (
             <Card
@@ -214,7 +258,13 @@ const MedicalIncidentList = () => {
               }}
               bodyStyle={{ padding: 20 }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                }}
+              >
                 <div style={{ width: "100%" }}>
                   {/* Tên sự kiện ở trên cùng, căn giữa, nổi bật */}
                   <div
@@ -229,14 +279,22 @@ const MedicalIncidentList = () => {
                   >
                     {item.typeEvent}
                   </div>
-                  <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 6 }}>
-                    <span style={{ color: "#1476d1" }}>Tên học sinh:</span> {item.studentDTO.fullName} {item.className ? `- ${item.className}` : ""}
+                  <div
+                    style={{ fontWeight: 600, fontSize: 16, marginBottom: 6 }}
+                  >
+                    <span style={{ color: "#1476d1" }}>Tên học sinh:</span>{" "}
+                    {item.studentDTO.fullName}{" "}
+                    {item.className ? `- ${item.className}` : ""}
                   </div>
                   <div style={{ color: "#888", fontSize: 14, marginBottom: 6 }}>
-                    <span style={{ color: "#1476d1" }}>Ngày:</span> {item.date ? dayjs(item.date).format("DD/MM/YYYY") : ""}
+                    <span style={{ color: "#1476d1" }}>Ngày:</span>{" "}
+                    {item.date ? dayjs(item.date).format("DD/MM/YYYY") : ""}
                   </div>
-                  <div style={{ color: "#555", fontSize: 15, marginBottom: 12 }}>
-                    <span style={{ color: "#1476d1" }}>Mô tả:</span> {item.description}
+                  <div
+                    style={{ color: "#555", fontSize: 15, marginBottom: 12 }}
+                  >
+                    <span style={{ color: "#1476d1" }}>Mô tả:</span>{" "}
+                    {item.description}
                   </div>
                   <Button
                     size="small"
@@ -283,47 +341,88 @@ const MedicalIncidentList = () => {
           >
             <Input />
           </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Chọn lớp"
+                name="classId"
+                rules={[{ required: true, message: "Vui lòng chọn lớp" }]}
+              >
+                <Select
+                  placeholder="Chọn lớp"
+                  onChange={handleClassChange}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.children ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  {classList.map((cls) => (
+                    <Select.Option key={cls.classId} value={cls.classId}>
+                      {cls.className}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Chọn học sinh"
+                name="studentId"
+                rules={[{ required: true, message: "Vui lòng chọn học sinh" }]}
+              >
+                <Select
+                  placeholder="Chọn học sinh"
+                  disabled={!selectedClass}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.children ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  {studentList.map((stu) => (
+                    <Select.Option key={stu.id} value={stu.id}>
+                      {stu.fullName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Mức độ"
+                name="level"
+                rules={[{ required: true, message: "Vui lòng chọn mức độ" }]}
+              >
+                <Select placeholder="Chọn mức độ">
+                  <Select.Option value="Nhẹ">Nhẹ</Select.Option>
+                  <Select.Option value="TB">Trung bình</Select.Option>
+                  <Select.Option value="Nặng">Nặng</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Y tá phụ trách (ID)"
+                name="nurseID"
+                rules={[{ required: true, message: "Vui lòng nhập ID y tá" }]}
+              >
+                <Input placeholder="Nhập ID y tá phụ trách" />
+              </Form.Item>
+            </Col>
+          </Row>
           <Form.Item
-            label="Chọn lớp"
-            name="classId"
-            rules={[{ required: true, message: "Vui lòng chọn lớp" }]}
+            label="Địa điểm"
+            name="location"
+            rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
           >
-            <Select
-              placeholder="Chọn lớp"
-              onChange={handleClassChange}
-              showSearch
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
-              }
-            >
-              {classList.map((cls) => (
-                <Select.Option key={cls.classId} value={cls.classId}>
-                  {cls.className}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="Chọn học sinh"
-            name="studentId"
-            rules={[{ required: true, message: "Vui lòng chọn học sinh" }]}
-          >
-            <Select
-              placeholder="Chọn học sinh"
-              disabled={!selectedClass}
-              showSearch
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
-              }
-            >
-              {studentList.map((stu) => (
-                <Select.Option key={stu.id} value={stu.id}>
-                  {stu.fullName}
-                </Select.Option>
-              ))}
-            </Select>
+            <Input placeholder="Phòng y tế, lớp học, ..." />
           </Form.Item>
           <Form.Item
             label="Mô tả"
@@ -331,6 +430,43 @@ const MedicalIncidentList = () => {
             rules={[{ required: true }]}
           >
             <Input.TextArea />
+          </Form.Item>
+          <Form.Item
+            label="Xử lý đã thực hiện"
+            name="actionsTaken"
+            rules={[
+              { required: true, message: "Vui lòng nhập xử lý đã thực hiện" },
+            ]}
+          >
+            <Input placeholder="Đã uống thuốc hạ sốt, Đã băng bó, ..." />
+          </Form.Item>
+          <Form.Item label="Hình ảnh sự cố">
+            <Upload
+              listType="picture-card"
+              fileList={fileList}
+              beforeUpload={() => false}
+              onChange={({ fileList }) => setFileList(fileList)}
+              maxCount={1}
+              onPreview={handlePreview} // Thêm dòng này
+            >
+              {fileList.length >= 1 ? null : (
+                <div>
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>Thêm ảnh</div>
+                </div>
+              )}
+            </Upload>
+            <Modal
+              open={previewVisible}
+              footer={null}
+              onCancel={() => setPreviewVisible(false)}
+            >
+              <img
+                alt="Hình ảnh sự cố"
+                style={{ width: "100%" }}
+                src={previewImage}
+              />
+            </Modal>
           </Form.Item>
         </Form>
       </Modal>
@@ -348,26 +484,66 @@ const MedicalIncidentList = () => {
               style={{
                 color: "#ff4d4f",
                 fontWeight: 700,
-                fontSize: 18,
-                marginBottom: 16,
+                fontSize: 20,
+                marginBottom: 15,
                 textTransform: "uppercase",
                 letterSpacing: 1,
               }}
             >
               {selectedEvent.typeEvent}
             </div>
+            <Row gutter={16} style={{ marginBottom: 0 }}>
+              <Col span={12}>
+                <p>
+                  <strong>Tên học sinh :</strong> {selectedEvent.studentName}
+                </p>
+              </Col>
+              <Col span={12}>
+                <p>
+                  <strong>Lớp :</strong>{" "}
+                  {selectedEvent.classDTO?.className ||
+                    selectedEvent.className ||
+                    "Không rõ"}
+                </p>
+              </Col>
+            </Row>
             <p>
-              <strong>Tên học sinh:</strong> {selectedEvent.studentName}
+              <strong>Ngày :</strong>{" "}
+              {selectedEvent.date
+                ? dayjs(selectedEvent.date).format("DD/MM/YYYY")
+                : ""}
             </p>
             <p>
-              <strong>Lớp:</strong> {selectedEvent.classDTO?.className || "Không rõ"}
+              <strong>Y tá phụ trách :</strong> {selectedEvent.nurseID}
             </p>
             <p>
-              <strong>Ngày:</strong> {selectedEvent.date ? dayjs(selectedEvent.date).format("DD/MM/YYYY") : ""}
+              <strong>Mức độ :</strong> {selectedEvent.level}
             </p>
             <p>
-              <strong>Mô tả:</strong> {selectedEvent.description}
+              <strong>Địa điểm :</strong> {selectedEvent.location}
             </p>
+            <p>
+              <strong>Mô tả :</strong> {selectedEvent.description}
+            </p>
+            <p>
+              <strong>Xử lý đã thực hiện :</strong> {selectedEvent.actionsTaken}
+            </p>
+            <div style={{ marginTop: 12 }}>
+              <strong>Hình ảnh sự cố:</strong>
+              <div>
+                {selectedEvent.imageUrl ? (
+                  <img
+                    src={selectedEvent.imageUrl}
+                    alt="Hình ảnh sự cố"
+                    style={{ maxWidth: 320, marginTop: 8, borderRadius: 8 }}
+                  />
+                ) : (
+                  <span style={{ color: "#888", marginLeft: 8 }}>
+                    Không có hình ảnh
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </Modal>

@@ -14,7 +14,7 @@ export default function StudentInfoCard({ onChange }) {
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("students") || "[]");
     setStudents(stored);
-    if (stored.length > 0) setSelectedStudentId(stored[0].id);
+    if (stored.length > 0) setSelectedStudentId(stored[0].studentId);
   }, []);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function StudentInfoCard({ onChange }) {
     setSelectedFile(null);
   }, [selectedStudentId, onChange]);
 
-  const selectedStudent = students.find(s => s.id === selectedStudentId);
+  const selectedStudent = students.find(s => s.studentId === selectedStudentId);
 
   // Khi chọn file, chỉ tạo preview
   const handleAvatarSelect = (e) => {
@@ -52,7 +52,7 @@ export default function StudentInfoCard({ onChange }) {
         }
       );
       const newStudents = students.map(s =>
-        s.id === selectedStudentId ? { ...s, avatar: res.data } : s
+        s.studentId === selectedStudentId ? { ...s, avatar: res.data } : s
       );
       setStudents(newStudents);
       localStorage.setItem("students", JSON.stringify(newStudents));
@@ -89,8 +89,8 @@ export default function StudentInfoCard({ onChange }) {
         value={selectedStudentId}
         onChange={setSelectedStudentId}
         options={students.map(s => ({
-          value: s.id,
-          label: s.fullName || s.name || s.id
+          value: s.studentId,
+          label: s.fullName || s.name || s.studentId
         }))}
         placeholder="Chọn học sinh"
         size="large"
@@ -113,7 +113,7 @@ export default function StudentInfoCard({ onChange }) {
         {selectedStudent?.fullName || selectedStudent?.name || "--"}
       </Text>
       <Text style={{ fontSize: 16, marginBottom: 8 }}>
-        Mã học sinh: {selectedStudent?.id || "--"}
+        Mã học sinh: {selectedStudent?.studentId || "--"}
       </Text>
       <Text type="secondary" style={{ fontSize: 16, marginBottom: 8 }}>
         {/* Lớp: {selectedStudent?.className || selectedStudent?.classID || "--"} */}

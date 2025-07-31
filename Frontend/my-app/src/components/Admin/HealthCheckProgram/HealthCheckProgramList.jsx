@@ -1,12 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Row, Col, Tag, Modal, Descriptions, Form, Input, DatePicker, message, Pagination, Tabs, Table } from "antd";
+import {
+  Button,
+  Card,
+  Row,
+  Col,
+  Tag,
+  Modal,
+  Descriptions,
+  Form,
+  Input,
+  DatePicker,
+  message,
+  Pagination,
+  Tabs,
+  Table,
+} from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { CheckSquareTwoTone, BorderOutlined } from "@ant-design/icons";
 import { Select } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
 import HealthCheckProgramModal from "./HealthCheckProgramModal"; // Import component mới tạo
-
 
 const HealthCheckProgramList = () => {
   const [programs, setPrograms] = useState([]);
@@ -14,7 +29,7 @@ const HealthCheckProgramList = () => {
   const [createVisible, setCreateVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [program, setProgram] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
@@ -26,7 +41,8 @@ const HealthCheckProgramList = () => {
   const [createResultVisible, setCreateResultVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("program");
   const [healthCheckResults, setHealthCheckResults] = useState([]);
-  const [healthCheckResultsLoading, setHealthCheckResultsLoading] = useState(false);
+  const [healthCheckResultsLoading, setHealthCheckResultsLoading] =
+    useState(false);
   const [showResultPage, setShowResultPage] = useState(false);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
   const [editableResults, setEditableResults] = useState([]);
@@ -38,6 +54,8 @@ const HealthCheckProgramList = () => {
   const pageSize = 3; // Số chương trình mỗi trang
   const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
   const [isViewResult, setIsViewResult] = useState(false);
+  // const [nurseOptions, setNurseOptions] = useState([]);
+  // const [classOptions, setClassOptions] = useState([]);
 
   useEffect(() => {
     fetchProgram();
@@ -45,7 +63,7 @@ const HealthCheckProgramList = () => {
 
   useEffect(() => {
     if (programs.length > 0) {
-      const ids = programs.map(p => p.id);
+      const ids = programs.map((p) => p.id);
       fetchConfirmedCounts(ids);
     }
   }, [programs]);
@@ -53,6 +71,51 @@ const HealthCheckProgramList = () => {
   useEffect(() => {
     setEditableResults(healthCheckResults);
   }, [healthCheckResults]);
+
+  const [nurseOptions, setNurseOptions] = useState([
+    { value: 1, label: "Nguyễn Thị A" },
+    { value: 2, label: "Trần Văn B" },
+  ]);
+  const [classOptions, setClassOptions] = useState([
+    { value: 101, label: "1A1" },
+    { value: 102, label: "1A2" },
+    { value: 201, label: "2B1" },
+  ]);
+
+  // useEffect(() => {
+  //   // Fetch y tá
+  //   const fetchNurses = async () => {
+  //     const token = localStorage.getItem("token");
+  //     try {
+  //       const res = await axios.get("http://localhost:8080/api/nurse/list", {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       });
+  //       setNurseOptions(
+  //         res.data.map((nurse) => ({
+  //           value: nurse.id,
+  //           label: nurse.fullName,
+  //         }))
+  //       );
+  //     } catch {}
+  //   };
+  //   // Fetch lớp
+  //   const fetchClasses = async () => {
+  //     const token = localStorage.getItem("token");
+  //     try {
+  //       const res = await axios.get("http://localhost:8080/api/class/list", {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       });
+  //       setClassOptions(
+  //         res.data.map((cls) => ({
+  //           value: cls.id,
+  //           label: cls.name,
+  //         }))
+  //       );
+  //     } catch {}
+  //   };
+  //   fetchNurses();
+  //   fetchClasses();
+  // }, []);
 
   const fetchProgram = async () => {
     const token = localStorage.getItem("token");
@@ -86,7 +149,7 @@ const HealthCheckProgramList = () => {
           );
           const data = Array.isArray(res.data) ? res.data : [];
           totals[id] = data.length;
-          counts[id] = data.filter(item => item.commit === true).length;
+          counts[id] = data.filter((item) => item.commit === true).length;
           notified[id] = true; // Đã gửi thông báo
         } catch (err) {
           totals[id] = 0;
@@ -101,14 +164,14 @@ const HealthCheckProgramList = () => {
   };
 
   const handleEditChange = (value, record, field) => {
-  setEditableResults(prev =>
-    prev.map(item =>
-      item.healthResultId === record.healthResultId
-        ? { ...item, [field]: value }
-        : item
-    )
-  );
-};
+    setEditableResults((prev) =>
+      prev.map((item) =>
+        item.healthResultId === record.healthResultId
+          ? { ...item, [field]: value }
+          : item
+      )
+    );
+  };
 
   const fetchHealthCheckResults = async () => {
     setHealthCheckResultsLoading(true);
@@ -173,10 +236,10 @@ const HealthCheckProgramList = () => {
         icon: "success",
         title: "Gửi thông báo thành công!",
         showConfirmButton: false,
-        timer: 1500
+        timer: 1500,
       });
       // Disable nút ngay trên giao diện
-      setSentNotificationIds(prev => [...prev, programId]);
+      setSentNotificationIds((prev) => [...prev, programId]);
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -190,43 +253,46 @@ const HealthCheckProgramList = () => {
   };
 
   const handleCreate = async (values) => {
-  setLoading(true);
-  const token = localStorage.getItem("token");
-  try {
-    await axios.post(
-      "http://localhost:8080/api/admin/health-check-program",
-      {
-        healthCheckName: values.name,
-        description: values.description,
-        startDate: values.startDate.format("YYYY-MM-DD"),
-        endDate: values.endDate.format("YYYY-MM-DD"),
-        note: values.note,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    try {
+      await axios.post(
+        "http://localhost:8080/api/admin/health-check-program",
+        {
+          healthCheckName: values.name,
+          description: values.description,
+          startDate: values.startDate.format("YYYY-MM-DD"),
+          endDate: values.endDate ? values.endDate.format("YYYY-MM-DD") : null,
+          dateSendForm: values.dateSendForm.format("YYYY-MM-DD"),
+          location: values.location,
+          nurseID: values.nurseID,
+          classIds: values.classIds,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      message.success("Tạo chương trình sức khỏe thành công!");
+      setCreateVisible(false);
+      fetchProgram();
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        const errorMessage = error.response.data.message || "Đã xảy ra lỗi!";
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: errorMessage,
+          confirmButtonColor: "#3085d6",
+        });
+      } else {
+        message.error("Tạo chương trình sức khỏe thất bại!");
       }
-    );
-    message.success("Tạo chương trình sức khỏe thành công!");
-    setCreateVisible(false);
-    fetchProgram();
-  } catch (error) {
-    if (error.response && error.response.status === 400) {
-      const errorMessage = error.response.data.message || "Đã xảy ra lỗi!";
-      Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: errorMessage,
-        confirmButtonColor: "#3085d6",
-      });
-    } else {
-      message.error("Tạo chương trình sức khỏe thất bại!");
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleCreateResult = async (programId) => {
     setHealthCheckResultsLoading(true);
@@ -244,8 +310,8 @@ const HealthCheckProgramList = () => {
 
       // Nếu role là NURSE, cập nhật trạng thái program trên frontend để disable nút Tạo kết quả ngay
       if (userRole === "NURSE") {
-        setPrograms(prev =>
-          prev.map(p =>
+        setPrograms((prev) =>
+          prev.map((p) =>
             p.id === programId ? { ...p, status: "COMPLETED" } : p
           )
         );
@@ -258,51 +324,53 @@ const HealthCheckProgramList = () => {
   };
 
   const handleResultChange = (value, idx, field) => {
-  setStudentsForResult(prev =>
-    prev.map((item, i) => i === idx ? { ...item, [field]: value } : item)
-  );
-};
-  
-
-const handleUpdate = async (values) => {
-  setLoading(true);
-  const token = localStorage.getItem("token");
-  try {
-    await axios.put(
-      `http://localhost:8080/api/admin/health-check-program/${program.id}`,
-      {
-        healthCheckName: values.name,
-        description: values.description,
-        startDate: values.startDate.format("YYYY-MM-DD"),
-        endDate: values.endDate.format("YYYY-MM-DD"),
-        note: values.note,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+    setStudentsForResult((prev) =>
+      prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item))
     );
-    message.success("Cập nhật chương trình thành công!");
-    setCreateVisible(false);
-    setEditMode(false);
-    fetchProgram();
-  } catch (error) {
-    if (error.response && error.response.status === 400) {
-      const errorMessage = error.response.data.message || "Đã xảy ra lỗi!";
-      Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: errorMessage,
-        confirmButtonColor: "#3085d6",
-      });
-    } else {
-      message.error("Cập nhật chương trình thất bại!");
+  };
+
+  const handleUpdate = async (values) => {
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `http://localhost:8080/api/admin/health-check-program/${program.id}`,
+        {
+          healthCheckName: values.name,
+          description: values.description,
+          startDate: values.startDate.format("YYYY-MM-DD"),
+          endDate: values.endDate ? values.endDate.format("YYYY-MM-DD") : null,
+          dateSendForm: values.dateSendForm.format("YYYY-MM-DD"),
+          location: values.location,
+          nurseID: values.nurseID,
+          classIds: values.classIds,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      message.success("Cập nhật chương trình thành công!");
+      setCreateVisible(false);
+      setEditMode(false);
+      fetchProgram();
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        const errorMessage = error.response.data.message || "Đã xảy ra lỗi!";
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: errorMessage,
+          confirmButtonColor: "#3085d6",
+        });
+      } else {
+        message.error("Cập nhật chương trình thất bại!");
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleDelete = async (programId) => {
     const result = await Swal.fire({
@@ -319,10 +387,17 @@ const handleUpdate = async (values) => {
     if (result.isConfirmed) {
       const token = localStorage.getItem("token");
       try {
-        await axios.delete(`http://localhost:8080/api/admin/health-check-program/${programId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        await Swal.fire("Đã xóa!", "Chương trình đã được xóa thành công.", "success");
+        await axios.delete(
+          `http://localhost:8080/api/admin/health-check-program/${programId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        await Swal.fire(
+          "Đã xóa!",
+          "Chương trình đã được xóa thành công.",
+          "success"
+        );
         fetchProgram();
       } catch {
         Swal.fire("Lỗi", "Xóa thất bại!", "error");
@@ -330,16 +405,15 @@ const handleUpdate = async (values) => {
     }
   };
 
-  
-
   const handleUpdateStatus = async (id, newStatus) => {
-    const program = programs.find(p => p.id === id);
+    const program = programs.find((p) => p.id === id);
     const oldStatus = program?.status;
 
     // Kiểm tra các trường hợp không hợp lệ
     if (
       (oldStatus === "ON_GOING" && newStatus === "NOT_STARTED") ||
-      (oldStatus === "COMPLETED" && (newStatus === "ON_GOING" || newStatus === "NOT_STARTED"))
+      (oldStatus === "COMPLETED" &&
+        (newStatus === "ON_GOING" || newStatus === "NOT_STARTED"))
     ) {
       await Swal.fire({
         icon: "error",
@@ -381,13 +455,13 @@ const handleUpdate = async (values) => {
 
   // Lọc danh sách theo tên chương trình và ngày tiêm
   const filteredPrograms = programs.filter((program) => {
-    const matchName = program.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchName = program.name
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchDate = filterDate
       ? dayjs(program.startDate).isSame(filterDate, "day") // Sửa ở đây
       : true;
-    const matchStatus = filterStatus
-      ? program.status === filterStatus
-      : true;
+    const matchStatus = filterStatus ? program.status === filterStatus : true;
     return matchName && matchDate && matchStatus;
   });
 
@@ -440,12 +514,22 @@ const handleUpdate = async (values) => {
   };
 
   // Lọc và phân trang
-  const pagedPrograms = filteredPrograms.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const pagedPrograms = filteredPrograms.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   if (!programs.length) return <div>Đang tải...</div>;
 
   return (
-    <div style={{ padding: 24, marginLeft: 220, transition: "margin 0.2s", maxWidth: "100vw" }}>
+    <div
+      style={{
+        padding: 24,
+        marginLeft: 220,
+        transition: "margin 0.2s",
+        maxWidth: "100vw",
+      }}
+    >
       <Tabs
         activeKey={activeTab}
         onChange={setActiveTab}
@@ -455,7 +539,14 @@ const handleUpdate = async (values) => {
             label: "Chương trình khám định kỳ",
             children: (
               <React.Fragment>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 16,
+                  }}
+                >
                   <h2 style={{ margin: 0 }}>
                     <span style={{ color: "#52c41a", marginRight: 8 }}>🛡️</span>
                     Quản Lý Chương Trình Khám Định Kỳ
@@ -465,7 +556,7 @@ const handleUpdate = async (values) => {
                       placeholder="Tìm kiếm tên chương trình..."
                       prefix={<SearchOutlined />}
                       value={searchTerm}
-                      onChange={e => setSearchTerm(e.target.value)}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                       allowClear
                       style={{ width: 220, background: "#fff" }}
                     />
@@ -518,15 +609,28 @@ const handleUpdate = async (values) => {
                     }}
                     bodyStyle={{ padding: 24 }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                      }}
+                    >
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{program.name}</div>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            fontSize: 18,
+                            marginBottom: 4,
+                          }}
+                        >
+                          {program.name}
+                        </div>
                         <div style={{ color: "#555", marginBottom: 2 }}>
                           Mô tả: {program.description}
                         </div>
                         <div style={{ color: "#555", marginBottom: 8 }}>
                           Ngày bắt đầu: {program.startDate} <br />
-                          Ngày kết thúc: {program.endDate}
                         </div>
                       </div>
                       {/* Nếu là ADMIN thì cho phép chỉnh trạng thái, nếu là NURSE thì chỉ hiển thị Tag */}
@@ -534,7 +638,9 @@ const handleUpdate = async (values) => {
                         <Select
                           value={program.status}
                           style={{ width: 160 }}
-                          onChange={status => handleUpdateStatus(program.id, status)}
+                          onChange={(status) =>
+                            handleUpdateStatus(program.id, status)
+                          }
                           options={[
                             { value: "NOT_STARTED", label: "Chưa bắt đầu" },
                             { value: "ON_GOING", label: "Đang diễn ra" },
@@ -543,68 +649,118 @@ const handleUpdate = async (values) => {
                           disabled={userRole === "NURSE"}
                         />
                       ) : (
-                        <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
+                        <Tag
+                          color={getStatusColor(program.status)}
+                          style={{ fontSize: 14, marginTop: 4 }}
+                        >
                           {getStatusText(program.status)}
                         </Tag>
                       )}
                     </div>
                     <Row gutter={32} style={{ margin: "24px 0" }}>
                       <Col span={12}>
-                        <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
-                          <div style={{ color: "#1890ff", fontWeight: 700, fontSize: 32 }}>
+                        <div
+                          style={{
+                            background: "#fff",
+                            borderRadius: 8,
+                            padding: 16,
+                            textAlign: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              color: "#1890ff",
+                              fontWeight: 700,
+                              fontSize: 32,
+                            }}
+                          >
                             {totalForms[program.id] ?? 0}
                           </div>
-                          <div style={{ color: "#888", fontWeight: 500 }}>Tổng học sinh dự kiến tham gia</div>
+                          <div style={{ color: "#888", fontWeight: 500 }}>
+                            Tổng học sinh dự kiến tham gia
+                          </div>
                         </div>
                       </Col>
                       <Col span={12}>
-                        <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
-                          <div style={{ color: "#21ba45", fontWeight: 700, fontSize: 32 }}>
+                        <div
+                          style={{
+                            background: "#fff",
+                            borderRadius: 8,
+                            padding: 16,
+                            textAlign: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              color: "#21ba45",
+                              fontWeight: 700,
+                              fontSize: 32,
+                            }}
+                          >
                             {confirmedCounts[program.id] ?? 0}
                           </div>
-                          <div style={{ color: "#888", fontWeight: 500 }}>Đã xác nhận tham gia</div>
+                          <div style={{ color: "#888", fontWeight: 500 }}>
+                            Đã xác nhận tham gia
+                          </div>
                         </div>
                       </Col>
                     </Row>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
                       <div>
                         <Button
                           onClick={() => {
                             setDetailVisible(true);
                             setProgram(program);
                           }}
-                          
                         >
                           Xem chi tiết
                         </Button>
                         <Button
                           type="primary"
-                          style={{ background: "#21ba45", border: "none", marginLeft: 8 }}
+                          style={{
+                            background: "#21ba45",
+                            border: "none",
+                            marginLeft: 8,
+                          }}
                           onClick={() => {
                             handleViewResult(program.id);
                             setActiveTab("result");
                             setShowResultPage(true);
                             setSelectedProgramId(program.id);
                           }}
-                          disabled={program.status === "NOT_STARTED" || program.status === "ON_GOING"}
+                          disabled={
+                            program.status === "NOT_STARTED" ||
+                            program.status === "ON_GOING"
+                          }
                         >
                           Xem kết quả
                         </Button>
                         <Button
                           type="default"
                           style={{
-                          marginLeft: 8,
-                          background: "#1976d2",
-                          color: "#fff",
-                          border: "none",
-                          opacity: program.status === "ON_GOING" && (confirmedCounts[program.id] ?? 0) > 0 && userRole !== "ADMIN"
-                            ? 1
-                            : 0.5,
-                        }}
+                            marginLeft: 8,
+                            background: "#1976d2",
+                            color: "#fff",
+                            border: "none",
+                            opacity:
+                              program.status === "ON_GOING" &&
+                              (confirmedCounts[program.id] ?? 0) > 0 &&
+                              userRole !== "ADMIN"
+                                ? 1
+                                : 0.5,
+                          }}
                           onClick={() => handleCreateResult(program.id)}
                           disabled={
-                            !(program.status === "ON_GOING" && (confirmedCounts[program.id] ?? 0) > 0) ||
-                            userRole === "ADMIN"
+                            !(
+                              program.status === "ON_GOING" &&
+                              (confirmedCounts[program.id] ?? 0) > 0
+                            ) || userRole === "ADMIN"
                           }
                         >
                           Tạo kết quả
@@ -616,10 +772,17 @@ const handleUpdate = async (values) => {
                             background: "#ff9800",
                             color: "#fff",
                             border: "none",
-                            opacity: program.status === "NOT_STARTED" || program.status === "ON_GOING" ? 0.5 : 1
+                            opacity:
+                              program.status === "NOT_STARTED" ||
+                              program.status === "ON_GOING"
+                                ? 0.5
+                                : 1,
                           }}
                           onClick={() => handleEditResult(program.id)}
-                          disabled={program.status === "NOT_STARTED" || program.status === "ON_GOING"}
+                          disabled={
+                            program.status === "NOT_STARTED" ||
+                            program.status === "ON_GOING"
+                          }
                         >
                           Chỉnh sửa kết quả
                         </Button>
@@ -633,7 +796,8 @@ const handleUpdate = async (values) => {
                             cursor:
                               program.status === "NOT_STARTED" ||
                               program.status === "COMPLETED" ||
-                              (program.status === "ON_GOING" && program.sended === 1) ||
+                              (program.status === "ON_GOING" &&
+                                program.sended === 1) ||
                               sentNotificationIds.includes(program.id) ||
                               userRole === "ADMIN"
                                 ? "not-allowed"
@@ -641,7 +805,8 @@ const handleUpdate = async (values) => {
                             opacity:
                               program.status === "NOT_STARTED" ||
                               program.status === "COMPLETED" ||
-                              (program.status === "ON_GOING" && program.sended === 1) ||
+                              (program.status === "ON_GOING" &&
+                                program.sended === 1) ||
                               sentNotificationIds.includes(program.id) ||
                               userRole === "ADMIN"
                                 ? 0.5
@@ -651,7 +816,8 @@ const handleUpdate = async (values) => {
                           disabled={
                             program.status === "NOT_STARTED" ||
                             program.status === "COMPLETED" ||
-                            (program.status === "ON_GOING" && program.sended === 1) ||
+                            (program.status === "ON_GOING" &&
+                              program.sended === 1) ||
                             sentNotificationIds.includes(program.id) ||
                             userRole === "ADMIN"
                           }
@@ -661,7 +827,13 @@ const handleUpdate = async (values) => {
                       </div>
                       {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
                       {userRole === "ADMIN" && (
-                        <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            marginLeft: "auto",
+                          }}
+                        >
                           {program.status === "NOT_STARTED" && (
                             <Button
                               type="default"
@@ -713,17 +885,26 @@ const handleUpdate = async (values) => {
                 >
                   {program && (
                     <Descriptions column={1} bordered size="small">
-                      <Descriptions.Item label="ID">{program.id}</Descriptions.Item>
-                      <Descriptions.Item label="Tên chương trình">{program.name}</Descriptions.Item>
-                      <Descriptions.Item label="Mô tả">{program.description}</Descriptions.Item>
-                      <Descriptions.Item label="Ngày bắt đầu">{program.startDate}</Descriptions.Item>
-                      <Descriptions.Item label="Ngày kết thúc">{program.endDate}</Descriptions.Item>
+                      <Descriptions.Item label="ID">
+                        {program.id}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Tên chương trình">
+                        {program.name}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Mô tả">
+                        {program.description}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Ngày bắt đầu">
+                        {program.startDate}
+                      </Descriptions.Item>
                       <Descriptions.Item label="Trạng thái">
-                        <Tag color={getStatusColor(program.status)} style={{ fontSize: 14 }}>
+                        <Tag
+                          color={getStatusColor(program.status)}
+                          style={{ fontSize: 14 }}
+                        >
                           {getStatusText(program.status)}
                         </Tag>
                       </Descriptions.Item>
-                      <Descriptions.Item label="Ghi chú">{program.note}</Descriptions.Item>
                     </Descriptions>
                   )}
                 </Modal>
@@ -738,6 +919,8 @@ const handleUpdate = async (values) => {
                   loading={loading}
                   editMode={editMode}
                   program={program}
+                  nurseOptions={nurseOptions}
+                  classOptions={classOptions}
                 />
               </React.Fragment>
             ),
@@ -752,7 +935,7 @@ const handleUpdate = async (values) => {
                   <Input
                     placeholder="Tìm kiếm tên hoặc mã học sinh..."
                     value={studentSearch}
-                    onChange={e => setStudentSearch(e.target.value)}
+                    onChange={(e) => setStudentSearch(e.target.value)}
                     style={{ width: 300 }}
                     allowClear
                   />
@@ -771,38 +954,80 @@ const handleUpdate = async (values) => {
                 >
                   <Table
                     columns={[
-                      { 
-                        title: "Mã học sinh", 
-                        dataIndex: ["studentDTO", "id"], 
-                        key: "studentId", 
-                        align: "center", 
+                      {
+                        title: "Mã học sinh",
+                        dataIndex: ["studentDTO", "id"],
+                        key: "studentId",
+                        align: "center",
                         width: 90, // Giảm chiều rộng
-                        render: (_, record) => record.studentDTO?.id || "-" 
+                        render: (_, record) => record.studentDTO?.id || "-",
                       },
-                      { title: "Tên học sinh", dataIndex: ["studentDTO", "fullName"], key: "studentName", align: "center",
-                        render: (_, record) => record.studentDTO?.fullName || "-" },
-                      { title: "Ngày sinh", dataIndex: ["studentDTO", "dob"], key: "dob", align: "center",
-                        render: (_, record) => record.studentDTO?.dob || "-" },
-                      { title: "Giới tính", dataIndex: ["studentDTO", "gender"], key: "gender", align: "center",
-                        render: (_, record) => record.studentDTO?.gender || "-" },
-                      { 
-                        title: "Chiều cao (cm)", 
-                        dataIndex: "height", 
-                        key: "height", 
+                      {
+                        title: "Tên học sinh",
+                        dataIndex: ["studentDTO", "fullName"],
+                        key: "studentName",
+                        align: "center",
+                        render: (_, record) =>
+                          record.studentDTO?.fullName || "-",
+                      },
+                      // {
+                      //   title: "Ngày sinh",
+                      //   dataIndex: ["studentDTO", "dob"],
+                      //   key: "dob",
+                      //   align: "center",
+                      //   render: (_, record) => record.studentDTO?.dob || "-",
+                      // },
+                      {
+                        title: "Giới tính",
+                        dataIndex: ["studentDTO", "gender"],
+                        key: "gender",
+                        align: "center",
+                        render: (_, record) => record.studentDTO?.gender || "-",
+                      },
+                      {
+                        title: "Y tá phụ trách",
+                        dataIndex: "nurse_id",
+                        key: "nurse_id",
+                        align: "center",
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value
+                          ) : (
+                            <Select
+                              value={value}
+                              onChange={(val) =>
+                                handleEditChange(val, record, "nurse_id")
+                              }
+                              style={{ width: 120 }}
+                              options={nurseOptions}
+                              placeholder="Chọn y tá"
+                              disabled={isViewResult}
+                            />
+                          ),
+                      },
+                      {
+                        title: "Chiều cao (cm)",
+                        dataIndex: "height",
+                        key: "height",
                         align: "center",
                         render: (value, record) => (
                           <Input
                             value={value ?? ""}
-                            onChange={e => handleEditChange(e.target.value, record, "height")}
+                            onChange={(e) =>
+                              handleEditChange(e.target.value, record, "height")
+                            }
                             style={{ width: 80 }}
                             status={
-                              value && (isNaN(value) || Number(value) < 100 || Number(value) > 200)
+                              value &&
+                              (isNaN(value) ||
+                                Number(value) < 100 ||
+                                Number(value) > 200)
                                 ? "error"
                                 : ""
                             }
                             placeholder="100-200"
                           />
-                        )
+                        ),
                       },
                       {
                         title: "Cân nặng (kg)",
@@ -812,16 +1037,21 @@ const handleUpdate = async (values) => {
                         render: (value, record) => (
                           <Input
                             value={value ?? ""}
-                            onChange={e => handleEditChange(e.target.value, record, "weight")}
+                            onChange={(e) =>
+                              handleEditChange(e.target.value, record, "weight")
+                            }
                             style={{ width: 80 }}
                             status={
-                              value && (!/^\d+$/.test(value) || Number(value) < 15 || Number(value) > 120)
+                              value &&
+                              (!/^\d+$/.test(value) ||
+                                Number(value) < 15 ||
+                                Number(value) > 120)
                                 ? "error"
                                 : ""
                             }
                             placeholder="15-120"
                           />
-                        )
+                        ),
                       },
                       {
                         title: "Thị lực (1-10/10)",
@@ -831,7 +1061,9 @@ const handleUpdate = async (values) => {
                         render: (value, record) => (
                           <Input
                             value={value ?? ""}
-                            onChange={e => handleEditChange(e.target.value, record, "vision")}
+                            onChange={(e) =>
+                              handleEditChange(e.target.value, record, "vision")
+                            }
                             style={{ width: 80 }}
                             status={
                               value && !/^([1-9]|10)\/10$/.test(value)
@@ -840,7 +1072,7 @@ const handleUpdate = async (values) => {
                             }
                             placeholder="1/10-10/10"
                           />
-                        )
+                        ),
                       },
                       {
                         title: "Thính lực",
@@ -850,11 +1082,97 @@ const handleUpdate = async (values) => {
                         render: (value, record) => (
                           <Input.TextArea
                             value={value ?? ""}
-                            onChange={e => handleEditChange(e.target.value, record, "hearing")}
+                            onChange={(e) =>
+                              handleEditChange(
+                                e.target.value,
+                                record,
+                                "hearing"
+                              )
+                            }
                             style={{ width: 80, minHeight: 32 }}
                             autoSize={{ minRows: 1, maxRows: 3 }}
                           />
-                        )
+                        ),
+                      },
+                      {
+                        title: "Tình trạng răng miệng",
+                        dataIndex: "dental_status",
+                        key: "dental_status",
+                        align: "center",
+                        render: (value, record) => (
+                          <Input
+                            value={value ?? ""}
+                            onChange={(e) =>
+                              handleEditChange(
+                                e.target.value,
+                                record,
+                                "dental_status"
+                              )
+                            }
+                            disabled={isViewResult}
+                            style={{ width: 120 }}
+                          />
+                        ),
+                      },
+                      {
+                        title: "Huyết áp",
+                        dataIndex: "blood_pressure",
+                        key: "blood_pressure",
+                        align: "center",
+                        render: (value, record) => (
+                          <Input
+                            value={value ?? ""}
+                            onChange={(e) =>
+                              handleEditChange(
+                                e.target.value,
+                                record,
+                                "blood_pressure"
+                              )
+                            }
+                            disabled={isViewResult}
+                            style={{ width: 100 }}
+                          />
+                        ),
+                      },
+                      {
+                        title: "Nhịp tim",
+                        dataIndex: "heart_rate",
+                        key: "heart_rate",
+                        align: "center",
+                        render: (value, record) => (
+                          <Input
+                            value={value ?? ""}
+                            onChange={(e) =>
+                              handleEditChange(
+                                e.target.value,
+                                record,
+                                "heart_rate"
+                              )
+                            }
+                            disabled={isViewResult}
+                            style={{ width: 100 }}
+                          />
+                        ),
+                      },
+                      {
+                        title: "Tình trạng chung",
+                        dataIndex: "general_condition",
+                        key: "general_condition",
+                        align: "center",
+                        render: (value, record) => (
+                          <Input
+                            value={value ?? ""}
+                            onChange={(e) =>
+                              handleEditChange(
+                                e.target.value,
+                                record,
+                                "general_condition"
+                              )
+                            }
+                            disabled={isViewResult}
+                            style={{ width: 120 }}
+                          />
+                        ),
                       },
                       {
                         title: "Tình trạng",
@@ -864,21 +1182,29 @@ const handleUpdate = async (values) => {
                         render: (value, record) => (
                           <Input.TextArea
                             value={value ?? ""}
-                            onChange={e => handleEditChange(e.target.value, record, "diagnosis")}
+                            onChange={(e) =>
+                              handleEditChange(
+                                e.target.value,
+                                record,
+                                "diagnosis"
+                              )
+                            }
                             style={{ width: 120, minHeight: 32 }}
                             autoSize={{ minRows: 1, maxRows: 3 }}
                           />
-                        )
+                        ),
                       },
-                      { 
-                        title: "Cấp độ", 
-                        dataIndex: "level", 
-                        key: "level", 
+                      {
+                        title: "Cấp độ",
+                        dataIndex: "level",
+                        key: "level",
                         align: "center",
                         render: (value, record) => (
                           <Select
                             value={value ?? ""}
-                            onChange={val => handleEditChange(val, record, "level")}
+                            onChange={(val) =>
+                              handleEditChange(val, record, "level")
+                            }
                             style={{ width: 120 }}
                             options={[
                               { value: "GOOD", label: "GOOD" },
@@ -888,24 +1214,74 @@ const handleUpdate = async (values) => {
                             ]}
                             placeholder="Chọn cấp độ"
                           />
-                        )
+                        ),
                       },
-                      { title: "Ghi chú", dataIndex: "note", key: "note", align: "center",
-                        width: 200, // Tăng chiều rộng
+
+                      {
+                        title: "Ghi chú",
+                        dataIndex: "note",
+                        key: "note",
+                        align: "center",
                         render: (value, record) => (
                           <Input.TextArea
                             value={value ?? ""}
-                            onChange={e => handleEditChange(e.target.value, record, "note")}
-                            style={{ width: "100%", minHeight: 32 }}
+                            onChange={(e) =>
+                              handleEditChange(e.target.value, record, "note")
+                            }
+                            disabled={isViewResult}
+                            style={{ width: 120, minHeight: 32 }}
                             autoSize={{ minRows: 1, maxRows: 3 }}
                           />
-                        )
+                        ),
                       },
+                      {
+                        title: "Đã khám?",
+                        dataIndex: "is_checked",
+                        key: "is_checked",
+                        align: "center",
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value === 1 ? (
+                              <CheckSquareTwoTone
+                                twoToneColor="#52c41a"
+                                style={{ fontSize: 22, cursor: "not-allowed" }}
+                              />
+                            ) : (
+                              <BorderOutlined
+                                style={{
+                                  fontSize: 22,
+                                  color: "#aaa",
+                                  cursor: "not-allowed",
+                                }}
+                              />
+                            )
+                          ) : value === 1 ? (
+                            <CheckSquareTwoTone
+                              twoToneColor="#52c41a"
+                              style={{ fontSize: 22, cursor: "pointer" }}
+                              onClick={() =>
+                                handleEditChange(0, record, "is_checked")
+                              }
+                            />
+                          ) : (
+                            <BorderOutlined
+                              style={{
+                                fontSize: 22,
+                                color: "#aaa",
+                                cursor: "pointer",
+                              }}
+                              onClick={() =>
+                                handleEditChange(1, record, "is_checked")
+                              }
+                            />
+                          ),
+                      },
+
                       {
                         title: "Thao tác",
                         key: "action",
                         align: "center",
-                        render: (_, record) => (
+                        render: (_, record) =>
                           !isViewResult && (
                             <Button
                               type="primary"
@@ -917,7 +1293,11 @@ const handleUpdate = async (values) => {
                                   Number(record.height) < 100 ||
                                   Number(record.height) > 200
                                 ) {
-                                  Swal.fire("Lỗi", "Chiều cao phải là số từ 100 đến 200!", "error");
+                                  Swal.fire(
+                                    "Lỗi",
+                                    "Chiều cao phải là số từ 100 đến 200!",
+                                    "error"
+                                  );
                                   return;
                                 }
                                 if (
@@ -926,14 +1306,22 @@ const handleUpdate = async (values) => {
                                   Number(record.weight) < 15 ||
                                   Number(record.weight) > 120
                                 ) {
-                                  Swal.fire("Lỗi", "Cân nặng phải là số từ 15 đến 120!", "error");
+                                  Swal.fire(
+                                    "Lỗi",
+                                    "Cân nặng phải là số từ 15 đến 120!",
+                                    "error"
+                                  );
                                   return;
                                 }
                                 if (
                                   !record.vision ||
                                   !/^([1-9]|10)\/10$/.test(record.vision)
                                 ) {
-                                  Swal.fire("Lỗi", "Thị lực phải có dạng 1/10 - 10/10!", "error");
+                                  Swal.fire(
+                                    "Lỗi",
+                                    "Thị lực phải có dạng 1/10 - 10/10!",
+                                    "error"
+                                  );
                                   return;
                                 }
                                 // Nếu hợp lệ thì gọi API
@@ -949,37 +1337,48 @@ const handleUpdate = async (values) => {
                                       hearing: record.hearing,
                                       weight: record.weight,
                                       height: record.height,
-                                      healthCheckFormId: record.healthCheckFormDTO?.id,
+                                      healthCheckFormId:
+                                        record.healthCheckFormDTO?.id,
                                     },
-                                    { headers: { Authorization: `Bearer ${token}` } }
+                                    {
+                                      headers: {
+                                        Authorization: `Bearer ${token}`,
+                                      },
+                                    }
                                   );
-                                  Swal.fire("Thành công", "Đã lưu kết quả!", "success");
+                                  Swal.fire(
+                                    "Thành công",
+                                    "Đã lưu kết quả!",
+                                    "success"
+                                  );
                                 } catch {
-                                  Swal.fire("Lỗi", "Không thể lưu kết quả!", "error");
+                                  Swal.fire(
+                                    "Lỗi",
+                                    "Không thể lưu kết quả!",
+                                    "error"
+                                  );
                                 }
                               }}
                             >
                               Lưu
                             </Button>
-                          )
-                        ),
+                          ),
                       },
                     ]}
-                    dataSource={
-                      editableResults.filter(item =>
+                    dataSource={editableResults.filter(
+                      (item) =>
                         (item.studentDTO?.fullName || "")
                           .toLowerCase()
                           .includes(studentSearch.toLowerCase()) ||
                         (item.studentDTO?.id + "").includes(studentSearch)
-                      )
-                    }
+                    )}
                     loading={healthCheckResultsLoading}
                     rowKey="healthResultId"
                     bordered
                     size="middle"
                     style={{
                       paddingLeft: 5,
-                      minWidth: 1250,
+                      minWidth: 1350,
                       borderRadius: 12,
                       overflow: "hidden",
                       background: "#fff",
@@ -987,13 +1386,26 @@ const handleUpdate = async (values) => {
                     }}
                     locale={{
                       emptyText: (
-                        <div style={{ padding: 32, color: "#888", fontSize: 18, textAlign: "center" }}>
-                          <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" alt="No data" width={64} style={{ opacity: 0.5, marginBottom: 8 }} />
+                        <div
+                          style={{
+                            padding: 32,
+                            color: "#888",
+                            fontSize: 18,
+                            textAlign: "center",
+                          }}
+                        >
+                          <img
+                            src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
+                            alt="No data"
+                            width={64}
+                            style={{ opacity: 0.5, marginBottom: 8 }}
+                          />
                           <div>Không có dữ liệu</div>
                         </div>
                       ),
                     }}
-                    pagination={{ pageSize: 8 }} // Thêm dòng này để phân trang 14 học sinh/trang
+                    pagination={{ pageSize: 8 }}
+                    scroll={{ x: "max-content" }} // Thêm dòng này để bật thanh cuộn ngang
                   />
                 </div>
               </div>
@@ -1019,19 +1431,19 @@ const handleUpdate = async (values) => {
           <Descriptions column={1} bordered size="small">
             {resultData.map((item, idx) => (
               <React.Fragment key={idx}>
-                <Descriptions.Item label="Trạng thái sức khỏe">{item.statusHealth}</Descriptions.Item>
-                <Descriptions.Item label="Số lượng">{item.count}</Descriptions.Item>
+                <Descriptions.Item label="Trạng thái sức khỏe">
+                  {item.statusHealth}
+                </Descriptions.Item>
+                <Descriptions.Item label="Số lượng">
+                  {item.count}
+                </Descriptions.Item>
               </React.Fragment>
             ))}
           </Descriptions>
         )}
       </Modal>
-      
     </div>
   );
 };
 
 export default HealthCheckProgramList;
-
-
-
