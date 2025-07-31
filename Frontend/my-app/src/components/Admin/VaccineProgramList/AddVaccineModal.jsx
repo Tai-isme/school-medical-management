@@ -12,6 +12,7 @@ const AddVaccineModal = ({
 }) => {
   const [form] = Form.useForm();
   const [addVaccineLoading, setAddVaccineLoading] = useState(false);
+  const [modalMode, setModalMode] = useState("create"); // "create" | "edit" | "view"
 
   useEffect(() => {
     if (open) form.setFieldsValue(initialValues);

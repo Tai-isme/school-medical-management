@@ -3,44 +3,21 @@ import { Modal, Form, Input, Select, DatePicker, Button } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
 
-const vaccineOptions = [
-  { value: 1, label: "Viêm gan B" },
-  { value: 2, label: "Viêm gan A" },
-  { value: 3, label: "Sởi" },
-];
-
-const doseOptions = [
-  { value: 1, label: "Mũi 1" },
-  { value: 2, label: "Mũi 2" },
-  { value: 3, label: "Mũi 3" },
-  { value: 4, label: "Mũi 4" },
-  { value: 5, label: "Mũi 5" },
-];
-
-// Giả lập dữ liệu lớp
-const classOptions = [
-  { value: "1A", label: "Lớp 1A" },
-  { value: "1B", label: "Lớp 1B" },
-  { value: "2A", label: "Lớp 2A" },
-  { value: "2B", label: "Lớp 2B" },
-  { value: "3A", label: "Lớp 3A" },
-  { value: "3B", label: "Lớp 3B" },
-  { value: "4A", label: "Lớp 4A" },
-  { value: "4B", label: "Lớp 4B" },
-  { value: "5A", label: "Lớp 5A" },
-  { value: "5B", label: "Lớp 5B" },
-];
-
 const VaccineProgramModal = ({
   open,
   onCancel,
   onFinish,
   loading,
   initialValues = {},
+  editMode = false,
+  viewMode = false,
+  vaccineList = [],
+  program,
 }) => {
   const [form] = Form.useForm();
   const [selectedClasses, setSelectedClasses] = useState([]);
   const [nurseOptions, setNurseOptions] = useState([]);
+  const [selectedVaccineId, setSelectedVaccineId] = useState(null);
 
   // Fetch nurse list from API
   useEffect(() => {
@@ -68,6 +45,28 @@ const VaccineProgramModal = ({
     setSelectedClasses(initialValues.classes || []);
   }, [initialValues, open]);
 
+  useEffect(() => {
+    if (open) {
+      if (Object.keys(initialValues).length === 0) {
+        form.resetFields(); // Reset form khi tạo mới
+      } else {
+        form.setFieldsValue({
+          ...initialValues,
+          startDate: initialValues?.startDate ? dayjs(initialValues.startDate) : null,
+          sendFormDate: initialValues?.sendFormDate ? dayjs(initialValues.sendFormDate) : null,
+          classes: initialValues?.classes || [],
+          unit: initialValues?.unit || 1,
+        });
+      }
+    }
+  }, [initialValues, open, form]);
+
+  useEffect(() => {
+    if (initialValues?.vaccineType) {
+      setSelectedVaccineId(initialValues.vaccineType);
+    }
+  }, [initialValues]);
+
   const handleClassToggle = (value) => {
     setSelectedClasses((prev) =>
       prev.includes(value)
@@ -80,6 +79,34 @@ const VaccineProgramModal = ({
         : [...selectedClasses, value],
     });
   };
+
+  const vaccineOptions = vaccineList.map(vac => ({
+    value: vac.id, // hoặc vac.vaccineNameId nếu API trả về
+    label: vac.vaccineName,
+  }));
+
+  const doseOptions = React.useMemo(() => {
+    const vaccine = vaccineList.find(v => v.id === selectedVaccineId);
+    if (!vaccine) return [];
+    return Array.from({ length: vaccine.totalUnit }, (_, i) => ({
+      value: i + 1,
+      label: `Mũi ${i + 1}`,
+    }));
+  }, [selectedVaccineId, vaccineList]);
+
+  // Giả lập dữ liệu lớp
+  const classOptions = [
+    { value: "1A", label: "Lớp 1A" },
+    { value: "1B", label: "Lớp 1B" },
+    { value: "2A", label: "Lớp 2A" },
+    { value: "2B", label: "Lớp 2B" },
+    { value: "3A", label: "Lớp 3A" },
+    { value: "3B", label: "Lớp 3B" },
+    { value: "4A", label: "Lớp 4A" },
+    { value: "4B", label: "Lớp 4B" },
+    { value: "5A", label: "Lớp 5A" },
+    { value: "5B", label: "Lớp 5B" },
+  ];
 
   return (
     <Modal
@@ -94,19 +121,13 @@ const VaccineProgramModal = ({
         layout="vertical"
         form={form}
         onFinish={onFinish}
-        initialValues={{
-          ...(initialValues || {}),
-          startDate: initialValues?.startDate ? dayjs(initialValues.startDate) : null,
-          sendFormDate: initialValues?.sendFormDate ? dayjs(initialValues.sendFormDate) : null,
-          classes: initialValues?.classes || [],
-        }}
       >
         <Form.Item
           label="Tên chương trình"
-          name="programName"
+          name="vaccineProgramName" // Đổi tên trường này
           rules={[{ required: true, message: "Nhập tên chương trình" }]}
         >
-          <Input placeholder="Nhập tên chương trình tiêm chủng" />
+          <Input placeholder="Nhập tên chương trình tiêm chủng" disabled={viewMode} />
         </Form.Item>
 
         {/* Loại vaccine và Mũi vaccine trên cùng 1 hàng */}
@@ -122,16 +143,27 @@ const VaccineProgramModal = ({
               options={vaccineOptions}
               showSearch
               optionFilterProp="label"
+              onChange={value => {
+                setSelectedVaccineId(value);
+                // Tự động chọn mũi đầu tiên khi chọn vaccine
+                const vaccine = vaccineList.find(v => v.id === value);
+                if (vaccine) {
+                  form.setFieldsValue({ unit: 1 });
+                }
+              }}
+              disabled={viewMode}
             />
           </Form.Item>
           <Form.Item
             label="Mũi vaccine"
+            name="unit"
             rules={[{ required: true, message: "Chọn mũi vaccine" }]}
             style={{ flex: 1, marginBottom: 0 }}
           >
             <Select
               placeholder="Chọn mũi tiêm"
               options={doseOptions}
+              disabled={viewMode || !selectedVaccineId}
             />
           </Form.Item>
         </div>
@@ -192,6 +224,7 @@ const VaccineProgramModal = ({
           label={<span><span role="img" aria-label="class">🏫</span> Chọn lớp</span>}
           name="classes"
           rules={[{ required: true, message: "Chọn ít nhất một lớp" }]}
+          style={{ width: "100%" }} // Thêm dòng này
         >
           <Select
             mode="multiple"
@@ -199,7 +232,7 @@ const VaccineProgramModal = ({
             options={classOptions}
             showSearch
             optionFilterProp="label"
-            style={{ width: "100%" }}
+            style={{ width: "100%" }} // Thêm dòng này
           />
         </Form.Item>
 
@@ -233,14 +266,16 @@ const VaccineProgramModal = ({
         </Form.Item>
 
         <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={loading}
-            style={{ width: "100%" }}
-          >
-            Tạo chương trình
-          </Button>
+          {!viewMode && (
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              style={{ width: "100%" }}
+            >
+              {editMode ? "Cập nhật chương trình" : "Tạo chương trình"}
+            </Button>
+          )}
         </Form.Item>
       </Form>
     </Modal>
