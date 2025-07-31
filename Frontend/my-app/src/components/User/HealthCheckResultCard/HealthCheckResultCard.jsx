@@ -34,7 +34,7 @@ const HealthCheckResultCard = () => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `http://localhost:8080/api/parent/health-check-forms/student/${studentId}`,
+        `http://localhost:8080/api/parent/health-check-result/student/${studentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();

@@ -474,12 +474,12 @@ const HealthCheckProgramList = () => {
         return "blue";
       case "COMPLETED":
         return "green";
+      case "FORM_SENT":
+        return "gold";
       default:
         return "default";
     }
   };
-
-  // Hàm ánh xạ trạng thái sang tiếng Việt
   const getStatusText = (status) => {
     switch (status) {
       case "NOT_STARTED":
@@ -488,6 +488,8 @@ const HealthCheckProgramList = () => {
         return "Đang diễn ra";
       case "COMPLETED":
         return "Đã hoàn thành";
+      case "FORM_SENT":
+        return "Đã gửi biểu mẫu";
       default:
         return status;
     }
@@ -604,77 +606,40 @@ const HealthCheckProgramList = () => {
                       width: "calc(100vw - 260px)",
                       minWidth: 1200,
                       margin: "0 auto",
-                      transition: "width 0.2s",
                       marginBottom: 16,
                     }}
                     bodyStyle={{ padding: 24 }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                      }}
-                    >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div>
-                        <div
-                          style={{
-                            fontWeight: 700,
-                            fontSize: 18,
-                            marginBottom: 4,
-                          }}
-                        >
-                          {program.name}
+                        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>
+                          {program.healthCheckName}
                         </div>
                         <div style={{ color: "#555", marginBottom: 2 }}>
                           Mô tả: {program.description}
                         </div>
+                        <div style={{ color: "#555", marginBottom: 2 }}>
+                          Ngày gửi biểu mẫu: {program.dateSendForm}
+                        </div>
                         <div style={{ color: "#555", marginBottom: 8 }}>
-                          Ngày bắt đầu: {program.startDate} <br />
+                          Ngày bắt đầu: {program.startDate}
+                        </div>
+                        <div style={{ color: "#555", marginBottom: 8 }}>
+                          Y tá phụ trách: {program.nurseDTO?.fullName}
+                        </div>
+                        <div style={{ color: "#555", marginBottom: 8 }}>
+                          Địa điểm: {program.location}
                         </div>
                       </div>
-                      {/* Nếu là ADMIN thì cho phép chỉnh trạng thái, nếu là NURSE thì chỉ hiển thị Tag */}
-                      {userRole === "ADMIN" ? (
-                        <Select
-                          value={program.status}
-                          style={{ width: 160 }}
-                          onChange={(status) =>
-                            handleUpdateStatus(program.id, status)
-                          }
-                          options={[
-                            { value: "NOT_STARTED", label: "Chưa bắt đầu" },
-                            { value: "ON_GOING", label: "Đang diễn ra" },
-                            { value: "COMPLETED", label: "Đã hoàn thành" },
-                          ]}
-                          disabled={userRole === "NURSE"}
-                        />
-                      ) : (
-                        <Tag
-                          color={getStatusColor(program.status)}
-                          style={{ fontSize: 14, marginTop: 4 }}
-                        >
-                          {getStatusText(program.status)}
-                        </Tag>
-                      )}
+                      <Tag color={getStatusColor(program.status)} style={{ fontSize: 14, marginTop: 4 }}>
+                        {getStatusText(program.status)}
+                      </Tag>
                     </div>
                     <Row gutter={32} style={{ margin: "24px 0" }}>
                       <Col span={12}>
-                        <div
-                          style={{
-                            background: "#fff",
-                            borderRadius: 8,
-                            padding: 16,
-                            textAlign: "center",
-                          }}
-                        >
-                          <div
-                            style={{
-                              color: "#1890ff",
-                              fontWeight: 700,
-                              fontSize: 32,
-                            }}
-                          >
-                            {totalForms[program.id] ?? 0}
+                        <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
+                          <div style={{ color: "#1890ff", fontWeight: 700, fontSize: 32 }}>
+                            {program.healthCheckFormDTOs?.length ?? 0}
                           </div>
                           <div style={{ color: "#888", fontWeight: 500 }}>
                             Tổng học sinh dự kiến tham gia
@@ -682,22 +647,9 @@ const HealthCheckProgramList = () => {
                         </div>
                       </Col>
                       <Col span={12}>
-                        <div
-                          style={{
-                            background: "#fff",
-                            borderRadius: 8,
-                            padding: 16,
-                            textAlign: "center",
-                          }}
-                        >
-                          <div
-                            style={{
-                              color: "#21ba45",
-                              fontWeight: 700,
-                              fontSize: 32,
-                            }}
-                          >
-                            {confirmedCounts[program.id] ?? 0}
+                        <div style={{ background: "#fff", borderRadius: 8, padding: 16, textAlign: "center" }}>
+                          <div style={{ color: "#21ba45", fontWeight: 700, fontSize: 32 }}>
+                            {program.healthCheckFormDTOs?.filter(f => f.commit)?.length ?? 0}
                           </div>
                           <div style={{ color: "#888", fontWeight: 500 }}>
                             Đã xác nhận tham gia

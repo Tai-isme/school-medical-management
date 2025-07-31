@@ -39,7 +39,7 @@ const VaccineResultCard = () => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `http://localhost:8080/api/parent/vaccine-forms/student/${studentId}`,
+        `http://localhost:8080/api/parent/vaccine-result/student${studentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
