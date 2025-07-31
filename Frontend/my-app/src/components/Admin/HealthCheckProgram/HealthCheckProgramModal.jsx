@@ -25,21 +25,20 @@ const HealthCheckProgramModal = ({
       initialValues={
         editMode && program
           ? {
-              name: program.name,
-              description: program.description,
-              startDate: dayjs(program.startDate),
-              endDate: dayjs(program.endDate),
-              dateSendForm: program.dateSendForm ? dayjs(program.dateSendForm) : null,
-              location: program.location,
-              nurseID: program.nurseID,
-              classIds: program.classIds,
+              healthCheckName: program.healthCheckName,
+        description: program.description,
+        startDate: program.startDate ? dayjs(program.startDate) : null,
+        dateSendForm: program.dateSendForm ? dayjs(program.dateSendForm) : null,
+        location: program.location,
+        nurseId: program.nurseId, // phải là nurseId, không phải nurseID
+        classIds: program.classIds,
             }
           : {}
       }
     >
       <Form.Item
         label="Tên chương trình"
-        name="name"
+        name="healthCheckName"
         rules={[{ required: true, message: "Nhập tên chương trình" }]}
       >
         <Input />
@@ -102,7 +101,7 @@ const HealthCheckProgramModal = ({
       </Form.Item>
       <Form.Item
         label="Y tá phụ trách"
-        name="nurseID"
+        name="nurseId"
         rules={[{ required: true, message: "Chọn y tá phụ trách" }]}
       >
         <Select
