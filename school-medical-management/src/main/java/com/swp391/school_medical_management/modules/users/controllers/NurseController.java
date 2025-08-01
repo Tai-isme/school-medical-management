@@ -79,6 +79,12 @@ public class NurseController {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/vaccine-forms-commit/program/{programId}")
+    public ResponseEntity<List<VaccineFormDTO>> getCommittedVaccineFormsByProgram(@PathVariable int programId) {
+        List<VaccineFormDTO> list = nurseService.getCommittedVaccineFormsByProgram(programId);
+        return ResponseEntity.ok(list);
+    }
+
     @GetMapping("/vaccine-forms/program/{programId}")
     public ResponseEntity<List<VaccineFormDTO>> getVaccineFormsByProgram(
             @PathVariable int programId,
@@ -355,8 +361,9 @@ public class NurseController {
     }
 
     @PostMapping("/create-vaccineResults-byProgram/{programId}")
-    public ResponseEntity<String> createVaccineResultsByProgramId(@PathVariable int programId,
-                                                                  @RequestBody VaccineResultRequest request) {
+    public ResponseEntity<String> createVaccineResultsByProgramId(
+            @PathVariable int programId,
+            @RequestBody VaccineResultRequest request) {
         nurseService.createVaccineResultsByProgramId(programId, request);
         return ResponseEntity.ok("Tạo kết quả tiêm chủng thành công.");
     }
