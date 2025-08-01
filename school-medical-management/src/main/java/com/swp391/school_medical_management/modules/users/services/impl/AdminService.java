@@ -548,10 +548,9 @@ public class AdminService {
     }
 
     public VaccineProgramDTO createVaccineProgram(VaccineProgramRequest request, int adminId) {
-        UserEntity admin = userRepository.findUserByUserId(adminId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin không tồn tại"));
-        UserEntity nurse = userRepository.findById(request.getNurseId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Y tá"));
+        UserEntity admin = userRepository.findUserByUserId(adminId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin không tồn tại"));
+        logger.info("NurseId: " + request.getNurseId());
+        UserEntity nurse = userRepository.findById(request.getNurseId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Y tá"));
         if (request.getStartDate().isBefore(LocalDate.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
@@ -619,39 +618,37 @@ public class AdminService {
         return dto;
     }
 
-    public VaccineProgramDTO updateVaccineProgram(VaccineProgramRequest request, int id) {
+    public VaccineProgramDTO updateVaccineProgram(VaccineProgramRequest request, int id, int adminId) {
         VaccineProgramEntity existingProgram = vaccineProgramRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy vaccine"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình tiêm chủng!"));
 
         if (existingProgram.getStatus() == VaccineProgramEntity.VaccineProgramStatus.COMPLETED
-                || existingProgram.getStatus() == VaccineProgramEntity.VaccineProgramStatus.ON_GOING) {
+                || existingProgram.getStatus() == VaccineProgramEntity.VaccineProgramStatus.ON_GOING
+                || existingProgram.getStatus() == VaccineProgramEntity.VaccineProgramStatus.FORM_SENT
+                || existingProgram.getStatus() == VaccineProgramEntity.VaccineProgramStatus.GENERATED_RESULT) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Cannot update program that is COMPLETED or ON_GOING");
+                    "Không thể cập nhật chương trình đã hoàn thành hoặc đang diễn ra!");
         }
 
         if (request.getStartDate().isBefore(LocalDate.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Start date must be today or in the future");
+                    "Ngày bắt đầu phải là ngày trong tương lai!");
         }
 
-        if (!existingProgram.getVaccineProgramName().equals(request.getVaccineProgramName())) {
-            Optional<VaccineProgramEntity> duplicateProgramOpt = vaccineProgramRepository
-                    .findByVaccineProgramNameAndStatus(request.getVaccineProgramName(),
-                            VaccineProgramEntity.VaccineProgramStatus.NOT_STARTED);
-            if (duplicateProgramOpt.isPresent()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Vaccine program '" + request.getVaccineProgramName() + "' already exists and not started.");
-            }
+        if (request.getStartDate().isBefore(request.getDateSendForm())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ngày thông báo phải sớm hơn ngày bắt đầu chương trình!");
         }
+
 
         VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(request.getVaccineNameId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy vaccine!"));
 
-        UserEntity admin = userRepository.findById(request.getAdminId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+        UserEntity admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy admin!"));
 
         UserEntity nurse = userRepository.findById(request.getNurseId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy y tá!"));
 
         existingProgram.setVaccineName(vaccineNameEntity);
         existingProgram.setVaccineProgramName(request.getVaccineProgramName());
@@ -674,7 +671,7 @@ public class AdminService {
             for (Integer classId : request.getClassIds()) {
                 ClassEntity clazz = classRepository.findById(classId)
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                "Class with ID " + classId + " not found"));
+                                "Không tìm thấy lớp với id: " + classId));
 
                 ParticipateClassEntity participate = new ParticipateClassEntity();
                 participate.setClazz(clazz);
@@ -1239,7 +1236,7 @@ public class AdminService {
         return participationDTO;
     }
 
-    public VaccineFormStatsDTO getFormStatsByProgram(Long vaccineProgramId) {
+    public VaccineFormStatsDTO getFormStatsByProgram(int vaccineProgramId) {
         // long total =
         // vaccineFormRepository.countByVaccineProgram_VaccineId(vaccineProgramId);
         // long committed =
@@ -1453,4 +1450,5 @@ public class AdminService {
         workbook.close();
         return new ByteArrayInputStream(out.toByteArray());
     }
+
 }

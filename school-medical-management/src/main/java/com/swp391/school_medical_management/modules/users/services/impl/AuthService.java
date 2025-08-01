@@ -16,6 +16,7 @@ import com.swp391.school_medical_management.modules.users.repositories.RefreshTo
 import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import com.swp391.school_medical_management.service.JwtService;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +88,10 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void logout(String bearerToken) {
+        logger.info("logout");
+
         String token = bearerToken.substring(7); // Bỏ "Bearer "
 
         // 1. Đưa vào blacklist
