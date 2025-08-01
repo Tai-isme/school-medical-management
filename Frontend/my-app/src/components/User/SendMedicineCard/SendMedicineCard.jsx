@@ -25,7 +25,7 @@ export default function InstructionForm({ onShowHistory }) {
   const [selectedStudentId, setSelectedStudentId] = useState(students[0]?.studentId || '');
   const selectedStudent = students.find(s => String(s.studentId) === String(selectedStudentId));
 
-  const [medicines, setMedicines] = useState([{ name: '', quantity: '', unit: '', usage: '' }]);
+  const [medicines, setMedicines] = useState([{ name: '', quantity: '', unit: '', usage: '', method: '' }]);
   const [note, setNote] = useState('');
   const [purpose, setPurpose] = useState(''); // Thêm state cho mục đích sử dụng thuốc
   const [usageTime, setUsageTime] = useState(''); // Thêm state cho thời gian sử dụng thuốc
@@ -39,7 +39,7 @@ export default function InstructionForm({ onShowHistory }) {
   "Sau ăn trưa: từ 11h30-12h"
 ];  
 const handleAddMedicine = () => {
-  setMedicines([...medicines, { name: '', quantity: '', unit: '', usage: '' }]);
+  setMedicines([...medicines, { name: '', quantity: '', unit: '', usage: '', method: '' }]);
 };
 
 const handleMedicineChange = (index, event) => {
@@ -97,8 +97,9 @@ const handleMedicineChange = (index, event) => {
         medicineName: med.name,
         quantity: med.quantity,
         type: med.unit,
+        method: med.method, // thêm dòng này
         timeSchedule: med.usage,
-        note: med.usage ? '' : med.usage // Chỉ gửi usage nếu có giá trị
+        note: med.usage ? '' : med.usage
       }))
     };
 
@@ -137,7 +138,7 @@ const handleMedicineChange = (index, event) => {
       setPurpose('');
       setNote('');
       setUsageTime('');
-      setMedicines([{ name: '', quantity: '', unit: '', usage: '' }]);
+      setMedicines([{ name: '', quantity: '', unit: '', usage: '', method: '' }]);
       setImageFile(null);
       setEditingId(null);
       message.success(editingId ? 'Đã cập nhật đơn thuốc!' : 'Đơn thuốc đã được gửi thành công!');
@@ -368,31 +369,60 @@ useEffect(() => {
                         required
                       />
                     </div>
-                    <div className="input-group" style={{ display: 'flex', gap: 8 }}>
+                    <div className="input-group" style={{ flexDirection: 'row', gap: 16, alignItems: 'center', marginBottom: 8 }}>
   <div style={{ flex: 1 }}>
-    <label>Số lượng:</label>
+    <label style={{ display: 'block', marginBottom: 4 }}>Số lượng:</label>
     <input
       type="number"
       min="1"
+      step="1"
       name="quantity"
       value={medicine.quantity}
-      onChange={(e) => handleMedicineChange(index, e)}
+      onChange={(e) => {
+        // Chỉ cho nhập số nguyên dương
+        const val = e.target.value.replace(/[^0-9]/g, '');
+        handleMedicineChange(index, { target: { name: 'quantity', value: val } });
+      }}
       placeholder="1"
       required
+      style={{ width: '100%' }}
     />
   </div>
   <div style={{ flex: 1 }}>
-    <label>Đơn vị:</label>
-    <input
-      type="text"
+    <label style={{ display: 'block', marginBottom: 4 }}>Đơn vị:</label>
+    <select
       name="unit"
       value={medicine.unit}
       onChange={(e) => handleMedicineChange(index, e)}
-      placeholder="viên, muỗng, ml..."
       required
-    />
+      style={{ width: '100%' }}
+    >
+      <option value="">-- Chọn đơn vị --</option>
+      <option value="Viên">Viên</option>
+      <option value="Gói">Gói</option>
+      <option value="Vỉ">Vỉ</option>
+      <option value="Chai">Chai</option>
+      <option value="Lọ">Lọ</option>
+      <option value="Tuýp">Tuýp</option>
+      <option value="Miếng dán">Miếng dán</option>
+      <option value="Liều">Liều</option>
+      <option value="Ống">Ống</option>
+    </select>
   </div>
 </div>
+                    
+                    <div className="input-group">
+                      <label>Cách dùng:</label>
+                      <input
+                        type="text"
+                        name="method"
+                        value={medicine.method}
+                        onChange={(e) => handleMedicineChange(index, e)}
+                        placeholder="Nhập cách dùng (vd: uống, bôi, tiêm...)"
+                        required
+                        style={{ width: '100%' }}
+                      />
+                    </div>
                     <div className="input-group" style={{ marginBottom: '0px' }}>
                       <label>Thời gian:</label>
                       <select

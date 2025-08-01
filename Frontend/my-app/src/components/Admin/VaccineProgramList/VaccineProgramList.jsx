@@ -546,8 +546,8 @@ const handleSendNotification = async (programId, deadline) => {
   setNotifyLoading(true);
   try {
     await axios.post(
-      `http://localhost:8080/api/nurse/create-vaccine-form/${programId}`,
-      { expDate: deadline ? deadline.format("YYYY-MM-DD") : undefined },
+      `http://localhost:8080/api/nurse/create-vaccine-form/${programId}?expDate=${deadline ? deadline.format("YYYY-MM-DD") : ""}`,
+      null, // Không truyền body
       { headers: { Authorization: `Bearer ${token}` } }
     );
     Swal.fire({
