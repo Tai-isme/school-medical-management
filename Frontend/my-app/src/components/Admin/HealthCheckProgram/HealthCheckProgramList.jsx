@@ -764,13 +764,15 @@ const handleUpdate = async (values) => {
                     >
                       <div>
                         <Button
-                          onClick={() => {
-                            setDetailVisible(true);
-                            setProgram(program);
-                          }}
-                        >
-                          Xem chi tiết
-                        </Button>
+  onClick={() => {
+    // Tìm lại program từ danh sách mới nhất
+    const freshProgram = programs.find(p => p.id === program.id);
+    setProgram(freshProgram || program);
+    setDetailVisible(true);
+  }}
+>
+  Xem chi tiết
+</Button>
                         <Button
                           type="primary"
                           style={{
@@ -784,10 +786,6 @@ const handleUpdate = async (values) => {
                             setShowResultPage(true);
                             setSelectedProgramId(program.id);
                           }}
-                          disabled={
-                            program.status === "NOT_STARTED" ||
-                            program.status === "ON_GOING"
-                          }
                         >
                           Xem kết quả
                         </Button>
@@ -798,20 +796,8 @@ const handleUpdate = async (values) => {
                             background: "#1976d2",
                             color: "#fff",
                             border: "none",
-                            opacity:
-                              program.status === "ON_GOING" &&
-                              (confirmedCounts[program.id] ?? 0) > 0 &&
-                              userRole !== "ADMIN"
-                                ? 1
-                                : 0.5,
                           }}
                           onClick={() => handleCreateResult(program.id)}
-                          disabled={
-                            !(
-                              program.status === "ON_GOING" &&
-                              (confirmedCounts[program.id] ?? 0) > 0
-                            ) || userRole === "ADMIN"
-                          }
                         >
                           Tạo kết quả
                         </Button>
@@ -822,17 +808,8 @@ const handleUpdate = async (values) => {
                             background: "#ff9800",
                             color: "#fff",
                             border: "none",
-                            opacity:
-                              program.status === "NOT_STARTED" ||
-                              program.status === "ON_GOING"
-                                ? 0.5
-                                : 1,
                           }}
                           onClick={() => handleEditResult(program.id)}
-                          disabled={
-                            program.status === "NOT_STARTED" ||
-                            program.status === "ON_GOING"
-                          }
                         >
                           Chỉnh sửa kết quả
                         </Button>
@@ -843,34 +820,9 @@ const handleUpdate = async (values) => {
                             background: "#00bcd4",
                             color: "#fff",
                             border: "none",
-                            cursor:
-                              program.status === "NOT_STARTED" ||
-                              program.status === "COMPLETED" ||
-                              (program.status === "ON_GOING" &&
-                                program.sended === 1) ||
-                              sentNotificationIds.includes(program.id) ||
-                              userRole === "ADMIN"
-                                ? "not-allowed"
-                                : "pointer",
-                            opacity:
-                              program.status === "NOT_STARTED" ||
-                              program.status === "COMPLETED" ||
-                              (program.status === "ON_GOING" &&
-                                program.sended === 1) ||
-                              sentNotificationIds.includes(program.id) ||
-                              userRole === "ADMIN"
-                                ? 0.5
-                                : 1,
+                            cursor: "pointer",
                           }}
                           onClick={() => handleSendNotification(program.id)}
-                          disabled={
-                            program.status === "NOT_STARTED" ||
-                            program.status === "COMPLETED" ||
-                            (program.status === "ON_GOING" &&
-                              program.sended === 1) ||
-                            sentNotificationIds.includes(program.id) ||
-                            userRole === "ADMIN"
-                          }
                         >
                           Gửi thông báo
                         </Button>

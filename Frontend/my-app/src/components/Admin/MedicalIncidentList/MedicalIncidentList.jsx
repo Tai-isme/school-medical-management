@@ -1,46 +1,34 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
-  Table,
-  Button,
+  Card,
   Modal,
-  Form,
-  Input,
   message,
+  Pagination,
+  Input,
+  Select,
   Row,
   Col,
-  DatePicker,
-  Card,
-  Pagination,
-  Select,
-  Upload,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import axios from "axios";
 import dayjs from "dayjs";
-import "./MedicalIncidentList.css";
-import Swal from "sweetalert2"; // Thêm dòng này ở đầu file nếu chưa có
 
-const MedicalIncidentList = () => {
+const { Search } = Input;
+const { Option } = Select;
+
+const MedicalEventList = () => {
   const [data, setData] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [form] = Form.useForm();
-  const [searchEvent, setSearchEvent] = useState("");
-  const [searchDate, setSearchDate] = useState(null);
-  const [searchStudent, setSearchStudent] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [classList, setClassList] = useState([]);
-  const [studentList, setStudentList] = useState([]);
-  const [selectedClass, setSelectedClass] = useState(null);
+  const [filteredData, setFilteredData] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [fileList, setFileList] = useState([]);
-  const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewImage, setPreviewImage] = useState("");
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchText, setSearchText] = useState("");
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState("");
+
   const pageSize = 3;
 
-  // Tải danh sách sự kiện y tế từ API
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchMedicalEvents = async () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
@@ -52,496 +40,289 @@ const MedicalIncidentList = () => {
 
         const apiData = res.data.map((item) => ({
           ...item,
-          studentName: item.studentDTO.fullName || `ID ${item.studentId}`,
-          parentPhone: item.parentPhone || "Chưa có",
+          studentName: item.studentDTO?.fullName || `ID ${item.studentId}`,
+          className: item.classDTO?.className || "Không rõ",
+          date: item.date,
+          nurseName: item.nurseDTO?.fullName || `ID ${item.nurseId}`,
         }));
 
         setData(apiData);
-      } catch (err) {
-        console.error("Lỗi tải sự kiện:", err);
-        message.error("Không thể tải danh sách sự kiện!");
+        setFilteredData(apiData);
+      } catch (error) {
+        console.error("Lỗi tải sự kiện y tế:", error);
+        message.error("Không thể tải dữ liệu sự kiện y tế!");
       }
     };
 
-    fetchEvents();
+    fetchMedicalEvents();
   }, []);
 
-  // Lấy danh sách lớp khi mở modal
-  const showModal = async () => {
-    setIsModalVisible(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:8080/api/admin/class", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setClassList(res.data);
-    } catch {
-      setClassList([]);
-    }
-  };
+  useEffect(() => {
+    let tempData = [...data];
 
-  // Khi chọn lớp, lấy danh sách học sinh của lớp đó
-  const handleClassChange = async (classId) => {
-    setSelectedClass(classId);
-    form.setFieldsValue({ studentId: undefined }); // reset chọn học sinh
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `http://localhost:8080/api/admin/students/${classId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+    if (searchText.trim() !== "") {
+      tempData = tempData.filter(
+        (item) =>
+          item.eventName?.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.studentName?.toLowerCase().includes(searchText.toLowerCase())
       );
-      setStudentList(res.data);
-    } catch {
-      setStudentList([]);
     }
-  };
 
-  const handleCancel = () => {
-    form.resetFields();
-    setIsModalVisible(false);
-  };
-
-  const handleCreate = async () => {
-    try {
-      const values = await form.validateFields();
-
-      // Nếu upload nhiều ảnh, lấy danh sách url hoặc file
-      // Nếu upload 1 ảnh, lấy fileList[0]
-      let imageUrl = "";
-      if (fileList.length > 0) {
-        // Nếu backend nhận file, dùng FormData, nếu chỉ cần url thì lấy url
-        // Ví dụ: imageUrl = fileList[0].thumbUrl hoặc fileList[0].originFileObj
-        imageUrl = fileList[0].thumbUrl || "";
-      }
-
-      const payload = {
-        typeEvent: values.typeEvent,
-        description: values.description,
-        studentId: Number(values.studentId),
-        actionsTaken: values.actionsTaken,
-        level: values.level,
-        location: values.location,
-        nurseID: values.nurseID,
-        imageUrl, // Thêm trường ảnh vào payload
-      };
-
-      const token = localStorage.getItem("token");
-
-      const res = await axios.post(
-        "http://localhost:8080/api/nurse/medical-event",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      // Tìm học sinh vừa chọn trong studentList để lấy tên và lớp
-      const selectedStudent = studentList.find(
-        (stu) => stu.id === values.studentId
-      );
-
-      const created = {
-        ...res.data,
-        eventId: res.data.eventId || Date.now(),
-        date: dayjs().format("YYYY-MM-DD"),
-        studentName: selectedStudent
-          ? selectedStudent.fullName
-          : `ID ${values.studentId}`,
-        className: selectedStudent ? selectedStudent.className : "Không rõ",
-        nurseId: `ID ${res.data.nurseId || "---"}`,
-        parentPhone: res.data.parentPhone || "Chưa có",
-      };
-
-      setData((prev) => [...prev, created]);
-      form.resetFields();
-      setIsModalVisible(false);
-      Swal.fire({
-        icon: "success",
-        title: "Tạo sự kiện thành công!",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } catch (error) {
-      console.error("Lỗi tạo sự kiện:", error);
-      message.error("Không thể tạo sự kiện. Kiểm tra lại thông tin.");
+    if (selectedClass) {
+      tempData = tempData.filter((item) => item.className === selectedClass);
     }
+
+    if (selectedLevel) {
+      tempData = tempData.filter((item) => item.levelCheck === selectedLevel);
+    }
+
+    setFilteredData(tempData);
+    setCurrentPage(1); // reset về trang 1 khi lọc hoặc tìm
+  }, [searchText, selectedClass, selectedLevel, data]);
+
+  const getUniqueClassNames = () => {
+    return [...new Set(data.map((item) => item.className))];
   };
 
-  // Lọc dữ liệu theo tên sự kiện và ngày
-  const filteredData = data.filter((item) => {
-    const matchEvent = item.typeEvent
-      .toLowerCase()
-      .includes(searchEvent.toLowerCase());
-    const matchStudent = item.studentName
-      ?.toLowerCase()
-      .includes(searchStudent.toLowerCase());
-    const matchDate = searchDate
-      ? dayjs(item.date).isSame(searchDate, "day")
-      : true;
-    return matchEvent && matchStudent && matchDate;
-  });
-
-  // Dữ liệu trang hiện tại
-  const pagedData = filteredData.slice(
+  const paginatedData = filteredData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchEvent, searchDate, searchStudent]);
+  const containerStyle = {
+    marginLeft: "240px",
+    flex: 1,
+    padding: "24px",
+    background: "#fafbfc",
+    minHeight: "100vh",
+    borderRadius: "10px",
+    boxSizing: "border-box",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.04)",
+    fontFamily: "'Segoe UI', Tahoma, sans-serif",
+  };
 
-  // Hàm xử lý preview
-  const handlePreview = async (file) => {
-    setPreviewImage(file.thumbUrl || file.url || "");
-    setPreviewVisible(true);
+  const titleStyle = {
+    fontSize: "24px",
+    color: "#1476d1",
+    marginBottom: "24px",
+    fontWeight: 600,
+  };
+
+  const cardStyle = {
+    marginBottom: 16,
+    borderRadius: 10,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+    cursor: "pointer",
+    transition: "box-shadow 0.2s",
+  };
+
+  const cardHoverStyle = {
+    ...cardStyle,
+    boxShadow: "0 4px 16px rgba(24, 144, 255, 0.12)",
+  };
+
+  const eventTitleStyle = {
+    color: "#ff4d4f",
+    textTransform: "uppercase",
+    fontWeight: "bold",
+  };
+
+  const getLevelStyle = (level) => {
+    const baseStyle = {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      padding: "4px 10px",
+      borderRadius: 20,
+      color: "#fff",
+      fontWeight: "bold",
+      fontSize: 12,
+      textTransform: "uppercase",
+    };
+
+    switch (level) {
+      case "LOW":
+        return { ...baseStyle, backgroundColor: "#52c41a" };
+      case "MEDIUM":
+        return { ...baseStyle, backgroundColor: "#faad14" };
+      case "HIGH":
+        return { ...baseStyle, backgroundColor: "#ff4d4f" };
+      default:
+        return { ...baseStyle, backgroundColor: "#d9d9d9" };
+    }
   };
 
   return (
-    <div className="incident-container">
-      <div className="incident-header">
-        <h2>Sự Kiện Y Tế Gần Đây</h2>
-        <Button type="primary" danger onClick={showModal}>
-          + Thêm sự kiện
-        </Button>
-      </div>
+    <div style={containerStyle}>
+      <h2 style={titleStyle}>Danh sách sự kiện y tế</h2>
 
-      {/* Thanh tìm kiếm */}
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col>
-          <Input
-            placeholder="Tìm theo tên sự kiện"
-            value={searchEvent}
-            onChange={(e) => setSearchEvent(e.target.value)}
+      {/* Tìm kiếm và lọc */}
+      <Row gutter={16} style={{ marginBottom: 24 }}>
+        <Col span={8}>
+          <Search
+            placeholder="Tìm theo tên sự kiện hoặc học sinh"
+            onChange={(e) => setSearchText(e.target.value)}
             allowClear
           />
         </Col>
-        <Col>
-          <Input
-            placeholder="Tìm theo tên học sinh"
-            value={searchStudent}
-            onChange={(e) => setSearchStudent(e.target.value)}
+        <Col span={8}>
+          <Select
+            placeholder="Lọc theo lớp"
+            style={{ width: "100%" }}
+            onChange={(value) => setSelectedClass(value)}
             allowClear
-          />
+          >
+            {getUniqueClassNames().map((cls) => (
+              <Option key={cls} value={cls}>
+                {cls}
+              </Option>
+            ))}
+          </Select>
         </Col>
-        <Col>
-          <DatePicker
-            placeholder="Tìm theo ngày"
-            value={searchDate}
-            onChange={setSearchDate}
+        <Col span={8}>
+          <Select
+            placeholder="Lọc theo mức độ"
+            style={{ width: "100%" }}
+            onChange={(value) => setSelectedLevel(value)}
             allowClear
-            format="YYYY-MM-DD"
-          />
+          >
+            <Option value="LOW">LOW</Option>
+            <Option value="MEDIUM">MEDIUM</Option>
+            <Option value="HIGH">HIGH</Option>
+          </Select>
         </Col>
       </Row>
 
-      {/* Danh sách card */}
-      <div style={{ padding: 8 }}>
-        {pagedData.length === 0 ? (
-          <div style={{ textAlign: "center", color: "#888" }}>
-            Không có sự kiện nào
-          </div>
-        ) : (
-          pagedData.map((item) => (
+      {/* Danh sách sự kiện */}
+      {filteredData.length === 0 ? (
+        <p>Không có dữ liệu phù hợp.</p>
+      ) : (
+        <>
+          {paginatedData.map((item) => (
             <Card
               key={item.eventId}
-              style={{
-                marginBottom: 16,
-                borderRadius: 10,
-                border: "1px solid #eee",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+              style={{ ...cardStyle, position: "relative" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = cardHoverStyle.boxShadow;
               }}
-              bodyStyle={{ padding: 20 }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = cardStyle.boxShadow;
+              }}
+              onClick={() => {
+                setSelectedEvent(item);
+                setDetailModalVisible(true);
+              }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                }}
-              >
-                <div style={{ width: "100%" }}>
-                  {/* Tên sự kiện ở trên cùng, căn giữa, nổi bật */}
-                  <div
-                    style={{
-                      color: "#ff4d4f",
-                      fontWeight: 700,
-                      fontSize: 18,
-                      marginBottom: 12,
-                      textTransform: "uppercase",
-                      letterSpacing: 1,
-                    }}
-                  >
-                    {item.typeEvent}
-                  </div>
-                  <div
-                    style={{ fontWeight: 600, fontSize: 16, marginBottom: 6 }}
-                  >
-                    <span style={{ color: "#1476d1" }}>Tên học sinh:</span>{" "}
-                    {item.studentDTO.fullName}{" "}
-                    {item.className ? `- ${item.className}` : ""}
-                  </div>
-                  <div style={{ color: "#888", fontSize: 14, marginBottom: 6 }}>
-                    <span style={{ color: "#1476d1" }}>Ngày:</span>{" "}
-                    {item.date ? dayjs(item.date).format("DD/MM/YYYY") : ""}
-                  </div>
-                  <div
-                    style={{ color: "#555", fontSize: 15, marginBottom: 12 }}
-                  >
-                    <span style={{ color: "#1476d1" }}>Mô tả:</span>{" "}
-                    {item.description}
-                  </div>
-                  <Button
-                    size="small"
-                    style={{ marginRight: 8 }}
-                    onClick={() => {
-                      setSelectedEvent(item);
-                      setDetailModalVisible(true);
-                    }}
-                  >
-                    Chi tiết
-                  </Button>
-                </div>
+              <div style={getLevelStyle(item.levelCheck)}>
+                {item.levelCheck}
               </div>
+              <h3 style={eventTitleStyle}>{item.eventName}</h3>
+              <p>
+                <strong>Học sinh:</strong> {item.studentName}
+              </p>
+              <p>
+                <strong>Lớp:</strong> {item.className}
+              </p>
+              <p>
+                <strong>Ngày:</strong> {dayjs(item.date).format("DD/MM/YYYY")}
+              </p>
             </Card>
-          ))
-        )}
-      </div>
+          ))}
 
-      {/* Phân trang */}
-      <div style={{ textAlign: "center", margin: "16px 0" }}>
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          total={filteredData.length}
-          onChange={setCurrentPage}
-          showSizeChanger={false}
-        />
-      </div>
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={filteredData.length}
+            onChange={(page) => setCurrentPage(page)}
+            style={{ marginTop: 24, textAlign: "center" }}
+          />
+        </>
+      )}
 
-      {/* Modal tạo sự kiện giữ nguyên */}
+      {/* Modal chi tiết */}
       <Modal
-        title="Tạo sự cố y tế"
-        open={isModalVisible}
-        onCancel={handleCancel}
-        onOk={handleCreate}
-        okText="Tạo"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="Tên sự kiện"
-            name="typeEvent"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="Chọn lớp"
-                name="classId"
-                rules={[{ required: true, message: "Vui lòng chọn lớp" }]}
-              >
-                <Select
-                  placeholder="Chọn lớp"
-                  onChange={handleClassChange}
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    (option?.children ?? "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
-                >
-                  {classList.map((cls) => (
-                    <Select.Option key={cls.classId} value={cls.classId}>
-                      {cls.className}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Chọn học sinh"
-                name="studentId"
-                rules={[{ required: true, message: "Vui lòng chọn học sinh" }]}
-              >
-                <Select
-                  placeholder="Chọn học sinh"
-                  disabled={!selectedClass}
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    (option?.children ?? "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
-                >
-                  {studentList.map((stu) => (
-                    <Select.Option key={stu.id} value={stu.id}>
-                      {stu.fullName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="Mức độ"
-                name="level"
-                rules={[{ required: true, message: "Vui lòng chọn mức độ" }]}
-              >
-                <Select placeholder="Chọn mức độ">
-                  <Select.Option value="Nhẹ">Nhẹ</Select.Option>
-                  <Select.Option value="TB">Trung bình</Select.Option>
-                  <Select.Option value="Nặng">Nặng</Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Y tá phụ trách (ID)"
-                name="nurseID"
-                rules={[{ required: true, message: "Vui lòng nhập ID y tá" }]}
-              >
-                <Input placeholder="Nhập ID y tá phụ trách" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item
-            label="Địa điểm"
-            name="location"
-            rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
-          >
-            <Input placeholder="Phòng y tế, lớp học, ..." />
-          </Form.Item>
-          <Form.Item
-            label="Mô tả"
-            name="description"
-            rules={[{ required: true }]}
-          >
-            <Input.TextArea />
-          </Form.Item>
-          <Form.Item
-            label="Xử lý đã thực hiện"
-            name="actionsTaken"
-            rules={[
-              { required: true, message: "Vui lòng nhập xử lý đã thực hiện" },
-            ]}
-          >
-            <Input placeholder="Đã uống thuốc hạ sốt, Đã băng bó, ..." />
-          </Form.Item>
-          <Form.Item label="Hình ảnh sự cố">
-            <Upload
-              listType="picture-card"
-              fileList={fileList}
-              beforeUpload={() => false}
-              onChange={({ fileList }) => setFileList(fileList)}
-              maxCount={1}
-              onPreview={handlePreview} // Thêm dòng này
-            >
-              {fileList.length >= 1 ? null : (
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Thêm ảnh</div>
-                </div>
-              )}
-            </Upload>
-            <Modal
-              open={previewVisible}
-              footer={null}
-              onCancel={() => setPreviewVisible(false)}
-            >
-              <img
-                alt="Hình ảnh sự cố"
-                style={{ width: "100%" }}
-                src={previewImage}
-              />
-            </Modal>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* Modal chi tiết sự kiện */}
-      <Modal
-        title="Chi tiết sự kiện y tế"
+        title={
+          <span style={{ color: "#1476d1", fontSize: 20, fontWeight: 600 }}>
+            Chi tiết sự kiện y tế
+          </span>
+        }
         open={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
         footer={null}
+        bodyStyle={{
+          position: "relative",
+          padding: 24,
+          paddingTop: 40,
+          backgroundColor: "#fefefe",
+          borderRadius: 8,
+        }}
       >
         {selectedEvent && (
           <div>
+            {/* Mức độ hiển thị góc phải */}
+            <div style={getLevelStyle(selectedEvent.levelCheck)}>
+              {selectedEvent.levelCheck}
+            </div>
+
+            {/* Dạng lưới 2 cột */}
             <div
               style={{
-                color: "#ff4d4f",
-                fontWeight: 700,
-                fontSize: 20,
-                marginBottom: 15,
-                textTransform: "uppercase",
-                letterSpacing: 1,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "12px 24px",
+                lineHeight: "1.8em",
               }}
             >
-              {selectedEvent.typeEvent}
-            </div>
-            <Row gutter={16} style={{ marginBottom: 0 }}>
-              <Col span={12}>
-                <p>
-                  <strong>Tên học sinh :</strong> {selectedEvent.studentName}
-                </p>
-              </Col>
-              <Col span={12}>
-                <p>
-                  <strong>Lớp :</strong>{" "}
-                  {selectedEvent.classDTO?.className ||
-                    selectedEvent.className ||
-                    "Không rõ"}
-                </p>
-              </Col>
-            </Row>
-            <p>
-              <strong>Ngày :</strong>{" "}
-              {selectedEvent.date
-                ? dayjs(selectedEvent.date).format("DD/MM/YYYY")
-                : ""}
-            </p>
-            <p>
-              <strong>Y tá phụ trách :</strong> {selectedEvent.nurseID}
-            </p>
-            <p>
-              <strong>Mức độ :</strong> {selectedEvent.level}
-            </p>
-            <p>
-              <strong>Địa điểm :</strong> {selectedEvent.location}
-            </p>
-            <p>
-              <strong>Mô tả :</strong> {selectedEvent.description}
-            </p>
-            <p>
-              <strong>Xử lý đã thực hiện :</strong> {selectedEvent.actionsTaken}
-            </p>
-            <div style={{ marginTop: 12 }}>
-              <strong>Hình ảnh sự cố:</strong>
               <div>
-                {selectedEvent.imageUrl ? (
-                  <img
-                    src={selectedEvent.imageUrl}
-                    alt="Hình ảnh sự cố"
-                    style={{ maxWidth: 320, marginTop: 8, borderRadius: 8 }}
-                  />
-                ) : (
-                  <span style={{ color: "#888", marginLeft: 8 }}>
-                    Không có hình ảnh
-                  </span>
-                )}
+                <strong>Tên sự kiện:</strong>
+                <div>{selectedEvent.eventName}</div>
+              </div>
+
+              <div>
+                <strong>Loại sự kiện:</strong>
+                <div>{selectedEvent.typeEvent}</div>
+              </div>
+
+              <div>
+                <strong>Học sinh:</strong>
+                <div>{selectedEvent.studentName}</div>
+              </div>
+
+              <div>
+                <strong>Lớp:</strong>
+                <div>{selectedEvent.className}</div>
+              </div>
+
+              <div>
+                <strong>Y tá phụ trách 👩‍⚕️:</strong>
+                <div>{selectedEvent.nurseName}</div>
+              </div>
+
+              <div>
+                <strong>Địa điểm:</strong>
+                <div>{selectedEvent.location}</div>
+              </div>
+
+              <div>
+                <strong>Ngày:</strong>
+                <div>{dayjs(selectedEvent.date).format("DD/MM/YYYY")}</div>
+              </div>
+            </div>
+
+            {/* Dòng kẻ phân tách */}
+            <div
+              style={{ margin: "16px 0", borderTop: "1px solid #f0f0f0" }}
+            ></div>
+
+            {/* Mô tả & xử lý */}
+            <div style={{ lineHeight: "1.8em" }}>
+              <div>
+                <strong>Mô tả:</strong>
+                <div>{selectedEvent.description || "(Không có)"}</div>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <strong>Xử lý:</strong>
+                <div>{selectedEvent.actionsTaken || "(Không có)"}</div>
               </div>
             </div>
           </div>
@@ -551,4 +332,4 @@ const MedicalIncidentList = () => {
   );
 };
 
-export default MedicalIncidentList;
+export default MedicalEventList;

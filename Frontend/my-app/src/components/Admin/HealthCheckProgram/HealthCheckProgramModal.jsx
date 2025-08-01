@@ -26,12 +26,14 @@ const HealthCheckProgramModal = ({
         editMode && program
           ? {
               healthCheckName: program.healthCheckName,
-        description: program.description,
-        startDate: program.startDate ? dayjs(program.startDate) : null,
-        dateSendForm: program.dateSendForm ? dayjs(program.dateSendForm) : null,
-        location: program.location,
-        nurseId: program.nurseId, // phải là nurseId, không phải nurseID
-        classIds: program.classIds,
+              description: program.description,
+              startDate: program.startDate ? dayjs(program.startDate) : null,
+              dateSendForm: program.dateSendForm
+                ? dayjs(program.dateSendForm)
+                : null,
+              location: program.location,
+              nurseId: program.nurseId, // phải là nurseId, không phải nurseID
+              classIds: program.classIds,
             }
           : {}
       }
@@ -54,7 +56,9 @@ const HealthCheckProgramModal = ({
                 validator: (_, value) => {
                   if (!value) return Promise.resolve();
                   if (value.isBefore(dayjs(), "day")) {
-                    return Promise.reject("Chỉ được chọn ngày trong tương lai!");
+                    return Promise.reject(
+                      "Chỉ được chọn ngày trong tương lai!"
+                    );
                   }
                   return Promise.resolve();
                 },
@@ -74,7 +78,19 @@ const HealthCheckProgramModal = ({
           <Form.Item
             label="Ngày gửi form"
             name="dateSendForm"
-            rules={[{ required: true, message: "Chọn ngày gửi form" }]}
+            rules={[
+              { required: true, message: "Chọn ngày gửi form" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const startDate = getFieldValue("startDate");
+                  if (!value || !startDate) return Promise.resolve();
+                  if (value.isSameOrBefore(startDate, "day")) {
+                    return Promise.reject("Ngày gửi form phải sau ngày bắt đầu!");
+                  }
+                  return Promise.resolve();
+                },
+              }),
+            ]}
           >
             <DatePicker
               style={{ width: "100%" }}
