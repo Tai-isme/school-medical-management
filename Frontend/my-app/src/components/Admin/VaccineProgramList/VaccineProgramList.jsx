@@ -209,13 +209,17 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/admin/vaccine-program/${program.vaccineId}`,
+        `http://localhost:8080/api/admin/vaccine-program/${program.vaccineProgramId}`,
         {
+          vaccineProgramName: values.vaccineProgramName,
           vaccineNameId: values.vaccineNameId,
-          manufacture: values.manufacture,
+          unit: values.unit,
           description: values.description,
-          vaccineDate: values.vaccineDate.format("YYYY-MM-DD"),
-          note: values.note,
+          startDate: values.startDate.format("YYYY-MM-DD"),
+          dateSendForm: values.sendFormDate.format("YYYY-MM-DD"),
+          location: values.location,
+          nurseId: values.nurse,
+          classIds: program.participateClassDTOs?.map(cls => cls.classId) || [],
         },
         {
           headers: {
@@ -445,11 +449,15 @@ const VaccineProgramList = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case "NOT_STARTED":
-        return "default";
+        return "default"; // Xám
+      case "FORM_SENT":
+        return "orange"; // Cam
       case "ON_GOING":
-        return "blue";
+        return "blue"; // Xanh dương
+      case "GENERATED_RESULT":
+        return "purple"; // Tím
       case "COMPLETED":
-        return "green";
+        return "green"; // Xanh lá
       default:
         return "default";
     }
@@ -460,8 +468,12 @@ const VaccineProgramList = () => {
     switch (status) {
       case "NOT_STARTED":
         return "Chưa bắt đầu";
+      case "FORM_SENT":
+        return "Đã gửi form";
       case "ON_GOING":
         return "Đang diễn ra";
+      case "GENERATED_RESULT":
+        return "Đã tạo kết quả";
       case "COMPLETED":
         return "Đã hoàn thành";
       default:
@@ -869,7 +881,7 @@ const VaccineProgramList = () => {
                                     setModalMode("view");
                                     setEditData({
                                       vaccineProgramName: program.vaccineProgramName, // Tên chương trình
-                                      vaccineType: program.vaccineNameId,             // ID loại vaccine (nên dùng id để select đúng)
+                                      vaccineNameId: program.vaccineNameId,             // ID loại vaccine (nên dùng id để select đúng)
                                       unit: program.unit || 1,                        // Số mũi tiêm
                                       startDate: program.startDate,                   // Ngày thực hiện
                                       sendFormDate: program.dateSendForm,             // Ngày gửi form
@@ -904,7 +916,7 @@ const VaccineProgramList = () => {
       setModalMode("edit");
       setEditData({
         vaccineProgramName: program.vaccineProgramName, // Tên chương trình
-        vaccineType: program.vaccineNameId,             // ID loại vaccine (nên dùng id để select đúng)
+        vaccineNameId: program.vaccineNameId,             // ID loại vaccine (nên dùng id để select đúng)
         unit: program.unit || 1,                        // Số mũi tiêm
         startDate: program.startDate,                   // Ngày thực hiện
         sendFormDate: program.dateSendForm,             // Ngày gửi form

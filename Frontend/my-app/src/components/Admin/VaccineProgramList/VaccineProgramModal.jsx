@@ -62,8 +62,8 @@ const VaccineProgramModal = ({
   }, [initialValues, open, form]);
 
   useEffect(() => {
-    if (initialValues?.vaccineType) {
-      setSelectedVaccineId(initialValues.vaccineType);
+    if (initialValues?.vaccineNameId) {
+      setSelectedVaccineId(initialValues.vaccineNameId);
     }
   }, [initialValues]);
 
@@ -134,7 +134,7 @@ const VaccineProgramModal = ({
         <div style={{ display: "flex", gap: 16 }}>
           <Form.Item
             label="Loại vaccine"
-            name="vaccineType"
+            name="vaccineNameId"
             rules={[{ required: true, message: "Chọn loại vaccine" }]}
             style={{ flex: 1, marginBottom: 0 }}
           >
