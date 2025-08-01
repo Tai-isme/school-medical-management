@@ -672,49 +672,6 @@ public class NurseService {
         return dto;
     }
 
-
-    public List<VaccineFormDTO> getNotSentVaccineFormsByProgram(int programId) {
-        // List<VaccineFormEntity> vaccineForms =
-        // vaccineFormRepository.findByStatusAndVaccineProgram_VaccineId(
-        // VaccineFormStatus.DRAFT,
-        // programId);
-        // return vaccineForms.stream()
-        // .map(form -> modelMapper.map(form, VaccineFormDTO.class))
-        // .collect(Collectors.toList());
-        return null;
-    }
-
-    public List<HealthCheckFormDTO> getNotSentHealthCheckFormsByProgram(int programId) {
-        // List<HealthCheckFormEntity> healthCheckForms = healthCheckFormRepository
-        // .findByStatusAndHealthCheckProgram_Id(HealthCheckFormStatus.DRAFT,
-        // programId);
-
-        // return healthCheckForms.stream()
-        // .map(form -> modelMapper.map(form, HealthCheckFormDTO.class))
-        // .collect(Collectors.toList());
-        return null;
-    }
-
-    public OnGoingProgramDTO getOnGoingPrograms() {
-        // List<VaccineProgramDTO> vaccinePrograms =
-        // vaccineProgramRepository.findByStatus(VaccineProgramStatus.ON_GOING)
-        // .stream()
-        // .map(vaccineprogram -> modelMapper.map(vaccineprogram,
-        // VaccineProgramDTO.class))
-        // .collect(Collectors.toList());
-
-        // List<HealthCheckProgramDTO> healthCheckPrograms =
-        // healthCheckProgramRepository
-        // .findByStatus(HealthCheckProgramStatus.ON_GOING)
-        // .stream()
-        // .map(healthCheckProgram -> modelMapper.map(healthCheckProgram,
-        // HealthCheckProgramDTO.class))
-        // .collect(Collectors.toList());
-
-        // return new OnGoingProgramDTO(vaccinePrograms, healthCheckPrograms);
-        return null;
-    }
-
     public MedicalEventDTO createMedicalEvent(int nurseId, MedicalEventRequest request) {
         Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
         if (nurseOpt.isEmpty()) {

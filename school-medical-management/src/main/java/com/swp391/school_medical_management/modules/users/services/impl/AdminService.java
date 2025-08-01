@@ -964,15 +964,46 @@ public class AdminService {
 
 
     public List<ClassDTO> getAllClass() {
-        // List<ClassEntity> classEntityList = classRepository.findAll();
-        // if (classEntityList.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found");
-        // List<ClassDTO> classDTOList = classEntityList.stream()
-        // .map(classEntity -> modelMapper.map(classEntity, ClassDTO.class))
-        // .collect(Collectors.toList());
-        // return classDTOList;
-        return null;
+        List<ClassEntity> classEntityList = classRepository.findAll();
+
+        if (classEntityList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found");
+        }
+
+        return classEntityList.stream().map(classEntity -> {
+            ClassDTO classDTO = new ClassDTO();
+            classDTO.setClassId(classEntity.getClassId());
+            classDTO.setClassName(classEntity.getClassName());
+            classDTO.setTeacherName(classEntity.getTeacherName());
+            classDTO.setQuantity(classEntity.getQuantity());
+
+            if (classEntity.getStudents() != null) {
+                List<StudentDTO> studentDTOList = classEntity.getStudents().stream().map(student -> {
+                    StudentDTO studentDTO = new StudentDTO();
+                    studentDTO.setStudentId(student.getId());
+                    studentDTO.setFullName(student.getFullName());
+                    studentDTO.setDob(student.getDob());
+                    studentDTO.setGender(
+                            student.getGender() != null ? student.getGender().name() : null);
+                    studentDTO.setClassId(classEntity.getClassId());
+                    studentDTO.setParentId(student.getParent().getUserId());
+
+                    if (student.getParent() != null) {
+                        UserDTO parentDTO = modelMapper.map(student.getParent(), UserDTO.class);
+                        studentDTO.setParentDTO(parentDTO);
+                    }
+
+                    studentDTO.setClassDTO(null);
+
+                    return studentDTO;
+                }).collect(Collectors.toList());
+
+                classDTO.setStudents(studentDTOList);
+            }
+            return classDTO;
+        }).collect(Collectors.toList());
     }
+
 
     public List<StudentDTO> getAllStudentInClass(int classId) {
         Optional<ClassEntity> classOpt = classRepository.findById(classId);

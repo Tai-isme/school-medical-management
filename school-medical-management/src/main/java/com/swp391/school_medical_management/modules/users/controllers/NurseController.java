@@ -130,22 +130,6 @@ public class NurseController {
         return ResponseEntity.ok(vaccineFormDTO);
     }
 
-    @GetMapping("/vaccine-forms/not-send/program/{programId}")
-    public ResponseEntity<List<VaccineFormDTO>> getNotSentVaccineFormsByProgram(@PathVariable int programId) {
-        List<VaccineFormDTO> forms = nurseService.getNotSentVaccineFormsByProgram(programId);
-        return ResponseEntity.ok(forms);
-    }
-
-    @GetMapping("/health-check-forms/not-send/program/{programId}")
-    public ResponseEntity<List<HealthCheckFormDTO>> getNotSentHealthCheckFormsByProgram(@PathVariable int programId) {
-        List<HealthCheckFormDTO> forms = nurseService.getNotSentHealthCheckFormsByProgram(programId);
-        return ResponseEntity.ok(forms);
-    }
-
-    @GetMapping("/programs/on-going")
-    public ResponseEntity<OnGoingProgramDTO> getOnGoingPrograms() {
-        return ResponseEntity.ok(nurseService.getOnGoingPrograms());
-    }
 
     // @GetMapping("/draft-form/count/{programId}")
     // public ResponseEntity<Map<String, int>>
