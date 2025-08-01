@@ -58,8 +58,9 @@ const RequestTable = () => {
   };
 
   const handleEditRequest = (record) => {
-    const time = record.medicalRequestDetailDTO?.[0]?.time || ''; // Lấy giá trị time từ medicalRequestDetailDTO
-    window.dispatchEvent(new CustomEvent('edit-medicine-request', { detail: { ...record, time } }));
+    setEditingRequest(record);
+    // Có thể dùng context, hoặc truyền qua props để mở form chỉnh sửa ở InstructionForm
+    window.dispatchEvent(new CustomEvent('edit-medicine-request', { detail: record }));
   };
 
   // --- Column Definitions ---
