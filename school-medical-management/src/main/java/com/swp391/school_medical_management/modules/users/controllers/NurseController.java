@@ -406,7 +406,7 @@ public class NurseController {
         return ResponseEntity.ok(dtos);
     }
 
-    @PostMapping("/vaccine-form/{programId}")
+    @PostMapping("/create-vaccine-form/{programId}")
     public ResponseEntity<String> createVaccineFormsForProgram(
             @PathVariable int programId,
             @RequestParam("expDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expDate) {
