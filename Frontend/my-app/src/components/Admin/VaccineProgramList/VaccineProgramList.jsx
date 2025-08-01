@@ -190,13 +190,17 @@ const VaccineProgramList = () => {
   // Gọi khi mount hoặc khi danh sách chương trình thay đổi
   
 
-  const handleCreate = async (payload) => {
+  const handleCreate = async (values) => {
   setLoading(true);
   const token = localStorage.getItem("token");
   try {
     await axios.post(
       "http://localhost:8080/api/admin/vaccine-program",
-      payload,
+      {
+        ...values,
+        startDate: values.startDate ? values.startDate.format("YYYY-MM-DD") : undefined,
+        sendFormDate: values.sendFormDate ? values.sendFormDate.format("YYYY-MM-DD") : undefined,
+      },
       { headers: { Authorization: `Bearer ${token}` } }
     );
     message.success("Tạo chương trình tiêm chủng thành công!");
@@ -886,8 +890,8 @@ const handleSendNotification = async (programId, deadline) => {
                                       vaccineProgramName: program.vaccineProgramName,
                                       vaccineNameId: program.vaccineNameId,
                                       unit: program.unit || 1,
-                                      startDate: values.startDate ? values.startDate.format("YYYY-MM-DD") : undefined,
-    sendFormDate: values.sendFormDate ? values.sendFormDate.format("YYYY-MM-DD") : undefined,
+                                      startDate: program.startDate,
+                                      sendFormDate: program.dateSendForm,
                                       classes: program.participateClassDTOs?.map(cls => cls.classId) || [], // SỬA ĐOẠN NÀY
                                       nurseId: program.nurseId,
                                       location: program.location,
