@@ -78,7 +78,7 @@ public class NurseController {
         List<HealthCheckFormDTO> list = nurseService.getCommittedHealthCheckFormsByProgram(programId);
         return ResponseEntity.ok(list);
     }
-    
+
     @GetMapping("/vaccine-forms-commit/program/{programId}")
     public ResponseEntity<List<VaccineFormDTO>> getCommittedVaccineFormsByProgram(@PathVariable int programId) {
         List<VaccineFormDTO> list = nurseService.getCommittedVaccineFormsByProgram(programId);
@@ -136,8 +136,7 @@ public class NurseController {
     }
 
     @PutMapping("/medical-event/{medicalEventId}")
-    public ResponseEntity<MedicalEventDTO> updateMedicalEvent(@PathVariable int medicalEventId,
-                                                              @RequestBody MedicalEventRequest request) {
+    public ResponseEntity<MedicalEventDTO> updateMedicalEvent(@PathVariable int medicalEventId, @RequestBody MedicalEventRequest request) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
         MedicalEventDTO medicalEventDTO = nurseService.updateMedicalEvent(Integer.parseInt(nurseId), medicalEventId,
                 request);
@@ -158,7 +157,8 @@ public class NurseController {
 
     @DeleteMapping("/medical-event/{medicalEventId}")
     public ResponseEntity<Void> deleteMedicalEvent(@PathVariable int medicalEventId) {
-        nurseService.deleteMedicalEvent(medicalEventId);
+        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
+        nurseService.deleteMedicalEvent(medicalEventId, Integer.parseInt(nurseId));
         return ResponseEntity.noContent().build();
     }
 
@@ -343,7 +343,7 @@ public class NurseController {
         nurseService.createFormsForHealthCheckProgram(programId);
         return ResponseEntity.ok("Forms generated successfully for all students.");
     }
-  
+
     // @PostMapping("/create-default-by-program/{programId}")
     // public ResponseEntity<List<HealthCheckResultDTO>>
     // createResultsByProgram(@PathVariable int programId) {

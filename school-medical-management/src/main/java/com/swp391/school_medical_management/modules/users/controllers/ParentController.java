@@ -1,46 +1,22 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import java.util.List;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
+import com.swp391.school_medical_management.modules.users.services.impl.ParentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.FeedbackRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
-import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
-import com.swp391.school_medical_management.modules.users.services.impl.ParentService;
-
-import jakarta.validation.Valid;
+import java.util.List;
 
 @Validated
 @RestController
@@ -103,7 +79,7 @@ public class ParentController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(value = "/medical-request", consumes = { "multipart/form-data" })
+    @PostMapping(value = "/medical-request", consumes = {"multipart/form-data"})
     public ResponseEntity<MedicalRequestDTO> createMedicalRequest(
             @RequestPart("request") String requestJson,
             @RequestPart(value = "image", required = false) MultipartFile image) {
@@ -111,7 +87,7 @@ public class ParentController {
         MedicalRequest request;
         try {
             ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule()); 
+            mapper.registerModule(new JavaTimeModule());
             request = mapper.readValue(requestJson, MedicalRequest.class);
         } catch (Exception e) {
             throw new RuntimeException("Invalid request format: " + e.getMessage());
@@ -193,19 +169,17 @@ public class ParentController {
 
     @PatchMapping("/health-check-forms/{healCheckFormId}/commit")
     public ResponseEntity<String> commitHealthCheckForm(@RequestBody CommitHealthCheckFormRequest request,
-            @PathVariable int healCheckFormId) {
+                                                        @PathVariable int healCheckFormId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        parentService.commitHealthCheckForm(Integer.parseInt(parentId), healCheckFormId, request);
-        return ResponseEntity.ok("Xác nhận thành công");
+        return ResponseEntity.ok(parentService.commitHealthCheckForm(Integer.parseInt(parentId), healCheckFormId, request));
     }
 
 
     @PatchMapping("/vaccine-forms/{vaccineFormId}/commit")
-    public ResponseEntity<Void> commitVaccineForm(@RequestBody CommitVaccineFormRequest request,
-                                                  @PathVariable int vaccineFormId) {
+    public ResponseEntity<String> commitVaccineForm(@RequestBody CommitVaccineFormRequest request,
+                                                    @PathVariable int vaccineFormId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        parentService.commitVaccineForm(Integer.parseInt(parentId), vaccineFormId, request);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(parentService.commitVaccineForm(Integer.parseInt(parentId), vaccineFormId, request));
     }
 
     @PostMapping("/feedback/submit")
@@ -230,8 +204,7 @@ public class ParentController {
     @PreAuthorize("hasAnyRole('ROLE_PARENT', 'ROLE_NURSE')")
     public ResponseEntity<AllFormsByStudentDTO> getAllFormByStudent(@PathVariable int studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        AllFormsByStudentDTO allFormsByStudentDTOList = parentService.getAllFormByStudent(Integer.parseInt(parentId),
-                studentId);
+        AllFormsByStudentDTO allFormsByStudentDTOList = parentService.getAllFormByStudent(Integer.parseInt(parentId), studentId);
         return ResponseEntity.ok(allFormsByStudentDTOList);
     }
 
