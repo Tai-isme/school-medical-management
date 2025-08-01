@@ -111,6 +111,10 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
         }
 
+        if (request.getStartDate().isAfter(request.getDateSendForm())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày gửi thông báo phải sớm hơn ngày chương trình được diễn ra!");
+        }
+
         Optional<HealthCheckProgramEntity> existingProgramOpt = healthCheckProgramRepository.findByHealthCheckNameAndStatus(request.getHealthCheckName(), HealthCheckProgramEntity.HealthCheckProgramStatus.NOT_STARTED);
 
         if (existingProgramOpt.isPresent()) {
@@ -139,7 +143,6 @@ public class AdminService {
                 participate.setClazz(clazz);
                 participate.setProgramId(healthCheckProgramEntity.getId());
                 participate.setType(ParticipateClassEntity.Type.HEALTH_CHECK);
-
 
                 ParticipateClassEntity saved = participateClassRepository.save(participate);
 
@@ -173,11 +176,15 @@ public class AdminService {
         HealthCheckProgramEntity existingProgram = healthCheckProgramRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình kiểm tra sức khỏe"));
 
         if (existingProgram.getStatus() == HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED || existingProgram.getStatus() == HealthCheckProgramEntity.HealthCheckProgramStatus.ON_GOING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể cập nhật chương trình đã hoàn thành hoặc đang diễn ra");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể cập nhật chương trình đã hoàn thành hoặc đang diễn ra!");
         }
 
         if (request.getStartDate().isBefore(LocalDate.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải là hôm nay hoặc trong tương lai!");
+        }
+
+        if (request.getStartDate().isAfter(request.getDateSendForm())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày gửi thông báo phải sớm hơn ngày chương trình được diễn ra!");
         }
 
         if (!existingProgram.getHealthCheckName().equals(request.getHealthCheckName())) {
@@ -498,6 +505,10 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
         }
+
+        if (request.getStartDate().isAfter(request.getDateSendForm())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày gửi thông báo phải sớm hơn ngày chương trình được diễn ra!");
+        }
         VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(request.getVaccineNameId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy vaccine!"));
 
@@ -578,9 +589,8 @@ public class AdminService {
                     "Ngày bắt đầu phải là ngày trong tương lai!");
         }
 
-        if (request.getStartDate().isBefore(request.getDateSendForm())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Ngày thông báo phải sớm hơn ngày bắt đầu chương trình!");
+        if (request.getStartDate().isAfter(request.getDateSendForm())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày gửi thông báo phải sớm hơn ngày chương trình được diễn ra!");
         }
 
 
@@ -854,9 +864,9 @@ public class AdminService {
         for (ParticipateClassEntity participate : participateEntities) {
             ParticipateClassDTO participateDTO = new ParticipateClassDTO();
             participateDTO.setParticipate_id(participate.getParticipateId());
-            participateDTO.setProgram_id(id); 
+            participateDTO.setProgram_id(id);
             participateDTO.setClass_id(participate.getClazz().getClassId());
-            participate.setType(ParticipateClassEntity.Type.VACCINE); 
+            participate.setType(ParticipateClassEntity.Type.VACCINE);
 
             ClassEntity clazz = participate.getClazz();
             ClassDTO classDTO = new ClassDTO();
