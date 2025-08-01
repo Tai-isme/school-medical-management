@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
@@ -21,6 +22,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.CommitVac
 import com.swp391.school_medical_management.modules.users.dtos.request.FeedbackRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRecordsRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalRequestDetailRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineHistoryRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.AllFormsByStudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
@@ -31,6 +33,7 @@ import com.swp391.school_medical_management.modules.users.dtos.response.HealthCh
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
@@ -44,7 +47,11 @@ import com.swp391.school_medical_management.modules.users.entities.HealthCheckPr
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
@@ -63,6 +70,7 @@ import com.swp391.school_medical_management.modules.users.repositories.VaccineHi
 import com.swp391.school_medical_management.modules.users.repositories.VaccineNameRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineUnitRepository;
+import com.swp391.school_medical_management.service.UploadImageFile;
 
 @Service
 public class ParentService {
@@ -107,8 +115,12 @@ public class ParentService {
 
     @Autowired
     private VaccineHistoryRepository vaccineHistoryRepository;
+
     @Autowired
     private VaccineUnitRepository vaccineUnitRepository;
+
+    @Autowired
+    private UploadImageFile uploadImageFile;
 
     public MedicalRecordDTO createMedicalRecord(int parentId, MedicalRecordsRequest request) {
         Optional<StudentEntity> studentOpt = studentRepository.findById(request.getStudentId());
@@ -283,69 +295,69 @@ public class ParentService {
         // medicalRecordsRepository.delete(medicalRecord);
     }
 
-    public MedicalRequestDTO createMedicalRequest(int parentId, MedicalRequest request) {
-        // Optional<StudentEntity> studentOpt =
-        // studentRepository.findStudentById(request.getStudentId());
-        // if (studentOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
-        // StudentEntity student = studentOpt.get();
-        // UserEntity parent = userRepository.findById(parentId)
-        // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent
-        // not found"));
-        // if (!student.getParent().getUserId().equals(parentId)) {
-        // throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        // }
+    public MedicalRequestDTO createMedicalRequest(int parentId, MedicalRequest request, MultipartFile image) {
 
-        // if (request.getMedicalRequestDetailRequests() == null ||
-        // request.getMedicalRequestDetailRequests().isEmpty()) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical request
-        // details cannot be empty");
-        // }
+        String imageUrl = null;
+        try {
+            imageUrl = uploadImageFile.uploadImage(image);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
 
-        // if (request.getDate() == null ||
-        // request.getDate().isBefore(java.time.LocalDate.now())) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request date must
-        // be today or in the future");
-        // }
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        StudentEntity student = studentOpt.get();
+        UserEntity parent = userRepository.findById(parentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found"));
 
-        // MedicalRequestEntity medicalRequestEntity = new MedicalRequestEntity();
-        // medicalRequestEntity.setRequestName(request.getRequestName());
-        // medicalRequestEntity.setNote(request.getNote());
-        // medicalRequestEntity.setStatus(MedicalRequestStatus.PROCESSING);
-        // medicalRequestEntity.setStudent(student);
-        // medicalRequestEntity.setParent(parent);
-        // medicalRequestEntity.setDate(request.getDate());
+        if (request.getMedicalRequestDetailRequests() == null ||
+                request.getMedicalRequestDetailRequests().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical request details cannot be empty");
+        }
 
-        // medicalRequestEntity.setMedicalRequestDetailEntities(new ArrayList<>());
+        if (request.getDate() == null ||
+                request.getDate().isBefore(java.time.LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request date must be today or in the future");
+        }
 
-        // for (MedicalRequestDetailRequest details :
-        // request.getMedicalRequestDetailRequests()) {
-        // MedicalRequestDetailEntity medicalRequestDetailEntity = new
-        // MedicalRequestDetailEntity();
-        // medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
-        // medicalRequestDetailEntity.setDosage(details.getDosage());
-        // medicalRequestDetailEntity.setTime(details.getTime());
+        MedicalRequestEntity medicalRequestEntity = new MedicalRequestEntity();
+        medicalRequestEntity.setRequestName(request.getRequestName());
+        medicalRequestEntity.setDate(request.getDate());
+        medicalRequestEntity.setStatus(MedicalRequestStatus.PROCESSING);
+        medicalRequestEntity.setNote(request.getNote());
+        medicalRequestEntity.setStudent(student);
+        medicalRequestEntity.setParent(parent);
+        medicalRequestEntity.setImage(imageUrl); // Assuming nurse is not set at creation
 
-        // medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
+        medicalRequestEntity.setMedicalRequestDetailEntities(new ArrayList<>());
 
-        // medicalRequestEntity.getMedicalRequestDetailEntities().add(medicalRequestDetailEntity);
-        // }
+        for (MedicalRequestDetailRequest details : request.getMedicalRequestDetailRequests()) {
+            MedicalRequestDetailEntity medicalRequestDetailEntity = new MedicalRequestDetailEntity();
+            medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
+            medicalRequestDetailEntity.setQuantity(details.getQuantity());
+            medicalRequestDetailEntity.setType(details.getType());
+            medicalRequestDetailEntity.setTimeSchedule(details.getTimeSchedule());
+            medicalRequestDetailEntity.setStatus(MedicalRequestDetailEntity.Status.NOT_TAKEN);
+            medicalRequestDetailEntity.setNote(details.getNote());
+            medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
 
-        // medicalRequestRepository.save(medicalRequestEntity);
-        // MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
-        // MedicalRequestDTO.class);
-        // List<MedicalRequestDetailDTO> medicalRequestDetailDTOList =
-        // medicalRequestEntity
-        // .getMedicalRequestDetailEntities()
-        // .stream()
-        // .map(medicalRequestDetailEntity ->
-        // modelMapper.map(medicalRequestDetailEntity,
-        // MedicalRequestDetailDTO.class))
-        // .collect(Collectors.toList());
-        // medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
-        // return medicalRequestDTO;
-        return null;
+            medicalRequestEntity.getMedicalRequestDetailEntities().add(medicalRequestDetailEntity);
+        }
+
+        medicalRequestRepository.save(medicalRequestEntity);
+        MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
+                MedicalRequestDTO.class);
+        List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestEntity
+                .getMedicalRequestDetailEntities()
+                .stream()
+                .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
+                        MedicalRequestDetailDTO.class))
+                .collect(Collectors.toList());
+        medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+        return medicalRequestDTO;
     }
+
 
     public List<MedicalRequestDTO> getMedicalRequestByParent(int parentId) {
         // Optional<UserEntity> parentOpt = userRepository.findById(parentId);

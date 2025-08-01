@@ -16,8 +16,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.FeedbackRequest;
@@ -99,12 +103,24 @@ public class ParentController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/medical-request")
-    public ResponseEntity<MedicalRequestDTO> createMedicalRequest(@RequestBody MedicalRequest request) {
+    @PostMapping(value = "/medical-request", consumes = { "multipart/form-data" })
+    public ResponseEntity<MedicalRequestDTO> createMedicalRequest(
+            @RequestPart("request") String requestJson,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRequestDTO medicalRequestDTO = parentService.createMedicalRequest(Integer.parseInt(parentId), request);
+        MedicalRequest request;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule()); 
+            request = mapper.readValue(requestJson, MedicalRequest.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid request format: " + e.getMessage());
+        }
+        MedicalRequestDTO medicalRequestDTO = parentService.createMedicalRequest(Integer.parseInt(parentId), request,
+                image);
         return ResponseEntity.status(HttpStatus.CREATED).body(medicalRequestDTO);
     }
+
 
     @GetMapping("/medical-request/by-request/{requestId}")
     public ResponseEntity<MedicalRequestDTO> getMedicalRequestByRequestId(@PathVariable int requestId) {

@@ -16,26 +16,31 @@ public class MedicalRequest {
     @Size(max = 255, message = "Request name must be at most 255 characters")
     private String requestName;
 
+
     @Size(max = 500, message = "Note must be at most 500 characters")
     private String note;
 
+
     private LocalDate date;
+
 
     @Size(max = 500, message = "Reason for rejection must be at most 500 characters")
     private String reasonRejected;
 
-    private String status;
 
     @Positive(message = "Parent ID must be a positive number")
-    private Long parentId;
-    
+    private int parentId;
+   
     @Positive(message = "Nurse ID must be a positive number")
-    private Long nurseId;
+    private int nurseId;
+
 
     @Positive(message = "Student ID must be a positive number")
-    private long studentId;
+    private int studentId;
+
 
     @NotEmpty(message = "Medical request details must not be empty")
     @Valid
     private List<MedicalRequestDetailRequest> medicalRequestDetailRequests;
 }
+
