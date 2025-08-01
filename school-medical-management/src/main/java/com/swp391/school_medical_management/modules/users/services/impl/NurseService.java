@@ -56,8 +56,10 @@ import com.swp391.school_medical_management.modules.users.entities.StudentEntity
 import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineUnitEntity;
 import com.swp391.school_medical_management.modules.users.repositories.BlogRepository;
 import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
 import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
@@ -74,6 +76,7 @@ import com.swp391.school_medical_management.modules.users.repositories.VaccineFo
 import com.swp391.school_medical_management.modules.users.repositories.VaccineHistoryRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
 import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineUnitRepository;
 
 @Service
 public class NurseService {
@@ -130,6 +133,9 @@ public class NurseService {
 
     @Autowired
     private ParticipateClassRepository participateClassRepository;
+
+    @Autowired
+    private VaccineUnitRepository vaccineUnitRepository;
 
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
         // List<MedicalRequestEntity> pendingMedicalRequestList =
@@ -2351,7 +2357,12 @@ public class NurseService {
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy y tá với ID: " + nurseId));
 
         List<ParticipateClassEntity> participateClasses = participateClassRepository
-                .findAllByProgramId(programId); 
+                .findAllByProgramId(programId);
+
+        VaccineNameEntity vaccineName = programEntity.getVaccineName();
+
+        List<VaccineUnitEntity> units = vaccineUnitRepository.findByVaccineName(vaccineName);
+        int totalUnit = units.size();
 
         for (ParticipateClassEntity pc : participateClasses) {
             List<StudentEntity> students = studentRepository.findByClassEntity(pc.getClazz());
@@ -2361,9 +2372,16 @@ public class NurseService {
                 if (parent == null)
                     continue;
 
+                int injectedUnit = vaccineHistoryRepository
+                        .sumUnitsByStudentAndVaccineName(student, vaccineName);
+
+                if (injectedUnit >= totalUnit)
+                    continue;
+
                 boolean hasUncommittedForm = vaccineFormRepository
                         .findVaccineFormEntityByVaccineProgramAndStudent(programEntity, student)
-                        .stream().anyMatch(form -> form.getCommit() == null);
+                        .stream()
+                        .anyMatch(form -> form.getCommit() == null);
 
                 if (hasUncommittedForm)
                     continue;
@@ -2375,12 +2393,13 @@ public class NurseService {
                 form.setExpDate(expDate);
                 form.setNurse(nurse);
                 form.setVaccineProgram(programEntity);
-                form.setVaccineName(programEntity.getVaccineName()); 
+                form.setVaccineName(vaccineName);
                 form.setNote(null);
+
                 vaccineFormRepository.save(form);
             }
         }
-        
+
         programEntity.setStatus(VaccineProgramEntity.VaccineProgramStatus.FORM_SENT);
         vaccineProgramRepository.save(programEntity);
     }

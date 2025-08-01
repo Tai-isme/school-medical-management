@@ -328,7 +328,7 @@ public class ParentService {
         medicalRequestEntity.setNote(request.getNote());
         medicalRequestEntity.setStudent(student);
         medicalRequestEntity.setParent(parent);
-        medicalRequestEntity.setImage(imageUrl); // Assuming nurse is not set at creation
+        medicalRequestEntity.setImage(imageUrl); 
 
         medicalRequestEntity.setMedicalRequestDetailEntities(new ArrayList<>());
 
