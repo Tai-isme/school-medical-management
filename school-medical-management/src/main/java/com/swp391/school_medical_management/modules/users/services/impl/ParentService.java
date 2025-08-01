@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -15,9 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 import com.swp391.school_medical_management.modules.users.dtos.request.CommitHealthCheckFormRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.CommitVaccineFormRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.FeedbackRequest;
@@ -665,26 +663,37 @@ public class ParentService {
     }
 
     public List<HealthCheckResultDTO> getHealthCheckResults(int studentId) {
-        StudentEntity student = studentRepository.findById(studentId).get();
+        StudentEntity student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy học sinh"));
+
         List<HealthCheckResultEntity> healthCheckResultList = healthCheckResultRepository.findByStudent(student);
+
         if (healthCheckResultList.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có kết quả khám sức khỏe nào!");
         }
+
         List<HealthCheckResultDTO> healthCheckResultDTOList = healthCheckResultList.stream().map(entity -> {
             HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
+
             HealthCheckFormEntity form = entity.getHealthCheckForm();
+            if (form != null) {
+                HealthCheckFormDTO formDTO = modelMapper.map(form, HealthCheckFormDTO.class);
 
-            HealthCheckFormDTO formDTO = modelMapper.map(form, HealthCheckFormDTO.class);
-            formDTO.setHealthCheckProgramDTO(modelMapper.map(form.getHealthCheckProgram(), HealthCheckProgramDTO.class));
-            formDTO.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
-
-            dto.setHealthCheckFormDTO(formDTO);
-            dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
+                if (form.getHealthCheckProgram() != null) {
+                    formDTO.setHealthCheckProgramDTO(
+                            modelMapper.map(form.getHealthCheckProgram(), HealthCheckProgramDTO.class));
+                }
+                if (form.getNurse() != null) {
+                    formDTO.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
+                }
+                dto.setHealthCheckFormDTO(formDTO);
+            }
+            dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
             return dto;
         }).collect(Collectors.toList());
-
         return healthCheckResultDTOList;
     }
+
 
     public List<VaccineResultDTO> getVaccineResults(int studentId) {
         StudentEntity student = studentRepository.findById(studentId).get();
@@ -867,25 +876,33 @@ public class ParentService {
     }
 
     public HealthCheckResultDTO getHealthCheckResultByFormId(int formId) {
-        // Optional<HealthCheckResultEntity> healthCheckResultOpt =
-        // healthCheckResultRepository
-        // .findByHealthCheckFormEntity_Id(formId);
+    Optional<HealthCheckResultEntity> healthCheckResultOpt =
+        healthCheckResultRepository.findByHealthCheckForm_Id(formId);
 
-        // if (healthCheckResultOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-        // "Health check result not found for formId: " + formId);
-
-        // HealthCheckResultEntity entity = healthCheckResultOpt.get();
-        // HealthCheckResultDTO dto = modelMapper.map(entity,
-        // HealthCheckResultDTO.class);
-
-        // HealthCheckFormEntity form = entity.getHealthCheckFormEntity();
-        // dto.setHealthCheckFormDTO(modelMapper.map(form, HealthCheckFormDTO.class));
-        // dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
-
-        // return dto;
-        return null;
+    if (healthCheckResultOpt.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+            "Không tìm thấy kết quả khám sức khỏe với formId: " + formId);
     }
+
+    HealthCheckResultEntity entity = healthCheckResultOpt.get();
+    HealthCheckResultDTO dto = modelMapper.map(entity, HealthCheckResultDTO.class);
+
+    HealthCheckFormEntity form = entity.getHealthCheckForm();
+    HealthCheckFormDTO formDTO = modelMapper.map(form, HealthCheckFormDTO.class);
+
+    formDTO.setHealthCheckProgramDTO(
+        modelMapper.map(form.getHealthCheckProgram(), HealthCheckProgramDTO.class));
+
+    if (form.getNurse() != null) {
+        formDTO.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
+    }
+
+    dto.setHealthCheckFormDTO(formDTO);
+    dto.setStudentDTO(modelMapper.map(form.getStudent(), StudentDTO.class));
+
+    return dto;
+}
+
 
     public VaccineResultDTO getVaccineResultByFormId(int formId) {
         // Optional<VaccineResultEntity> vaccineResultOpt =

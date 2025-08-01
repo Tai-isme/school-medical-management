@@ -280,7 +280,8 @@ public class AdminService {
                 ParticipateClassEntity participate = new ParticipateClassEntity();
                 participate.setClazz(clazz);
                 participate.setType(ParticipateClassEntity.Type.HEALTH_CHECK);
-
+                participate.setProgramId(existingProgram.getId());
+                
                 participateClassRepository.save(participate);
             }
         }

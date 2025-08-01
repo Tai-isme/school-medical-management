@@ -176,12 +176,13 @@ public class ParentController {
     }
 
     @PatchMapping("/health-check-forms/{healCheckFormId}/commit")
-    public ResponseEntity<Void> commitHealthCheckForm(@RequestBody CommitHealthCheckFormRequest request,
-                                                      @PathVariable int healCheckFormId) {
+    public ResponseEntity<String> commitHealthCheckForm(@RequestBody CommitHealthCheckFormRequest request,
+            @PathVariable int healCheckFormId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
         parentService.commitHealthCheckForm(Integer.parseInt(parentId), healCheckFormId, request);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Xác nhận thành công");
     }
+
 
     @PatchMapping("/vaccine-forms/{vaccineFormId}/commit")
     public ResponseEntity<Void> commitVaccineForm(@RequestBody CommitVaccineFormRequest request,

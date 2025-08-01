@@ -22,7 +22,7 @@ public interface ParticipateClassRepository extends JpaRepository<ParticipateCla
 
     List<ParticipateClassEntity> findByProgramIdAndType(int programId, ParticipateClassEntity.Type type);
 
-    List<ParticipateClassEntity> findAllByProgramId(int id);
+    List<ParticipateClassEntity> findAllByProgramId(int programId);
 
     void deleteByProgramId(int vaccineProgramId);
 
