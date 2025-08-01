@@ -50,14 +50,21 @@ const MedicalRequest = () => {
     setCurrentPage(1);
   }, [activeStatus, searchTerm, dateRange]);
 
-  const fetchRequests = async () => {
+  useEffect(() => {
+    fetchRequests(activeStatus);
+  }, [activeStatus]); // Gọi lại khi đổi tab
+
+  const fetchRequests = async (status = "PROCESSING") => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        "http://localhost:8080/api/nurse/medical-request",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      let apiUrl = "http://localhost:8080/api/nurse/medical-request";
+      if (status !== "ALL") {
+        apiUrl += `/${status}`;
+      }
+      const res = await axios.get(apiUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setRequests(res.data);
     } catch (err) {
       message.error("Không thể tải dữ liệu!");
@@ -204,7 +211,7 @@ const MedicalRequest = () => {
                 className={
                   record.status === "PROCESSING"
                     ? "card-processing"
-                    : record.status === "SUBMITTED"
+                    : record.status === "COMFIRMED"
                     ? "card-submitted"
                     : record.status === "COMPLETED"
                     ? "card-completed"
@@ -339,7 +346,7 @@ const MedicalRequest = () => {
           <TabPane tab="Tất cả danh sách gửi thuốc" key="ALL">
             {renderCards()}
           </TabPane>
-          <TabPane tab="Chờ xử lý" key="PROCESSING">
+          <TabPane tab="Chờ " key="PROCESSING">
             {renderCards()}
           </TabPane>
           <TabPane tab="Đã duyệt" key="SUBMITTED">

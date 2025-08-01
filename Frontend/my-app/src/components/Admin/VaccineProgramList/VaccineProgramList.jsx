@@ -376,10 +376,11 @@ const VaccineProgramList = () => {
 
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.post(
-        `http://localhost:8080/api/nurse/create-vaccineResults-byProgram/${program.vaccineId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
+      const res = await axios.get(
+        `http://localhost:8080/api/nurse/vaccine-forms-commit/program/${program.vaccineProgramId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
       );
       setSampleResultData(res.data);
       setEditableRows(res.data.map((item) => ({ ...item })));
@@ -546,8 +547,8 @@ const handleSendNotification = async (programId, deadline) => {
   setNotifyLoading(true);
   try {
     await axios.post(
-      `http://localhost:8080/api/nurse/create-vaccine-form/${programId}`,
-      { expDate: deadline ? deadline.format("YYYY-MM-DD") : undefined },
+      `http://localhost:8080/api/nurse/create-vaccine-form/${programId}?expDate=${deadline ? deadline.format("YYYY-MM-DD") : ""}`,
+      null, // Không truyền body
       { headers: { Authorization: `Bearer ${token}` } }
     );
     Swal.fire({

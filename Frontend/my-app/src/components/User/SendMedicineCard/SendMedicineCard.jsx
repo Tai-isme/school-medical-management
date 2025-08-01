@@ -22,31 +22,43 @@ export default function InstructionForm({ onShowHistory }) {
     ...student,
     avatar: './logo512.png' // luôn dùng avatar mặc định
   }));
-  const [selectedStudentId, setSelectedStudentId] = useState(students[0]?.id || '');
-  const selectedStudent = students.find(s => String(s.id) === String(selectedStudentId));
+  const [selectedStudentId, setSelectedStudentId] = useState(students[0]?.studentId || '');
+  const selectedStudent = students.find(s => String(s.studentId) === String(selectedStudentId));
 
-  const [medicines, setMedicines] = useState([{ name: '', quantity: '' }]);
+  const [medicines, setMedicines] = useState([{ name: '', quantity: '', unit: '', usage: '', method: '' }]);
   const [note, setNote] = useState('');
   const [purpose, setPurpose] = useState(''); // Thêm state cho mục đích sử dụng thuốc
   const [usageTime, setUsageTime] = useState(''); // Thêm state cho thời gian sử dụng thuốc
-  const [selectedTime, setSelectedTime] = useState(""); // Thêm state cho thời gian dùng thuốc
   const [dateError, setDateError] = useState('');
   const [activeTab, setActiveTab] = useState('create'); // 'create' hoặc 'history'
   const [editingId, setEditingId] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const usageTimeOptions = [
+  "Sau ăn sáng từ 9h-9h30",
+  "Trước ăn trưa: 10h30-11h",
+  "Sau ăn trưa: từ 11h30-12h"
+];  
+const handleAddMedicine = () => {
+  setMedicines([...medicines, { name: '', quantity: '', unit: '', usage: '', method: '' }]);
+};
 
-  const handleAddMedicine = () => {
-    setMedicines([...medicines, { name: '', quantity: '' }]);
-  };
+const handleMedicineChange = (index, event) => {
+  const { name, value } = event.target;
+  const newMedicines = [...medicines];
+  newMedicines[index][name] = value;
+  setMedicines(newMedicines);
+};
+
+  const handleUsageTimeChange = (option) => {
+  setUsageTime(prev =>
+    prev.includes(option)
+      ? prev.filter(item => item !== option)
+      : [...prev, option]
+  );
+};
 
   const handleRemoveMedicine = (index) => {
     const newMedicines = medicines.filter((_, i) => i !== index);
-    setMedicines(newMedicines);
-  };
-
-  const handleMedicineChange = (index, event) => {
-    const { name, value } = event.target;
-    const newMedicines = [...medicines];
-    newMedicines[index][name] = value;
     setMedicines(newMedicines);
   };
 
@@ -76,17 +88,26 @@ export default function InstructionForm({ onShowHistory }) {
       setDateError('');
     }
 
-    const payload = {
+    const medicalRequestObject = {
       requestName: purpose,
-      note: note,
+      note,
       date: usageTime,
-      studentId: selectedStudent.id,
+      studentId: selectedStudent.studentId,
       medicalRequestDetailRequests: medicines.map(med => ({
         medicineName: med.name,
-        time: selectedTime, // Thời gian dùng thuốc được lấy từ phần chọn thời gian
-        dosage: med.quantity,
-      })),
+        quantity: med.quantity,
+        type: med.unit,
+        method: med.method, // thêm dòng này
+        timeSchedule: med.usage,
+        note: med.usage ? '' : med.usage
+      }))
     };
+
+    const formData = new FormData();
+    formData.append('request', JSON.stringify(medicalRequestObject));
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
 
     try {
       const token = localStorage.getItem("token");
@@ -95,19 +116,19 @@ export default function InstructionForm({ onShowHistory }) {
         response = await fetch(`http://localhost:8080/api/parent/medical-request/${editingId}`, {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
+            // KHÔNG đặt Content-Type, fetch sẽ tự thêm boundary cho multipart/form-data
           },
-          body: JSON.stringify(payload)
+          body: formData
         });
       } else {
         response = await fetch("http://localhost:8080/api/parent/medical-request", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
+            // KHÔNG đặt Content-Type ở đây!
           },
-          body: JSON.stringify(payload)
+          body: formData
         });
       }
 
@@ -117,9 +138,9 @@ export default function InstructionForm({ onShowHistory }) {
       setPurpose('');
       setNote('');
       setUsageTime('');
-      setSelectedTime(''); // Reset thời gian dùng thuốc
-      setMedicines([{ name: '', quantity: '' }]); // Xóa phần usage
-      setEditingId(null); // Reset sau khi gửi
+      setMedicines([{ name: '', quantity: '', unit: '', usage: '', method: '' }]);
+      setImageFile(null);
+      setEditingId(null);
       message.success(editingId ? 'Đã cập nhật đơn thuốc!' : 'Đơn thuốc đã được gửi thành công!');
       toast.success(editingId ? 'Đã cập nhật đơn thuốc!' : 'Đơn thuốc đã được gửi thành công!');
     } catch (error) {
@@ -138,42 +159,43 @@ export default function InstructionForm({ onShowHistory }) {
   };
 
   // Nếu đang dùng ở SendMedicineCardDetails.jsx hoặc file render bảng
-  const getStatusText = (status) => {
-    switch (status) {
-      case "PROCESSING":
-        return "Chờ duyệt";
-      case "SUBMITTED":
-        return "Đã duyệt";
-      case "COMPLETED":
-        return "Đã cho uống";
-      case "CANCELLED":
-        return "Bị từ chối";
-      default:
-        return status;
-    }
-  };
+const getStatusText = (status) => {
+  switch (status) {
+    case "PROCESSING":
+      return "Chờ duyệt";
+    case "SUBMITTED":
+      return "Đã duyệt";
+    case "COMPLETED":
+      return "Đã cho uống";
+    case "CANCELLED":
+      return "Bị từ chối";
+    default:
+      return status;
+  }
+};
 
-  useEffect(() => {
-    const handleEdit = (e) => {
-      const req = e.detail;
-      setPurpose(req.requestName || '');
-      setNote(req.note || '');
-      setUsageTime(req.date || '');
-      setMedicines(
+useEffect(() => {
+  const handleEdit = (e) => {
+    const req = e.detail;
+    setPurpose(req.requestName || '');
+    setNote(req.note || '');
+    setUsageTime(req.date || '');
+    setMedicines(
         req.medicalRequestDetailDTO && Array.isArray(req.medicalRequestDetailDTO)
-          ? req.medicalRequestDetailDTO.map(item => ({
-              name: item.medicineName,
-              quantity: item.dosage,
-            }))
-          : [{ name: '', quantity: '' }]
-      );
-      setSelectedStudentId(req.studentDTO?.id || '');
-      setActiveTab('create');
-      setEditingId(req.requestId);
-    };
-    window.addEventListener('edit-medicine-request', handleEdit);
-    return () => window.removeEventListener('edit-medicine-request', handleEdit);
-  }, []);
+        ? req.medicalRequestDetailDTO.map(item => ({
+            name: item.medicineName,
+            quantity: item.dosage,
+            usage: item.time
+          }))
+        : [{ name: '', quantity: '', usage: '' }]
+    );
+    setSelectedStudentId(req.studentDTO?.studentId || '');
+    setActiveTab('create');
+    setEditingId(req.requestId);
+  };
+  window.addEventListener('edit-medicine-request', handleEdit);
+  return () => window.removeEventListener('edit-medicine-request', handleEdit);
+}, []);
 
   return (
     <div className="instruction-form-container" style={{ position: "relative" }}>
@@ -216,7 +238,7 @@ export default function InstructionForm({ onShowHistory }) {
       </div>
 
       {/* Tabs */}
-      <h2 style={{ textAlign: 'center', marginBottom: '20px', marginTop: '0px' }}>Gửi đơn thuốc</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '20px' , marginTop: '0px' }}>Gửi đơn thuốc</h2>
       <div className="tabs" style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: 0 }}>
         <button
           onClick={() => setActiveTab('create')}
@@ -260,86 +282,63 @@ export default function InstructionForm({ onShowHistory }) {
             <div className="student-info-section">
               <StudentInfoCard onChange={setSelectedStudentId} />
             </div>
-
-            {/* Phần chọn thời gian dùng thuốc */}
             
-
             {/* Phần Chi tiết đơn thuốc */}
             <div className="prescription-details-section">
               {/* Thêm input cho mục đích sử dụng thuốc */}
+            <div className="input-group">
+              <label style={{fontSize: '20px'}}>Mục đích gửi thuốc:</label>
+              <input
+                className="purpose-input"
+                width= "calc(100% - 20px)"
+                type="text"
+                value={purpose}
+                onChange={(e) => setPurpose(e.target.value)}
+                placeholder="Vd: Thuốc trị ho, thuốc hạ sốt..."
+                required
+              />
+            </div>
+            {/* Input thời gian sử dụng thuốc */}
               <div className="input-group">
-                <label style={{ fontSize: '20px', fontWeight: 'bold' }}>Mục đích gửi thuốc:</label>
-                <input
-                  className="purpose-input"
-                  type="text"
-                  value={purpose}
-                  onChange={(e) => setPurpose(e.target.value)}
-                  placeholder="Vd: Thuốc trị ho, thuốc hạ sốt..."
-                  required
-                  style={{
-                    fontSize: '16px',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    border: '1px solid #a7d9ff',
-                    backgroundColor: '#f8fcff',
-                    width: '100%',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                  }}
-                />
-              </div>
-              {/* Input thời gian sử dụng thuốc */}
-              <div className="input-group">
-                <label style={{ fontSize: '20px', fontWeight: 'bold' }}>Ngày dùng:</label>
+                <label style={{fontSize: '20px'}}>Ngày dùng:</label>
                 <input
                   type="date"
                   value={usageTime}
-                  min={new Date().toISOString().split('T')[0]} // Chỉ cho chọn từ hôm nay trở đi
+                  min={new Date().toISOString().split('T')[0]}
                   onChange={e => {
                     setUsageTime(e.target.value);
-                    setDateError(''); // Xóa lỗi khi người dùng thay đổi ngày
+                    setDateError('');
                   }}
                   required
-                  style={{
-                    fontSize: '16px',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    border: '1px solid #a7d9ff',
-                    backgroundColor: '#f8fcff',
-                    width: '100%',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                  }}
+                  style={{fontSize: '16px', padding: '6px', borderRadius: '6px'}}
                 />
               </div>
-              <div className="input-group">
-              <label style={{ fontSize: '20px', fontWeight: 'bold' }}>Thời gian dùng thuốc:</label>
-              <select
-                value={selectedTime}
-                onChange={(e) => setSelectedTime(e.target.value)}
-                required
-                style={{
-                  fontSize: '16px',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  border: '1px solid #a7d9ff',
-                  backgroundColor: '#f8fcff',
-                  width: '100%',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                }}
-              >
-                <option value="">-- Chọn thời gian --</option>
-                <option value="Sau ăn sáng từ 9h-9h30">Sau ăn sáng từ 9h-9h30</option>
-                <option value="Trước ăn trưa: 10h30-11h">Trước ăn trưa: 10h30-11h</option>
-                <option value="Sau ăn trưa: từ 11h30-12h">Sau ăn trưa: từ 11h30-12h</option>
-              </select>
-            </div>
-
               {dateError && (
                 <span style={{ color: 'red', fontSize: '0.9em' }}>{dateError}</span>
               )}
-              <h2 style={{ margin: '0px 0px 5px 0px' }}>Chi tiết đơn thuốc</h2>
+              {/* Thêm input chọn ảnh */}
+              <div className="input-group">
+                <label style={{fontSize: '20px'}}>Ảnh đơn thuốc (nếu có):</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => setImageFile(e.target.files[0])}
+                  style={{fontSize: '16px', padding: '6px', borderRadius: '6px'}}
+                />
+                {imageFile && (
+                  <div style={{marginTop: 8}}>
+                    <img
+                      src={URL.createObjectURL(imageFile)}
+                      alt="Preview"
+                      style={{maxWidth: 120, maxHeight: 120, borderRadius: 8, border: '1px solid #eee'}}
+                    />
+                  </div>
+                )}
+              </div>
+              <h2 style={{margin: '0px 0px 5px 0px'}}>Chi tiết đơn thuốc</h2>
               <div className="medicine-list">
                 {medicines.map((medicine, index) => (
-                  <div key={index} className="medicine-item" style={{ position: 'relative' }}>
+                  <div key={index} className="medicine-item" style={{position: 'relative'}}>
                     {/* Nút X xoá */}
                     <button
                       type="button"
@@ -370,16 +369,73 @@ export default function InstructionForm({ onShowHistory }) {
                         required
                       />
                     </div>
+                    <div className="input-group" style={{ flexDirection: 'row', gap: 16, alignItems: 'center', marginBottom: 8 }}>
+  <div style={{ flex: 1 }}>
+    <label style={{ display: 'block', marginBottom: 4 }}>Số lượng:</label>
+    <input
+      type="number"
+      min="1"
+      step="1"
+      name="quantity"
+      value={medicine.quantity}
+      onChange={(e) => {
+        // Chỉ cho nhập số nguyên dương
+        const val = e.target.value.replace(/[^0-9]/g, '');
+        handleMedicineChange(index, { target: { name: 'quantity', value: val } });
+      }}
+      placeholder="1"
+      required
+      style={{ width: '100%' }}
+    />
+  </div>
+  <div style={{ flex: 1 }}>
+    <label style={{ display: 'block', marginBottom: 4 }}>Đơn vị:</label>
+    <select
+      name="unit"
+      value={medicine.unit}
+      onChange={(e) => handleMedicineChange(index, e)}
+      required
+      style={{ width: '100%' }}
+    >
+      <option value="">-- Chọn đơn vị --</option>
+      <option value="Viên">Viên</option>
+      <option value="Gói">Gói</option>
+      <option value="Vỉ">Vỉ</option>
+      <option value="Chai">Chai</option>
+      <option value="Lọ">Lọ</option>
+      <option value="Tuýp">Tuýp</option>
+      <option value="Miếng dán">Miếng dán</option>
+      <option value="Liều">Liều</option>
+      <option value="Ống">Ống</option>
+    </select>
+  </div>
+</div>
+                    
                     <div className="input-group">
-                      <label>Liều lượng:</label>
+                      <label>Cách dùng:</label>
                       <input
                         type="text"
-                        name="quantity"
-                        value={medicine.quantity}
+                        name="method"
+                        value={medicine.method}
                         onChange={(e) => handleMedicineChange(index, e)}
-                        placeholder="Uống 1 viên, Uống 1 muỗng..."
+                        placeholder="Nhập cách dùng (vd: uống, bôi, tiêm...)"
                         required
+                        style={{ width: '100%' }}
                       />
+                    </div>
+                    <div className="input-group" style={{ marginBottom: '0px' }}>
+                      <label>Thời gian:</label>
+                      <select
+                        name="usage"
+                        value={medicine.usage}
+                        onChange={(e) => handleMedicineChange(index, e)}
+                        required
+                      >
+                        <option value="">-- Chọn thời gian --</option>
+                        <option value="Sau ăn sáng từ 9h-9h30">Sau ăn sáng từ 9h-9h30</option>
+                        <option value="Trước ăn trưa: 10h30-11h">Trước ăn trưa: 10h30-11h</option>
+                        <option value="Sau ăn trưa: từ 11h30-12h">Sau ăn trưa: từ 11h30-12h</option>
+                      </select>
                     </div>
                   </div>
                 ))}
@@ -408,19 +464,19 @@ export default function InstructionForm({ onShowHistory }) {
       )}
 
       {activeTab === 'history' && (
-        <MedicalRequestDetail />
+        <MedicalRequestDetail/>
       )}
       <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+  position="bottom-right" // Thêm dòng này
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop={false}
+  closeOnClick
+  rtl={false}
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+/>
     </div>
   );
-}
+};
