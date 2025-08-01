@@ -52,8 +52,8 @@ const VaccineProgramResultTab = ({
         columns={[
           {
             title: "ID kết quả",
-            dataIndex: "vaccineResultId",
-            key: "vaccineResultId",
+            dataIndex: "id",
+            key: "id",
           },
           {
             title: "Học sinh",
@@ -65,7 +65,7 @@ const VaccineProgramResultTab = ({
             title: "Giới tính",
             dataIndex: ["studentDTO", "gender"],
             key: "gender",
-            render: (_, record) => record.studentDTO?.gender,
+            render: (_, record) => record.studentDTO?.gender === "MALE" ? "Nam" : "Nữ",
           },
           {
             title: "Phản ứng sau tiêm",
@@ -75,9 +75,9 @@ const VaccineProgramResultTab = ({
               sampleResultData ? (
                 <Input
                   value={
-                    editableRows.find(
-                      (r) => r.vaccineResultId === record.vaccineResultId
-                    )?.statusHealth
+                    editableRows.find((r) => r.id === record.id)?.statusHealth ||
+                    record.vaccineResultDTO?.statusHealth ||
+                    ""
                   }
                   onChange={(e) =>
                     handleEditCell(e.target.value, record, "statusHealth")
@@ -85,7 +85,7 @@ const VaccineProgramResultTab = ({
                   style={{ minWidth: 100 }}
                 />
               ) : (
-                text
+                record.vaccineResultDTO?.statusHealth || text || ""
               ),
           },
           {
@@ -96,9 +96,9 @@ const VaccineProgramResultTab = ({
               sampleResultData ? (
                 <Input
                   value={
-                    editableRows.find(
-                      (r) => r.vaccineResultId === record.vaccineResultId
-                    )?.reaction
+                    editableRows.find((r) => r.id === record.id)?.reaction ||
+                    record.vaccineResultDTO?.reaction ||
+                    ""
                   }
                   onChange={(e) =>
                     handleEditCell(e.target.value, record, "reaction")
@@ -106,7 +106,7 @@ const VaccineProgramResultTab = ({
                   style={{ minWidth: 100 }}
                 />
               ) : (
-                text
+                record.vaccineResultDTO?.reaction || text || ""
               ),
           },
           {
@@ -117,9 +117,9 @@ const VaccineProgramResultTab = ({
               sampleResultData ? (
                 <Input
                   value={
-                    editableRows.find(
-                      (r) => r.vaccineResultId === record.vaccineResultId
-                    )?.resultNote
+                    editableRows.find((r) => r.id === record.id)?.resultNote ||
+                    record.vaccineResultDTO?.resultNote ||
+                    ""
                   }
                   onChange={(e) =>
                     handleEditCell(e.target.value, record, "resultNote")
@@ -127,20 +127,19 @@ const VaccineProgramResultTab = ({
                   style={{ minWidth: 120 }}
                 />
               ) : (
-                text
+                record.vaccineResultDTO?.resultNote || text || ""
               ),
           },
           {
             title: "Ngày tạo",
             dataIndex: "createdAt",
             key: "createdAt",
-            render: (text) => dayjs(text).format("YYYY-MM-DD"),
+            render: (text) => text ? dayjs(text).format("YYYY-MM-DD") : "",
           },
           {
-            title: "Tên vaccine",
-            key: "vaccineName",
-            render: (_, record) =>
-              record.vaccineFormDTO?.vaccineProgram?.vaccineName?.vaccineName,
+            title: "Đã tiêm?",
+            key: "commit",
+            render: (_, record) => record.commit ? "Đã tiêm" : "Chưa tiêm",
           },
           sampleResultData && {
             title: "Thao tác",
@@ -152,7 +151,7 @@ const VaccineProgramResultTab = ({
                 onClick={() =>
                   handleSaveRow(
                     editableRows.find(
-                      (r) => r.vaccineResultId === record.vaccineResultId
+                      (r) => r.id === record.id
                     )
                   )
                 }
@@ -178,7 +177,7 @@ const VaccineProgramResultTab = ({
             : filteredNurseResults
         }
         loading={selectedVaccineResultLoading || nurseResultsLoading}
-        rowKey="vaccineResultId"
+        rowKey="id"
         bordered
         style={{
           paddingLeft: 2,
