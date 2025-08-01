@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.repositories;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,6 @@ public interface VaccineHistoryRepository extends JpaRepository<VaccineHistoryEn
     @Query("SELECT COALESCE(SUM(v.unit), 0) FROM VaccineHistoryEntity v WHERE v.student = :student AND v.vaccineNameEntity = :vaccineName")
     int sumUnitsByStudentAndVaccineName(@Param("student") StudentEntity student,
             @Param("vaccineName") VaccineNameEntity vaccineName);
+
+    Optional<VaccineHistoryEntity> findByStudentAndVaccineNameEntity(StudentEntity student, VaccineNameEntity vaccineName);
 }

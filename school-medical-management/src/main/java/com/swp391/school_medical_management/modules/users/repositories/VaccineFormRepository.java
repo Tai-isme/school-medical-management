@@ -70,4 +70,7 @@ public interface VaccineFormRepository extends JpaRepository<VaccineFormEntity, 
 
     List<VaccineFormEntity> findByVaccineProgram_VaccineId(int id);
 
+    // List<VaccineFormEntity> findByCommitTrueAndVaccineProgram_VaccineId(int programId);
+
+
 }

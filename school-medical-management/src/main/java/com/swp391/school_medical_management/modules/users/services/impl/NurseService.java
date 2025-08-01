@@ -46,18 +46,6 @@ import com.swp391.school_medical_management.modules.users.dtos.response.VaccineF
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
-import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
-import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
-import com.swp391.school_medical_management.modules.users.entities.ParticipateClassEntity;
-import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
@@ -1857,13 +1845,14 @@ public class NurseService {
         }
     }
 
-
     public void createVaccineResultsByProgramId(int programId, VaccineResultRequest request) {
         int nurseId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
-        UserEntity nurse = userRepository.findById(nurseId).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy y tá."));
+        UserEntity nurse = userRepository.findById(nurseId)
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy y tá."));
 
         VaccineFormEntity form = vaccineFormRepository.findById(request.getVaccineFormId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy form với ID: " + request.getVaccineFormId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Không tìm thấy form với ID: " + request.getVaccineFormId()));
 
         if (form.getVaccineProgram() == null || form.getVaccineProgram().getVaccineId() != programId) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -1877,34 +1866,38 @@ public class NurseService {
 
         Optional<VaccineResultEntity> existed = vaccineResultRepository.findByVaccineFormEntity(form);
         if (existed.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Kết quả đã tồn tại cho form ID: " + form.getId());
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Kết quả đã tồn tại cho form ID: " + form.getId());
         }
 
         VaccineResultEntity result = new VaccineResultEntity();
         result.setResultNote(request.getResultNote());
         result.setReaction(request.getReaction());
         result.setActionsTaken(request.getActionsTaken());
-        result.setCreatedAt(LocalDateTime.now());
-        result.setIsInjected(request.getIsRejected());
+        result.setCreatedAt(request.getCreateAt() != null ? request.getCreateAt() : LocalDateTime.now());
+        result.setIsInjected(request.getIsRejected() != null ? !request.getIsRejected() : false); 
+                                                                                                 
         result.setVaccineFormEntity(form);
         result.setStudentEntity(form.getStudent());
         result.setNurseEntity(nurse);
         vaccineResultRepository.save(result);
 
-        VaccineHistoryEntity vaccineHistoryEntity = new VaccineHistoryEntity();
-        vaccineHistoryEntity.setVaccineNameEntity(form.getVaccineName());
-        vaccineHistoryEntity.setStudent(form.getStudent());
-        vaccineHistoryEntity.setNote("Tiêm ở trường");
-        vaccineHistoryEntity.setCreateBy(true);
-        vaccineHistoryEntity.setUnit(form.getVaccineProgram().getUnit());
-        vaccineHistoryRepository.save(vaccineHistoryEntity);
+        StudentEntity student = form.getStudent();
+        VaccineNameEntity vaccineName = form.getVaccineName();
 
-        VaccineProgramEntity program = form.getVaccineProgram();
-        if (program.getStatus() != VaccineProgramEntity.VaccineProgramStatus.COMPLETED) {
-            program.setStatus(VaccineProgramEntity.VaccineProgramStatus.COMPLETED);
-            vaccineProgramRepository.save(program);
-        }
+        Optional<VaccineHistoryEntity> historyOpt = vaccineHistoryRepository.findByStudentAndVaccineNameEntity(student,
+                vaccineName);
+
+        VaccineHistoryEntity history = historyOpt.orElse(new VaccineHistoryEntity());
+        history.setStudent(student);
+        history.setVaccineNameEntity(vaccineName);
+        history.setNote("Đã tiêm ở trường");
+        history.setCreateBy(true);
+        history.setUnit(historyOpt.map(VaccineHistoryEntity::getUnit).orElse(0) + 1);
+        vaccineHistoryRepository.save(history);
     }
+
+
 
     // Thien
     public List<ClassDTO> getAllClasses() {
@@ -2207,6 +2200,37 @@ public class NurseService {
             return dto;
         }).collect(Collectors.toList());
     }
+
+    public List<VaccineFormDTO> getCommittedVaccineFormsByProgram(int programId) {
+        List<VaccineFormEntity> vaccineForms = vaccineFormRepository
+                .findByCommitTrueAndVaccineProgram_VaccineId(programId);
+
+        if (vaccineForms.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phiếu tiêm chủng đã xác nhận");
+        }
+
+        VaccineProgramEntity program = vaccineForms.get(0).getVaccineProgram();
+        if (program.getStatus() != VaccineProgramEntity.VaccineProgramStatus.GENERATED_RESULT) {
+            program.setStatus(VaccineProgramEntity.VaccineProgramStatus.GENERATED_RESULT);
+            vaccineProgramRepository.save(program);
+        }
+
+        return vaccineForms.stream().map(entity -> {
+            VaccineFormDTO dto = modelMapper.map(entity, VaccineFormDTO.class);
+            dto.setStudentID(entity.getStudent().getId());
+            dto.setParentID(entity.getParent().getUserId());
+            dto.setNurseID(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
+            dto.setStudentDTO(modelMapper.map(entity.getStudent(), StudentDTO.class));
+            dto.setParentDTO(modelMapper.map(entity.getParent(), UserDTO.class));
+            if (entity.getNurse() != null) {
+                dto.setNurseDTO(modelMapper.map(entity.getNurse(), UserDTO.class));
+            }
+            dto.setVaccineProgramDTO(modelMapper.map(entity.getVaccineProgram(), VaccineProgramDTO.class));
+            dto.setVaccineNameDTO(modelMapper.map(entity.getVaccineName(), VaccineNameDTO.class));
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
 
     public void createVaccineForm(int programId, LocalDate expDate) {
         VaccineProgramEntity programEntity = vaccineProgramRepository.findById(programId)
