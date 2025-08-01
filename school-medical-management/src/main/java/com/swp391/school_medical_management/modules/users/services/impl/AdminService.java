@@ -1,16 +1,25 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import com.swp391.school_medical_management.helpers.ExcelExportStyleUtil;
-import com.swp391.school_medical_management.modules.users.dtos.request.*;
-import com.swp391.school_medical_management.modules.users.dtos.response.*;
-import com.swp391.school_medical_management.modules.users.entities.*;
-import com.swp391.school_medical_management.modules.users.repositories.*;
-import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
-import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
-import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
-import com.swp391.school_medical_management.service.EmailService;
-import com.swp391.school_medical_management.service.PasswordService;
-import org.apache.poi.ss.usermodel.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
@@ -26,13 +35,61 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.swp391.school_medical_management.helpers.ExcelExportStyleUtil;
+import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineNameRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ParticipateClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ParticipationDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormStatsDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultExportDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineUnitDTO;
+import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.ParticipateClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineUnitEntity;
+import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
+import com.swp391.school_medical_management.modules.users.repositories.ParticipateClassRepository;
+import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
+import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineNameRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineUnitRepository;
+import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
+import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
+import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
+import com.swp391.school_medical_management.service.EmailService;
+import com.swp391.school_medical_management.service.PasswordService;
 
 @Service
 public class AdminService {
@@ -491,27 +548,23 @@ public class AdminService {
     }
 
     public VaccineProgramDTO createVaccineProgram(VaccineProgramRequest request, int adminId) {
-        UserEntity admin = userRepository.findUserByUserId(adminId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin không tồn tại"));
-        UserEntity nurse = userRepository.findById(request.getNurseId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Y tá"));
+        UserEntity admin = userRepository.findUserByUserId(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin không tồn tại"));
+        UserEntity nurse = userRepository.findById(request.getNurseId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Y tá"));
         if (request.getStartDate().isBefore(LocalDate.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
         }
-        VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(request.getVaccineNameId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy vaccine!"));
+        VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(request.getVaccineNameId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy vaccine!"));
 
-        Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository.findByVaccineNameAndStatus(vaccineNameEntity, VaccineProgramEntity.VaccineProgramStatus.NOT_STARTED);
-
-//        Optional<VaccineProgramEntity> lastVaccineProgramOpt = vaccineProgramRepository.findTopByVaccineDateLessThanEqualOrderByVaccineDateDesc(request.getVaccineDate());
-
-//        if (lastVaccineProgramOpt.isPresent()) {
-//            VaccineProgramEntity lastVaccineProgramEntity = lastVaccineProgramOpt.get();
-//            logger.info(lastVaccineProgramEntity.getVaccineName().getVaccineName() + lastVaccineProgramEntity.getStatus());
-//            if (!VaccineProgramStatus.COMPLETED.equals(lastVaccineProgramEntity.getStatus())) {
-//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Last vaccine is not COMPLETED!");
-//            }
-//        }
+        Optional<VaccineProgramEntity> existingProgramOpt = vaccineProgramRepository
+                .findByVaccineNameAndStatus(vaccineNameEntity, VaccineProgramEntity.VaccineProgramStatus.NOT_STARTED);
 
         if (existingProgramOpt.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chương trình tiêm chủng '" + vaccineNameEntity.getVaccineName() + "' đã tòn tại và chưa được bắt đầu!.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chương trình tiêm chủng '"
+                    + vaccineNameEntity.getVaccineName() + "' đã tòn tại và chưa được bắt đầu!.");
         }
 
         VaccineProgramEntity entity = new VaccineProgramEntity();
@@ -531,13 +584,14 @@ public class AdminService {
 
         if (request.getClassIds() != null && !request.getClassIds().isEmpty()) {
             for (Integer classId : request.getClassIds()) {
-                ClassEntity clazz = classRepository.findById(classId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lớp với ID: " + classId));
+                ClassEntity clazz = classRepository.findById(classId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Không tìm thấy lớp với ID: " + classId));
 
                 ParticipateClassEntity participate = new ParticipateClassEntity();
                 participate.setClazz(clazz);
                 participate.setProgramId(entity.getVaccineId());
                 participate.setType(ParticipateClassEntity.Type.VACCINE);
-
 
                 ParticipateClassEntity saved = participateClassRepository.save(participate);
 
@@ -554,7 +608,6 @@ public class AdminService {
             }
         }
 
-
         VaccineNameDTO vaccineNameDTO = modelMapper.map(vaccineNameEntity, VaccineNameDTO.class);
 
         VaccineProgramDTO dto = modelMapper.map(entity, VaccineProgramDTO.class);
@@ -568,7 +621,7 @@ public class AdminService {
 
     public VaccineProgramDTO updateVaccineProgram(VaccineProgramRequest request, int id) {
         VaccineProgramEntity existingProgram = vaccineProgramRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaccine program not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy vaccine"));
 
         if (existingProgram.getStatus() == VaccineProgramEntity.VaccineProgramStatus.COMPLETED
                 || existingProgram.getStatus() == VaccineProgramEntity.VaccineProgramStatus.ON_GOING) {
@@ -675,12 +728,6 @@ public class AdminService {
         if (vaccineProgramEntity.getStatus() == newStatus) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Chương trình đã ở trạng thái: " + newStatus);
-        }
-
-        if (newStatus == VaccineProgramEntity.VaccineProgramStatus.COMPLETED
-                && vaccineProgramEntity.getStatus() != VaccineProgramEntity.VaccineProgramStatus.ON_GOING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Chỉ được cập nhật COMPLETED khi đang ở trạng thái ON_GOING");
         }
 
         vaccineProgramEntity.setStatus(newStatus);

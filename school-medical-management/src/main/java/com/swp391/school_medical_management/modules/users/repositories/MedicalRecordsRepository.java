@@ -12,6 +12,9 @@ public interface MedicalRecordsRepository extends JpaRepository<MedicalRecordEnt
 
     Optional<MedicalRecordEntity> findByStudent(StudentEntity student);
 
+    Optional<MedicalRecordEntity> findMedicalRecordByStudent_Id(int studentId);
+
+
     // List<MedicalRecordEntity> findMedicalRecordByStudent_Parent_UserId(Long parentId);
     // long count();
 

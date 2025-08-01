@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultListRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.ReplyFeedbackRequest;
@@ -101,6 +100,13 @@ public class NurseController {
             @PathVariable int programId,
             @RequestParam(required = false) Boolean committed) {
         List<HealthCheckFormDTO> list = nurseService.getHealthCheckFormsByProgram(programId, committed);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/health-check-forms-commit/program/{programId}")
+    public ResponseEntity<List<HealthCheckFormDTO>> getCommittedHealthCheckFormsByProgram(
+            @PathVariable int programId) {
+        List<HealthCheckFormDTO> list = nurseService.getCommittedHealthCheckFormsByProgram(programId);
         return ResponseEntity.ok(list);
     }
 
@@ -377,11 +383,14 @@ public class NurseController {
     // return ResponseEntity.ok(results);
     // }
 
-    @PostMapping("/create-healthCheckResult-byProgram-/{programId}")
-    public ResponseEntity<String> createHealthCheckResults(@RequestBody HealthCheckResultListRequest requestList) {
-        nurseService.createResultsByProgramId(requestList.getProgramId(), requestList.getResults());
+    @PostMapping("/create-healthCheckResult-byProgram-{programId}")
+    public ResponseEntity<String> createHealthCheckResult(
+            @PathVariable int programId,
+            @RequestBody HealthCheckResultRequest request) {
+        nurseService.createResultByProgramId(programId, request);
         return ResponseEntity.ok("Tạo kết quả khám sức khỏe thành công.");
     }
+
 
     @PostMapping("/create-vaccineResults-byProgram/{programId}")
     public ResponseEntity<List<VaccineResultDTO>> createVaccineResultsByProgramId(@PathVariable int programId) {
