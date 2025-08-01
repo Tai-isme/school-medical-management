@@ -444,6 +444,4 @@ public class NurseController {
         List<HealthCheckResultDTO> results = nurseService.getAllHealthCheckResults();
         return ResponseEntity.ok(results);
     }
-    
-    
 }
