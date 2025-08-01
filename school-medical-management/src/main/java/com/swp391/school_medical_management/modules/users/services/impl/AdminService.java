@@ -111,7 +111,7 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
         }
 
-        if (request.getStartDate().isAfter(request.getDateSendForm())) {
+        if (request.getStartDate().isBefore(request.getDateSendForm())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày gửi thông báo phải sớm hơn ngày chương trình được diễn ra!");
         }
 
@@ -183,7 +183,7 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải là hôm nay hoặc trong tương lai!");
         }
 
-        if (request.getStartDate().isAfter(request.getDateSendForm())) {
+        if (request.getStartDate().isBefore(request.getDateSendForm())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày gửi thông báo phải sớm hơn ngày chương trình được diễn ra!");
         }
 
@@ -506,7 +506,7 @@ public class AdminService {
                     "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
         }
 
-        if (request.getStartDate().isAfter(request.getDateSendForm())) {
+        if (request.getStartDate().isBefore(request.getDateSendForm())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày gửi thông báo phải sớm hơn ngày chương trình được diễn ra!");
         }
         VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(request.getVaccineNameId())
@@ -589,7 +589,7 @@ public class AdminService {
                     "Ngày bắt đầu phải là ngày trong tương lai!");
         }
 
-        if (request.getStartDate().isAfter(request.getDateSendForm())) {
+        if (request.getStartDate().isBefore(request.getDateSendForm())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày gửi thông báo phải sớm hơn ngày chương trình được diễn ra!");
         }
 
@@ -1150,17 +1150,13 @@ public class AdminService {
     // Thien
     public List<HealthCheckResultStatsDTO> getVaccineResultStatusStatsByProgram() {
         List<HealthCheckResultByProgramStatsRaw> rawList = vaccineResultRepository.getVaccineResultStatusStatsByProgram();
-
         return rawList.stream().map(row -> new HealthCheckResultStatsDTO(row.getProgramId(), row.getProgramName(), row.getStatusHealth(), row.getCount())).collect(Collectors.toList());
     }
 
 
     public List<HealthCheckResultStatsDTO> getHealthCheckResultStatusStatsByProgram() {
         List<HealthCheckResultByProgramStatsRaw> rawList = healthCheckResultRepository.getHealthCheckResultStatusStatsByProgram();
-
-
         return rawList.stream().map(row -> new HealthCheckResultStatsDTO(row.getProgramId(), row.getProgramName(), row.getStatusHealth(), row.getCount())).collect(Collectors.toList());
-        // return null;
     }
 
 
