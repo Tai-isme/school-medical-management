@@ -37,7 +37,7 @@ public class MedicalRequestEntity {
     private MedicalRequestStatus status;
 
     public enum MedicalRequestStatus {
-        SUBMITTED, COMPLETED, PROCESSING, CANCELLED
+        CONFIRMED, COMPLETED, PROCESSING, CANCELLED
     }
 
     private String image;

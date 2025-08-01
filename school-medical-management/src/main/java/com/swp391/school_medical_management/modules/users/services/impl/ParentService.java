@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -309,40 +310,39 @@ public class ParentService {
 
 
     public List<MedicalRequestDTO> getMedicalRequestByParent(int parentId) {
-        // Optional<UserEntity> parentOpt = userRepository.findById(parentId);
-        // if (parentOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found");
-        // UserEntity parent = parentOpt.get();
-        // List<MedicalRequestEntity> medicalRequestEntityList =
-        // medicalRequestRepository.findByParent(parent);
-        // if (medicalRequestEntityList.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not found medical
-        // request");
+        Optional<UserEntity> parentOpt = userRepository.findById(parentId);
+        if (parentOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phụ huynh!");
+        }
 
-        // List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
-        // for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
-        // MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
-        // MedicalRequestDTO.class);
+        UserEntity parent = parentOpt.get();
+        List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findByParent(parent);
+        if (medicalRequestEntityList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy yêu cầu gửi thuốc nào!");
+        }
 
-        // // Map chi tiết đơn thuốc
-        // List<MedicalRequestDetailDTO> detailDTOs =
-        // medicalRequestEntity.getMedicalRequestDetailEntities()
-        // .stream()
-        // .map(detail -> modelMapper.map(detail, MedicalRequestDetailDTO.class))
-        // .collect(Collectors.toList());
-        // medicalRequestDTO.setMedicalRequestDetailDTO(detailDTOs);
+        List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
+        for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
+            MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
+                    MedicalRequestDTO.class);
 
-        // // Map student nếu cần
-        // // if (medicalRequestEntity.getStudent() != null) {
-        // // StudentDTO studentDTO = modelMapper.map(medicalRequestEntity.getStudent(),
-        // // StudentDTO.class);
-        // // medicalRequestDTO.setStudentDTO(studentDTO);
-        // // }
+            List<MedicalRequestDetailDTO> detailDTOs =
+                    medicalRequestEntity.getMedicalRequestDetailEntities()
+                            .stream()
+                            .map(detail -> modelMapper.map(detail, MedicalRequestDetailDTO.class))
+                            .collect(Collectors.toList());
+            medicalRequestDTO.setMedicalRequestDetailDTO(detailDTOs);
 
-        // medicalRequestDTOList.add(medicalRequestDTO);
-        // }
-        // return medicalRequestDTOList;
-        return null;
+            medicalRequestDTO.setStudentDTO(modelMapper.map(medicalRequestEntity.getStudent(), StudentDTO.class));
+            medicalRequestDTO.setParentDTO(modelMapper.map(parent, UserDTO.class));
+            if (medicalRequestEntity.getNurse() != null) {
+                medicalRequestDTO.setNurseDTO(modelMapper.map(medicalRequestEntity.getNurse(), UserDTO.class));
+            }
+
+            medicalRequestDTOList.add(medicalRequestDTO);
+        }
+
+        return medicalRequestDTOList;
     }
 
     public MedicalRequestDTO getMedicalRequestByRequestId(int parentId, int requestId) {
@@ -406,64 +406,100 @@ public class ParentService {
         return null;
     }
 
-    public MedicalRequestDTO updateMedicalRequest(int parentId, MedicalRequest request, Integer requestId) {
-        // Optional<MedicalRequestEntity> medicalRequestEntityOpt =
-        // medicalRequestRepository
-        // .findMedicalRequestEntityByRequestId(requestId);
-        // if (medicalRequestEntityOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not
-        // found");
-        // MedicalRequestEntity medicalRequestEntity = medicalRequestEntityOpt.get();
-        // if (!medicalRequestEntity.getParent().getUserId().equals(parentId))
-        // throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        // if
-        // (!medicalRequestEntity.getStatus().equals(MedicalRequestStatus.PROCESSING)) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        // "Cannot update a request that has already been processed");
-        // }
-        // if (request.getMedicalRequestDetailRequests() == null ||
-        // request.getMedicalRequestDetailRequests().isEmpty()) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical request
-        // details cannot be empty");
-        // }
-        // medicalRequestEntity.setRequestName(request.getRequestName());
-        // medicalRequestEntity.setNote(request.getNote());
-        // medicalRequestEntity.setDate(request.getDate());
+    public MedicalRequestDTO updateMedicalRequest(int parentId, MedicalRequest request, Integer requestId, MultipartFile image) {
 
-        // medicalRequestEntity.getMedicalRequestDetailEntities().clear();
 
-        // for (MedicalRequestDetailRequest details :
-        // request.getMedicalRequestDetailRequests()) {
-        // MedicalRequestDetailEntity medicalRequestDetailEntity = new
-        // MedicalRequestDetailEntity();
-        // medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
-        // medicalRequestDetailEntity.setDosage(details.getDosage());
-        // medicalRequestDetailEntity.setTime(details.getTime());
-        // medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
-        // medicalRequestEntity.getMedicalRequestDetailEntities().add(medicalRequestDetailEntity);
-        // }
+        MedicalRequestEntity existingRequest = medicalRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu gửi thuốc"));
 
-        // medicalRequestRepository.save(medicalRequestEntity);
-        // return modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
-        return null;
+        String imageUrl = existingRequest.getImage();
+        if (image != null && !image.isEmpty()) {
+            try {
+                imageUrl = uploadImageFile.uploadImage(image);
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể upload ảnh");
+            }
+        }
+
+        if (existingRequest.getParent().getUserId() != parentId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật yêu cầu này");
+        }
+
+        if (existingRequest.getStatus() != MedicalRequestStatus.PROCESSING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ được cập nhật khi trạng thái là PROCESSING");
+        }
+
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+        if (studentOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy học sinh");
+        }
+
+        if (request.getMedicalRequestDetailRequests() == null || request.getMedicalRequestDetailRequests().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chi tiết thuốc không được để trống");
+        }
+
+        if (request.getDate() == null || request.getDate().isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày gửi thuốc phải từ hôm nay trở đi");
+        }
+
+        /*
+        * MedicalRequestEntity medicalRequestEntity = new MedicalRequestEntity();
+        medicalRequestEntity.setRequestName(request.getRequestName());
+        medicalRequestEntity.setDate(request.getDate());
+        medicalRequestEntity.setStatus(MedicalRequestStatus.PROCESSING);
+        medicalRequestEntity.setNote(request.getNote());
+        medicalRequestEntity.setStudent(student);
+        medicalRequestEntity.setParent(parent);
+        medicalRequestEntity.setImage(imageUrl);
+        * */
+
+        existingRequest.setRequestName(request.getRequestName());
+        existingRequest.setDate(request.getDate());
+        existingRequest.setNote(request.getNote());
+        existingRequest.setStudent(studentOpt.get());
+        existingRequest.setImage(imageUrl);
+
+        existingRequest.getMedicalRequestDetailEntities().clear();
+
+        for (MedicalRequestDetailRequest detailRequest : request.getMedicalRequestDetailRequests()) {
+            MedicalRequestDetailEntity detailEntity = new MedicalRequestDetailEntity();
+            detailEntity.setMedicineName(detailRequest.getMedicineName());
+            detailEntity.setQuantity(detailRequest.getQuantity());
+            detailEntity.setType(detailRequest.getType());
+            detailEntity.setMethod(detailRequest.getMethod());
+            detailEntity.setTimeSchedule(detailRequest.getTimeSchedule());
+            detailEntity.setNote(detailRequest.getNote());
+            detailEntity.setStatus(MedicalRequestDetailEntity.Status.NOT_TAKEN);
+            detailEntity.setMedicalRequest(existingRequest);
+
+            existingRequest.getMedicalRequestDetailEntities().add(detailEntity);
+        }
+
+        medicalRequestRepository.save(existingRequest);
+
+        MedicalRequestDTO dto = modelMapper.map(existingRequest, MedicalRequestDTO.class);
+        List<MedicalRequestDetailDTO> detailDTOs = existingRequest.getMedicalRequestDetailEntities()
+                .stream()
+                .map(entity -> modelMapper.map(entity, MedicalRequestDetailDTO.class))
+                .collect(Collectors.toList());
+        dto.setMedicalRequestDetailDTO(detailDTOs);
+        return dto;
     }
 
+
     public void deleteMedicalRequest(int parentId, int requestId) {
-        // Optional<MedicalRequestEntity> medicalRequestEntityOpt =
-        // medicalRequestRepository
-        // .findMedicalRequestEntityByRequestId(requestId);
-        // if (medicalRequestEntityOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical request not
-        // found");
-        // MedicalRequestEntity medicalRequestEntity = medicalRequestEntityOpt.get();
-        // if (!medicalRequestEntity.getParent().getUserId().equals(parentId))
-        // throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
-        // if
-        // (!medicalRequestEntity.getStatus().equals(MedicalRequestStatus.PROCESSING)) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        // "Cannot delete a request that has already been processed");
-        // }
-        // medicalRequestRepository.delete(medicalRequestEntity);
+        Optional<MedicalRequestEntity> medicalRequestEntityOpt = medicalRequestRepository.findById(requestId);
+        if (medicalRequestEntityOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn thuốc!");
+        }
+        MedicalRequestEntity medicalRequestEntity = medicalRequestEntityOpt.get();
+        if (medicalRequestEntity.getParent().getUserId() != parentId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền để xóa đơn thuốc này!");
+        }
+        if (!medicalRequestEntity.getStatus().equals(MedicalRequestStatus.PROCESSING)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn thuốc đã được chấp nhận và đang xử lý, không thể xóa!");
+        }
+        medicalRequestRepository.delete(medicalRequestEntity);
     }
 
     public List<HealthCheckFormDTO> getAllHealthCheckFormCommited(int parentId, int studentId) {
