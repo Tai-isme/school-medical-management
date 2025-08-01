@@ -101,4 +101,6 @@ public interface VaccineResultRepository extends JpaRepository<VaccineResultEnti
     List<VaccineResultExportDTO> findExportByProgramId(@Param("vaccineProgramId") int vaccineProgramId);
 
     Optional<VaccineResultEntity> findByVaccineFormEntity(VaccineFormEntity vaccineFormEntity);
+
+    List<VaccineResultEntity> findByNurseEntity_UserId(int nurseEntityUserId);
 }

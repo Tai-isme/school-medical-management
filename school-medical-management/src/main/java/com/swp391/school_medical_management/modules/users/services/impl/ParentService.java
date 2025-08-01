@@ -534,13 +534,14 @@ public class ParentService {
         StudentEntity studentEntity = studentOpt.get();
         List<HealthCheckFormEntity> healthCheckFormEntities = healthCHeckFormRepository.findByStudent(studentEntity);
 
-        List<HealthCheckFormDTO> healthCheckFormDTOs = healthCheckFormEntities.stream().filter(form -> form.getParent().getUserId() == parentId).map(form -> {
-            HealthCheckFormDTO dto = modelMapper.map(form, HealthCheckFormDTO.class);
-            HealthCheckProgramDTO programDTO = modelMapper.map(form.getHealthCheckProgram(), HealthCheckProgramDTO.class);
-            programDTO.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
-            dto.setHealthCheckProgramDTO(programDTO);
-            return dto;
-        }).collect(Collectors.toList());
+        List<HealthCheckFormDTO> healthCheckFormDTOs = healthCheckFormEntities.stream()
+                .filter(form -> form.getParent().getUserId() == parentId).map(form -> {
+                    HealthCheckFormDTO dto = modelMapper.map(form, HealthCheckFormDTO.class);
+                    HealthCheckProgramDTO programDTO = modelMapper.map(form.getHealthCheckProgram(), HealthCheckProgramDTO.class);
+                    programDTO.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
+                    dto.setHealthCheckProgramDTO(programDTO);
+                    return dto;
+                }).collect(Collectors.toList());
         return healthCheckFormDTOs;
     }
 
@@ -550,14 +551,14 @@ public class ParentService {
         StudentEntity studentEntity = studentOpt.get();
         List<VaccineFormEntity> vaccineFormEntities = vaccineFormRepository.findByStudent(studentEntity);
 
-        List<VaccineFormDTO> vaccineFormDTOs = vaccineFormEntities.stream().filter(form -> form.getStudent().getParent().getUserId() == parentId).map(form -> {
-            VaccineFormDTO dto = modelMapper.map(form, VaccineFormDTO.class);
-            VaccineProgramDTO programDTO = modelMapper.map(form.getVaccineProgram(), VaccineProgramDTO.class);
-            programDTO.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
-            dto.setVaccineProgramDTO(programDTO);
-            return dto;
-        }).collect(Collectors.toList());
-
+        List<VaccineFormDTO> vaccineFormDTOs = vaccineFormEntities.stream()
+                .filter(form -> form.getParent().getUserId() == parentId).map(form -> {
+                    VaccineFormDTO dto = modelMapper.map(form, VaccineFormDTO.class);
+                    VaccineProgramDTO programDTO = modelMapper.map(form.getVaccineProgram(), VaccineProgramDTO.class);
+                    programDTO.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
+                    dto.setVaccineProgramDTO(programDTO);
+                    return dto;
+                }).collect(Collectors.toList());
         return vaccineFormDTOs;
     }
 
@@ -679,7 +680,7 @@ public class ParentService {
         return vaccineResultDTOList;
     }
 
-    public void commitHealthCheckForm(int parentId, int healthCheckFormId, CommitHealthCheckFormRequest request) {
+    public String commitHealthCheckForm(int parentId, int healthCheckFormId, CommitHealthCheckFormRequest request) {
         Optional<HealthCheckFormEntity> healthCheckFormOpt = healthCHeckFormRepository.findById(healthCheckFormId);
         if (healthCheckFormOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy thông báo khám định kỳ!");
@@ -694,9 +695,10 @@ public class ParentService {
         healthCheckFormEntity.setCommit(request.isCommit());
         healthCheckFormEntity.setNotes(request.getNote());
         healthCHeckFormRepository.save(healthCheckFormEntity);
+        return healthCheckFormEntity.getCommit() ? "Đã xác nhận!" : "Đã từ chối!";
     }
 
-    public void commitVaccineForm(int parentId, int vaccineFormId, CommitVaccineFormRequest request) {
+    public String commitVaccineForm(int parentId, int vaccineFormId, CommitVaccineFormRequest request) {
         Optional<VaccineFormEntity> vaccineFormOpt = vaccineFormRepository.findById(vaccineFormId);
         if (vaccineFormOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy thông báo tiêm chủng nào!");
@@ -711,6 +713,7 @@ public class ParentService {
         vaccineFormEntity.setCommit(request.isCommit());
         vaccineFormEntity.setNote(request.getNote());
         vaccineFormRepository.save(vaccineFormEntity);
+        return vaccineFormEntity.getCommit() ? "Đã xác nhận!" : "Đã từ chối!";
     }
 
     public void submitFeedback(FeedbackRequest request) {
