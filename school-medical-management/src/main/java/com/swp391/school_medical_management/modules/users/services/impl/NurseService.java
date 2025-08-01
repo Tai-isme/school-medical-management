@@ -181,16 +181,16 @@ public class NurseService {
             medicalRequestDTO.setStudentDTO(studentDTO);
 
             try {
-            UserEntity nurse = userRepository.findById(medicalRequestEntity.getNurse().getUserId())
-                    .orElseThrow(() -> new UsernameNotFoundException("Nurse not found"));
-            UserDTO nurseDTO = modelMapper.map(nurse, UserDTO.class);
+                UserEntity nurse = userRepository.findById(medicalRequestEntity.getNurse().getUserId())
+                        .orElseThrow(() -> new UsernameNotFoundException("Nurse not found"));
+                UserDTO nurseDTO = modelMapper.map(nurse, UserDTO.class);
                 medicalRequestDTO.setNurseDTO(nurseDTO);
             } catch (Exception e) {
                 medicalRequestDTO.setNurseDTO(null);
             }
             ClassDTO classDTO =
-            modelMapper.map(classRepository.findById(studentEntity.getClassEntity().getClassId()).get(),
-            ClassDTO.class);
+                    modelMapper.map(classRepository.findById(studentEntity.getClassEntity().getClassId()).get(),
+                            ClassDTO.class);
             classDTO.setStudents(null);
             studentDTO.setClassDTO(classDTO);
 
@@ -202,7 +202,7 @@ public class NurseService {
                     .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
                             MedicalRequestDetailDTO.class))
                     .collect(Collectors.toList());
-           
+
             medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
             medicalRequestDTOList.add(medicalRequestDTO);
         }
@@ -214,32 +214,32 @@ public class NurseService {
         try {
         status = MedicalRequestEntity.MedicalRequestStatus.valueOf(statusStr.toUpperCase());
         } catch (IllegalArgumentException e) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status value");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status value");
         }
 
         List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findByStatus(status);
         if (medicalRequestEntityList.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical requests found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical requests found");
         }
 
         List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
         for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
-        StudentEntity studentEntity = medicalRequestEntity.getStudent();
+            StudentEntity studentEntity = medicalRequestEntity.getStudent();
 
-        StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
-        List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity.getMedicalRequestDetailEntities();
+            StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+            List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity.getMedicalRequestDetailEntities();
 
-        List<MedicalRequestDetailDTO> medicalRequestDetailDTOList =medicalRequestDetailEntityList.stream()
-        .map(medicalRequestDetailEntity ->
-        modelMapper.map(medicalRequestDetailEntity,
-        MedicalRequestDetailDTO.class))
-        .collect(Collectors.toList());
-        
-        MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
-        MedicalRequestDTO.class);
-        medicalRequestDTO.setStudentDTO(studentDTO);
-        medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
-        medicalRequestDTOList.add(medicalRequestDTO);
+            List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
+                    .map(medicalRequestDetailEntity ->
+                            modelMapper.map(medicalRequestDetailEntity,
+                                    MedicalRequestDetailDTO.class))
+                    .collect(Collectors.toList());
+
+            MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
+                    MedicalRequestDTO.class);
+            medicalRequestDTO.setStudentDTO(studentDTO);
+            medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+            medicalRequestDTOList.add(medicalRequestDTO);
         }
 
         return medicalRequestDTOList;
@@ -716,89 +716,82 @@ public class NurseService {
     }
 
     public MedicalEventDTO createMedicalEvent(int nurseId, MedicalEventRequest request) {
-        // Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        // if (nurseOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
+        Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
+        if (nurseOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Y tá không tồn tại!");
+        }
 
-        // UserEntity nurse = nurseOpt.get();
+        UserEntity nurse = nurseOpt.get();
 
-        // Optional<StudentEntity> studentOpt =
-        // studentRepository.findStudentById(request.getStudentId());
-        // if (studentOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+        if (studentOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy học sinh!");
+        }
 
-        // StudentEntity student = studentOpt.get();
+        StudentEntity student = studentOpt.get();
 
-        // Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository
-        // .findByStudentAndTypeEventAndDescription(student, request.getTypeEvent(),
-        // request.getDescription());
-        // if (medicalEventOpt.isPresent())
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Medical event
-        // already exists");
+        Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findByEventNameAndTypeEventAndDateAndDescriptionAndLevelCheckAndLocationAndImageAndStudent(request.getEventName(), request.getTypeEvent(), request.getDate(), request.getDescription(), MedicalEventEntity.LevelCheck.valueOf(request.getLevelCheck()), request.getLocation(), request.getImage(), student);
+        if (medicalEventOpt.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện y tế này đã tồn tại!");
+        }
 
-        // MedicalEventEntity medicalEventEntity = new MedicalEventEntity();
-        // medicalEventEntity.setTypeEvent(request.getTypeEvent());
-        // medicalEventEntity.setDate(LocalDate.now());
-        // medicalEventEntity.setDescription(request.getDescription());
-        // medicalEventEntity.setStudent(student);
-        // medicalEventEntity.setNurse(nurse);
+        MedicalEventEntity medicalEventEntity = new MedicalEventEntity();
+        medicalEventEntity.setEventName(request.getEventName());
+        medicalEventEntity.setTypeEvent(request.getTypeEvent());
+        medicalEventEntity.setDate(request.getDate());
+        medicalEventEntity.setActionsTaken(request.getActionsTaken());
+        medicalEventEntity.setDescription(request.getDescription());
+        medicalEventEntity.setLevelCheck(MedicalEventEntity.LevelCheck.valueOf(request.getLevelCheck()));
+        medicalEventEntity.setLocation(request.getLocation());
+        medicalEventEntity.setImage(request.getImage());
+        medicalEventEntity.setStudent(student);
+        medicalEventEntity.setNurse(nurse);
+        medicalEventRepository.save(medicalEventEntity);
 
-        // medicalEventRepository.save(medicalEventEntity);
-
-        // MedicalEventDTO dto = modelMapper.map(medicalEventEntity,
-        // MedicalEventDTO.class);
-        // dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
-
-        // UserEntity parent = student.getParent();
-        // if (parent != null) {
-        // UserDTO userDTO = UserDTO.builder()
-        // .id(parent.getUserId())
-        // .fullName(parent.getFullName())
-        // .email(parent.getEmail())
-        // .phone(parent.getPhone())
-        // .address(parent.getAddress())
-        // .role(parent.getRole())
-        // .build();
-
-        // dto.setParentDTO(userDTO);
-        // }
-
-        // return dto;
-        return null;
+        MedicalEventDTO dto = modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
+        dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
+        dto.setParentDTO(modelMapper.map(student.getParent(), UserDTO.class));
+        dto.setNurseDTO(modelMapper.map(nurse, UserDTO.class));
+        dto.setClassDTO(modelMapper.map(student.getClassEntity(), ClassDTO.class));
+        return dto;
     }
 
     public MedicalEventDTO updateMedicalEvent(int nurseId, int medicalEventId, MedicalEventRequest request) {
-        // Optional<MedicalEventEntity> medicalEventOpt =
-        // medicalEventRepository.findByEventId(medicalEventId);
-        // if (medicalEventOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not
-        // found");
+        Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findById(medicalEventId);
+        if (medicalEventOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sự kiện y tế không tồn tại!");
+        }
 
-        // MedicalEventEntity medicalEventEntity = medicalEventOpt.get();
+        MedicalEventEntity medicalEvent = medicalEventOpt.get();
 
-        // Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
-        // if (nurseOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nurse not found");
+        if (medicalEvent.getNurse() == null || medicalEvent.getNurse().getUserId() != nurseId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa, sự kiện y tế này do y tá '" + medicalEventOpt.get().getNurse().getFullName() + "' đảm nhiệm!");
+        }
 
-        // UserEntity nurse = nurseOpt.get();
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+        if (studentOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy học sinh!");
+        }
+        StudentEntity student = studentOpt.get();
 
-        // Optional<StudentEntity> studentOpt =
-        // studentRepository.findStudentById(request.getStudentId());
-        // if (studentOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        medicalEvent.setEventName(request.getEventName());
+        medicalEvent.setTypeEvent(request.getTypeEvent());
+        medicalEvent.setDate(request.getDate());
+        medicalEvent.setActionsTaken(request.getActionsTaken());
+        medicalEvent.setDescription(request.getDescription());
+        medicalEvent.setLevelCheck(MedicalEventEntity.LevelCheck.valueOf(request.getLevelCheck()));
+        medicalEvent.setLocation(request.getLocation());
+        medicalEvent.setImage(request.getImage());
+        medicalEvent.setStudent(student);
 
-        // StudentEntity student = studentOpt.get();
+        medicalEventRepository.save(medicalEvent);
 
-        // medicalEventEntity.setTypeEvent(request.getTypeEvent());
-        // medicalEventEntity.setDescription(request.getDescription());
-        // medicalEventEntity.setStudent(student);
-        // medicalEventEntity.setDate(LocalDate.now());
-        // medicalEventEntity.setNurse(nurse);
-
-        // medicalEventRepository.save(medicalEventEntity);
-
-        // return modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
-        return null;
+        MedicalEventDTO dto = modelMapper.map(medicalEvent, MedicalEventDTO.class);
+        dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
+        dto.setParentDTO(modelMapper.map(student.getParent(), UserDTO.class));
+        dto.setNurseDTO(modelMapper.map(medicalEvent.getNurse(), UserDTO.class));
+        dto.setClassDTO(modelMapper.map(student.getClassEntity(), ClassDTO.class));
+        return dto;
     }
 
     public MedicalEventDTO getMedicalEvent(int medicalEventId) {
@@ -888,15 +881,16 @@ public class NurseService {
         return medicalEventDTOList;
     }
 
-    public void deleteMedicalEvent(int meidcalEventId) {
-        // Optional<MedicalEventEntity> medicalEventOpt =
-        // medicalEventRepository.findByEventId(meidcalEventId);
-        // if (medicalEventOpt.isEmpty())
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Medical event not
-        // found");
-        // MedicalEventEntity medicalEventEntity = medicalEventOpt.get();
-        // medicalEventRepository.delete(medicalEventEntity);
-
+    public void deleteMedicalEvent(int meidcalEventId, int nurseId) {
+        Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findById(meidcalEventId);
+        if (medicalEventOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sự kiện y tế");
+        }
+        if (medicalEventOpt.get().getNurse() == null || medicalEventOpt.get().getNurse().getUserId() != nurseId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xóa, sự kiện y tế này do y tá '" + medicalEventOpt.get().getNurse().getFullName() + "' đảm nhiệm!");
+        }
+        MedicalEventEntity medicalEventEntity = medicalEventOpt.get();
+        medicalEventRepository.delete(medicalEventEntity);
     }
 
     public HealthCheckResultDTO createHealthCheckResult(HealthCheckResultRequest request) {
@@ -1883,8 +1877,8 @@ public class NurseService {
         result.setReaction(request.getReaction());
         result.setActionsTaken(request.getActionsTaken());
         result.setCreatedAt(request.getCreateAt() != null ? request.getCreateAt() : LocalDateTime.now());
-        result.setIsInjected(request.getIsRejected() != null ? !request.getIsRejected() : false); 
-                                                                                                 
+        result.setIsInjected(request.getIsRejected() != null && !request.getIsRejected());
+
         result.setVaccineFormEntity(form);
         result.setStudentEntity(form.getStudent());
         result.setNurseEntity(nurse);
@@ -1904,7 +1898,6 @@ public class NurseService {
         history.setUnit(historyOpt.map(VaccineHistoryEntity::getUnit).orElse(0) + 1);
         vaccineHistoryRepository.save(history);
     }
-
 
 
     // Thien
