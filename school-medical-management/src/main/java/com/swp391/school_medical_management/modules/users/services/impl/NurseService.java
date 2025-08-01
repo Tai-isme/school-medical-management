@@ -2225,14 +2225,14 @@ public class NurseService {
             VaccineFormDTO dto = modelMapper.map(entity, VaccineFormDTO.class);
             dto.setStudentID(entity.getStudent().getId());
             dto.setParentID(entity.getParent().getUserId());
-            dto.setNurseID(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
+            // dto.setNurseID(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
             dto.setStudentDTO(modelMapper.map(entity.getStudent(), StudentDTO.class));
-            dto.setParentDTO(modelMapper.map(entity.getParent(), UserDTO.class));
-            if (entity.getNurse() != null) {
-                dto.setNurseDTO(modelMapper.map(entity.getNurse(), UserDTO.class));
-            }
-            dto.setVaccineProgramDTO(modelMapper.map(entity.getVaccineProgram(), VaccineProgramDTO.class));
-            dto.setVaccineNameDTO(modelMapper.map(entity.getVaccineName(), VaccineNameDTO.class));
+            // dto.setParentDTO(modelMapper.map(entity.getParent(), UserDTO.class));
+            // if (entity.getNurse() != null) {
+            //     dto.setNurseDTO(modelMapper.map(entity.getNurse(), UserDTO.class));
+            // }
+            // dto.setVaccineProgramDTO(modelMapper.map(entity.getVaccineProgram(), VaccineProgramDTO.class));
+            // dto.setVaccineNameDTO(modelMapper.map(entity.getVaccineName(), VaccineNameDTO.class));
             return dto;
         }).collect(Collectors.toList());
     }
