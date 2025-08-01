@@ -109,7 +109,8 @@ public class AdminController {
 
     @PutMapping("/vaccine-program/{vaccineProgramId}")
     public ResponseEntity<VaccineProgramDTO> updateVaccineProgram(@RequestBody VaccineProgramRequest request, @PathVariable int vaccineProgramId) {
-        VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgram(request, vaccineProgramId);
+        String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
+        VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgram(request, vaccineProgramId, Integer.parseInt(adminId));
         return ResponseEntity.ok(vaccineProgramDTO);
     }
 
@@ -202,11 +203,12 @@ public class AdminController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/stats/{vaccineProgramId}")
-    public ResponseEntity<VaccineFormStatsDTO> getFormStats(@PathVariable Long vaccineProgramId) {
+    public ResponseEntity<VaccineFormStatsDTO> getFormStats(@PathVariable int vaccineProgramId) {
         VaccineFormStatsDTO stats = adminService.getFormStatsByProgram(vaccineProgramId);
         return ResponseEntity.ok(stats);
     }
-
+    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/get=all-VaccineName")
     public ResponseEntity<List<VaccineNameDTO>> getAllVaccineNames() {
         List<VaccineNameDTO> list = adminService.getAllVaccineNames();
