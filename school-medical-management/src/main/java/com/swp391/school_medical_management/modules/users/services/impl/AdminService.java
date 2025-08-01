@@ -1,25 +1,16 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import com.swp391.school_medical_management.helpers.ExcelExportStyleUtil;
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.entities.*;
+import com.swp391.school_medical_management.modules.users.repositories.*;
+import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
+import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
+import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
+import com.swp391.school_medical_management.service.EmailService;
+import com.swp391.school_medical_management.service.PasswordService;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
@@ -35,61 +26,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.swp391.school_medical_management.helpers.ExcelExportStyleUtil;
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineNameRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ParticipateClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ParticipationDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormStatsDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultExportDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineUnitDTO;
-import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
-import com.swp391.school_medical_management.modules.users.entities.ParticipateClassEntity;
-import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineUnitEntity;
-import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
-import com.swp391.school_medical_management.modules.users.repositories.ParticipateClassRepository;
-import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
-import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
-import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineNameRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineUnitRepository;
-import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
-import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
-import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
-import com.swp391.school_medical_management.service.EmailService;
-import com.swp391.school_medical_management.service.PasswordService;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminService {
@@ -269,7 +212,7 @@ public class AdminService {
                 participate.setClazz(clazz);
                 participate.setType(ParticipateClassEntity.Type.HEALTH_CHECK);
                 participate.setProgramId(existingProgram.getId());
-                
+
                 participateClassRepository.save(participate);
             }
         }
@@ -1340,7 +1283,7 @@ public class AdminService {
         }
         List<VaccineResultExportDTO> dtoList = vaccineResultRepository.findExportByProgramId(vaccineProgramId);
         logger.info("dto list size: " + dtoList.size());
-        if (dtoList == null || dtoList.isEmpty()) {
+        if (dtoList.isEmpty()) {
             throw new IllegalArgumentException("Không có dữ liệu để xuất Excel");
         }
         return dtoList;
@@ -1349,7 +1292,7 @@ public class AdminService {
     public ByteArrayInputStream exportVaccineResultToExcel(int vaccineProgramId) throws IOException {
         List<VaccineResultExportDTO> dtoList = getVaccineResultsToExport(vaccineProgramId);
         ByteArrayOutputStream out = null;
-        VaccineResultExportDTO first = dtoList.get(0);
+        VaccineResultExportDTO first = dtoList.getFirst();
 
         Workbook workbook = new XSSFWorkbook();
         CellStyle titleStyle = ExcelExportStyleUtil.createTitleStyle(workbook);
@@ -1381,8 +1324,9 @@ public class AdminService {
             cell.setCellStyle(sectionLabelStyle);
         }
 
-        String[] labels1 = {"Tên chương trình", "Ngày thực hiện", "Địa điểm", "Y tá phụ trách", "Người tạo chương trình", "Mô tả chương trình", "Tổng học sinh tham gia", "Tổng học sinh không tham gia"};
-        Object[] values1 = {first.getProgramName(), first.getStartDate(), first.getLocation(), first.getNurseName(), first.getAdminName(), first.getDescription(), first.getTotalNumberStudentVaccinated(), first.getTotalNumberStudentNotVaccinated()};
+        String[] labels1 = {"Tên chương trình", "Trạng thái", "Ngày thực hiện", "Địa điểm", "Y tá phụ trách", "Người tạo chương trình", "Mô tả chương trình", "Tổng học sinh tham gia", "Tổng học sinh không tham gia"};
+        String programStatus = first.getStatus() == VaccineProgramEntity.VaccineProgramStatus.COMPLETED ? "ĐÃ HOÀN THÀNH" : "";
+        Object[] values1 = {first.getProgramName(), programStatus, first.getStartDate(), first.getLocation(), first.getNurseName(), first.getAdminName(), first.getDescription(), first.getTotalNumberStudentVaccinated(), first.getTotalNumberStudentNotVaccinated()};
         for (int i = 0; i < labels1.length; i++) {
             Row row = sheet.createRow(4 + i);
             Cell labelCell = row.createCell(0);
@@ -1420,20 +1364,108 @@ public class AdminService {
         }
 
         String[] headers = {"Mã học sinh", "Tên học sinh", "Ngày sinh", "Giới tính", "Lớp", "Phụ huynh", "SĐT", "Địa chỉ", "Quan hệ", "Phản ứng", "Xử lý", "Ghi chú", "Đã tiêm"};
-        Row headerRow = sheet.createRow(13);
+        Row headerRow = sheet.createRow(14);
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
             cell.setCellStyle(headerStyle);
         }
 
-        int rowNum = 14;
+        int rowNum = 15;
         for (VaccineResultExportDTO dto : dtoList) {
             Row row = sheet.createRow(rowNum++);
 
-            String genderStr = dto.getGender().toString().equals("MALE") ? "Nam" : "Nữ";
+            String[] values = {String.valueOf(dto.getStudentId()), dto.getStudentName(), String.valueOf(dto.getDob()), String.valueOf(dto.getGender()) != null && String.valueOf(dto.getGender()).equals("MALE") ? "Nam" : "Nữ", dto.getClassName(), dto.getParentName(), dto.getPhone(), dto.getAddress(), dto.getRelationship(), dto.getReaction(), dto.getActionsTaken(), dto.getNote(), dto.getIsInjected() != null && dto.getIsInjected() ? "Đã tiêm" : "Chưa tiêm"};
+            for (int i = 0; i < values.length; i++) {
+                Cell cell = row.createCell(i);
+                cell.setCellValue(values[i]);
+                cell.setCellStyle(dataStyle);
+            }
+        }
 
-            String[] values = {dto.getStudentId().toString(), dto.getStudentName(), String.valueOf(dto.getDob()), genderStr, dto.getClassName(), dto.getParentName(), dto.getPhone(), dto.getAddress(), dto.getRelationship(), dto.getReaction(), dto.getActionsTaken(), dto.getNote(), dto.getIsInjected() != null && dto.getIsInjected() ? "Đã tiêm" : "Chưa tiêm"};
+        out = new ByteArrayOutputStream();
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+        workbook.write(out);
+        workbook.close();
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    public List<HealthCheckResultExportDTO> getHealthCheckResultsToExport(int healthCheckProgramId) {
+        HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramRepository.findById(healthCheckProgramId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy chương trình khám định kỳ với ID: " + healthCheckProgramId));
+        if (healthCheckProgramEntity.getStatus() != HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED) {
+            throw new IllegalArgumentException("Hãy hoàn thành chương trình khám định kỳ '" + healthCheckProgramEntity.getHealthCheckName() + "' trước khi xuất báo cáo thống kê của chương trình!");
+        }
+        List<HealthCheckResultExportDTO> dtoList = healthCheckResultRepository.findExportByProgramId(healthCheckProgramId);
+        if (dtoList.isEmpty()) {
+            throw new IllegalArgumentException("Không có dữ liệu để xuất Excel");
+        }
+        return dtoList;
+    }
+
+    public ByteArrayInputStream exportHealthCheckResultToExcel(int healthCheckProgramId) throws IOException {
+        List<HealthCheckResultExportDTO> dtoList = getHealthCheckResultsToExport(healthCheckProgramId);
+        ByteArrayOutputStream out = null;
+        HealthCheckResultExportDTO first = dtoList.getFirst();
+
+        Workbook workbook = new XSSFWorkbook();
+        CellStyle titleStyle = ExcelExportStyleUtil.createTitleStyle(workbook);
+        CellStyle headerStyle = ExcelExportStyleUtil.createHeaderStyle(workbook);
+        CellStyle dataStyle = ExcelExportStyleUtil.createDataStyle(workbook);
+        CellStyle labelStyle = ExcelExportStyleUtil.createLabelStyle(workbook);
+        CellStyle sectionLabelStyle = ExcelExportStyleUtil.createSectionLabelStyle(workbook);
+        Sheet sheet = workbook.createSheet("Kết quả khám định kỳ");
+
+        Row titleRow = sheet.createRow(1);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("BÁO CÁO KẾT QUẢ CHƯƠNG TRÌNH KHÁM ĐỊNH KỲ");
+        titleCell.setCellStyle(titleStyle);
+        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 8));
+
+        // Row chứa tiêu đề section
+        Row infoLabelRow = sheet.createRow(3);
+
+        // Thông tin chương trình
+        Cell programInfoCell = infoLabelRow.createCell(0);
+        programInfoCell.setCellValue("Thông tin chương trình");
+        programInfoCell.setCellStyle(sectionLabelStyle);
+        sheet.addMergedRegion(new CellRangeAddress(3, 3, 0, 1));
+
+        // Áp style cho tất cả các ô trong vùng gộp (ô 0 và 1)
+        for (int col = 0; col <= 1; col++) {
+            Cell cell = infoLabelRow.getCell(col);
+            if (cell == null) cell = infoLabelRow.createCell(col);
+            cell.setCellStyle(sectionLabelStyle);
+        }
+
+
+        String[] labels1 = {"Tên chương trình", "Trạng thái", "Ngày thực hiện", "Địa điểm", "Y tá phụ trách", "Người tạo chương trình", "Mô tả chương trình", "Tổng học sinh tham gia", "Tổng học sinh không tham gia"};
+        String programStatus = first.getStatus() == HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED ? "ĐÃ HOÀN THÀNH" : "";
+        Object[] values1 = {first.getProgramName(), programStatus, first.getStartDate(), first.getLocation(), first.getNurseName(), first.getAdminName(), first.getDescription(), first.getTotalNumberStudentChecked(), first.getTotalNumberStudentNotChecked()};
+        for (int i = 0; i < labels1.length; i++) {
+            Row row = sheet.createRow(4 + i);
+            Cell labelCell = row.createCell(0);
+            Cell valueCell = row.createCell(1);
+            labelCell.setCellValue(labels1[i]);
+            valueCell.setCellValue(String.valueOf(values1[i]));
+            labelCell.setCellStyle(labelStyle);
+            valueCell.setCellStyle(dataStyle);
+        }
+
+        String[] headers = {"Mã học sinh", "Tên học sinh", "Ngày sinh", "Giới tính", "Lớp", "Phụ huynh", "SĐT", "Địa chỉ", "Quan hệ", "Tổng quan", "Thị giác", "Thính giác", "Cân nặng (kg)", "Chiều cao (cm)", "Răng miệng", "Huyết áp", "Nhịp tim", "Ghi chú", "Đã khám"};
+        Row headerRow = sheet.createRow(14);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        int rowNum = 15;
+        for (HealthCheckResultExportDTO dto : dtoList) {
+            Row row = sheet.createRow(rowNum++);
+
+            String[] values = {String.valueOf(dto.getStudentId()), dto.getStudentName(), String.valueOf(dto.getDob()), String.valueOf(dto.getGender()) != null && String.valueOf(dto.getGender()).equals("MALE") ? "Nam" : "Nữ", dto.getClassName(), dto.getParentName(), dto.getPhone(), dto.getAddress(), dto.getRelationship(), dto.getGeneralCondition(), dto.getVision(), dto.getHearing(), dto.getWeight() != null ? dto.getWeight().toString() : "", dto.getHeight() != null ? dto.getHeight().toString() : "", dto.getDentalStatus(), dto.getBloodPressure(), dto.getHeartRate() != null ? dto.getHeartRate().toString() : "", dto.getNote(), dto.getIsChecked() != null && dto.getIsChecked() ? "ĐÃ KHÁM" : "CHƯA KHÁM"};
             for (int i = 0; i < values.length; i++) {
                 Cell cell = row.createCell(i);
                 cell.setCellValue(values[i]);
