@@ -23,4 +23,5 @@ public class VaccineFormDTO {
     private StudentDTO studentDTO;
     private UserDTO parentDTO;
     private UserDTO nurseDTO;
+    private VaccineResultDTO vaccineResultDTO;
 }
