@@ -109,7 +109,7 @@ public class NurseController {
         List<HealthCheckFormDTO> list = nurseService.getCommittedHealthCheckFormsByProgram(programId);
         return ResponseEntity.ok(list);
     }
-
+    
     @GetMapping("/vaccine-forms-commit/program/{programId}")
     public ResponseEntity<List<VaccineFormDTO>> getCommittedVaccineFormsByProgram(@PathVariable int programId) {
         List<VaccineFormDTO> list = nurseService.getCommittedVaccineFormsByProgram(programId);

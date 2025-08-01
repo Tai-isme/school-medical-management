@@ -173,19 +173,28 @@ public class NurseService {
         }
         List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
         for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
+            MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+
             StudentEntity studentEntity = medicalRequestEntity.getStudent();
             StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
 
-            // ClassDTO classDTO =
-            // modelMapper.map(classRepository.findById(studentEntity.getClassEntity().getClassId()).get(),
-            // ClassDTO.class);
-            // studentDTO.setClassDTO(classDTO);
+            medicalRequestDTO.setStudentDTO(studentDTO);
 
-            ClassEntity classEntity = classRepository.findById(studentEntity.getClassEntity().getClassId()).get();
-            classEntity.setStudents(null);
-            ClassDTO classDTO = modelMapper.map(classEntity, ClassDTO.class);
+            try {
+            UserEntity nurse = userRepository.findById(medicalRequestEntity.getNurse().getUserId())
+                    .orElseThrow(() -> new UsernameNotFoundException("Nurse not found"));
+            UserDTO nurseDTO = modelMapper.map(nurse, UserDTO.class);
+                medicalRequestDTO.setNurseDTO(nurseDTO);
+            } catch (Exception e) {
+                medicalRequestDTO.setNurseDTO(null);
+            }
+            ClassDTO classDTO =
+            modelMapper.map(classRepository.findById(studentEntity.getClassEntity().getClassId()).get(),
+            ClassDTO.class);
+            classDTO.setStudents(null);
             studentDTO.setClassDTO(classDTO);
-            studentDTO.setParentDTO(modelMapper.map(studentEntity.getParent(), UserDTO.class));
+
+            medicalRequestDTO.setParentDTO(modelMapper.map(studentEntity.getParent(), UserDTO.class));
 
             List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity
                     .getMedicalRequestDetailEntities();
@@ -193,10 +202,7 @@ public class NurseService {
                     .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
                             MedicalRequestDetailDTO.class))
                     .collect(Collectors.toList());
-            MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
-
-            medicalRequestDTO.setNurseDTO(modelMapper.map(medicalRequestEntity.getNurse(), UserDTO.class));
-            medicalRequestDTO.setStudentDTO(studentDTO);
+           
             medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
             medicalRequestDTOList.add(medicalRequestDTO);
         }
@@ -204,40 +210,39 @@ public class NurseService {
     }
 
     public List<MedicalRequestDTO> getAllMedicalRequestByStatus(String statusStr) {
-        // MedicalRequestStatus status;
-        // try {
-        // status = MedicalRequestStatus.valueOf(statusStr.toUpperCase());
-        // } catch (IllegalArgumentException e) {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status
-        // value");
-        // }
-        // List<MedicalRequestEntity> medicalRequestEntityList =
-        // medicalRequestRepository.findByStatus(status);
-        // if (medicalRequestEntityList.isEmpty()) {
-        // throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical requests
-        // found");
-        // }
-        // List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
-        // for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
-        // StudentEntity studentEntity = medicalRequestEntity.getStudent();
-        // StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
-        // List<MedicalRequestDetailEntity> medicalRequestDetailEntityList =
-        // medicalRequestEntity
-        // .getMedicalRequestDetailEntities();
-        // List<MedicalRequestDetailDTO> medicalRequestDetailDTOList =
-        // medicalRequestDetailEntityList.stream()
-        // .map(medicalRequestDetailEntity ->
-        // modelMapper.map(medicalRequestDetailEntity,
-        // MedicalRequestDetailDTO.class))
-        // .collect(Collectors.toList());
-        // MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
-        // MedicalRequestDTO.class);
-        // medicalRequestDTO.setStudentDTO(studentDTO);
-        // medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
-        // medicalRequestDTOList.add(medicalRequestDTO);
-        // }
-        // return medicalRequestDTOList;
-        return null;
+        MedicalRequestEntity.MedicalRequestStatus status;
+        try {
+        status = MedicalRequestEntity.MedicalRequestStatus.valueOf(statusStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status value");
+        }
+
+        List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findByStatus(status);
+        if (medicalRequestEntityList.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No medical requests found");
+        }
+
+        List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
+        for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
+        StudentEntity studentEntity = medicalRequestEntity.getStudent();
+
+        StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+        List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity.getMedicalRequestDetailEntities();
+
+        List<MedicalRequestDetailDTO> medicalRequestDetailDTOList =medicalRequestDetailEntityList.stream()
+        .map(medicalRequestDetailEntity ->
+        modelMapper.map(medicalRequestDetailEntity,
+        MedicalRequestDetailDTO.class))
+        .collect(Collectors.toList());
+        
+        MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
+        MedicalRequestDTO.class);
+        medicalRequestDTO.setStudentDTO(studentDTO);
+        medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+        medicalRequestDTOList.add(medicalRequestDTO);
+        }
+
+        return medicalRequestDTOList;
     }
 
     public List<MedicalRequestDetailDTO> getMedicalRequestDetail(int requestId) {

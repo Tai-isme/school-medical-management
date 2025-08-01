@@ -5,6 +5,7 @@ import com.swp391.school_medical_management.modules.users.entities.MedicalReques
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface MedicalRequestRepository extends JpaRepository<MedicalRequestEntity, Integer> {
     long countByStatusIn(Collection<MedicalRequestStatus> statuses);
@@ -14,7 +15,7 @@ public interface MedicalRequestRepository extends JpaRepository<MedicalRequestEn
 
     // boolean existsByStudentAndStatus(StudentEntity student, MedicalRequestStatus status);
 
-    // List<MedicalRequestEntity> findByStatus(MedicalRequestStatus status);
+    List<MedicalRequestEntity> findByStatus(MedicalRequestStatus status);
 
     // List<MedicalRequestEntity> findByParent(UserEntity parent);
 
