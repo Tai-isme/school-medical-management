@@ -285,33 +285,44 @@ const HealthCheckProgramList = () => {
   };
 
   const handleCreateResult = async (programId) => {
-    setHealthCheckResultsLoading(true);
-    const token = localStorage.getItem("token");
-    try {
-      const res = await axios.post(
-        `http://localhost:8080/api/nurse/create-healthCheckResult-byProgram-/${programId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setHealthCheckResults(res.data);
-      setSelectedProgramId(programId);
-      setActiveTab("result");
-      setShowResultPage(true);
+  setHealthCheckResultsLoading(true);
+  const token = localStorage.getItem("token");
+  try {
+    // 1. Gọi API tạo kết quả
+    await axios.post(
+      `http://localhost:8080/api/nurse/create-healthCheckResult-byProgram-/${programId}`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      // Nếu role là NURSE, cập nhật trạng thái program trên frontend để disable nút Tạo kết quả ngay
-      if (userRole === "NURSE") {
-        setPrograms((prev) =>
-          prev.map((p) =>
-            p.id === programId ? { ...p, status: "COMPLETED" } : p
-          )
-        );
-      }
-    } catch (error) {
-      Swal.fire("Lỗi", "Không thể tạo kết quả!", "error");
-    } finally {
-      setHealthCheckResultsLoading(false);
+    // 2. Gọi lại API lấy danh sách kết quả
+    const res = await axios.get(
+      `http://localhost:8080/api/nurse/health-check-result/program/${programId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // 3. Cập nhật state
+    setHealthCheckResults(res.data);
+    setEditableResults(res.data);
+    setSelectedProgramId(programId);
+    setActiveTab("result");
+    setShowResultPage(true);
+
+    // 4. Nếu là y tá, cập nhật trạng thái
+    if (userRole === "NURSE") {
+      setPrograms((prev) =>
+        prev.map((p) =>
+          p.id === programId ? { ...p, status: "COMPLETED" } : p
+        )
+      );
     }
-  };
+  } catch (error) {
+    Swal.fire("Lỗi", "Không thể tạo kết quả!", "error");
+  } finally {
+    setHealthCheckResultsLoading(false);
+  }
+};
+
 
   const handleResultChange = (value, idx, field) => {
     setStudentsForResult((prev) =>

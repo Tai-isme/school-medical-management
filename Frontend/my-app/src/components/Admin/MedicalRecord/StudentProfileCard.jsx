@@ -123,9 +123,9 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
                 <Form.Item label="Bệnh mãn tính">
                   <Input.TextArea value={safeRecord.chronicDisease || ""} readOnly  rows={2} />
                 </Form.Item>
-                <Form.Item label="Lịch sử điều trị">
+                {/* <Form.Item label="Lịch sử điều trị">
                   <Input.TextArea value={safeRecord.treatmentHistory || ""} readOnly  rows={2} />
-                </Form.Item>
+                </Form.Item> */}
                 <Form.Item label="Ghi chú">
                   <Input.TextArea value={safeRecord.note || ""} readOnly  rows={2} />
                 </Form.Item>

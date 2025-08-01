@@ -55,9 +55,28 @@ const Navbar = () => {
   const handleLoginClick = () => setIsLoginOpen(true);
   const handleCloseLogin = () => setIsLoginOpen(false);
 
-  const handleLogout = () => {
-    ['users', 'token', 'students', 'role'].forEach((key) => localStorage.removeItem(key));
-    setUser(null);
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+
+      const res = await fetch("http://localhost:8080/api/auth/logout", {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("Lỗi khi đăng xuất");
+      }
+
+      ['users', 'token', 'students', 'role'].forEach((key) => localStorage.removeItem(key));
+      setUser(null);
+      navigate('/');
+    } catch (error) {
+      console.error("❌ Đăng xuất thất bại:", error);
+    }
   };
 
   const toggleNotificationPanel = () => {
@@ -141,7 +160,6 @@ const Navbar = () => {
         <NotificationSocket
           parentId={user.id}
           onMessage={(message) => {
-            // console.log("🔔 Nhận được noti:", message);
             setNotifications((prev) => [...prev, message]);
           }}
         />
