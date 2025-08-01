@@ -1,10 +1,12 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.*;
-import com.swp391.school_medical_management.modules.users.dtos.response.*;
-import com.swp391.school_medical_management.modules.users.entities.*;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
-import com.swp391.school_medical_management.modules.users.repositories.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +17,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
@@ -46,7 +42,25 @@ import com.swp391.school_medical_management.modules.users.dtos.response.VaccineF
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
+import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
+import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.ParticipateClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineUnitEntity;
 import com.swp391.school_medical_management.modules.users.repositories.BlogRepository;
 import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
 import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
@@ -1831,13 +1845,7 @@ public class NurseService {
         record.setNote(request.getNote());
         record.setLastUpdate(LocalDateTime.now());
         record.setCreateBy(true);
-        medicalRecordsRepository.save(record);
-
-        HealthCheckProgramEntity program = form.getHealthCheckProgram();
-        if (program.getStatus() != HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED) {
-            program.setStatus(HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED);
-            healthCheckProgramRepository.save(program);
-        }
+        medicalRecordsRepository.save(record);      
     }
 
     public void createVaccineResultsByProgramId(int programId, VaccineResultRequest request) {
@@ -2319,4 +2327,41 @@ public class NurseService {
             return dto;
         }).collect(Collectors.toList());
     }
+
+    public List<VaccineResultDTO> getAllVaccineResults() {
+        List<VaccineResultEntity> resultEntities = vaccineResultRepository.findAll();
+
+        if (resultEntities.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có kết quả tiêm chủng nào!");
+        }
+
+        return resultEntities.stream().map(entity -> {
+            VaccineResultDTO dto = modelMapper.map(entity, VaccineResultDTO.class);
+
+            VaccineFormEntity form = entity.getVaccineFormEntity();
+            if (form != null) {
+                VaccineFormDTO formDTO = modelMapper.map(form, VaccineFormDTO.class);
+
+                if (form.getVaccineProgram() != null) {
+                    formDTO.setVaccineProgramDTO(
+                            modelMapper.map(form.getVaccineProgram(), VaccineProgramDTO.class));
+                }
+
+                dto.setVaccineFormDTO(formDTO);
+            }
+
+            if (entity.getStudentEntity() != null) {
+                dto.setStudentDTO(modelMapper.map(entity.getStudentEntity(), StudentDTO.class));
+            }
+
+            if (entity.getNurseEntity() != null) {
+                dto.setNurseDTO(modelMapper.map(entity.getNurseEntity(), UserDTO.class));
+            }
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+
+
+
 }
