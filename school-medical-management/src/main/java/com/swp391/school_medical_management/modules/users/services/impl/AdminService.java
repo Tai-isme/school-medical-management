@@ -911,9 +911,9 @@ public class AdminService {
         for (ParticipateClassEntity participate : participateEntities) {
             ParticipateClassDTO participateDTO = new ParticipateClassDTO();
             participateDTO.setParticipate_id(participate.getParticipateId());
-            participateDTO.setProgram_id(id); // ép kiểu từ long về int
+            participateDTO.setProgram_id(id); 
             participateDTO.setClass_id(participate.getClazz().getClassId());
-            participate.setType(ParticipateClassEntity.Type.VACCINE); // Set type vaccine
+            participate.setType(ParticipateClassEntity.Type.VACCINE); 
 
             ClassEntity clazz = participate.getClazz();
             ClassDTO classDTO = new ClassDTO();
@@ -930,7 +930,6 @@ public class AdminService {
 
         return dto;
     }
-
 
     public void deleteVaccineProgram(int id) {
         Optional<VaccineProgramEntity> vaccineProgramOpt = vaccineProgramRepository.findById(id);

@@ -368,13 +368,7 @@ public class NurseController {
         nurseService.createFormsForHealthCheckProgram(programId);
         return ResponseEntity.ok("Forms generated successfully for all students.");
     }
-
-    @PostMapping("/create-vaccine-form/{programId}")
-    public ResponseEntity<String> createVaccineForm(@PathVariable int programId) {
-        nurseService.createFormsForVaccineProgram(programId);
-        return ResponseEntity.ok("Vaccine forms generated successfully.");
-    }
-
+  
     // @PostMapping("/create-default-by-program/{programId}")
     // public ResponseEntity<List<HealthCheckResultDTO>>
     // createResultsByProgram(@PathVariable int programId) {
@@ -436,4 +430,18 @@ public class NurseController {
         return ResponseEntity.ok(dtos);
     }
 
+    @PostMapping("/vaccine-form/{programId}")
+    public ResponseEntity<String> createVaccineFormsForProgram(
+            @PathVariable int programId,
+            @RequestParam("expDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expDate) {
+
+        nurseService.createVaccineForm(programId, expDate);
+        return ResponseEntity.ok("Tạo form tiêm chủng thành công.");
+    }
+
+    @GetMapping("/health-check-results")
+    public ResponseEntity<List<HealthCheckResultDTO>> getAllHealthCheckResults() {
+        List<HealthCheckResultDTO> results = nurseService.getAllHealthCheckResults();
+        return ResponseEntity.ok(results);
+    }   
 }
