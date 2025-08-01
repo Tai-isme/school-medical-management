@@ -2,6 +2,7 @@ package com.swp391.school_medical_management.modules.users.repositories;
 
 import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultExportDTO;
 import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
 import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VaccineResultRepository extends JpaRepository<VaccineResultEntity, Integer> {
     // Optional<VaccineResultEntity> findByVaccineFormEntity(VaccineFormEntity vaccineFormEntity);
@@ -51,6 +53,7 @@ public interface VaccineResultRepository extends JpaRepository<VaccineResultEnti
     @Query(
             "SELECT new com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultExportDTO(" +
                     "   vp.vaccineProgramName, " +                      // programName
+                    "   vp.status, " +                                  // programStatus
                     "   vp.startDate, " +                               // startDate
                     "   vp.location, " +                                // location
                     "   nurse.fullName, " +                             // nurseName
@@ -97,4 +100,5 @@ public interface VaccineResultRepository extends JpaRepository<VaccineResultEnti
     )
     List<VaccineResultExportDTO> findExportByProgramId(@Param("vaccineProgramId") int vaccineProgramId);
 
+    Optional<VaccineResultEntity> findByVaccineFormEntity(VaccineFormEntity vaccineFormEntity);
 }

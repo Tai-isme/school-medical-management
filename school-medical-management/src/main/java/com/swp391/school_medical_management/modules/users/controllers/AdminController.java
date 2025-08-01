@@ -257,10 +257,23 @@ public class AdminController {
     }
 
     @GetMapping("/export-vaccine-result-excel-by-vaccine-program/{vaccineProgramId}")
-    public ResponseEntity<InputStreamResource> exportExcel(@PathVariable int vaccineProgramId) throws IOException {
+    public ResponseEntity<InputStreamResource> exportVaccineResultExcel(@PathVariable int vaccineProgramId) throws IOException {
         ByteArrayInputStream in = adminService.exportVaccineResultToExcel(vaccineProgramId);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=vaccine_report.xlsx");
+        headers.add("Content-Disposition", "attachment; filename=vaccine_result_report.xlsx");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+                .body(new InputStreamResource(in));
+    }
+
+    @GetMapping("/export-health-check-result-excel-by-health-check-program/{healthCheckProgramId}")
+    public ResponseEntity<InputStreamResource> exportHealthCheckResultExcel(@PathVariable int healthCheckProgramId) throws IOException {
+        ByteArrayInputStream in = adminService.exportHealthCheckResultToExcel(healthCheckProgramId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=health_check_result_report.xlsx");
 
         return ResponseEntity
                 .ok()

@@ -15,5 +15,6 @@ public class MedicalRequestDetailDTO {
     private String timeSchedule;
     private String status;
     private String note;
+    private String method;
     private int requestId;
 }
