@@ -167,7 +167,7 @@ public class AdminController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/students/{classId}")
-    public ResponseEntity<List<StudentDTO>> getAllStudentInClass(@PathVariable long classId) {
+    public ResponseEntity<List<StudentDTO>> getAllStudentInClass(@PathVariable int classId) {
         List<StudentDTO> studentList = adminService.getAllStudentInClass(classId);
         return ResponseEntity.ok(studentList);
     }

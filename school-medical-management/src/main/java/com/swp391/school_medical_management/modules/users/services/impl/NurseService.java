@@ -841,6 +841,7 @@ public class NurseService {
             dto.setDate(event.getDate());
             dto.setDescription(event.getDescription());
             dto.setActionsTaken(event.getActionsTaken());
+            dto.setImage(event.getImage()); 
             dto.setLocation(event.getLocation());
 
             dto.setLevelCheck(event.getLevelCheck() != null ? event.getLevelCheck().name() : null);

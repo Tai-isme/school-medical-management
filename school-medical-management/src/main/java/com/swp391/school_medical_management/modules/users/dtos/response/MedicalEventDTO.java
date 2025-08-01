@@ -18,6 +18,7 @@ public class MedicalEventDTO {
     private String actionsTaken;
     private String levelCheck;
     private String location;
+    private String image;
     private StudentDTO studentDTO;
     private UserDTO parentDTO;
     private int studentId;
