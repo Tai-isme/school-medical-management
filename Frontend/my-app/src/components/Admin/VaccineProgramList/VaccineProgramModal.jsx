@@ -118,6 +118,15 @@ const VaccineProgramModal = ({
     }));
   }, [selectedVaccineId, vaccineList]);
 
+  const handleFinish = (values) => {
+    const payload = {
+      ...values,
+      startDate: values.startDate ? values.startDate.format("YYYY-MM-DD") : undefined,
+      sendFormDate: values.sendFormDate ? values.sendFormDate.format("YYYY-MM-DD") : undefined,
+    };
+    onFinish(payload);
+  };
+
   return (
     <Modal
       title="Lên lịch tiêm chủng"
@@ -130,7 +139,7 @@ const VaccineProgramModal = ({
       <Form
         layout="vertical"
         form={form}
-        onFinish={onFinish}
+        onFinish={handleFinish}
       >
         <Form.Item
           label="Tên chương trình"

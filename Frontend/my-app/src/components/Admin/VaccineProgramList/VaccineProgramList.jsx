@@ -886,8 +886,8 @@ const handleSendNotification = async (programId, deadline) => {
                                       vaccineProgramName: program.vaccineProgramName,
                                       vaccineNameId: program.vaccineNameId,
                                       unit: program.unit || 1,
-                                      startDate: program.startDate,
-                                      sendFormDate: program.dateSendForm,
+                                      startDate: values.startDate ? values.startDate.format("YYYY-MM-DD") : undefined,
+    sendFormDate: values.sendFormDate ? values.sendFormDate.format("YYYY-MM-DD") : undefined,
                                       classes: program.participateClassDTOs?.map(cls => cls.classId) || [], // SỬA ĐOẠN NÀY
                                       nurseId: program.nurseId,
                                       location: program.location,
