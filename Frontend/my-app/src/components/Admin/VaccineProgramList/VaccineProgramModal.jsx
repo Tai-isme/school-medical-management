@@ -18,6 +18,7 @@ const VaccineProgramModal = ({
   const [selectedClasses, setSelectedClasses] = useState([]);
   const [nurseOptions, setNurseOptions] = useState([]);
   const [selectedVaccineId, setSelectedVaccineId] = useState(null);
+  const [classOptions, setClassOptions] = useState([]);
 
   // Fetch nurse list from API
   useEffect(() => {
@@ -40,6 +41,28 @@ const VaccineProgramModal = ({
     fetchNurses();
   }, []);
 
+  // Fetch class list from API
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:8080/api/nurse/class-list", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        // Map to { value, label }
+        setClassOptions(
+          (res.data || []).map(cls => ({
+            value: cls.classId,
+            label: cls.className,
+          }))
+        );
+      } catch (err) {
+        setClassOptions([]);
+      }
+    };
+    fetchClasses();
+  }, []);
+
   // Đảm bảo đồng bộ khi mở modal chỉnh sửa
   React.useEffect(() => {
     setSelectedClasses(initialValues.classes || []);
@@ -56,6 +79,7 @@ const VaccineProgramModal = ({
           sendFormDate: initialValues?.sendFormDate ? dayjs(initialValues.sendFormDate) : null,
           classes: initialValues?.classes || [],
           unit: initialValues?.unit || 1,
+          nurseId: initialValues?.nurseId, // Đảm bảo dùng nurseId
         });
       }
     }
@@ -93,20 +117,6 @@ const VaccineProgramModal = ({
       label: `Mũi ${i + 1}`,
     }));
   }, [selectedVaccineId, vaccineList]);
-
-  // Giả lập dữ liệu lớp
-  const classOptions = [
-    { value: "1A", label: "Lớp 1A" },
-    { value: "1B", label: "Lớp 1B" },
-    { value: "2A", label: "Lớp 2A" },
-    { value: "2B", label: "Lớp 2B" },
-    { value: "3A", label: "Lớp 3A" },
-    { value: "3B", label: "Lớp 3B" },
-    { value: "4A", label: "Lớp 4A" },
-    { value: "4B", label: "Lớp 4B" },
-    { value: "5A", label: "Lớp 5A" },
-    { value: "5B", label: "Lớp 5B" },
-  ];
 
   return (
     <Modal
@@ -224,7 +234,7 @@ const VaccineProgramModal = ({
           label={<span><span role="img" aria-label="class">🏫</span> Chọn lớp</span>}
           name="classes"
           rules={[{ required: true, message: "Chọn ít nhất một lớp" }]}
-          style={{ width: "100%" }} // Thêm dòng này
+          style={{ width: "100%" }}
         >
           <Select
             mode="multiple"
@@ -232,13 +242,13 @@ const VaccineProgramModal = ({
             options={classOptions}
             showSearch
             optionFilterProp="label"
-            style={{ width: "100%" }} // Thêm dòng này
+            style={{ width: "100%" }}
           />
         </Form.Item>
 
         <Form.Item
           label="Y tá quản lý"
-          name="nurse"
+          name="nurseId" // Sửa lại thành nurseId
           rules={[{ required: true, message: "Chọn y tá quản lý" }]}
         >
           <Select

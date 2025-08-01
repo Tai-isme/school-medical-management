@@ -218,8 +218,8 @@ const VaccineProgramList = () => {
           startDate: values.startDate.format("YYYY-MM-DD"),
           dateSendForm: values.sendFormDate.format("YYYY-MM-DD"),
           location: values.location,
-          nurseId: values.nurse,
-          classIds: program.participateClassDTOs?.map(cls => cls.classId) || [],
+          nurseId: values.nurseId, // Sửa lại đúng trường nurseId
+          classIds: values.classes, // Lấy từ form (mảng id lớp)
         },
         {
           headers: {
@@ -884,8 +884,8 @@ const VaccineProgramList = () => {
                                       unit: program.unit || 1,
                                       startDate: program.startDate,
                                       sendFormDate: program.dateSendForm,
-                                      classes: program.participateClassDTOs?.map(cls => cls.className) || [],
-                                      nurse: program.nurse?.id,
+                                      classes: program.participateClassDTOs?.map(cls => cls.classId) || [], // SỬA ĐOẠN NÀY
+                                      nurseId: program.nurseId,
                                       location: program.location,
                                       description: program.description,
                                     });
@@ -977,15 +977,15 @@ const VaccineProgramList = () => {
                                 onClick={() => {
                                   setModalMode("edit");
                                   setEditData({
-                                    vaccineProgramName: program.vaccineProgramName, // Tên chương trình
-                                    vaccineNameId: program.vaccineNameId,             // ID loại vaccine (nên dùng id để select đúng)
-                                    unit: program.unit || 1,                        // Số mũi tiêm
-                                    startDate: program.startDate,                   // Ngày thực hiện
-                                    sendFormDate: program.dateSendForm,             // Ngày gửi form
-                                    classes: program.participateClassDTOs?.map(cls => cls.className) || [], // Danh sách lớp
-                                    nurse: program.nurse?.id,                       // ID y tá quản lý
-                                    location: program.location,                     // Địa điểm
-                                    description: program.description,               // Mô tả
+                                    vaccineProgramName: program.vaccineProgramName,
+                                    vaccineNameId: program.vaccineNameId,
+                                    unit: program.unit || 1,
+                                    startDate: program.startDate,
+                                    sendFormDate: program.dateSendForm,
+                                    classes: program.participateClassDTOs?.map(cls => cls.classId) || [], // SỬA ĐOẠN NÀY
+                                    nurseId: program.nurseId,
+                                    location: program.location,
+                                    description: program.description,
                                   });
                                   setProgram(program);
                                   setEditMode(true);
