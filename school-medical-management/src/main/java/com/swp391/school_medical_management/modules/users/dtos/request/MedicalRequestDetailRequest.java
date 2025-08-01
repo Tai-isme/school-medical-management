@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 public class MedicalRequestDetailRequest {
-   
+
     @NotBlank(message = "Medicine name is required")
     @Size(max = 255, message = "Medicine name must be at most 255 characters")
     private String medicineName;
@@ -20,6 +20,7 @@ public class MedicalRequestDetailRequest {
     @Size(max = 20, message = "Type must be at most 20 characters")
     private String type;
 
+    private String method;
 
     @Size(max = 100, message = "Time schedule must be at most 100 characters")
     private String timeSchedule;
