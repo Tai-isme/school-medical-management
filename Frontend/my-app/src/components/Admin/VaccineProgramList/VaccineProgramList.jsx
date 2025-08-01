@@ -79,6 +79,11 @@ const VaccineProgramList = () => {
   const [importFile, setImportFile] = useState(null);
   const [vaccineData, setVaccineData] = useState([]);
 
+  const [notifyModalVisible, setNotifyModalVisible] = useState(false);
+  const [notifyProgramId, setNotifyProgramId] = useState(null);
+  const [notifyDeadline, setNotifyDeadline] = useState(null);
+  const [notifyLoading, setNotifyLoading] = useState(false);
+
   useEffect(() => {
     fetchProgram();
     // Lấy danh sách vaccine khi load trang
@@ -535,39 +540,37 @@ const VaccineProgramList = () => {
     }
   };
 
-  const handleSendNotification = async (programId) => {
-    const confirm = await Swal.fire({
-      title: "Bạn có chắc muốn gửi thông báo?",
-      text: "Sau khi gửi, phụ huynh sẽ nhận được thông báo về chương trình tiêm chủng này.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Gửi thông báo",
-      cancelButtonText: "Hủy",
+// ...existing code...
+const handleSendNotification = async (programId, deadline) => {
+  const token = localStorage.getItem("token");
+  setNotifyLoading(true);
+  try {
+    await axios.post(
+      `http://localhost:8080/api/nurse/create-vaccine-form/${programId}`,
+      { expDate: deadline ? deadline.format("YYYY-MM-DD") : undefined },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    Swal.fire({
+      icon: "success",
+      title: "Thành công",
+      text: "Gửi thông báo thành công!",
+      confirmButtonText: "OK",
     });
-    if (!confirm.isConfirmed) return;
-
-    const token = localStorage.getItem("token");
-    try {
-      await axios.post(
-        `http://localhost:8080/api/nurse/create-vaccine-form/${programId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      Swal.fire({
-        icon: "success",
-        title: "Thành công",
-        text: "Gửi thông báo thành công!",
-        confirmButtonText: "OK",
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Thất bại",
-        text: "Gửi thông báo thất bại!",
-        confirmButtonText: "OK",
-      });
-    }
-  };
+    setNotifyModalVisible(false);
+    setNotifyDeadline(null);
+    setNotifyProgramId(null);
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Thất bại",
+      text: "Gửi thông báo thất bại!",
+      confirmButtonText: "OK",
+    });
+  } finally {
+    setNotifyLoading(false);
+  }
+};
+// ...existing code...
 
   const [editData, setEditData] = useState({});
   const memoInitialValues = useMemo(() => editData, [editData]);
@@ -900,12 +903,15 @@ const VaccineProgramList = () => {
  JSON.parse(localStorage.getItem("users"))?.id === program.nurseId && 
  program.status === "ON_GOING" && (
   <Button
-    type="primary"
-    style={{ marginLeft: 8, background: "#1890ff", border: "none" }}
-    onClick={() => handleSendNotification(program.vaccineId)}
-  >
-    Gửi thông báo
-  </Button>
+  type="primary"
+  style={{ marginLeft: 8, background: "#1890ff", border: "none" }}
+  onClick={() => {
+    setNotifyModalVisible(true);
+    setNotifyProgramId(program.vaccineId);
+  }}
+>
+  Gửi thông báo
+</Button>
 )}
 {/* Nút Tạo kết quả */}
 {program.status === "FORM_SENT" &&
@@ -1161,6 +1167,27 @@ const VaccineProgramList = () => {
                       </Button>
                     </Form.Item>
                   </Form>
+                </Modal>
+                <Modal
+                  title="Chọn ngày hết hạn đăng ký"
+                  open={notifyModalVisible}
+                  onCancel={() => {
+                    setNotifyModalVisible(false);
+                    setNotifyDeadline(null);
+                    setNotifyProgramId(null);
+                  }}
+                  onOk={() => handleSendNotification(notifyProgramId, notifyDeadline)}
+                  okText="Gửi thông báo"
+                  confirmLoading={notifyLoading}
+                >
+                  <DatePicker
+                    value={notifyDeadline}
+                    onChange={setNotifyDeadline}
+                    format="YYYY-MM-DD"
+                    style={{ width: "100%" }}
+                    placeholder="Chọn ngày hết hạn đăng ký"
+                    disabledDate={current => current && current < dayjs().startOf('day')}
+                  />
                 </Modal>
               </>
             ),
