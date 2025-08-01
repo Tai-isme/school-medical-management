@@ -199,7 +199,7 @@ const VaccineProgramList = () => {
       {
         ...values,
         startDate: values.startDate ? values.startDate.format("YYYY-MM-DD") : undefined,
-        sendFormDate: values.sendFormDate ? values.sendFormDate.format("YYYY-MM-DD") : undefined,
+        dateSendForm: values.sendFormDate ? values.sendFormDate.format("YYYY-MM-DD") : undefined,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
