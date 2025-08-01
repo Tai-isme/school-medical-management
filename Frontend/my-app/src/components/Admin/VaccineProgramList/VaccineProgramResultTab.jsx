@@ -139,7 +139,12 @@ const VaccineProgramResultTab = ({
           {
             title: "Đã tiêm?",
             key: "commit",
-            render: (_, record) => record.commit ? "Đã tiêm" : "Chưa tiêm",
+            render: (_, record) =>
+              record.vaccineResultDTO
+                ? record.vaccineResultDTO.isInjected
+                  ? "Đã tiêm"
+                  : "Chưa tiêm"
+                : (record.commit ? "Đã tiêm" : "Chưa tiêm"),
           },
           sampleResultData && {
             title: "Thao tác",

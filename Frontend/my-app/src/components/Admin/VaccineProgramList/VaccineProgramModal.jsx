@@ -206,19 +206,21 @@ const VaccineProgramModal = ({
           <Form.Item
             label="Ngày gửi form cho học sinh"
             name="sendFormDate"
+            dependencies={["startDate"]}
             rules={[
               { required: true, message: "Chọn ngày gửi form" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  const vaccineDate = getFieldValue("vaccineDate");
-                  if (!value || !vaccineDate) return Promise.resolve();
-                  if (value.isAfter(vaccineDate, "day")) {
-                    return Promise.reject("Ngày gửi form phải trước hoặc bằng ngày thực hiện!");
+                  const startDate = getFieldValue("startDate");
+                  if (!value || !startDate) return Promise.resolve();
+                  if (!value.isBefore(startDate, "day")) {
+                    return Promise.reject("Ngày gửi form phải nhỏ hơn ngày thực hiện!");
                   }
                   return Promise.resolve();
                 },
               }),
             ]}
+            validateTrigger={["onChange", "onBlur"]}
             style={{ flex: 1, marginBottom: 0 }}
           >
             <DatePicker
@@ -274,6 +276,41 @@ const VaccineProgramModal = ({
         >
           <Input.TextArea rows={3} placeholder="Nhập mô tả về chương trình tiêm chủng" />
         </Form.Item>
+
+        {/* Hiển thị phác đồ tiêm */}
+        {(() => {
+          const vaccine = vaccineList.find(v => v.id === selectedVaccineId);
+          const unit = form.getFieldValue("unit");
+          if (vaccine && vaccine.vaccineUnitDTOs?.length) {
+            return (
+              <div
+                style={{
+                  margin: "8px 0 16px 0",
+                  padding: "12px",
+                  background: "#f6f6f6",
+                  borderRadius: 6,
+                  border: "1px solid #e4e4e4",
+                }}
+              >
+                <b>Phác đồ tiêm:</b>
+                <div><b>Vaccine:</b> {vaccine.vaccineName}</div>
+                <ul style={{ margin: 0, paddingLeft: 20 }}>
+                  {vaccine.vaccineUnitDTOs.map(u => (
+                    <li key={u.unit} style={{ marginBottom: 2 }}>
+                      <span style={u.unit === unit ? { fontWeight: "bold", color: "#1976d2" } : {}}>
+                        Mũi {u.unit}: {u.schedule}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div style={{ marginTop: 4, color: "#888" }}>
+                  {vaccine.description}
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         <Form.Item>
           {!viewMode && (
