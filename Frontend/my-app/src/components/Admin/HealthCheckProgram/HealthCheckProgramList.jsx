@@ -14,6 +14,7 @@ import {
   Pagination,
   Tabs,
   Table,
+  Checkbox,
 } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { CheckSquareTwoTone, BorderOutlined } from "@ant-design/icons";
@@ -47,12 +48,15 @@ const HealthCheckProgramList = () => {
   const [selectedProgramId, setSelectedProgramId] = useState(null);
   const [editableResults, setEditableResults] = useState([]);
   const [studentSearch, setStudentSearch] = useState("");
-  const [sentNotificationIds, setSentNotificationIds] = useState([]); 
+  const [sentNotificationIds, setSentNotificationIds] = useState([]);
   const pageSize = 3;
   const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
   const [isViewResult, setIsViewResult] = useState(false);
   const [nurseOptions, setNurseOptions] = useState([]);
   const [classOptions, setClassOptions] = useState([]);
+
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [currentEditRecord, setCurrentEditRecord] = useState(null);
 
   useEffect(() => {
     fetchProgram();
@@ -120,7 +124,6 @@ const HealthCheckProgramList = () => {
       setPrograms([]);
     }
   };
-
 
   const handleEditChange = (value, record, field) => {
     setEditableResults((prev) =>
@@ -1270,6 +1273,97 @@ const HealthCheckProgramList = () => {
                           ),
                       },
 
+                      // {
+                      //   title: "Thao tác",
+                      //   key: "action",
+                      //   align: "center",
+                      //   render: (_, record) =>
+                      //     !isViewResult && (
+                      //       <Button
+                      //         type="primary"
+                      //         onClick={async () => {
+                      //           // Validate dữ liệu trước khi lưu
+                      //           if (
+                      //             !record.height ||
+                      //             isNaN(record.height) ||
+                      //             Number(record.height) < 100 ||
+                      //             Number(record.height) > 200
+                      //           ) {
+                      //             Swal.fire(
+                      //               "Lỗi",
+                      //               "Chiều cao phải là số từ 100 đến 200!",
+                      //               "error"
+                      //             );
+                      //             return;
+                      //           }
+                      //           if (
+                      //             !record.weight ||
+                      //             isNaN(record.weight) ||
+                      //             Number(record.weight) < 15 ||
+                      //             Number(record.weight) > 120
+                      //           ) {
+                      //             Swal.fire(
+                      //               "Lỗi",
+                      //               "Cân nặng phải là số từ 15 đến 120!",
+                      //               "error"
+                      //             );
+                      //             return;
+                      //           }
+                      //           if (
+                      //             !record.vision ||
+                      //             !/^([1-9]|10)\/10$/.test(record.vision)
+                      //           ) {
+                      //             Swal.fire(
+                      //               "Lỗi",
+                      //               "Thị lực phải có dạng 1/10 - 10/10!",
+                      //               "error"
+                      //             );
+                      //             return;
+                      //           }
+                      //           // Nếu hợp lệ thì gọi API
+                      //           const token = localStorage.getItem("token");
+                      //           try {
+                      //             await axios.put(
+                      //               `http://localhost:8080/api/nurse/health-check-result/${record.healthResultId}`,
+                      //               {
+                      //                 vision: record.vision,
+                      //                 hearing: record.hearing,
+                      //                 weight: record.weight,
+                      //                 height: record.height,
+                      //                 dentalStatus: record.dentalStatus,
+                      //                 bloodPressure: record.bloodPressure,
+                      //                 heartRate: record.heartRate,
+                      //                 generalCondition: record.generalCondition,
+                      //                 note: record.note,
+                      //                 isChecked: record.isChecked,
+                      //                 healthCheckFormId:
+                      //                   record.healthCheckFormDTO?.id,
+                      //               },
+                      //               {
+                      //                 headers: {
+                      //                   Authorization: `Bearer ${token}`,
+                      //                 },
+                      //               }
+                      //             );
+                      //             Swal.fire(
+                      //               "Thành công",
+                      //               "Đã lưu kết quả!",
+                      //               "success"
+                      //             );
+                      //           } catch {
+                      //             Swal.fire(
+                      //               "Lỗi",
+                      //               "Không thể lưu kết quả!",
+                      //               "error"
+                      //             );
+                      //           }
+                      //         }}
+                      //       >
+                      //         Lưu
+                      //       </Button>
+                      //     ),
+                      // },
+
                       {
                         title: "Thao tác",
                         key: "action",
@@ -1278,85 +1372,12 @@ const HealthCheckProgramList = () => {
                           !isViewResult && (
                             <Button
                               type="primary"
-                              onClick={async () => {
-                                // Validate dữ liệu trước khi lưu
-                                if (
-                                  !record.height ||
-                                  isNaN(record.height) ||
-                                  Number(record.height) < 100 ||
-                                  Number(record.height) > 200
-                                ) {
-                                  Swal.fire(
-                                    "Lỗi",
-                                    "Chiều cao phải là số từ 100 đến 200!",
-                                    "error"
-                                  );
-                                  return;
-                                }
-                                if (
-                                  !record.weight ||
-                                  isNaN(record.weight) ||
-                                  Number(record.weight) < 15 ||
-                                  Number(record.weight) > 120
-                                ) {
-                                  Swal.fire(
-                                    "Lỗi",
-                                    "Cân nặng phải là số từ 15 đến 120!",
-                                    "error"
-                                  );
-                                  return;
-                                }
-                                if (
-                                  !record.vision ||
-                                  !/^([1-9]|10)\/10$/.test(record.vision)
-                                ) {
-                                  Swal.fire(
-                                    "Lỗi",
-                                    "Thị lực phải có dạng 1/10 - 10/10!",
-                                    "error"
-                                  );
-                                  return;
-                                }
-                                // Nếu hợp lệ thì gọi API
-                                const token = localStorage.getItem("token");
-                                try {
-                                  await axios.put(
-                                    `http://localhost:8080/api/nurse/health-check-result/${record.healthResultId}`,
-                                    {
-                                      vision: record.vision,
-                                      hearing: record.hearing,
-                                      weight: record.weight,
-                                      height: record.height,
-                                      dentalStatus: record.dentalStatus,
-                                      bloodPressure: record.bloodPressure,
-                                      heartRate: record.heartRate,
-                                      generalCondition: record.generalCondition,
-                                      note: record.note,
-                                      isChecked: record.isChecked,
-                                      healthCheckFormId:
-                                        record.healthCheckFormDTO?.id,
-                                    },
-                                    {
-                                      headers: {
-                                        Authorization: `Bearer ${token}`,
-                                      },
-                                    }
-                                  );
-                                  Swal.fire(
-                                    "Thành công",
-                                    "Đã lưu kết quả!",
-                                    "success"
-                                  );
-                                } catch {
-                                  Swal.fire(
-                                    "Lỗi",
-                                    "Không thể lưu kết quả!",
-                                    "error"
-                                  );
-                                }
+                              onClick={() => {
+                                setCurrentEditRecord(record);
+                                setEditModalVisible(true);
                               }}
                             >
-                              Lưu
+                              Ghi nhận
                             </Button>
                           ),
                       },
@@ -1436,6 +1457,216 @@ const HealthCheckProgramList = () => {
               </React.Fragment>
             ))}
           </Descriptions>
+        )}
+      </Modal>
+
+      <Modal
+        title="Ghi nhận kết quả khám"
+        open={editModalVisible}
+        width={700} // 👈 giới hạn chiều rộng modal cho gọn hơn
+        onCancel={() => {
+          setEditModalVisible(false);
+          setCurrentEditRecord(null);
+        }}
+        onOk={async () => {
+          const r = currentEditRecord;
+          // Validate đơn giản
+          if (
+            !r.height ||
+            isNaN(r.height) ||
+            r.height < 100 ||
+            r.height > 200
+          ) {
+            Swal.fire("Lỗi", "Chiều cao phải từ 100 đến 200!", "error");
+            return;
+          }
+          if (!r.weight || isNaN(r.weight) || r.weight < 15 || r.weight > 120) {
+            Swal.fire("Lỗi", "Cân nặng phải từ 15 đến 120!", "error");
+            return;
+          }
+          if (!r.vision || !/^([1-9]|10)\/10$/.test(r.vision)) {
+            Swal.fire("Lỗi", "Thị lực không hợp lệ!", "error");
+            return;
+          }
+
+          try {
+            const token = localStorage.getItem("token");
+            await axios.put(
+              `http://localhost:8080/api/nurse/health-check-result/${r.healthResultId}`,
+              {
+                vision: r.vision,
+                hearing: r.hearing,
+                weight: r.weight,
+                height: r.height,
+                dentalStatus: r.dentalStatus,
+                bloodPressure: r.bloodPressure,
+                heartRate: r.heartRate,
+                generalCondition: r.generalCondition,
+                note: r.note,
+                isChecked: r.isChecked,
+                healthCheckFormId: r.healthCheckFormDTO?.id,
+              },
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            Swal.fire("Thành công", "Đã ghi nhận kết quả!", "success");
+            setEditModalVisible(false);
+            setCurrentEditRecord(null);
+
+            // Refresh bảng
+            const res = await axios.get(
+              `http://localhost:8080/api/nurse/health-check-result/program/${selectedProgramId}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setHealthCheckResults(res.data);
+            setEditableResults(res.data);
+          } catch {
+            Swal.fire("Lỗi", "Không thể lưu kết quả!", "error");
+          }
+        }}
+      >
+        {currentEditRecord && (
+          <Form layout="vertical">
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item label="Chiều cao (cm)">
+                  <Input
+                    value={currentEditRecord.height}
+                    onChange={(e) =>
+                      setCurrentEditRecord({
+                        ...currentEditRecord,
+                        height: e.target.value,
+                      })
+                    }
+                    placeholder="VD: 150"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Cân nặng (kg)">
+                  <Input
+                    value={currentEditRecord.weight}
+                    onChange={(e) =>
+                      setCurrentEditRecord({
+                        ...currentEditRecord,
+                        weight: e.target.value,
+                      })
+                    }
+                    placeholder="VD: 40"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Thị lực (1-10/10)">
+                  <Input
+                    value={currentEditRecord.vision}
+                    onChange={(e) =>
+                      setCurrentEditRecord({
+                        ...currentEditRecord,
+                        vision: e.target.value,
+                      })
+                    }
+                    placeholder="VD: 10/10"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Thính lực">
+                  <Input
+                    value={currentEditRecord.hearing}
+                    onChange={(e) =>
+                      setCurrentEditRecord({
+                        ...currentEditRecord,
+                        hearing: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Răng miệng">
+                  <Input
+                    value={currentEditRecord.dentalStatus}
+                    onChange={(e) =>
+                      setCurrentEditRecord({
+                        ...currentEditRecord,
+                        dentalStatus: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Huyết áp">
+                  <Input
+                    value={currentEditRecord.bloodPressure}
+                    onChange={(e) =>
+                      setCurrentEditRecord({
+                        ...currentEditRecord,
+                        bloodPressure: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Nhịp tim">
+                  <Input
+                    value={currentEditRecord.heartRate}
+                    onChange={(e) =>
+                      setCurrentEditRecord({
+                        ...currentEditRecord,
+                        heartRate: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label="Tình trạng chung">
+                  <Input
+                    value={currentEditRecord.generalCondition}
+                    onChange={(e) =>
+                      setCurrentEditRecord({
+                        ...currentEditRecord,
+                        generalCondition: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={24}>
+                <Form.Item label="Ghi chú">
+                  <Input.TextArea
+                    value={currentEditRecord.note}
+                    onChange={(e) =>
+                      setCurrentEditRecord({
+                        ...currentEditRecord,
+                        note: e.target.value,
+                      })
+                    }
+                    autoSize={{ minRows: 2, maxRows: 4 }}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={24}>
+                <Form.Item>
+                  <Checkbox
+                    checked={currentEditRecord.isChecked}
+                    onChange={(e) =>
+                      setCurrentEditRecord({
+                        ...currentEditRecord,
+                        isChecked: e.target.checked,
+                      })
+                    }
+                  >
+                    Đánh dấu đã khám
+                  </Checkbox>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
         )}
       </Modal>
     </div>

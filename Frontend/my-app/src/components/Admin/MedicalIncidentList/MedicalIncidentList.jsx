@@ -12,6 +12,7 @@ import {
   Button,
   Form,
   DatePicker,
+  Popover,
 } from "antd";
 import dayjs from "dayjs";
 import { Upload } from "antd";
@@ -38,7 +39,6 @@ const MedicalEventList = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
-  
 
   const [editingId, setEditingId] = useState(null);
 
@@ -103,6 +103,8 @@ const MedicalEventList = () => {
         className: item.classDTO?.className || "Không rõ",
         date: item.date,
         nurseName: item.nurseDTO?.fullName || `ID ${item.nurseId}`,
+        parentName: item.parentDTO?.fullName || `ID ${item.parentId}`,
+        parentphone: item.parentDTO?.phone || "Không có",
       }));
 
       setData(apiData);
@@ -180,7 +182,7 @@ const MedicalEventList = () => {
       };
 
       if (editingId) {
-        // Gọi API PUT để sửa
+        // Chế độ sửa: Gọi API PUT
         await axios.put(
           `http://localhost:8080/api/nurse/medical-event/${editingId}`,
           payload,
@@ -189,9 +191,12 @@ const MedicalEventList = () => {
           }
         );
         message.success("Cập nhật sự kiện thành công!");
+
+        // Reload toàn bộ danh sách khi sửa
+        fetchMedicalEvents();
       } else {
-        // Gọi API POST để tạo mới
-        await axios.post(
+        // Chế độ tạo mới: Gọi API POST
+        const res = await axios.post(
           "http://localhost:8080/api/nurse/medical-event",
           payload,
           {
@@ -199,51 +204,92 @@ const MedicalEventList = () => {
           }
         );
         message.success("Tạo sự kiện thành công!");
+
+        // Chuẩn hóa dữ liệu sự kiện mới
+        const newEvent = {
+          ...res.data,
+          studentName:
+            res.data.studentDTO?.fullName || `ID ${res.data.studentId}`,
+          className: res.data.classDTO?.className || "Không rõ",
+          nurseName: res.data.nurseDTO?.fullName || `ID ${res.data.nurseId}`,
+          parentName: res.data.parentDTO?.fullName || `ID ${res.data.parentId}`,
+          parentphone: res.data.parentDTO?.phone || "Không có",
+        };
+
+        // Đẩy sự kiện mới lên đầu danh sách
+        setData((prev) => [newEvent, ...prev]);
+        setFilteredData((prev) => [newEvent, ...prev]);
       }
 
+      // Reset form và modal
       form.resetFields();
       setUploadedImage(null);
       setEditingId(null);
       setCreateModalVisible(false);
-      fetchMedicalEvents();
     } catch (error) {
       console.error("Lỗi tạo/cập nhật sự kiện:", error);
       message.error("Không thể lưu sự kiện.");
     }
   };
 
-  const handleEditClick = async (event) => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `http://localhost:8080/api/nurse/medical-event/${event.eventId}`,
+const handleEditClick = async (item) => {
+  setEditingId(item.eventId);
+  setCreateModalVisible(true);
+
+  try {
+    const token = localStorage.getItem("token");
+
+    let loadedClassOptions = classOptions;
+
+    // ❶ Tải danh sách lớp nếu chưa có
+    if (classOptions.length === 0) {
+      const classRes = await axios.get(
+        "http://localhost:8080/api/nurse/class-list",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      const detail = res.data;
-
-      // Fetch lại học sinh theo lớp
-      await handleClassChange(event.classId);
-
-      form.setFieldsValue({
-        ...detail,
-        date: dayjs(detail.date),
-        classId: event.classId,
-      });
-
-      setUploadedImage(detail.image || null);
-      setEditingId(event.eventId);
-      setCreateModalVisible(true);
-      setDetailModalVisible(false);
-    } catch (err) {
-      message.error("Không thể tải dữ liệu để chỉnh sửa");
+      loadedClassOptions = classRes.data;
+      setClassOptions(loadedClassOptions); // cập nhật state
     }
-  };
+
+    // ❷ Tải danh sách học sinh
+    const studentRes = await axios.get(
+      `http://localhost:8080/api/admin/students/${classId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const loadedStudentOptions = studentRes.data;
+    setStudentOptions(loadedStudentOptions); // cập nhật state
+
+    // ❸ Sau khi đã có đủ option, set toàn bộ giá trị form
+    form.setFieldsValue({
+      eventName: item.eventName,
+      typeEvent: item.typeEvent,
+      date: dayjs(item.date),
+      classId: item.classId,
+      studentId: item.studentId,
+      levelCheck: item.levelCheck,
+      location: item.location,
+      description: item.description,
+      actionsTaken: item.actionsTaken,
+    });
+
+    // Ảnh
+    if (item.image) {
+      setUploadedImage(item.image);
+    }
+  } catch (error) {
+    console.error("Lỗi khi load dữ liệu chỉnh sửa:", error);
+    message.error("Không thể tải thông tin chỉnh sửa.");
+  }
+};
+
+
+
 
   const handleDeleteEvent = async (medicalEventId) => {
-    console.log("👉 eventId cần xoá:", medicalEventId);
     Modal.confirm({
       title: "Bạn có chắc muốn xoá sự kiện này?",
       okText: "Xoá",
@@ -349,10 +395,10 @@ const MedicalEventList = () => {
                 transition: "box-shadow 0.2s",
                 position: "relative",
               }}
-              onClick={() => {
-                setSelectedEvent(item);
-                setDetailModalVisible(true);
-              }}
+              // onClick={() => {
+              //   setSelectedEvent(item);
+              //   setDetailModalVisible(true);
+              // }}
             >
               <div style={getLevelStyle(item.levelCheck)}>
                 {item.levelCheck}
@@ -375,6 +421,37 @@ const MedicalEventList = () => {
               <p>
                 <strong>Ngày:</strong> {dayjs(item.date).format("DD/MM/YYYY")}
               </p>
+              <p>
+                <strong>Y tá phụ trách:</strong> {item.nurseName}
+              </p>
+              <Popover
+                title="📞 Thông tin liên hệ"
+                content={
+                  <div>
+                    <p>
+                      <strong>Phụ huynh:</strong> {item.parentName}
+                    </p>
+                    <p>
+                      <strong>Điện thoại:</strong> {item.parentphone}
+                    </p>
+                  </div>
+                }
+                trigger="click"
+              >
+                <div
+                  style={{
+                    display: "inline-block",
+                    padding: "8px 12px",
+                    background: "#f0f0f0",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    width: "fit-content",
+                    marginTop: 8,
+                  }}
+                >
+                  📞 Xem thông tin phụ huynh
+                </div>
+              </Popover>
 
               {/* Nút hành động */}
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
@@ -521,8 +598,9 @@ const MedicalEventList = () => {
       </Modal>
 
       {/* Modal Tạo sự kiện */}
+
       <Modal
-        title="Tạo sự kiện y tế"
+        title={editingId ? "Chỉnh sửa sự kiện y tế" : "Tạo sự kiện y tế"}
         open={createModalVisible}
         onCancel={() => {
           setCreateModalVisible(false);
@@ -530,107 +608,135 @@ const MedicalEventList = () => {
         }}
         footer={null}
         destroyOnClose
+        width={720} // mở rộng modal để chia 2 cột thoải mái
       >
         <Form layout="vertical" form={form} onFinish={handleCreateEvent}>
-          <Form.Item
-            label="Tên sự kiện"
-            name="eventName"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Loại sự kiện"
-            name="typeEvent"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item label="Ngày" name="date" rules={[{ required: true }]}>
-            <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Tên sự kiện"
+                name="eventName"
+                rules={[{ required: true }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Loại sự kiện"
+                name="typeEvent"
+                rules={[{ required: true }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            label="Lớp"
-            name="classId"
-            rules={[{ required: true, message: "Vui lòng chọn lớp" }]}
-          >
-            <Select placeholder="Chọn lớp" onChange={handleClassChange}>
-              {classOptions.map((cls) => (
-                <Option key={cls.classId} value={cls.classId}>
-                  {cls.className}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="Ngày" name="date" rules={[{ required: true }]}>
+                <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Địa điểm"
+                name="location"
+                rules={[{ required: true }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            label="Học sinh"
-            name="studentId"
-            rules={[{ required: true, message: "Vui lòng chọn học sinh" }]}
-          >
-            <Select
-              placeholder="Chọn học sinh"
-              disabled={studentOptions.length === 0}
-            >
-              {studentOptions.map((s) => (
-                <Option key={s.studentId} value={s.studentId}>
-                  {s.fullName}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Lớp"
+                name="classId"
+                rules={[{ required: true }]}
+              >
+                <Select placeholder="Chọn lớp" onChange={handleClassChange}>
+                  {classOptions.map((cls) => (
+                    <Option key={cls.classId} value={cls.classId}>
+                      {cls.className}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Học sinh"
+                name="studentId"
+                rules={[{ required: true }]}
+              >
+                <Select
+                  placeholder="Chọn học sinh"
+                  disabled={studentOptions.length === 0}
+                >
+                  {studentOptions.map((s) => (
+                    <Option key={s.studentId} value={s.studentId}>
+                      {s.fullName}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            label="Mức độ"
-            name="levelCheck"
-            rules={[{ required: true }]}
-          >
-            <Select>
-              <Option value="LOW">LOW</Option>
-              <Option value="MEDIUM">MEDIUM</Option>
-              <Option value="HIGH">HIGH</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="Địa điểm"
-            name="location"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Mức độ"
+                name="levelCheck"
+                rules={[{ required: true }]}
+              >
+                <Select>
+                  <Option value="LOW">LOW</Option>
+                  <Option value="MEDIUM">MEDIUM</Option>
+                  <Option value="HIGH">HIGH</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Ảnh">
+                <Upload
+                  beforeUpload={(file) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                      setUploadedImage(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                    return false;
+                  }}
+                  showUploadList={{ showRemoveIcon: true }}
+                  onRemove={() => setUploadedImage(null)}
+                  accept="image/*"
+                  maxCount={1}
+                >
+                  <Button icon={<UploadOutlined />}>Tải ảnh</Button>
+                </Upload>
+              </Form.Item>
+            </Col>
+          </Row>
+
           <Form.Item label="Mô tả" name="description">
-            <TextArea rows={2} />
-          </Form.Item>
-          <Form.Item label="Xử lý" name="actionsTaken">
-            <TextArea rows={2} />
-          </Form.Item>
-          <Form.Item label="Ảnh">
-            <Upload
-              beforeUpload={(file) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                  setUploadedImage(e.target.result); // Base64 image
-                };
-                reader.readAsDataURL(file);
-                return false; // Prevent auto upload
-              }}
-              showUploadList={{ showRemoveIcon: true }}
-              onRemove={() => setUploadedImage(null)}
-              accept="image/*"
-              maxCount={1}
-            >
-              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
-            </Upload>
+            <TextArea rows={2} placeholder="Mô tả ngắn gọn về sự kiện" />
           </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              Tạo sự kiện
+          <Form.Item label="Xử lý" name="actionsTaken">
+            <TextArea rows={2} placeholder="Hành động đã thực hiện" />
+          </Form.Item>
+
+          <Form.Item style={{ textAlign: "center", marginTop: 24 }}>
+            <Button type="primary" htmlType="submit" style={{ width: 200 }}>
+              {editingId ? "Lưu chỉnh sửa" : "Tạo sự kiện"}
             </Button>
           </Form.Item>
         </Form>
       </Modal>
+
       <Modal
         open={previewVisible}
         footer={null}
