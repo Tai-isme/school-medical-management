@@ -1,25 +1,16 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import com.swp391.school_medical_management.helpers.ExcelExportStyleUtil;
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.entities.*;
+import com.swp391.school_medical_management.modules.users.repositories.*;
+import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
+import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
+import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
+import com.swp391.school_medical_management.service.EmailService;
+import com.swp391.school_medical_management.service.PasswordService;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
@@ -35,62 +26,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.swp391.school_medical_management.helpers.ExcelExportStyleUtil;
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineNameRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultExportDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ParticipateClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ParticipationDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormStatsDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultExportDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineUnitDTO;
-import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
-import com.swp391.school_medical_management.modules.users.entities.ParticipateClassEntity;
-import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineUnitEntity;
-import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
-import com.swp391.school_medical_management.modules.users.repositories.ParticipateClassRepository;
-import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
-import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
-import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineNameRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineUnitRepository;
-import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
-import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
-import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
-import com.swp391.school_medical_management.service.EmailService;
-import com.swp391.school_medical_management.service.PasswordService;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminService {
@@ -1339,59 +1281,62 @@ public class AdminService {
         return null;
     }
 
-    public void importVaccineNameFromExcel(MultipartFile file) {
-        // try (InputStream is = file.getInputStream(); Workbook workbook = new
-        // XSSFWorkbook(is)) {
-        // Sheet sheet = workbook.getSheetAt(0);
-        // int importedCount = 0;
-        // for (Row row : sheet) {
-        // int rowNum = row.getRowNum();
-        // if (rowNum == 0)
-        // continue;
-        // if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK)
-        // continue;
-        // try {
+    @Transactional
+    public void importVaccineNameFromExcel(MultipartFile file, int adminId) {
+        try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            int importedCount = 0;
 
-        // String vaccineName = row.getCell(0).getStringCellValue();
-        // String manufacture = row.getCell(1).getStringCellValue();
-        // String url = row.getCell(2).getStringCellValue();
-        // String note = row.getCell(3).getStringCellValue();
+            UserEntity admin = userRepository.findById(adminId)
+                    .orElseThrow(() -> new RuntimeException("Admin không tồn tại"));
 
-        // VaccineNameEntity vaccine = new VaccineNameEntity();
-        // vaccine.setVaccineName(vaccineName);
-        // vaccine.setManufacture(manufacture);
-        // vaccine.setUrl(url);
-        // vaccine.setNote(note);
+            for (Row row : sheet) {
+                int rowNum = row.getRowNum();
+                if (rowNum == 0) continue;
 
-        // // student
-        // Optional<VaccineNameEntity> vaccineNameOpt = vaccineNameRepository
-        // .findByVaccineNameAndManufactureAndUrlAndNote(vaccineName, manufacture, url,
-        // note);
-        // VaccineNameEntity vaccineNameEntity;
-        // if (vaccineNameOpt.isPresent()) {
-        // vaccineNameEntity = vaccineNameOpt.get();
-        // } else {
-        // vaccineNameEntity = new VaccineNameEntity();
-        // vaccineNameEntity.setVaccineName(vaccineName);
-        // vaccineNameEntity.setManufacture(manufacture);
-        // vaccineNameEntity.setUrl(url);
-        // vaccineNameEntity.setNote(note);
-        // }
+                if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK) continue;
 
-        // vaccineNameRepository.save(vaccineNameEntity);
-        // importedCount++;
-        // } catch (Exception e) {
-        // throw new RuntimeException("Lỗi ở dòng Excel số " + rowNum + ": "
-        // + row.getCell(0).getStringCellValue() + " - " + e.getMessage());
-        // }
-        // }
-        // if (importedCount == 0) {
-        // throw new RuntimeException("File không hợp lệ.");
-        // }
-        // } catch (Exception e) {
-        // throw new RuntimeException(e.getMessage());
-        // }
+                try {
+                    String vaccineName = row.getCell(0).getStringCellValue();
+                    String manufacture = row.getCell(1).getStringCellValue();
+                    int ageFrom = (int) row.getCell(2).getNumericCellValue();
+                    int ageTo = (int) row.getCell(3).getNumericCellValue();
+                    int totalUnit = (int) row.getCell(4).getNumericCellValue();
+                    String url = row.getCell(5) != null ? row.getCell(5).getStringCellValue() : null;
+                    String description = row.getCell(6) != null ? row.getCell(6).getStringCellValue() : null;
+
+                    boolean exists = vaccineNameRepository.existsByVaccineNameAndManufactureAndAgeFromAndAgeToAndTotalUnitAndUrlAndDescription(
+                            vaccineName, manufacture, ageFrom, ageTo, totalUnit, url, description);
+
+                    if (exists) {
+                        throw new RuntimeException("Dòng " + (rowNum) + " bị trùng trong hệ thống.");
+                    }
+
+                    VaccineNameEntity vaccine = new VaccineNameEntity();
+                    vaccine.setVaccineName(vaccineName);
+                    vaccine.setManufacture(manufacture);
+                    vaccine.setAgeFrom(ageFrom);
+                    vaccine.setAgeTo(ageTo);
+                    vaccine.setTotalUnit(totalUnit);
+                    vaccine.setUrl(url);
+                    vaccine.setDescription(description);
+                    vaccine.setUser(admin);
+
+                    vaccineNameRepository.save(vaccine);
+                    importedCount++;
+                } catch (Exception e) {
+                    throw new RuntimeException("Import thất bại tại dòng " + (rowNum + 1) + ": " + e.getMessage());
+                }
+            }
+
+            if (importedCount == 0) {
+                throw new RuntimeException("Không có dữ liệu hợp lệ nào được import.");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Lỗi khi đọc file Excel: " + e.getMessage());
+        }
     }
+
 
     public List<VaccineResultExportDTO> getVaccineResultsToExport(int vaccineProgramId) {
         VaccineProgramEntity vaccineProgramEntity = vaccineProgramRepository.findById(vaccineProgramId).orElseThrow(() ->

@@ -43,14 +43,14 @@ public Message<?> preSend(Message<?> message, MessageChannel channel) {
 
             if (jwt == null || !jwt.startsWith("Bearer ")) {
                 logger.warn("Missing or invalid Authorization header. Allowing connection without auth.");
-                return message; // ✅ Cho phép kết nối, nhưng không set user
+                return message; 
             }
 
             String token = jwt.substring(7);
 
             if (!jwtService.isTokenFormatValid(token)) {
                 logger.warn("Invalid JWT format");
-                return message; // ✅ Cho phép kết nối, không set user
+                return message;
             }
 
             if (!jwtService.isSignatureValid(token)) {
@@ -84,7 +84,6 @@ public Message<?> preSend(Message<?> message, MessageChannel channel) {
 
         } catch (Exception e) {
             logger.error("Unexpected error during WebSocket authentication: {}", e.getMessage(), e);
-            // ✅ Không throw nữa, tránh đóng socket
             return message;
         }
     }
