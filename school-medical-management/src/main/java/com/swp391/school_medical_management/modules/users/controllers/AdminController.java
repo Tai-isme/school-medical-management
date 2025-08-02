@@ -232,7 +232,7 @@ public class AdminController {
         }
     }
 
-    @GetMapping("/export-vaccine-result-excel-by-vaccine-program/{vaccineProgramId}")
+    @PostMapping("/export-vaccine-result-excel-by-vaccine-program/{vaccineProgramId}")
     public ResponseEntity<InputStreamResource> exportVaccineResultExcel(@PathVariable int vaccineProgramId) throws IOException {
         ByteArrayInputStream in = adminService.exportVaccineResultToExcel(vaccineProgramId);
         HttpHeaders headers = new HttpHeaders();
@@ -245,7 +245,7 @@ public class AdminController {
                 .body(new InputStreamResource(in));
     }
 
-    @GetMapping("/export-health-check-result-excel-by-health-check-program/{healthCheckProgramId}")
+    @PostMapping("/export-health-check-result-excel-by-health-check-program/{healthCheckProgramId}")
     public ResponseEntity<InputStreamResource> exportHealthCheckResultExcel(@PathVariable int healthCheckProgramId) throws IOException {
         ByteArrayInputStream in = adminService.exportHealthCheckResultToExcel(healthCheckProgramId);
         HttpHeaders headers = new HttpHeaders();
