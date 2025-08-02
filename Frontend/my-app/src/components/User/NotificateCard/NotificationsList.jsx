@@ -29,7 +29,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
         await axios.patch(
           `http://localhost:8080/api/parent/vaccine-forms/${modalNotification.id}/commit`,
           {
-            commit: checked === 'agree',
+            commit: true,
             note: note || '',
           },
           {
@@ -55,7 +55,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
       await axios.patch(
         `http://localhost:8080/api/parent/health-check-forms/${notification.id}/commit`,
         {
-          commit: checked === 'agree',
+          commit: true,
           note: note || '',
         },
         {

@@ -3,6 +3,7 @@ import { Modal, Form, Input, Button } from "antd";
 import Swal from "sweetalert2";
 import axios from "axios";
 
+
 const AddVaccineModal = ({
   open,
   onCancel,
@@ -14,9 +15,11 @@ const AddVaccineModal = ({
   const [addVaccineLoading, setAddVaccineLoading] = useState(false);
   const [modalMode, setModalMode] = useState("create"); // "create" | "edit" | "view"
 
+
   useEffect(() => {
     if (open) form.setFieldsValue(initialValues);
   }, [open, initialValues]);
+
 
   const handleFinish = async (values) => {
     setAddVaccineLoading(true);
@@ -72,6 +75,7 @@ const AddVaccineModal = ({
       setAddVaccineLoading(false);
     }
   };
+
 
   return (
     <Modal
@@ -134,10 +138,12 @@ const AddVaccineModal = ({
         <Form.Item label="Ghi chú" name="note">
           <Input.TextArea rows={2} />
         </Form.Item>
-        
+       
       </Form>
     </Modal>
   );
 };
 
+
 export default AddVaccineModal;
+

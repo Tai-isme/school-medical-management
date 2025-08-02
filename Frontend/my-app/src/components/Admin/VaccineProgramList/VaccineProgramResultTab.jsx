@@ -3,7 +3,9 @@ import { Input, Table, Modal, Form, Button, DatePicker, Radio } from "antd";
 import dayjs from "dayjs";
 import { SearchOutlined } from "@ant-design/icons";
 
+
 const VaccineProgramResultTab = ({
+  program, // Nhận prop này
   searchTermResult,
   setSearchTermResult,
   sampleResultData,
@@ -24,6 +26,7 @@ const VaccineProgramResultTab = ({
   const [currentRecord, setCurrentRecord] = useState(null);
   const [modalForm] = Form.useForm();
 
+
   // Khi bấm "Ghi nhận"
   const handleOpenModal = (record) => {
     setCurrentRecord(record);
@@ -39,23 +42,19 @@ const VaccineProgramResultTab = ({
     setModalVisible(true);
   };
 
+
   // Khi xác nhận trong modal
   const handleModalOk = async () => {
-    try {
-      const values = await modalForm.validateFields();
-      const token = localStorage.getItem("token");
-      const vaccineFormId = currentRecord?.vaccineFormId || currentRecord?.id;
-      const vaccineResultId = currentRecord?.id; // hoặc currentRecord?.vaccineResultId
+  try {
+    const values = await modalForm.validateFields();
+    const token = localStorage.getItem("token");
+    const vaccineFormId = currentRecord?.vaccineFormId;
+    const programId = program?.vaccineProgramId;
 
-      const isEdit = !!vaccineResultId; // Nếu có id là chỉnh sửa
-
-      const url = isEdit
-        ? `http://localhost:8080/api/nurse/vaccine-result/${vaccineResultId}`
-        : "http://localhost:8080/api/nurse/vaccine-result";
-      const method = isEdit ? "POST" : "PUT";
-
-      await fetch(url, {
-        method,
+    const response = await fetch(
+      `http://localhost:8080/api/nurse/create-vaccineResults-byProgram/${programId}`,
+      {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -68,18 +67,46 @@ const VaccineProgramResultTab = ({
           isInjected: values.isInjected,
           vaccineFormId: vaccineFormId,
         }),
-      });
-      setModalVisible(false);
-      // Có thể reload lại bảng ở đây nếu cần
-    } catch (err) {
-      // Xử lý lỗi nếu cần
+      }
+    );
+    const data = await response.json();
+
+    // So sánh vaccineFormId với currentRecord.vaccineFormId
+    if (data.vaccineFormId === currentRecord?.vaccineFormId) {
+      setSampleResultData([
+        {
+          reaction: data.reaction,
+          actionsTaken: data.actionsTaken,
+          resultNote: data.resultNote,
+          isInjected: data.isInjected,
+        },
+      ]);
     }
-  };
+
+    setModalVisible(false);
+  } catch (err) {
+    // Xử lý lỗi nếu cần
+  }
+};
+
 
   // Khi hủy modal
   const handleModalCancel = () => {
     setModalVisible(false);
   };
+
+
+  const convertResultToTableRow = (result, studentInfo) => ({
+    vaccineResultId: result.vaccineResultId,
+    vaccineFormId: result.vaccineFormId,
+    reaction: result.reaction,
+    actionsTaken: result.actionsTaken,
+    createdAt: result.createdAt,
+    isInjected: result.isInjected,
+    // Nếu cần thêm thông tin học sinh, truyền vào studentInfo
+    studentDTO: studentInfo || null,
+  });
+
 
   return (
     <div style={{ marginTop: 24 }}>
@@ -95,6 +122,18 @@ const VaccineProgramResultTab = ({
           overflowX: "auto",
         }}
       >
+        {/* Hiển thị tên chương trình ở trên */}
+        {program?.vaccineProgramName && (
+          <div style={{
+            fontWeight: 700,
+            fontSize: 20,
+            color: "#1976d2",
+            marginBottom: 16,
+            textAlign: "center"
+          }}>
+            {program.vaccineProgramName}
+          </div>
+        )}
         <div
           style={{
             marginBottom: 16,
@@ -115,8 +154,8 @@ const VaccineProgramResultTab = ({
           columns={[
             {
               title: "ID kết quả",
-              dataIndex: "id",
-              key: "id",
+              dataIndex: "vaccineResultId",
+              key: "vaccineResultId",
             },
             {
               title: "Học sinh",
@@ -134,71 +173,23 @@ const VaccineProgramResultTab = ({
               title: "Giới tính",
               dataIndex: ["studentDTO", "gender"],
               key: "gender",
-              render: (_, record) => record.studentDTO?.gender === "MALE" ? "Nam" : "Nữ",
+              render: (_, record) =>
+                record.studentDTO?.gender === "MALE" ? "Nam" : "Nữ",
             },
             {
               title: "Phản ứng sau tiêm",
               dataIndex: "reaction",
               key: "reaction",
-              render: (text, record) =>
-                sampleResultData ? (
-                  <Input
-                    value={
-                      editableRows.find((r) => r.id === record.id)?.reaction ||
-                      record.vaccineResultDTO?.reaction ||
-                      text ||
-                      ""
-                    }
-                    onChange={(e) =>
-                      handleEditCell(e.target.value, record, "reaction")
-                    }
-                    style={{ minWidth: 100 }}
-                  />
-                ) : (
-                  record.vaccineResultDTO?.reaction || text || ""
-                ),
             },
             {
               title: "Cách xử lý",
-              dataIndex: "reaction",
-              key: "reaction",
-              render: (text, record) =>
-                sampleResultData ? (
-                  <Input
-                    value={
-                      editableRows.find((r) => r.id === record.id)?.reaction ||
-                      record.vaccineResultDTO?.reaction ||
-                      ""
-                    }
-                    onChange={(e) =>
-                      handleEditCell(e.target.value, record, "reaction")
-                    }
-                    style={{ minWidth: 100 }}
-                  />
-                ) : (
-                  record.vaccineResultDTO?.reaction || text || ""
-                ),
+              dataIndex: "actionsTaken",
+              key: "actionsTaken",
             },
             {
               title: "Mô tả chi tiết",
               dataIndex: "resultNote",
               key: "resultNote",
-              render: (text, record) =>
-                sampleResultData ? (
-                  <Input
-                    value={
-                      editableRows.find((r) => r.id === record.id)?.resultNote ||
-                      record.vaccineResultDTO?.resultNote ||
-                      ""
-                    }
-                    onChange={(e) =>
-                      handleEditCell(e.target.value, record, "resultNote")
-                    }
-                    style={{ minWidth: 120 }}
-                  />
-                ) : (
-                  record.vaccineResultDTO?.resultNote || text || ""
-                ),
             },
             {
               title: "Ngày tạo",
@@ -208,84 +199,33 @@ const VaccineProgramResultTab = ({
             },
             {
               title: "Đã tiêm?",
-              key: "commit",
-              render: (_, record) => {
-                // Ưu tiên lấy từ vaccineResultDTO.isInjected
-                if (
-                  record.vaccineResultDTO &&
-                  typeof record.vaccineResultDTO.isInjected === "boolean"
-                ) {
-                  return record.vaccineResultDTO.isInjected ? "Đã tiêm" : "Chưa tiêm";
-                }
-                // Sau đó lấy từ isInjected trực tiếp
-                if (typeof record.isInjected === "boolean") {
-                  return record.isInjected ? "Đã tiêm" : "Chưa tiêm";
-                }
-                // Cuối cùng lấy từ commit
-                return record.commit ? "Đã tiêm" : "Chưa tiêm";
-              },
+              dataIndex: "isInjected",
+              key: "isInjected",
+              render: (val) => val ? "Đã tiêm" : "Chưa tiêm",
             },
-            sampleResultData && {
+            {
               title: "Thao tác",
               key: "action",
-              render: (_, record) => (
-                <Button
-                  type="primary"
-                  onClick={() => handleOpenModal(record)}
-                >
-                  Ghi nhận
-                </Button>
-              ),
+              render: (_, record) =>
+                Array.isArray(editableRows) && editableRows.length > 0 ? (
+                  <Button type="primary" onClick={() => handleOpenModal(record)}>
+                    Ghi nhận
+                  </Button>
+                ) : null,
             },
-          ].filter(Boolean)}
-          dataSource={
-            sampleResultData
-              ? editableRows.filter((item) =>
-                  (item?.studentDTO?.fullName || "")
-                    .toLowerCase()
-                    .includes(searchTermResult.toLowerCase())
-                )
-              : selectedVaccineResultId
-              ? (selectedVaccineResult || []).filter((item) =>
-                  (item?.studentDTO?.fullName || "")
-                    .toLowerCase()
-                    .includes(searchTermResult.toLowerCase())
-                )
-              : filteredNurseResults
-          }
-          loading={selectedVaccineResultLoading || nurseResultsLoading}
-          rowKey="id"
-          bordered
-          style={{
-            paddingLeft: 2,
-            width: "100%",
-            minWidth: 1600,
-            borderRadius: 12,
-            overflow: "auto",
-            background: "#fff",
-            boxShadow: "0 2px 8px rgba(33,186,69,0.08)",
-          }}
-          scroll={{ x: true }}
+          ]}
+          dataSource={sampleResultData}
+          rowKey="vaccineResultId"
           pagination={{
             current: resultTablePage,
             pageSize: resultTablePageSize,
-            total: sampleResultData
-              ? editableRows.filter((item) =>
-                  (item?.studentDTO?.fullName || "")
-                    .toLowerCase()
-                    .includes(searchTermResult.toLowerCase())
-                ).length
-              : selectedVaccineResultId
-              ? (selectedVaccineResult || []).filter((item) =>
-                  (item?.studentDTO?.fullName || "")
-                    .toLowerCase()
-                    .includes(searchTermResult.toLowerCase())
-                ).length
-              : filteredNurseResults.length,
+            total: sampleResultData?.length || 0,
             onChange: setResultTablePage,
             showSizeChanger: false,
           }}
+          bordered
         />
+
 
         {/* Modal nhập thông tin */}
         <Modal
@@ -322,6 +262,7 @@ const VaccineProgramResultTab = ({
               />
             </Form.Item>
 
+
             <Form.Item
               label="Kết quả tiêm chủng:"
               name="isInjected"
@@ -332,6 +273,7 @@ const VaccineProgramResultTab = ({
                 <Radio value={false}>Thất bại</Radio>
               </Radio.Group>
             </Form.Item>
+
 
             <Form.Item
               label="Phản ứng sau tiêm"
@@ -345,12 +287,12 @@ const VaccineProgramResultTab = ({
             >
               <Input />
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               label="Mô tả chi tiết"
               name="resultNote"
             >
               <Input.TextArea rows={2} />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item
               label="Ghi chú:"
               name="detailNote"
@@ -364,4 +306,6 @@ const VaccineProgramResultTab = ({
   );
 };
 
+
 export default VaccineProgramResultTab;
+
