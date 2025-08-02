@@ -1,10 +1,12 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.*;
-import com.swp391.school_medical_management.modules.users.dtos.response.*;
-import com.swp391.school_medical_management.modules.users.entities.*;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
-import com.swp391.school_medical_management.modules.users.repositories.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +17,67 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.ReplyFeedbackRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ParticipateClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
+import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
+import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.ParticipateClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineUnitEntity;
+import com.swp391.school_medical_management.modules.users.repositories.BlogRepository;
+import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
+import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestDetailRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
+import com.swp391.school_medical_management.modules.users.repositories.ParticipateClassRepository;
+import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineHistoryRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineUnitRepository;
 
 @Service
 public class NurseService {
@@ -1650,7 +1707,7 @@ public class NurseService {
         // }
     }
 
-    public void createResultByProgramId(int programId, HealthCheckResultRequest request) {
+    public HealthCheckResultDTO createResultByProgramId(int programId, HealthCheckResultRequest request) {
         int nurseId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
         UserEntity nurse = userRepository.findById(nurseId)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy y tá."));
@@ -1670,9 +1727,7 @@ public class NurseService {
         }
 
         Optional<HealthCheckResultEntity> existed = healthCheckResultRepository.findByHealthCheckForm(form);
-        if (existed.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Kết quả đã tồn tại cho form ID: " + form.getId());
-        }
+        existed.ifPresent(oldResult -> healthCheckResultRepository.delete(oldResult));
 
         HealthCheckResultEntity result = new HealthCheckResultEntity();
         result.setVision(request.getVision());
@@ -1688,7 +1743,8 @@ public class NurseService {
         result.setHealthCheckForm(form);
         result.setStudent(form.getStudent());
         result.setNurse(nurse);
-        healthCheckResultRepository.save(result);
+
+        HealthCheckResultEntity savedResult = healthCheckResultRepository.save(result);
 
         StudentEntity student = form.getStudent();
         Optional<MedicalRecordEntity> optionalRecord = medicalRecordsRepository.findByStudent(student);
@@ -1702,9 +1758,11 @@ public class NurseService {
         record.setLastUpdate(LocalDateTime.now());
         record.setCreateBy(true);
         medicalRecordsRepository.save(record);
+
+        return modelMapper.map(savedResult, HealthCheckResultDTO.class);
     }
 
-    public void createVaccineResultsByProgramId(int programId, VaccineResultRequest request) {
+    public VaccineResultDTO createVaccineResultsByProgramId(int programId, VaccineResultRequest request) {
         int nurseId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
         UserEntity nurse = userRepository.findById(nurseId)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy y tá."));
@@ -1724,10 +1782,7 @@ public class NurseService {
         }
 
         Optional<VaccineResultEntity> existed = vaccineResultRepository.findByVaccineFormEntity(form);
-        if (existed.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Kết quả đã tồn tại cho form ID: " + form.getId());
-        }
+        existed.ifPresent(oldResult -> vaccineResultRepository.delete(oldResult));
 
         VaccineResultEntity result = new VaccineResultEntity();
         result.setResultNote(request.getResultNote());
@@ -1739,22 +1794,27 @@ public class NurseService {
         result.setVaccineFormEntity(form);
         result.setStudentEntity(form.getStudent());
         result.setNurseEntity(nurse);
-        vaccineResultRepository.save(result);
+
+        VaccineResultEntity savedResult = vaccineResultRepository.save(result);
 
         StudentEntity student = form.getStudent();
         VaccineNameEntity vaccineName = form.getVaccineName();
 
         Optional<VaccineHistoryEntity> historyOpt = vaccineHistoryRepository.findByStudentAndVaccineNameEntity(student,
                 vaccineName);
-
         VaccineHistoryEntity history = historyOpt.orElse(new VaccineHistoryEntity());
+
         history.setStudent(student);
         history.setVaccineNameEntity(vaccineName);
         history.setNote("Đã tiêm ở trường");
         history.setCreateBy(true);
         history.setUnit(historyOpt.map(VaccineHistoryEntity::getUnit).orElse(0) + 1);
+
         vaccineHistoryRepository.save(history);
+
+        return modelMapper.map(savedResult, VaccineResultDTO.class);
     }
+
 
 
     // Thien

@@ -343,19 +343,19 @@ public class NurseController {
     // }
 
     @PostMapping("/create-healthCheckResult-byProgram-{programId}")
-    public ResponseEntity<String> createHealthCheckResult(
+    public ResponseEntity<HealthCheckResultDTO> createHealthCheckResult(
             @PathVariable int programId,
             @RequestBody HealthCheckResultRequest request) {
-        nurseService.createResultByProgramId(programId, request);
-        return ResponseEntity.ok("Tạo kết quả khám sức khỏe thành công.");
+        HealthCheckResultDTO dto = nurseService.createResultByProgramId(programId, request);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/create-vaccineResults-byProgram/{programId}")
-    public ResponseEntity<String> createVaccineResultsByProgramId(
+    public ResponseEntity<VaccineResultDTO> createVaccineResultsByProgramId(
             @PathVariable int programId,
             @RequestBody VaccineResultRequest request) {
-        nurseService.createVaccineResultsByProgramId(programId, request);
-        return ResponseEntity.ok("Tạo kết quả tiêm chủng thành công.");
+        VaccineResultDTO dto = nurseService.createVaccineResultsByProgramId(programId, request);
+        return ResponseEntity.ok(dto);
     }
 
     //Thien
