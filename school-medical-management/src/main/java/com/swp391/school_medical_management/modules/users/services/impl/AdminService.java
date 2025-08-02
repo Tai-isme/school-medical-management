@@ -41,6 +41,7 @@ import com.swp391.school_medical_management.modules.users.dtos.request.NurseAcco
 import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineNameRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineUnitRequest;
 import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
@@ -1322,23 +1323,35 @@ public class AdminService {
 
     public VaccineNameDTO createVaccineName(VaccineNameRequest request) {
         if (vaccineNameRepository.findByVaccineName(request.getVaccineName()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name already exists");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine đã tồn tại");
+        }
+
+        if (request.getVaccineUnits() == null || request.getVaccineUnits().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh sách mũi tiêm không được để trống");
+        }
+
+        for (VaccineUnitRequest unitReq : request.getVaccineUnits()) {
+            if (unitReq.getUnit() <= 0 || unitReq.getSchedule() == null || unitReq.getSchedule().trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thông tin mũi tiêm không hợp lệ");
+            }
         }
 
         VaccineNameEntity entity = modelMapper.map(request, VaccineNameEntity.class);
 
         UserEntity admin = userRepository.findById(request.getAdminId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
         entity.setUser(admin);
+
+        entity.setTotalUnit(request.getVaccineUnits().size());
 
         VaccineNameEntity savedVaccine = vaccineNameRepository.save(entity);
 
         List<VaccineUnitEntity> unitEntities = new ArrayList<>();
-        for (int i = 1; i <= request.getTotalUnit(); i++) {
+        for (VaccineUnitRequest unitReq : request.getVaccineUnits()) {
             VaccineUnitEntity unit = new VaccineUnitEntity();
             unit.setVaccineName(savedVaccine);
-            unit.setUnit(i); 
-            unit.setSchedule(""); 
+            unit.setUnit(unitReq.getUnit());
+            unit.setSchedule(unitReq.getSchedule());
             unitEntities.add(unit);
         }
 

@@ -1,6 +1,6 @@
 package com.swp391.school_medical_management.modules.users.dtos.request;
 
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import java.util.List;
 
 import lombok.Data;
 
@@ -14,5 +14,5 @@ public class VaccineNameRequest {
     private String url;
     private String description;
     private int adminId;
-    private UserDTO AdminDTO;
+    private List<VaccineUnitRequest> vaccineUnits;
 }
