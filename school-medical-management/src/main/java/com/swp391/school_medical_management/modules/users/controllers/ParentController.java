@@ -102,8 +102,7 @@ public class ParentController {
     @GetMapping("/medical-request/by-request/{requestId}")
     public ResponseEntity<MedicalRequestDTO> getMedicalRequestByRequestId(@PathVariable int requestId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRequestDTO medicalRequestDTO = parentService.getMedicalRequestByRequestId(Integer.parseInt(parentId),
-                requestId);
+        MedicalRequestDTO medicalRequestDTO = parentService.getMedicalRequestByRequestId(Integer.parseInt(parentId), requestId);
         return ResponseEntity.ok(medicalRequestDTO);
     }
 
@@ -139,6 +138,7 @@ public class ParentController {
         parentService.deleteMedicalRequest(Integer.parseInt(parentId), requestId);
         return ResponseEntity.noContent().build();
     }
+
 
     @GetMapping("/health-check-forms/student/{studentId}")
     public ResponseEntity<List<HealthCheckFormDTO>> getAllHealthCheckForm(@PathVariable int studentId) {

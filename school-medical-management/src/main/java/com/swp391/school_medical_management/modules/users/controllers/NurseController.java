@@ -1,8 +1,11 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import java.time.LocalDate;
-import java.util.List;
-
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -10,44 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.ReplyFeedbackRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.OnGoingProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
-import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
-
-import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.List;
 
 @Validated
 @RestController
@@ -82,10 +51,16 @@ public class NurseController {
         return ResponseEntity.ok(medicalRequestDetailDTO);
     }
 
-    @PutMapping("/{requestId}/status")
+    @PatchMapping("/medical-request-detail/status/taken/{requestDetailId}")
+    public ResponseEntity<String> updateMedicalRequestDetailStatusTaken(@PathVariable int requestDetailId) {
+        return ResponseEntity.ok(nurseService.updateMedicalRequestDetailStatus(requestDetailId));
+    }
+
+    @PutMapping("/medical-request/{requestId}/status")
     public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId,
                                                                         @RequestBody @Valid UpdateMedicalRequestStatus request) {
-        MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, request);
+        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, request, Integer.parseInt(nurseId));
         return ResponseEntity.ok(medicalRequestDTO);
     }
 
@@ -210,9 +185,10 @@ public class NurseController {
     }
 
     @PostMapping("/vaccine-result")
-    public ResponseEntity<List<VaccineResultDTO>> createVaccineResult() {
-        List<VaccineResultDTO> vaccineResultDTOList = nurseService.createDefaultVaccineResultsForAllCommittedForms();
-        return ResponseEntity.status(HttpStatus.CREATED).body(vaccineResultDTOList);
+    public ResponseEntity<VaccineFormDTO> createVaccineResult(@RequestBody VaccineResultRequest request) {
+        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
+        VaccineFormDTO vaccineFormDTO = nurseService.createVaccineResult(Integer.parseInt(nurseId), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(vaccineFormDTO);
     }
 
     @PutMapping("/vaccine-result/{vaccineResultId}")
