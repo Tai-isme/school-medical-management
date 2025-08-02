@@ -16,11 +16,13 @@ const RequestTable = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const token = localStorage.getItem('token'); // nếu cần token
-        const res = await axios.get('http://localhost:8080/api/parent/medical-request', { // LẤY TẤT CẢ ĐƠN THUỐC
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:8080/api/parent/medical-request', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setData(res.data);
+        // Sắp xếp theo requestId giảm dần
+        const sortedData = res.data.sort((a, b) => b.requestId - a.requestId);
+        setData(sortedData);
       } catch (err) {
         setData([]);
       }

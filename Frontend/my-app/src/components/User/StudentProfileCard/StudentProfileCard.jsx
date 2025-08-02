@@ -348,17 +348,7 @@ const StudentProfile = () => {
                         className={isEditing ? 'editable' : ''}
                       />
                     </div>
-                    <div className="info-row">
-                      <label>Lịch sử điều trị</label>
-                      <input
-                        type="text"
-                        name="medicalHistory"
-                        value={studentInfo.medicalHistory}
-                        onChange={handleInputChange}
-                        readOnly={!isEditing}
-                        className={isEditing ? 'editable' : ''}
-                      />
-                    </div>
+                    
                     <div className="info-row">
                       <label>Lần cập nhật gần đây</label>
                       <input
@@ -434,7 +424,7 @@ const StudentProfile = () => {
         </div>
       </div>
 
-      <MedicalRecordModal
+<MedicalRecordModal
   open={openMedicalForm}
   onCancel={handleCloseMedicalForm}
   loading={loading}
@@ -443,7 +433,6 @@ const StudentProfile = () => {
   initialValues={{
     allergies: studentInfo.allergies,
     chronicDisease: studentInfo.chronicDiseases,
-    treatmentHistory: studentInfo.medicalHistory,
     vision: studentInfo.eyes,
     hearing: studentInfo.ears,
     weight: studentInfo.weight,
@@ -455,8 +444,9 @@ const StudentProfile = () => {
           vaccineNameId: v.vaccineNameDTO?.id || v.vaccineNameId || "",
           doseNumber: v.unit || v.doseNumber || 1,
           note: v.note || "",
+          createBy: v.createBy // giữ nguyên createBy từ API
         }))
-      : [{ vaccineName: "", vaccineNameId: "", doseNumber: undefined, note: "" }]
+      : [{ vaccineName: "", vaccineNameId: "", doseNumber: undefined, note: "", createBy: false }]
   }}
   editMode={editMode}
 />

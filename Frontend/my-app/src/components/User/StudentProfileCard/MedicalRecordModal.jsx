@@ -312,9 +312,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
               <Form.Item label="Bệnh mãn tính" name="chronicDisease">
                 <Input.TextArea rows={2} placeholder="hen suyễn,..." />
               </Form.Item>
-              <Form.Item label="Lịch sử điều trị" name="treatmentHistory">
-                <Input.TextArea rows={2} placeholder="Vd: từng điều trị ở BV Đa khoa Sài Gòn,..." />
-              </Form.Item>
+              
               <Form.Item label="Ghi chú" name="note">
                 <Input.TextArea rows={2} placeholder="ghi chú thêm" />
               </Form.Item>
@@ -335,7 +333,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                 // Tìm vaccine đã chọn để lấy số mũi tiêm từ vaccineUnitDTOs
                 const selectedVaccine = vaccineOptions.find(v => v.id === item.vaccineNameId);
                 const unitCount = selectedVaccine?.vaccineUnitDTOs?.length || 1;
-
+                const isReadOnly = editMode && item.createBy;
                 return (
                   <div key={idx} style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
                     {/* Tên vaccine */}
@@ -350,6 +348,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                         optionFilterProp="children"
                         value={item.vaccineNameId}
                         onChange={value => {
+                          if (isReadOnly) return;
                           const selectedVac = vaccineOptions.find(v => v.id === value);
                           handleVaccineChange(selectedVac.vaccineName, idx, 'vaccineName');
                           handleVaccineChange(selectedVac.id, idx, 'vaccineNameId');
@@ -357,6 +356,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                         filterOption={(input, option) =>
                           option.children.toLowerCase().includes(input.toLowerCase())
                         }
+                        disabled={isReadOnly}
                       >
                         {vaccineOptions.map(vac => (
                           <Select.Option key={vac.id} value={vac.id}>
@@ -373,33 +373,43 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                       initialValue={item.doseNumber}
                     >
                       <Select
-                        placeholder="Mũi thứ"
-                        value={item.doseNumber}
-                        onChange={value => handleVaccineChange(value, idx, 'doseNumber')}
-                      >
-                        {Array.from({ length: unitCount }, (_, i) => (
-                          <Select.Option key={i + 1} value={i + 1}>
-                            Mũi {i + 1}
-                          </Select.Option>
-                        ))}
-                      </Select>
+          placeholder="Mũi thứ"
+          value={item.doseNumber}
+          onChange={value => {
+            if (isReadOnly) return;
+            handleVaccineChange(value, idx, 'doseNumber');
+          }}
+          disabled={isReadOnly}
+        >
+          {Array.from({ length: unitCount }, (_, i) => (
+            <Select.Option key={i + 1} value={i + 1}>
+              Mũi {i + 1}
+            </Select.Option>
+          ))}
+        </Select>
                     </Form.Item>
                     {/* Mô tả */}
                     <Form.Item
-                      name={['vaccineHistories', idx, 'note']}
-                      style={{ flex: 3, marginBottom: 0, minWidth: 200, maxWidth: 350 }}
-                    >
-                      <Input.TextArea
-                        placeholder="Mô tả"
-                        value={item.note}
-                        onChange={e => handleVaccineChange(e.target.value, idx, 'note')}
-                        autoSize={{ minRows: 1, maxRows: 3 }}
-                        style={{ width: "100%" }}
-                      />
-                    </Form.Item>
+        name={['vaccineHistories', idx, 'note']}
+        style={{ flex: 3, marginBottom: 0, minWidth: 200, maxWidth: 350 }}
+      >
+        <Input.TextArea
+          placeholder="Mô tả"
+          value={item.note}
+          onChange={e => {
+            if (isReadOnly) return;
+            handleVaccineChange(e.target.value, idx, 'note');
+          }}
+          autoSize={{ minRows: 1, maxRows: 3 }}
+          style={{ width: "100%" }}
+          disabled={isReadOnly}
+        />
+      </Form.Item>
                     {/* Xóa */}
                     <div style={{ width: 60, textAlign: "center" }}>
-                      <Button danger onClick={() => handleRemoveVaccine(idx)}>Xóa</Button>
+                      {!(editMode && item.createBy) && (
+                        <Button danger onClick={() => handleRemoveVaccine(idx)}>Xóa</Button>
+                      )}
                     </div>
                   </div>
                 );

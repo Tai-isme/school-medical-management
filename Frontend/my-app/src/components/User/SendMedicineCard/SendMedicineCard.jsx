@@ -33,6 +33,7 @@ export default function InstructionForm({ onShowHistory }) {
   const [activeTab, setActiveTab] = useState('create'); // 'create' hoặc 'history'
   const [editingId, setEditingId] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null); // Thêm state lưu url ảnh cũ
   const usageTimeOptions = [
   "Sau ăn sáng từ 9h-9h30",
   "Trước ăn trưa: 10h30-11h",
@@ -181,17 +182,21 @@ useEffect(() => {
     setNote(req.note || '');
     setUsageTime(req.date || '');
     setMedicines(
-        req.medicalRequestDetailDTO && Array.isArray(req.medicalRequestDetailDTO)
+      req.medicalRequestDetailDTO && Array.isArray(req.medicalRequestDetailDTO)
         ? req.medicalRequestDetailDTO.map(item => ({
             name: item.medicineName,
-            quantity: item.dosage,
-            usage: item.time
+            quantity: item.quantity,
+            unit: item.type,
+            usage: item.timeSchedule,
+            method: item.method || '',
           }))
-        : [{ name: '', quantity: '', usage: '' }]
+        : [{ name: '', quantity: '', unit: '', usage: '', method: '' }]
     );
     setSelectedStudentId(req.studentDTO?.studentId || '');
     setActiveTab('create');
     setEditingId(req.requestId);
+    setImageUrl(req.image || null); // Lưu url ảnh cũ
+    setImageFile(null); // Reset file input
   };
   window.addEventListener('edit-medicine-request', handleEdit);
   return () => window.removeEventListener('edit-medicine-request', handleEdit);
@@ -241,7 +246,17 @@ useEffect(() => {
       <h2 style={{ textAlign: 'center', marginBottom: '20px' , marginTop: '0px' }}>Gửi đơn thuốc</h2>
       <div className="tabs" style={{ display: 'flex', borderBottom: '2px solid #eee', marginBottom: 0 }}>
         <button
-          onClick={() => setActiveTab('create')}
+          onClick={() => {
+            // Reset form khi chuyển sang tab tạo đơn thuốc
+            setPurpose('');
+            setNote('');
+            setUsageTime('');
+            setMedicines([{ name: '', quantity: '', unit: '', usage: '', method: '' }]);
+            setImageFile(null);
+            setImageUrl(null);
+            setEditingId(null);
+            setActiveTab('create');
+          }}
           className={activeTab === 'create' ? 'active' : ''}
           style={{
             padding: '12px 32px',
@@ -325,13 +340,39 @@ useEffect(() => {
                   onChange={e => setImageFile(e.target.files[0])}
                   style={{fontSize: '16px', padding: '6px', borderRadius: '6px'}}
                 />
-                {imageFile && (
-                  <div style={{marginTop: 8}}>
+                {(imageFile || imageUrl) && (
+                  <div style={{marginTop: 8, position: "relative", display: "inline-block"}}>
                     <img
-                      src={URL.createObjectURL(imageFile)}
+                      src={imageFile ? URL.createObjectURL(imageFile) : imageUrl}
                       alt="Preview"
-                      style={{maxWidth: 120, maxHeight: 120, borderRadius: 8, border: '1px solid #eee'}}
+                      style={{maxWidth: 120, maxHeight: 120, borderRadius: 8, border: '1px solid #eee', display: "block"}}
                     />
+                    <button
+                      type="button"
+                      onClick={() => { setImageFile(null); setImageUrl(null); }}
+                      style={{
+                        position: "absolute",
+                        top: 2,
+                        right: 750,
+                        background: "#fff",
+                        border: "1px solid #ccc",
+                        borderRadius: "50%",
+                        width: 22,
+                        height: 22,
+                        cursor: "pointer",
+                        color: "#d00",
+                        fontWeight: "bold",
+                        lineHeight: "18px",
+                        padding: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 1px 4px #0001"
+                      }}
+                      title="Xóa ảnh"
+                    >
+                      ×
+                    </button>
                   </div>
                 )}
               </div>
@@ -383,7 +424,7 @@ useEffect(() => {
         const val = e.target.value.replace(/[^0-9]/g, '');
         handleMedicineChange(index, { target: { name: 'quantity', value: val } });
       }}
-      placeholder="1"
+      placeholder=""
       required
       style={{ width: '100%' }}
     />

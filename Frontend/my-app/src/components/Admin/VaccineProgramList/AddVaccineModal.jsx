@@ -134,41 +134,7 @@ const AddVaccineModal = ({
         <Form.Item label="Ghi chú" name="note">
           <Input.TextArea rows={2} />
         </Form.Item>
-        <Form.Item
-          label="Ngày gửi form"
-          name="sendDate"
-          dependencies={["startDate"]}
-          rules={[
-            { required: true, message: "Vui lòng chọn ngày gửi form" },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                const startDate = getFieldValue("startDate");
-                if (!value || !startDate) {
-                  return Promise.resolve();
-                }
-                // So sánh chuẩn hóa theo kiểu Date
-                const sendDateObj = new Date(value);
-                const startDateObj = new Date(startDate);
-                if (sendDateObj >= startDateObj) {
-                  return Promise.reject(
-                    new Error("Ngày gửi form phải nhỏ hơn ngày thực hiện")
-                  );
-                }
-                return Promise.resolve();
-              },
-            }),
-          ]}
-          validateTrigger={["onChange", "onBlur"]}
-        >
-          <Input type="date" />
-        </Form.Item>
-        <Form.Item
-          label="Ngày thực hiện"
-          name="startDate"
-          rules={[{ required: true, message: "Vui lòng chọn ngày thực hiện" }]}
-        >
-          <Input type="date" />
-        </Form.Item>
+        
       </Form>
     </Modal>
   );
