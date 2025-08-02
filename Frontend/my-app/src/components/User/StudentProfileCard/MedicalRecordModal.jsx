@@ -348,15 +348,15 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                         optionFilterProp="children"
                         value={item.vaccineNameId}
                         onChange={value => {
-                          if (isReadOnly) return;
+                          if (editMode && item.createBy) return; // Không cho đổi nếu createBy
                           const selectedVac = vaccineOptions.find(v => v.id === value);
                           handleVaccineChange(selectedVac.vaccineName, idx, 'vaccineName');
                           handleVaccineChange(selectedVac.id, idx, 'vaccineNameId');
                         }}
+                        disabled={editMode && item.createBy}
                         filterOption={(input, option) =>
                           option.children.toLowerCase().includes(input.toLowerCase())
                         }
-                        disabled={isReadOnly}
                       >
                         {vaccineOptions.map(vac => (
                           <Select.Option key={vac.id} value={vac.id}>
@@ -373,20 +373,20 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                       initialValue={item.doseNumber}
                     >
                       <Select
-          placeholder="Mũi thứ"
-          value={item.doseNumber}
-          onChange={value => {
-            if (isReadOnly) return;
-            handleVaccineChange(value, idx, 'doseNumber');
-          }}
-          disabled={isReadOnly}
-        >
-          {Array.from({ length: unitCount }, (_, i) => (
-            <Select.Option key={i + 1} value={i + 1}>
-              Mũi {i + 1}
-            </Select.Option>
-          ))}
-        </Select>
+    placeholder="Mũi thứ"
+    value={item.doseNumber}
+    onChange={value => {
+      if (editMode && item.createBy) return;
+      handleVaccineChange(value, idx, 'doseNumber');
+    }}
+    disabled={editMode && item.createBy}
+  >
+    {Array.from({ length: unitCount }, (_, i) => (
+      <Select.Option key={i + 1} value={i + 1}>
+        Mũi {i + 1}
+      </Select.Option>
+    ))}
+  </Select>
                     </Form.Item>
                     {/* Mô tả */}
                     <Form.Item
@@ -397,12 +397,12 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
           placeholder="Mô tả"
           value={item.note}
           onChange={e => {
-            if (isReadOnly) return;
+            if (editMode && item.createBy) return;
             handleVaccineChange(e.target.value, idx, 'note');
           }}
           autoSize={{ minRows: 1, maxRows: 3 }}
           style={{ width: "100%" }}
-          disabled={isReadOnly}
+          disabled={editMode && item.createBy}
         />
       </Form.Item>
                     {/* Xóa */}

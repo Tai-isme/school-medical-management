@@ -15,16 +15,16 @@ const { RangePicker } = DatePicker;
 
 const statusMap = {
   PROCESSING: "Chờ xử lý",
-  SUBMITTED: "Đã duyệt",
+  CONFIRMED: "Đã duyệt", // Đổi SUBMITTED thành CONFIRMED
   COMPLETED: "Đã cho uống",
-  CANCELLED: "Từ chối", // Đổi từ REJECTED sang CANCELLED
+  CANCELLED: "Từ chối",
 };
 
 const colorMap = {
   PROCESSING: "gold",
-  SUBMITTED: "green",
+  CONFIRMED: "green", // Đổi SUBMITTED thành CONFIRMED
   COMPLETED: "blue",
-  CANCELLED: "red", // Đổi từ REJECTED sang CANCELLED
+  CANCELLED: "red",
 };
 
 const MedicalRequest = () => {
@@ -85,7 +85,7 @@ const MedicalRequest = () => {
       await axios.put(
         `http://localhost:8080/api/nurse/${id}/status`,
         {
-          status: "SUBMITTED",
+          status: "CONFIRMED", // Đổi SUBMITTED thành CONFIRMED
           reason_rejected: null
         },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -211,7 +211,7 @@ const MedicalRequest = () => {
                 className={
                   record.status === "PROCESSING"
                     ? "card-processing"
-                    : record.status === "COMFIRMED"
+                    : record.status === "CONFIRMED" // Đổi SUBMITTED thành CONFIRMED
                     ? "card-submitted"
                     : record.status === "COMPLETED"
                     ? "card-completed"
@@ -259,13 +259,13 @@ const MedicalRequest = () => {
                       <Button
                         danger
                         size="small"
-                        onClick={() => handleRejectClick(record.requestId)} // Mở modal nhập lý do
+                        onClick={() => handleRejectClick(record.requestId)}
                       >
                         Từ chối
                       </Button>
                     </>
                   )}
-                  {record.status === "SUBMITTED" && (
+                  {record.status === "CONFIRMED" && ( // Đổi SUBMITTED thành CONFIRMED
                     <Button
                       type="primary"
                       size="small"
@@ -349,7 +349,7 @@ const MedicalRequest = () => {
           <TabPane tab="Chờ " key="PROCESSING">
             {renderCards()}
           </TabPane>
-          <TabPane tab="Đã duyệt" key="SUBMITTED">
+          <TabPane tab="Đã duyệt" key="CONFIRMED"> {/* Đổi SUBMITTED thành CONFIRMED */}
             {renderCards()}
           </TabPane>
           <TabPane tab="Đã cho uống" key="COMPLETED">
