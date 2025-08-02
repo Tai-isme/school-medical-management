@@ -25,17 +25,18 @@ const HealthCheckProgramModal = ({
       initialValues={
         editMode && program
           ? {
-              healthCheckName: program.healthCheckName,
-              description: program.description,
-              startDate: program.startDate ? dayjs(program.startDate) : null,
-              dateSendForm: program.dateSendForm
-                ? dayjs(program.dateSendForm)
-                : null,
-              location: program.location,
-              nurseId: program.nurseId, // phải là nurseId, không phải nurseID
-              classIds: program.classIds,
-            }
-          : {}
+        healthCheckName: program.healthCheckName,
+        description: program.description,
+        startDate: program.startDate ? dayjs(program.startDate) : null,
+        dateSendForm: program.dateSendForm ? dayjs(program.dateSendForm) : null,
+        location: program.location,
+        nurseId: program.nurseId,
+        classIds: program.classIds || 
+          (program.participateClasses
+            ? program.participateClasses.map((item) => item.classDTO.classId)
+            : []),
+      }
+    : {}
       }
     >
       <Form.Item
@@ -84,9 +85,12 @@ const HealthCheckProgramModal = ({
                 validator(_, value) {
                   const startDate = getFieldValue("startDate");
                   if (!value || !startDate) return Promise.resolve();
-                  if (value.isSameOrBefore(startDate, "day")) {
-                    return Promise.reject("Ngày gửi form phải sau ngày bắt đầu!");
+                  if (value.isSameOrAfter(startDate, "day")) {
+                    return Promise.reject(
+                      "Ngày gửi form phải trước ngày bắt đầu!"
+                    );
                   }
+
                   return Promise.resolve();
                 },
               }),
