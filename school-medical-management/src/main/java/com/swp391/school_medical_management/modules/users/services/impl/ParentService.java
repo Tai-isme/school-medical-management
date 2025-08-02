@@ -136,6 +136,14 @@ public class ParentService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ y tế!");
         }
 
+        Set<Integer> vaccineIds = new HashSet<>();
+        for (VaccineHistoryRequest v : request.getVaccineHistories()) {
+            if (!vaccineIds.add(v.getVaccineNameId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Không được Chọn hai loại vaccine giống nhau");
+            }
+        }
+
         MedicalRecordEntity medicalRecord = recordOpt.get();
         medicalRecord.setAllergies(request.getAllergies());
         medicalRecord.setChronicDisease(request.getChronicDisease());
