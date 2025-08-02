@@ -57,6 +57,8 @@ const HealthCheckProgramList = () => {
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentEditRecord, setCurrentEditRecord] = useState(null);
+  const [expDateModal, setExpDateModal] = useState({ visible: false, programId: null });
+  const [expDate, setExpDate] = useState(null);
 
   useEffect(() => {
     fetchProgram();
@@ -794,18 +796,18 @@ const HealthCheckProgramList = () => {
                           Chỉnh sửa kết quả
                         </Button>
                         <Button
-                          type="default"
-                          style={{
-                            marginLeft: 8,
-                            background: "#00bcd4",
-                            color: "#fff",
-                            border: "none",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => handleSendNotification(program.id)}
-                        >
-                          Gửi thông báo
-                        </Button>
+  type="default"
+  style={{
+    marginLeft: 8,
+    background: "#00bcd4",
+    color: "#fff",
+    border: "none",
+    cursor: "pointer",
+  }}
+  onClick={() => setExpDateModal({ visible: true, programId: program.id })}
+>
+  Gửi thông báo
+</Button>
                         {program.status === "COMPLETED" && (
                           <Button
                             type="default"
@@ -1668,6 +1670,57 @@ const HealthCheckProgramList = () => {
             </Row>
           </Form>
         )}
+      </Modal>
+
+      <Modal
+        title="Chọn ngày hết hạn biểu mẫu"
+        open={expDateModal.visible}
+        onCancel={() => {
+          setExpDateModal({ visible: false, programId: null });
+          setExpDate(null);
+        }}
+        onOk={async () => {
+          if (!expDate) {
+            message.error("Vui lòng chọn ngày hết hạn!");
+            return;
+          }
+          const token = localStorage.getItem("token");
+          try {
+            await axios.post(
+              `http://localhost:8080/api/nurse/health-check-form/${expDateModal.programId}?expDate=${expDate.format("YYYY-MM-DD")}`,
+              {},
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            await Swal.fire({
+              icon: "success",
+              title: "Gửi thông báo thành công!",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+            setExpDateModal({ visible: false, programId: null });
+            setExpDate(null);
+            fetchProgram();
+          } catch (error) {
+            Swal.fire({
+              icon: "error",
+              title: "Gửi thông báo thất bại!",
+              text: error?.response?.data?.message || "",
+              showConfirmButton: true,
+              confirmButtonText: "Đóng",
+              confirmButtonColor: "#3085d6",
+            });
+          }
+        }}
+        okText="Gửi"
+        cancelText="Hủy"
+      >
+        <DatePicker
+          value={expDate}
+          onChange={setExpDate}
+          format="YYYY-MM-DD"
+          style={{ width: "100%" }}
+          placeholder="Chọn ngày hết hạn"
+        />
       </Modal>
     </div>
   );
