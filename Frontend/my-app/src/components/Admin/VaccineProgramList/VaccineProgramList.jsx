@@ -979,6 +979,48 @@ const handleSendNotification = async (programId, deadline) => {
     Bắt đầu chương trình
   </Button>
 )}
+{/* Nút Kết thúc chương trình */}
+{program.status === "GENERATED_RESULT" &&
+  localStorage.getItem("role") === "ADMIN" && (
+    <Button
+      type="primary"
+      style={{
+        marginLeft: 8,
+        background: "#d4380d",
+        border: "none",
+        float: "right",
+        minWidth: 180,
+        fontWeight: 600,
+      }}
+      onClick={async () => {
+        const confirm = await Swal.fire({
+          title: "Kết thúc chương trình?",
+          text: "Bạn có chắc muốn kết thúc chương trình này? Sau khi kết thúc, chương trình sẽ chuyển sang trạng thái hoàn thành.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Kết thúc",
+          cancelButtonText: "Hủy",
+        });
+        if (!confirm.isConfirmed) return;
+        const token = localStorage.getItem("token");
+        try {
+          await axios.patch(
+            `http://localhost:8080/api/admin/vaccine-program/${program.vaccineId}?status=COMPLETED`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          message.success("Đã kết thúc chương trình!");
+          fetchProgram(); // <-- Đã có dòng này, sẽ render lại trang
+        } catch {
+          message.error("Kết thúc chương trình thất bại!");
+        }
+      }}
+    >
+      Kết thúc chương trình
+    </Button>
+)}
                           </div>
                           {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
                           {userRole === "ADMIN" && (

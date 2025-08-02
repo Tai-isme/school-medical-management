@@ -45,9 +45,17 @@ const VaccineProgramResultTab = ({
       const values = await modalForm.validateFields();
       const token = localStorage.getItem("token");
       const vaccineFormId = currentRecord?.vaccineFormId || currentRecord?.id;
+      const vaccineResultId = currentRecord?.id; // hoặc currentRecord?.vaccineResultId
 
-      await fetch("http://localhost:8080/api/nurse/vaccine-result", {
-        method: "POST",
+      const isEdit = !!vaccineResultId; // Nếu có id là chỉnh sửa
+
+      const url = isEdit
+        ? `http://localhost:8080/api/nurse/vaccine-result/${vaccineResultId}`
+        : "http://localhost:8080/api/nurse/vaccine-result";
+      const method = isEdit ? "POST" : "PUT";
+
+      await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -57,7 +65,7 @@ const VaccineProgramResultTab = ({
           reaction: values.reaction,
           actionsTaken: values.actionsTaken,
           createAt: new Date().toISOString(),
-          isInjected: values.isInjected, // Đúng theo API mới
+          isInjected: values.isInjected,
           vaccineFormId: vaccineFormId,
         }),
       });
