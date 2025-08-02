@@ -23,7 +23,6 @@ import com.swp391.school_medical_management.modules.users.dtos.request.ChangePas
 import com.swp391.school_medical_management.modules.users.dtos.request.IdTokenRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.LoginRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.LoginResponse;
 import com.swp391.school_medical_management.modules.users.dtos.response.RefreshTokenDTO;
 import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
@@ -75,31 +74,12 @@ public class AuthService {
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
             throw new BadCredentialsException("Incorrect email or password!");
-
         UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-
-        if (user.getRole() == UserRole.PARENT) {
-            List<StudentDTO> studentDTOs = user.getStudents().stream().map(studentEntity -> {
-                StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
-
-                if (studentEntity.getClassEntity() != null) {
-                    ClassDTO classDTO = modelMapper.map(studentEntity.getClassEntity(), ClassDTO.class);
-                    studentDTO.setClassDTO(classDTO);
-                }
-
-                return studentDTO;
-            }).collect(Collectors.toList());
-
-            userDTO.setStudentDTOs(studentDTOs);
-        }
-
         String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(),
                 userDTO.getRole());
         String refreshToken = jwtService.generateRefreshToken(user.getUserId());
-
         return new LoginResponse(token, refreshToken, userDTO, null);
     }
-
 
     public void updateAccountStatus(int userId, boolean status) {
         Optional<UserEntity> userOpt = userRepository.findById(userId);
@@ -221,27 +201,10 @@ public class AuthService {
             if (!user.isActive()) {
                 throw new BadCredentialsException("Your account is not active!");
             }
-
             UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-
             List<StudentEntity> studentList = studentRepository.findStudentByParent_UserId(userDTO.getId());
-
-            List<StudentDTO> studentDTOList = studentList.stream().map(student -> {
-                StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
-
-                if (student.getClassEntity() != null) {
-                    ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
-                    studentDTO.setClassDTO(classDTO);
-                }
-
-                return studentDTO;
-            }).collect(Collectors.toList());
-
-            userDTO.setStudentDTOs(studentDTOList);
-
             String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(),
                     userDTO.getRole());
-            String refreshToken = jwtService.generateRefreshToken(userDTO.getId());
 
             System.out.println("=== NEW JWT TOKEN ===");
             Date exp = jwtService.extractExpiration(token);
@@ -250,11 +213,12 @@ public class AuthService {
             System.out.println("Now: " + new Date());
             System.out.println("=====================");
 
+            String refreshToken = jwtService.generateRefreshToken(userDTO.getId());
+            List<StudentDTO> studentDTOList = studentList.stream()
+                    .map(student -> modelMapper.map(student, StudentDTO.class)).collect(Collectors.toList());
             return new LoginResponse(token, refreshToken, userDTO, studentDTOList);
-
         } catch (FirebaseAuthException e) {
             throw new BadCredentialsException(e.getMessage());
         }
     }
-
 }
