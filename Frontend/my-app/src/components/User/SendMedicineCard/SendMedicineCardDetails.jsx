@@ -68,11 +68,11 @@ const RequestTable = () => {
   // --- Column Definitions ---
   const columns = [
     {
-      title: 'Mã đơn thuốc',
-      dataIndex: 'requestId',
-      key: 'requestId',
-      sorter: (a, b) => a.requestId - b.requestId,
-      align: 'center', // căn giữa
+      title: 'Tên học sinh',
+    dataIndex: 'studentDTO',
+    key: 'studentName',
+    align: 'center',
+    render: (studentDTO) => studentDTO?.fullName || "--",
     },
     {
       title: 'Mục đích gửi thuốc',
@@ -100,7 +100,7 @@ const RequestTable = () => {
         if (status === "PROCESSING") {
           color = "#ff9800";
           text = "Chờ duyệt";
-        } else if (status === "SUBMITTED") {
+        } else if (status === "CONFIRMED") {
           color = "#1976d2";
           text = "Đã duyệt";
         } else if (status === "COMPLETED") {

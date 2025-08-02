@@ -23,8 +23,30 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
   };
   const handleVaccineChange = (value, index, field) => {
     setVaccineHistories(prevVaccines => {
-      const newList = [...prevVaccines];
+      let newList = [...prevVaccines];
       newList[index] = { ...newList[index], [field]: value };
+
+      // Chỉ validate khi người dùng đổi hoặc xóa vaccineNameId
+      if (field === "vaccineNameId" && value) {
+        const isDuplicate = newList.some(
+          (v, idx) => v.vaccineNameId === value && idx !== index && value !== ""
+        );
+        if (isDuplicate) {
+          form.setFields([
+            {
+              name: ['vaccineHistories', index, 'vaccineNameId'],
+              errors: ['Không được chọn 2 loại vaccine cùng tên!'],
+            },
+          ]);
+        } else {
+          form.setFields([
+            {
+              name: ['vaccineHistories', index, 'vaccineNameId'],
+              errors: [],
+            },
+          ]);
+        }
+      }
       return newList;
     });
   };
@@ -115,7 +137,22 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
   }, [open]);
 
   const handleRemoveVaccine = (idx) => {
-    setVaccineHistories(prev => prev.filter((_, i) => i !== idx));
+    setVaccineHistories(prev => {
+      const newList = prev.filter((_, i) => i !== idx);
+      // Sau khi xóa, kiểm tra lại các dòng còn lại xem có trùng không và clear lỗi nếu cần
+      newList.forEach((item, i) => {
+        const isDuplicate = newList.some(
+          (v, j) => v.vaccineNameId === item.vaccineNameId && i !== j && item.vaccineNameId !== ""
+        );
+        form.setFields([
+          {
+            name: ['vaccineHistories', i, 'vaccineNameId'],
+            errors: isDuplicate ? ['Không được chọn 2 loại vaccine cùng tên!'] : [],
+          },
+        ]);
+      });
+      return newList;
+    });
   };
 
   const vaccineTableColumns = [
@@ -340,7 +377,21 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
                     <Form.Item
                       name={['vaccineHistories', idx, 'vaccineNameId']}
                       style={{ flex: 2, marginBottom: 0 }}
-                      rules={[{ required: true, message: 'Chọn loại vaccine' }]}
+                      rules={[
+                        { required: true, message: 'Chọn loại vaccine' },
+                        {
+                          validator: (_, value) => {
+                            if (!value) return Promise.resolve();
+                            // Lấy toàn bộ vaccineNameId hiện tại
+                            const allIds = form.getFieldValue('vaccineHistories')?.map(v => v.vaccineNameId);
+                            // Nếu có nhiều hơn 1 dòng có cùng id, báo lỗi
+                            if (allIds && allIds.filter(id => id === value).length > 1) {
+                              return Promise.reject('Không được chọn 2 loại vaccine cùng tên!');
+                            }
+                            return Promise.resolve();
+                          }
+                        }
+                      ]}
                     >
                       <Select
                         showSearch
@@ -379,13 +430,15 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
       if (editMode && item.createBy) return;
       handleVaccineChange(value, idx, 'doseNumber');
     }}
-    disabled={editMode && item.createBy}
+    // disabled={editMode && item.createBy}
   >
-    {Array.from({ length: unitCount }, (_, i) => (
-      <Select.Option key={i + 1} value={i + 1}>
-        Mũi {i + 1}
-      </Select.Option>
-    ))}
+    {Array.from({ length: unitCount }, (_, i) => i + 1)
+      .filter(num => !item.createBy || num >= item.doseNumber)
+      .map(num => (
+        <Select.Option key={num} value={num}>
+          Mũi {num}
+        </Select.Option>
+      ))}
   </Select>
                     </Form.Item>
                     {/* Mô tả */}
@@ -402,7 +455,7 @@ export default function MedicalRecordModal({ open, onCancel, initialValues, load
           }}
           autoSize={{ minRows: 1, maxRows: 3 }}
           style={{ width: "100%" }}
-          disabled={editMode && item.createBy}
+          // disabled={editMode && item.createBy}
         />
       </Form.Item>
                     {/* Xóa */}

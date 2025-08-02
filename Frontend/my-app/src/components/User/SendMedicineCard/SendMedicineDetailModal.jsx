@@ -40,7 +40,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
                   background:
                     detailData.status === "COMPLETED"
                       ? "#4caf50"
-                      : detailData.status === "SUBMITTED"
+                      : detailData.status === "CONFIRMED"
                       ? "#1976d2"
                       : detailData.status === "PROCESSING"
                       ? "#ff9800"
@@ -60,7 +60,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
               >
                 {detailData.status === "COMPLETED"
                   ? "Đã cho uống"
-                  : detailData.status === "SUBMITTED"
+                  : detailData.status === "CONFIRMED"
                   ? "Đã duyệt"
                   : detailData.status === "PROCESSING"
                   ? "Chờ duyệt"
@@ -117,13 +117,13 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
                 <div><b>Liều lượng:</b> {item.quantity} {item.type}</div>
                 <div><b>Cách dùng:</b> {item.method}</div>
                 <div><b>Thời gian:</b> {item.timeSchedule}</div>
-                {item.note && <div><b>Ghi chú:</b> {item.note}</div>}
                 <div>
                   <b>Trạng thái uống thuốc:</b>{" "}
                   {item.status === "TAKEN"
                     ? <span style={{ color: "#21ba45" }}>Đã cho uống</span>
                     : <span style={{ color: "#faad14" }}>Chưa cho uống</span>
                   }
+                  {item.note && <div><b>Ghi chú của y tá:</b> {item.note}</div>}
                 </div>
               </div>
             ))}

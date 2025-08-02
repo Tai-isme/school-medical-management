@@ -354,7 +354,7 @@ const StudentProfile = () => {
                       <input
                         type="text"
                         name="lastUpdated"
-                        value={studentInfo.lastUpdated}
+                        value={studentInfo.lastUpdated ? new Date(studentInfo.lastUpdated).toLocaleDateString() : ''}
                         onChange={handleInputChange}
                         readOnly
                         className="read-only"
@@ -373,7 +373,7 @@ const StudentProfile = () => {
                       
                     </div>
                     {/* Display the note if createBy is 1 */}
-                    {studentInfo.createBy === 1 && (
+                    {studentInfo.createBy === true && (
                         <span style={{ marginTop: '8px', fontSize: '14px', color: '#1976d2' }}>
                           Thông tin được tạo từ nhà trường.
                         </span>
@@ -444,9 +444,9 @@ const StudentProfile = () => {
           vaccineNameId: v.vaccineNameDTO?.id || v.vaccineNameId || "",
           doseNumber: v.unit || v.doseNumber || 1,
           note: v.note || "",
-          createBy: v.createBy // giữ nguyên createBy từ API
+          createBy: v.createBy
         }))
-      : [{ vaccineName: "", vaccineNameId: "", doseNumber: undefined, note: "", createBy: false }]
+      : [] // <-- Không thêm dòng trống nữa!
   }}
   editMode={editMode}
 />
