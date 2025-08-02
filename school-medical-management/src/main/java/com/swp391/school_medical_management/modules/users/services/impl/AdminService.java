@@ -1305,8 +1305,11 @@ public class AdminService {
         for (VaccineNameEntity entity : vaccineNameEntities) {
             VaccineNameDTO vaccineNameDTO = modelMapper.map(entity, VaccineNameDTO.class);
 
-            List<VaccineUnitEntity> vaccineUnitEntities = vaccineUnitRepository.findByVaccineName_VaccineNameId(entity.getVaccineNameId());
-            List<VaccineUnitDTO> vaccineUnitDTOS = vaccineUnitEntities.stream().map(vaccineUnitEntity -> modelMapper.map(vaccineUnitEntity, VaccineUnitDTO.class)).collect(Collectors.toList());
+            List<VaccineUnitEntity> vaccineUnitEntities = vaccineUnitRepository
+                    .findByVaccineName_VaccineNameId(entity.getVaccineNameId());
+            List<VaccineUnitDTO> vaccineUnitDTOS = vaccineUnitEntities.stream()
+                    .map(vaccineUnitEntity -> modelMapper.map(vaccineUnitEntity, VaccineUnitDTO.class))
+                    .collect(Collectors.toList());
 
             UserDTO userDTO = modelMapper.map(entity.getUser(), UserDTO.class);
 
@@ -1318,19 +1321,40 @@ public class AdminService {
     }
 
     public VaccineNameDTO createVaccineName(VaccineNameRequest request) {
-        // if
-        // (vaccineNameRepository.findByVaccineName(request.getVaccineName()).isPresent())
-        // {
-        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name
-        // already exists");
-        // }
+        if (vaccineNameRepository.findByVaccineName(request.getVaccineName()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vaccine name already exists");
+        }
 
-        // VaccineNameEntity entity = modelMapper.map(request, VaccineNameEntity.class);
-        // VaccineNameEntity saved = vaccineNameRepository.save(entity);
+        VaccineNameEntity entity = modelMapper.map(request, VaccineNameEntity.class);
 
-        // return modelMapper.map(saved, VaccineNameDTO.class);
-        return null;
+        UserEntity admin = userRepository.findById(request.getAdminId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+        entity.setUser(admin);
+
+        VaccineNameEntity savedVaccine = vaccineNameRepository.save(entity);
+
+        List<VaccineUnitEntity> unitEntities = new ArrayList<>();
+        for (int i = 1; i <= request.getTotalUnit(); i++) {
+            VaccineUnitEntity unit = new VaccineUnitEntity();
+            unit.setVaccineName(savedVaccine);
+            unit.setUnit(i); 
+            unit.setSchedule(""); 
+            unitEntities.add(unit);
+        }
+
+        vaccineUnitRepository.saveAll(unitEntities);
+
+        VaccineNameDTO dto = modelMapper.map(savedVaccine, VaccineNameDTO.class);
+        dto.setUserDTO(modelMapper.map(admin, UserDTO.class));
+
+        List<VaccineUnitDTO> unitDTOs = unitEntities.stream()
+                .map(unit -> modelMapper.map(unit, VaccineUnitDTO.class))
+                .collect(Collectors.toList());
+        dto.setVaccineUnitDTOs(unitDTOs);
+
+        return dto;
     }
+
 
     public void importVaccineNameFromExcel(MultipartFile file) {
         // try (InputStream is = file.getInputStream(); Workbook workbook = new
