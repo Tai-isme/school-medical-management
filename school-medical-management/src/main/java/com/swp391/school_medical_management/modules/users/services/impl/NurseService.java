@@ -1789,7 +1789,7 @@ public class NurseService {
         result.setReaction(request.getReaction());
         result.setActionsTaken(request.getActionsTaken());
         result.setCreatedAt(request.getCreateAt() != null ? request.getCreateAt() : LocalDateTime.now());
-        result.setIsInjected(request.getIsRejected() != null && !request.getIsRejected());
+        result.setIsInjected(request.getIsInjected());
 
         result.setVaccineFormEntity(form);
         result.setStudentEntity(form.getStudent());

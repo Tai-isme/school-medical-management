@@ -14,6 +14,6 @@ public class VaccineResultRequest {
     private String reaction;
     private String actionsTaken;
     private LocalDateTime createAt;
-    private Boolean isRejected;
+    private Boolean isInjected;
     private int vaccineFormId;
 }
