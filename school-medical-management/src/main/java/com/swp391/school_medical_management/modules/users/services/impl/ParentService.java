@@ -67,6 +67,8 @@ public class ParentService {
 
     @Autowired
     private UploadImageFile uploadImageFile;
+    @Autowired
+    private VaccineProgramRepository vaccineProgramRepository;
 
     public MedicalRecordDTO createMedicalRecord(int parentId, MedicalRecordsRequest request) {
         Optional<StudentEntity> studentOpt = studentRepository.findById(request.getStudentId());
@@ -585,6 +587,7 @@ public class ParentService {
                 .filter(form -> form.getParent().getUserId() == parentId).map(form -> {
                     VaccineFormDTO dto = modelMapper.map(form, VaccineFormDTO.class);
                     VaccineProgramDTO programDTO = modelMapper.map(form.getVaccineProgram(), VaccineProgramDTO.class);
+                    logger.info("vaccine program id: " + programDTO.getVaccineId());
                     programDTO.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
                     dto.setVaccineProgramDTO(programDTO);
                     return dto;
@@ -841,12 +844,14 @@ public class ParentService {
         }
 
         List<VaccineFormDTO> vaccineForms = getAllVaccineForm(parentId, studentId);
+        logger.info("list vaccine size: " + vaccineForms.size());
 
         // Thien lay them VaccineUnitDTO cho VaccineFormDTO
         for (VaccineFormDTO vaccineForm : vaccineForms) {
             VaccineProgramDTO programDTO = vaccineForm.getVaccineProgramDTO();
+            VaccineProgramEntity vaccineProgram = vaccineProgramRepository.findById(vaccineForm.getVaccineProgramID()).get();
             if (programDTO != null) {
-                VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(programDTO.getVaccineId())
+                VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(vaccineProgram.getVaccineName().getVaccineNameId())
                         .orElseThrow(
                                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy vaccine!"));
                 programDTO.setVaccineNameDTO(modelMapper.map(vaccineNameEntity, VaccineNameDTO.class));

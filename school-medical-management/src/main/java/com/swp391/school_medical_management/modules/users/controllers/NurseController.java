@@ -128,8 +128,7 @@ public class NurseController {
     @PutMapping("/medical-event/{medicalEventId}")
     public ResponseEntity<MedicalEventDTO> updateMedicalEvent(@PathVariable int medicalEventId, @RequestBody MedicalEventRequest request) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalEventDTO medicalEventDTO = nurseService.updateMedicalEvent(Integer.parseInt(nurseId), medicalEventId,
-                request);
+        MedicalEventDTO medicalEventDTO = nurseService.updateMedicalEvent(Integer.parseInt(nurseId), medicalEventId, request);
         return ResponseEntity.ok(medicalEventDTO);
     }
 

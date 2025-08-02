@@ -200,12 +200,12 @@ public class AuthService {
             String token = jwtService.generateToken(userDTO.getId(), userDTO.getEmail(), userDTO.getPhone(),
                     userDTO.getRole());
 
-            System.out.println("=== NEW JWT TOKEN ===");
+            logger.info("=== NEW JWT TOKEN ===");
             Date exp = jwtService.extractExpiration(token);
-            System.out.println("Generated token: " + token);
-            System.out.println("Expires at: " + exp);
-            System.out.println("Now: " + new Date());
-            System.out.println("=====================");
+            logger.info("Generated token: " + token);
+            logger.info("Expires at: " + exp);
+            logger.info("Now: " + new Date());
+            logger.info("=====================");
 
             String refreshToken = jwtService.generateRefreshToken(userDTO.getId());
             List<StudentDTO> studentDTOList = studentList.stream()
