@@ -65,7 +65,7 @@ const VaccineProgramModal = ({
 
   // Đảm bảo đồng bộ khi mở modal chỉnh sửa
   React.useEffect(() => {
-    setSelectedClasses(initialValues.classes || []);
+    setSelectedClasses(initialValues.classIds || []);
   }, [initialValues, open]);
 
   useEffect(() => {
@@ -77,19 +77,13 @@ const VaccineProgramModal = ({
           ...initialValues,
           startDate: initialValues?.startDate ? dayjs(initialValues.startDate) : null,
           sendFormDate: initialValues?.sendFormDate ? dayjs(initialValues.sendFormDate) : null,
-          classes: initialValues?.classes || [],
+          classIds: initialValues?.classIds || [],
           unit: initialValues?.unit || 1,
-          nurseId: initialValues?.nurseId, // Đảm bảo dùng nurseId
+          nurseId: initialValues?.nurseId,
         });
       }
     }
   }, [initialValues, open, form]);
-
-  useEffect(() => {
-    if (initialValues?.vaccineNameId) {
-      setSelectedVaccineId(initialValues.vaccineNameId);
-    }
-  }, [initialValues]);
 
   const handleClassToggle = (value) => {
     setSelectedClasses((prev) =>
@@ -98,7 +92,7 @@ const VaccineProgramModal = ({
         : [...prev, value]
     );
     form.setFieldsValue({
-      classes: selectedClasses.includes(value)
+      classIds: selectedClasses.includes(value)
         ? selectedClasses.filter((v) => v !== value)
         : [...selectedClasses, value],
     });
@@ -234,7 +228,7 @@ const VaccineProgramModal = ({
         {/* Chọn lớp dạng button group đẹp */}
         <Form.Item
           label={<span><span role="img" aria-label="class">🏫</span> Chọn lớp</span>}
-          name="classes"
+          name="classIds"
           rules={[{ required: true, message: "Chọn ít nhất một lớp" }]}
           style={{ width: "100%" }}
         >

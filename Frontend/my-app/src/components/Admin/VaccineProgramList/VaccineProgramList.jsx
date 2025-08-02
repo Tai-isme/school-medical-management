@@ -200,11 +200,15 @@ const VaccineProgramList = () => {
         ...values,
         startDate: values.startDate ? values.startDate.format("YYYY-MM-DD") : undefined,
         dateSendForm: values.sendFormDate ? values.sendFormDate.format("YYYY-MM-DD") : undefined,
+        classIds: values.classIds, // Đảm bảo gửi đúng tên trường
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );
+    // Sau khi tạo chương trình thành công
     message.success("Tạo chương trình tiêm chủng thành công!");
     setCreateVisible(false);
+    setEditMode(false);
+    setProgram(null);
     fetchProgram();
   } catch (error) {
     message.error("Tạo chương trình tiêm chủng thất bại!");
@@ -227,8 +231,8 @@ const VaccineProgramList = () => {
           startDate: values.startDate.format("YYYY-MM-DD"),
           dateSendForm: values.sendFormDate.format("YYYY-MM-DD"),
           location: values.location,
-          nurseId: values.nurseId, // Sửa lại đúng trường nurseId
-          classIds: values.classes, // Lấy từ form (mảng id lớp)
+          nurseId: values.nurseId,
+          classIds: values.classIds, // Đổi từ values.classes sang values.classIds
         },
         {
           headers: {
@@ -236,6 +240,7 @@ const VaccineProgramList = () => {
           },
         }
       );
+      // Sau khi cập nhật chương trình thành công
       await Swal.fire({
         icon: "success",
         title: "Cập nhật chương trình thành công!",
@@ -244,6 +249,7 @@ const VaccineProgramList = () => {
       });
       setCreateVisible(false);
       setEditMode(false);
+      setProgram(null);
       fetchProgram();
     } catch (error) {
       Swal.fire({
@@ -278,11 +284,13 @@ const VaccineProgramList = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        // Sau khi xóa chương trình thành công
         await Swal.fire(
           "Đã xóa!",
           "Chương trình đã được xóa thành công.",
           "success"
         );
+        setProgram(null);
         fetchProgram();
       } catch {
         Swal.fire("Lỗi", "Xóa thất bại!", "error");
@@ -892,7 +900,7 @@ const handleSendNotification = async (programId, deadline) => {
                                       unit: program.unit || 1,
                                       startDate: program.startDate,
                                       sendFormDate: program.dateSendForm,
-                                      classes: program.participateClassDTOs?.map(cls => cls.classId) || [], // SỬA ĐOẠN NÀY
+                                      classIds: program.participateClassDTOs?.map(cls => cls.classId) || [], // SỬA ĐOẠN NÀY
                                       nurseId: program.nurseId,
                                       location: program.location,
                                       description: program.description,
@@ -942,7 +950,7 @@ const handleSendNotification = async (programId, deadline) => {
     </Button>
 )}
 {/* Nút Xem kết quả và Xuất kết quả ra excel */}
-{program.status === "COMPLETED" && (
+{program.status === "COMPLETED" || program.status === "GENERATED_RESULT"  && (
   <>
     <Button
       type="primary"
@@ -993,7 +1001,7 @@ const handleSendNotification = async (programId, deadline) => {
                                     unit: program.unit || 1,
                                     startDate: program.startDate,
                                     sendFormDate: program.dateSendForm,
-                                    classes: program.participateClassDTOs?.map(cls => cls.classId) || [], // SỬA ĐOẠN NÀY
+                                    classIds: program.participateClassDTOs?.map(cls => cls.classId) || [], // SỬA ĐOẠN NÀY
                                     nurseId: program.nurseId,
                                     location: program.location,
                                     description: program.description,
