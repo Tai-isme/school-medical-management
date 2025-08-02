@@ -6,10 +6,8 @@ import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
 import com.swp391.school_medical_management.modules.users.services.impl.ParentService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -120,17 +118,26 @@ public class ParentController {
         return ResponseEntity.ok(medicalRequestDtoList);
     }
 
-    @PutMapping(value = "/medical-request/{requestId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/medical-request/{requestId}", consumes = {"multipart/form-data"})
     public ResponseEntity<MedicalRequestDTO> updateMedicalRequest(
             @PathVariable int requestId,
-            @RequestPart("request") @Valid MedicalRequest request,
+            @RequestPart("request") String requestJson,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) {
-
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MedicalRequest request;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            request = mapper.readValue(requestJson, MedicalRequest.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid request format: " + e.getMessage());
+        }
+
         MedicalRequestDTO medicalRequestDTO = parentService.updateMedicalRequest(Integer.parseInt(parentId), request, requestId, image);
         return ResponseEntity.ok(medicalRequestDTO);
     }
+
 
     @DeleteMapping("/medical-request/{requestId}")
     public ResponseEntity<Void> deleteMedicalRequest(@PathVariable int requestId) {

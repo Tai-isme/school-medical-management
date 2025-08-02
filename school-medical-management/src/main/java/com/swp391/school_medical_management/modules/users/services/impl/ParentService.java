@@ -407,14 +407,14 @@ public class ParentService {
         }).collect(Collectors.toList());
     }
 
-    public MedicalRequestDTO updateMedicalRequest(int parentId, MedicalRequest request, Integer requestId,
-            MultipartFile image) {
+    public MedicalRequestDTO updateMedicalRequest(int parentId, MedicalRequest request, Integer requestId, MultipartFile image) {
 
         MedicalRequestEntity existingRequest = medicalRequestRepository.findById(requestId)
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu gửi thuốc"));
 
         String imageUrl = existingRequest.getImage();
+        logger.info("image: " + imageUrl);
         if (image != null && !image.isEmpty()) {
             try {
                 imageUrl = uploadImageFile.uploadImage(image);

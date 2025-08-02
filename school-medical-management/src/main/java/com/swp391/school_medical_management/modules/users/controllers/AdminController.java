@@ -222,13 +222,13 @@ public class AdminController {
     }
 
     @PostMapping("/vaccine-name/import-excel")
-    public ResponseEntity<String> uploadVaccineNameExcel(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, String>> uploadVaccineNameExcel(@RequestParam("file") MultipartFile file) {
         String adminId = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
             adminService.importVaccineNameFromExcel(file, Integer.parseInt(adminId));
-            return ResponseEntity.ok("Import thành công");
+            return ResponseEntity.ok(Map.of("message", "Import thành công"));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 
