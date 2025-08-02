@@ -9,6 +9,7 @@ import com.swp391.school_medical_management.modules.users.services.impl.ParentSe
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -101,8 +102,7 @@ public class ParentController {
     @GetMapping("/medical-request/by-request/{requestId}")
     public ResponseEntity<MedicalRequestDTO> getMedicalRequestByRequestId(@PathVariable int requestId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRequestDTO medicalRequestDTO = parentService.getMedicalRequestByRequestId(Integer.parseInt(parentId),
-                requestId);
+        MedicalRequestDTO medicalRequestDTO = parentService.getMedicalRequestByRequestId(Integer.parseInt(parentId), requestId);
         return ResponseEntity.ok(medicalRequestDTO);
     }
 
@@ -116,17 +116,19 @@ public class ParentController {
     @GetMapping("/medical-request")
     public ResponseEntity<List<MedicalRequestDTO>> getMedicalRequestByParent() {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<MedicalRequestDTO> medicalRequestDtoList = parentService
-                .getMedicalRequestByParent(Integer.parseInt(parentId));
+        List<MedicalRequestDTO> medicalRequestDtoList = parentService.getMedicalRequestByParent(Integer.parseInt(parentId));
         return ResponseEntity.ok(medicalRequestDtoList);
     }
 
-    @PutMapping("/medical-request/{requestId}")
-    public ResponseEntity<MedicalRequestDTO> updateMedicalRequest(@Valid @RequestBody MedicalRequest request,
-                                                                  @PathVariable int requestId) {
+    @PutMapping(value = "/medical-request/{requestId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MedicalRequestDTO> updateMedicalRequest(
+            @PathVariable int requestId,
+            @RequestPart("request") @Valid MedicalRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRequestDTO medicalRequestDTO = parentService.updateMedicalRequest(Integer.parseInt(parentId), request,
-                requestId);
+        MedicalRequestDTO medicalRequestDTO = parentService.updateMedicalRequest(Integer.parseInt(parentId), request, requestId, image);
         return ResponseEntity.ok(medicalRequestDTO);
     }
 
@@ -136,6 +138,7 @@ public class ParentController {
         parentService.deleteMedicalRequest(Integer.parseInt(parentId), requestId);
         return ResponseEntity.noContent().build();
     }
+
 
     @GetMapping("/health-check-forms/student/{studentId}")
     public ResponseEntity<List<HealthCheckFormDTO>> getAllHealthCheckForm(@PathVariable int studentId) {

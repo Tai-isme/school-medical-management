@@ -19,7 +19,7 @@ public class VaccineResultDTO {
     private String resultNote;
     private Boolean isInjected;
     private LocalDateTime createdAt;
-    private VaccineFormDTO vaccineFormDTO;
-    private StudentDTO studentDTO;
-    private UserDTO nurseDTO;
+    private VaccineFormDTO vaccineFormDTO; //
+    private StudentDTO studentDTO; //
+    private UserDTO nurseDTO; //
 }

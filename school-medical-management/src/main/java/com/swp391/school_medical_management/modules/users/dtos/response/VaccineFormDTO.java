@@ -1,10 +1,10 @@
 package com.swp391.school_medical_management.modules.users.dtos.response;
 
-import java.time.LocalDate;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -18,10 +18,10 @@ public class VaccineFormDTO {
     private LocalDate expDate;
     private String note;
     private Boolean commit;
-    private VaccineProgramDTO vaccineProgramDTO;
-    private VaccineNameDTO vaccineNameDTO;
-    private StudentDTO studentDTO;
-    private UserDTO parentDTO;
+    private VaccineProgramDTO vaccineProgramDTO; //
+    private VaccineNameDTO vaccineNameDTO;//
+    private StudentDTO studentDTO;//
+    private UserDTO parentDTO; //
     private UserDTO nurseDTO;
     private VaccineResultDTO vaccineResultDTO;
 }

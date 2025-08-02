@@ -21,6 +21,5 @@ public class MedicalRequestDTO {
     private StudentDTO studentDTO;
     private UserDTO nurseDTO;
     private UserDTO parentDTO;
-    private String reason;
     private List<MedicalRequestDetailDTO> medicalRequestDetailDTO;
 }

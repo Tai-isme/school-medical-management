@@ -560,9 +560,16 @@ public class AdminService {
         UserEntity admin = userRepository.findUserByUserId(adminId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin không tồn tại"));
         logger.info("NurseId: " + request.getNurseId());
         UserEntity nurse = userRepository.findById(request.getNurseId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Y tá"));
+
+        logger.info("programdate: " + request.getStartDate());
+        logger.info("formdate: " + request.getDateSendForm());
+
+        if (request.getStartDate() == null || request.getDateSendForm() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu và ngày gửi thông báo không được để trống");
+        }
+
         if (request.getStartDate().isBefore(LocalDate.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải là hôm nay hoặc trong tương lai");
         }
 
         if (request.getStartDate().isBefore(request.getDateSendForm())) {
