@@ -249,7 +249,12 @@ const HealthCheckResultCard = () => {
                         Ngày:{" "}
                         <span style={{ color: "#1976d2", fontWeight: 500 }}>
                           {item.healthCheckFormDTO?.healthCheckProgramDTO
-                            ?.startDate || "---"}
+                            ?.startDate
+                            ? item.healthCheckFormDTO.healthCheckProgramDTO.startDate
+                                .split("-")
+                                .reverse()
+                                .join("/")
+                            : "---"}
                         </span>
                       </div>
                       <div>

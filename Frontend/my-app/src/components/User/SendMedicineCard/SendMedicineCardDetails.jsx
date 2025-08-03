@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Tag, Space, Modal, Spin, Popconfirm } from 'antd';
-import axios from 'axios';
-import { max } from 'moment/moment';
-import SendMedicineDetailModal from './SendMedicineDetailModal';
-import Swal from 'sweetalert2';
+import React, { useEffect, useState } from "react";
+import { Table, Tag, Space, Modal, Spin, Popconfirm } from "antd";
+import axios from "axios";
+import { max } from "moment/moment";
+import SendMedicineDetailModal from "./SendMedicineDetailModal";
+import Swal from "sweetalert2";
 // --- Sample Data ---
 // In a real application, this data would come from an API call
 const RequestTable = () => {
@@ -16,10 +16,13 @@ const RequestTable = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:8080/api/parent/medical-request', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          "http://localhost:8080/api/parent/medical-request",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         // Sắp xếp theo requestId giảm dần
         const sortedData = res.data.sort((a, b) => b.requestId - a.requestId);
         setData(sortedData);
@@ -47,53 +50,70 @@ const RequestTable = () => {
   };
 
   const handleDeleteRequest = (requestId) => async () => {
-    const token = localStorage.getItem('token'); // nếu cần token
-    console.log('Deleting request with ID:', requestId);
+    const token = localStorage.getItem("token"); // nếu cần token
+    console.log("Deleting request with ID:", requestId);
     try {
-      await axios.delete(`http://localhost:8080/api/parent/medical-request/${requestId}`, { //DELETE request
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setData((prevData) => prevData.filter((item) => item.requestId !== requestId));
+      await axios.delete(
+        `http://localhost:8080/api/parent/medical-request/${requestId}`,
+        {
+          //DELETE request
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setData((prevData) =>
+        prevData.filter((item) => item.requestId !== requestId)
+      );
     } catch (err) {
-      console.error('Error deleting request:', err);
+      console.error("Error deleting request:", err);
     }
   };
 
   const handleEditRequest = (record) => {
     setEditingRequest(record);
     // Có thể dùng context, hoặc truyền qua props để mở form chỉnh sửa ở InstructionForm
-    window.dispatchEvent(new CustomEvent('edit-medicine-request', { detail: record }));
+    window.dispatchEvent(
+      new CustomEvent("edit-medicine-request", { detail: record })
+    );
   };
 
   // --- Column Definitions ---
   const columns = [
     {
-      title: 'Tên học sinh',
-    dataIndex: 'studentDTO',
-    key: 'studentName',
-    align: 'center',
-    render: (studentDTO) => studentDTO?.fullName || "--",
+      title: "Tên học sinh",
+      dataIndex: "studentDTO",
+      key: "studentName",
+      align: "center",
+      render: (studentDTO) => studentDTO?.fullName || "--",
     },
     {
-      title: 'Mục đích gửi thuốc',
-      dataIndex: 'requestName',
-      key: 'requestName',
+      title: "Mục đích gửi thuốc",
+      dataIndex: "requestName",
+      key: "requestName",
       sorter: (a, b) => a.requestName.localeCompare(b.requestName),
-      
+
       // Không căn giữa
     },
     {
-      title: 'Ngày gửi',
-      dataIndex: 'date',
-      key: 'date',
+      title: "Ngày gửi",
+      dataIndex: "date",
+      key: "date",
       sorter: (a, b) => new Date(a.date) - new Date(b.date),
-      align: 'center', // căn giữa
+      align: "center", // căn giữa
+      render: (text) => (
+        <span style={{ whiteSpace: "pre-wrap", fontFamily: "inherit" }}>
+          {new Date(text).toLocaleString("vi-VN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })}
+        </span>
+      ),
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      align: 'center',
+      align: "center",
       render: (status) => {
         let color = "#888";
         let text = status;
@@ -122,7 +142,7 @@ const RequestTable = () => {
               letterSpacing: 1,
               display: "inline-block",
               minWidth: 130,
-              textAlign: "center"
+              textAlign: "center",
             }}
           >
             {text}
@@ -131,39 +151,39 @@ const RequestTable = () => {
       },
     },
     {
-      title: 'Xem chi tiết đơn thuốc',
-      key: 'detail',
+      title: "Xem chi tiết đơn thuốc",
+      key: "detail",
       minWidth: 200,
-      align: 'center', // căn giữa
+      align: "center", // căn giữa
       render: (_, record) => (
         <a
           onClick={() => handleShowDetail(record.requestId)}
-          style={{ color: '#1976d2', cursor: 'pointer' }}
+          style={{ color: "#1976d2", cursor: "pointer" }}
         >
           Nhấn để xem
         </a>
       ),
     },
     {
-      title: 'Xóa đơn thuốc',
-      key: 'action',
-      align: 'center',
+      title: "Xóa đơn thuốc",
+      key: "action",
+      align: "center",
       render: (_, record) => (
         <div>
           {record.status === "PROCESSING" && (
             <a
-              style={{ color: 'red', cursor: 'pointer' }}
+              style={{ color: "red", cursor: "pointer" }}
               onClick={async () => {
                 const result = await Swal.fire({
-                  title: 'Bạn có chắc chắn muốn xóa đơn thuốc này?',
-                  icon: 'warning',
+                  title: "Bạn có chắc chắn muốn xóa đơn thuốc này?",
+                  icon: "warning",
                   showCancelButton: true,
-                  confirmButtonText: 'Xóa',
-                  cancelButtonText: 'Hủy',
+                  confirmButtonText: "Xóa",
+                  cancelButtonText: "Hủy",
                 });
                 if (result.isConfirmed) {
                   await handleDeleteRequest(record.requestId)();
-                  Swal.fire('Đã xóa!', 'Đơn thuốc đã được xóa.', 'success');
+                  Swal.fire("Đã xóa!", "Đơn thuốc đã được xóa.", "success");
                 }
               }}
             >
@@ -174,14 +194,14 @@ const RequestTable = () => {
       ),
     },
     {
-      title: 'Chỉnh sửa',
-      key: 'edit',
-      align: 'center',
+      title: "Chỉnh sửa",
+      key: "edit",
+      align: "center",
       render: (_, record) => (
         <div>
           {record.status === "PROCESSING" && (
             <a
-              style={{ color: '#1976d2', cursor: 'pointer', marginLeft: 8 }}
+              style={{ color: "#1976d2", cursor: "pointer", marginLeft: 8 }}
               onClick={() => handleEditRequest(record)}
             >
               Chỉnh sửa
@@ -195,7 +215,7 @@ const RequestTable = () => {
   // --- The React Component ---
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: "24px" }}>
       <h1>Lịch sử gửi thuốc</h1>
       <Table
         columns={columns}

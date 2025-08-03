@@ -240,8 +240,12 @@ const VaccineResultCard = () => {
                         <div>
                           Ngày:{" "}
                           <span style={{ color: "#1976d2", fontWeight: 500 }}>
-                            {item.vaccineFormDTO?.vaccineProgramDTO
-                              ?.startDate || "---"}
+                            {item.vaccineFormDTO?.vaccineProgramDTO?.startDate
+                              ? item.vaccineFormDTO.vaccineProgramDTO.startDate
+                                  .split("-")
+                                  .reverse()
+                                  .join("/")
+                              : "---"}
                           </span>
                         </div>
                         <div>

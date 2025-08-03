@@ -287,3 +287,17 @@
   justify-content: center;
   margin-top: 15px 0px 10px 0px;
 }
+
+
+/* Tăng kích thước modal preview của Ant Design */
+.custom-image-preview + .ant-image-preview-wrap .ant-image-preview {
+  max-width: 90vw !important; /* Chiều rộng tối đa là 90% viewport */
+  max-height: 90vh !important; /* Chiều cao tối đa là 90% viewport */
+}
+
+/* Tùy chỉnh kích thước ảnh bên trong preview */
+.custom-image-preview + .ant-image-preview-wrap .ant-image-preview-img {
+  max-width: 100% !important; /* Đảm bảo ảnh không tràn ra ngoài modal */
+  max-height: 100% !important;
+  object-fit: contain; /* Giữ tỷ lệ khung hình */
+}
