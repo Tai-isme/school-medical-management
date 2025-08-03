@@ -488,6 +488,7 @@ public class NurseService {
         MedicalRequestEntity medicalRequest = medicalRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn gửi thuốc"));
 
+                logger.info("Updating medical request status for requestId: {}", nurseId);
         StudentEntity student = medicalRequest.getStudent();
 
         MedicalRequestEntity.MedicalRequestStatus currentStatus = medicalRequest.getStatus();
@@ -532,6 +533,8 @@ public class NurseService {
         }
 
         medicalRequest.setStatus(newStatus);
+        medicalRequest.setNurse(userRepository.findById(nurseId)
+                .orElseThrow(() -> new UsernameNotFoundException("Nurse not found")));
         medicalRequestRepository.save(medicalRequest);
 
         MedicalRequestDTO dto = modelMapper.map(medicalRequest, MedicalRequestDTO.class);
