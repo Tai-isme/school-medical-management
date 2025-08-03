@@ -209,6 +209,8 @@ public class NurseController {
         return ResponseEntity.ok(results);
     }
 
+    
+
     @DeleteMapping("/vaccine-result/{vaccineResultId}")
     public ResponseEntity<Void> deleteVaccineResult(@PathVariable int vaccineResultId) {
         nurseService.deleteVaccineResult(vaccineResultId);
