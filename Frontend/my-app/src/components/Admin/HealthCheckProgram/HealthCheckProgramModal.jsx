@@ -77,33 +77,39 @@ const HealthCheckProgramModal = ({
         </Col>
         <Col span={12}>
           <Form.Item
-            label="Ngày gửi form"
-            name="dateSendForm"
-            rules={[
-              { required: true, message: "Chọn ngày gửi form" },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  const startDate = getFieldValue("startDate");
-                  if (!value || !startDate) return Promise.resolve();
-                  if (value.isSameOrAfter(startDate, "day")) {
-                    return Promise.reject(
-                      "Ngày gửi form phải trước ngày bắt đầu!"
-                    );
-                  }
+  label="Ngày gửi form"
+  name="dateSendForm"
+  dependencies={["startDate"]} // Cần thiết để theo dõi thay đổi của startDate
+  rules={[
+    { required: true, message: "Chọn ngày gửi form" },
+    ({ getFieldValue }) => ({
+      validator(_, value) {
+        const startDate = getFieldValue("startDate");
 
-                  return Promise.resolve();
-                },
-              }),
-            ]}
-          >
-            <DatePicker
-              style={{ width: "100%" }}
-              format="YYYY-MM-DD"
-              disabledDate={(current) =>
-                current && current < dayjs().startOf("day")
-              }
-            />
-          </Form.Item>
+        if (!value || !startDate) {
+          return Promise.resolve(); // Nếu một trong hai chưa có thì chưa cần validate
+        }
+
+        if (value.isBefore(startDate, "day")) {
+          return Promise.resolve();
+        }
+
+        return Promise.reject(
+          new Error("Ngày gửi form phải trước ngày bắt đầu!")
+        );
+      },
+    }),
+  ]}
+>
+  <DatePicker
+    style={{ width: "100%" }}
+    format="YYYY-MM-DD"
+    disabledDate={(current) =>
+      current && current < dayjs().startOf("day")
+    }
+  />
+</Form.Item>
+
         </Col>
       </Row>
       <Form.Item

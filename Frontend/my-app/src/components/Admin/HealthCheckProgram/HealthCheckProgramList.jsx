@@ -139,18 +139,42 @@ const HealthCheckProgramList = () => {
 
   const handleEditResult = async (programId) => {
     setHealthCheckResultsLoading(true);
-    setIsViewResult(false); // Đảm bảo dòng này luôn chạy
+    setIsViewResult(false);
     const token = localStorage.getItem("token");
+
     try {
       const res = await axios.get(
         `http://localhost:8080/api/nurse/health-check-result/program/${programId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setHealthCheckResults(res.data);
-      setEditableResults(res.data);
+
+      // ✅ Convert lại dữ liệu để phù hợp với table
+      const convertedResults = res.data.map((form) => {
+        const result = form.healthCheckResultDTO || {};
+        return {
+          healthResultId: result.healthResultId,
+          vision: result.vision || "",
+          hearing: result.hearing || "",
+          weight: result.weight || null,
+          height: result.height || null,
+          dentalStatus: result.dentalStatus || "",
+          bloodPressure: result.bloodPressure || "",
+          heartRate: result.heartRate || "",
+          generalCondition: result.generalCondition || "",
+          note: result.note || "",
+          isChecked: result.isChecked || false,
+          healthCheckFormId: form.id, // dùng làm rowKey
+          studentDTO: form.studentDTO,
+        };
+      });
+
+      setEditableResults(convertedResults);
+      setHealthCheckResults(convertedResults);
       setSelectedProgramId(programId);
-      setActiveTab("result"); // Đảm bảo chuyển tab
+      setActiveTab("result");
       setShowResultPage(true);
+
+      console.log("✔ convertedResults:", convertedResults); // debug
     } catch (error) {
       Swal.fire("Lỗi", "Không thể lấy dữ liệu kết quả!", "error");
       setHealthCheckResults([]);
@@ -273,90 +297,6 @@ const HealthCheckProgramList = () => {
       setLoading(false);
     }
   };
-
-  // const handleCreateResult = async (programId) => {
-  //   setHealthCheckResultsLoading(true);
-  //   const token = localStorage.getItem("token");
-
-  //   try {
-  //     // 1. Lấy danh sách form đã commit
-  //     const committedRes = await axios.get(
-  //       `http://localhost:8080/api/nurse/health-check-programs/${programId}/committed-forms`,
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-
-  //     const committedForms = committedRes.data.filter((form) => form.commit);
-  //     console.log("Danh sách form sau khi lọc commit:", committedForms);
-  //     if (committedForms.length === 0) {
-  //       await Swal.fire("Không có phiếu nào đã commit!", "", "info");
-  //       return;
-  //     }
-
-  //     // 2. Tạo kết quả cho từng form
-  //     for (const form of committedForms) {
-  //       if (!form.id || form.id === 0) {
-  //         console.warn("❌ Form không hợp lệ:", form);
-  //         continue;
-  //       }
-
-  //       const payload = {
-  //         level: "",
-  //         note: "",
-  //         vision: "",
-  //         hearing: "",
-  //         weight: null,
-  //         height: null,
-  //         dentalStatus: "",
-  //         bloodPressure: "",
-  //         heartRate: null,
-  //         generalCondition: "",
-  //         isChecked: false,
-  //         healthCheckFormId: form.id,
-  //       };
-
-  //       console.log("✅ Gửi kết quả cho form ID:", form.id);
-
-  //       await axios.post(
-  //         `http://localhost:8080/api/nurse/create-healthCheckResult-byProgram-${programId}`,
-  //         payload,
-  //         { headers: { Authorization: `Bearer ${token}` } }
-  //       );
-  //     }
-
-  //     // 3. Lấy danh sách kết quả
-  //     const res = await axios.get(
-  //       `http://localhost:8080/api/nurse/health-check-result/program/${programId}`,
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-
-  //     // 4. Cập nhật UI
-  //     setHealthCheckResults(res.data);
-  //     setEditableResults(res.data);
-  //     setSelectedProgramId(programId);
-  //     setActiveTab("result");
-  //     setShowResultPage(true);
-
-  //     // 5. Cập nhật trạng thái nếu là y tá
-  //     if (userRole === "NURSE") {
-  //       setPrograms((prev) =>
-  //         prev.map((p) =>
-  //           p.id === programId ? { ...p, status: "GENERATED_RESULT" } : p
-  //         )
-  //       );
-  //     }
-
-  //     await Swal.fire("Tạo kết quả thành công!", "", "success");
-  //   } catch (error) {
-  //     console.error(error);
-  //     Swal.fire(
-  //       "Lỗi",
-  //       error?.response?.data?.message || "Không thể tạo kết quả!",
-  //       "error"
-  //     );
-  //   } finally {
-  //     setHealthCheckResultsLoading(false);
-  //   }
-  // };
 
   const handleCreateResult = async (programId) => {
     setHealthCheckResultsLoading(true);
@@ -550,22 +490,46 @@ const HealthCheckProgramList = () => {
 
   const handleViewResult = async (programId) => {
     setHealthCheckResultsLoading(true);
-    setIsViewResult(true); // Chế độ xem
+    setIsViewResult(true);
 
     const token = localStorage.getItem("token");
 
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/nurse/health-check-result/program/${programId}`,
+        `http://localhost:8080/api/nurse/view-health-check-result-by-programId/${programId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // ✅ Chỉ setState sau khi có dữ liệu
-      setHealthCheckResults(res.data);
-      setEditableResults(res.data);
-      setSelectedProgramId(programId);
+      // ✅ Convert đúng dạng bảng cần
+      const convertedResults = res.data
+        .map((form) => {
+          const result = form.healthCheckResultDTO || {};
+          return {
+            healthResultId: result.healthResultId,
+            vision: result.vision || "",
+            hearing: result.hearing || "",
+            weight: result.weight || null,
+            height: result.height || null,
+            dentalStatus: result.dentalStatus || "",
+            bloodPressure: result.bloodPressure || "",
+            heartRate: result.heartRate || "",
+            generalCondition: result.generalCondition || "",
+            note: result.note || "",
+            isChecked: result.isChecked || false,
+            healthCheckFormId: form.id, // dùng làm rowKey
+            studentDTO: form.studentDTO,
+          };
+        })
+        .sort((a, b) => {
+          // Đưa học sinh có healthResultId lên trước
+          if (a.healthResultId && !b.healthResultId) return -1;
+          if (!a.healthResultId && b.healthResultId) return 1;
+          return 0;
+        });
 
-      // ✅ Sau khi state được cập nhật mới mở tab
+      setEditableResults(convertedResults);
+      setHealthCheckResults(convertedResults);
+      setSelectedProgramId(programId);
       setActiveTab("result");
       setShowResultPage(true);
     } catch {
@@ -812,6 +776,19 @@ const HealthCheckProgramList = () => {
                             type="primary"
                             style={{ background: "#21ba45", border: "none" }}
                             onClick={async () => {
+                              const confirm = await Swal.fire({
+                                title: "Xác nhận bắt đầu chương trình?",
+                                text: "Sau khi bắt đầu, chương trình sẽ chuyển sang trạng thái 'Đang diễn ra'.",
+                                icon: "question",
+                                showCancelButton: true,
+                                confirmButtonColor: "#1890ff",
+                                cancelButtonColor: "#aaa",
+                                confirmButtonText: "Bắt đầu",
+                                cancelButtonText: "Hủy",
+                              });
+
+                              if (!confirm.isConfirmed) return;
+
                               const token = localStorage.getItem("token");
                               try {
                                 await axios.patch(
@@ -848,7 +825,7 @@ const HealthCheckProgramList = () => {
                           <Button
                             style={{
                               marginLeft: 8,
-                              background: "#00bcd4",
+                              background: "#faad14",
                               color: "#fff",
                               border: "none",
                             }}
@@ -861,7 +838,7 @@ const HealthCheckProgramList = () => {
                           <Button
                             style={{
                               marginLeft: 8,
-                              background: "#1976d2",
+                              background: "#13c2c2",
                               color: "#fff",
                               border: "none",
                             }}
@@ -876,7 +853,7 @@ const HealthCheckProgramList = () => {
                               <Button
                                 style={{
                                   marginLeft: 8,
-                                  background: "#ff9800",
+                                  background: "#ff7a45",
                                   color: "#fff",
                                   border: "none",
                                 }}
@@ -890,7 +867,7 @@ const HealthCheckProgramList = () => {
                               type="primary"
                               style={{
                                 marginLeft: 8,
-                                background: "#00bcd4",
+                                background: "#722ed1",
                                 border: "none",
                               }}
                               onClick={() => handleViewResult(program.id)}
@@ -902,7 +879,7 @@ const HealthCheckProgramList = () => {
                               <Button
                                 style={{
                                   marginLeft: 8,
-                                  background: "#4caf50",
+                                  background: "#52c41a",
                                   color: "#fff",
                                   border: "none",
                                 }}
@@ -960,7 +937,7 @@ const HealthCheckProgramList = () => {
                               type="primary"
                               style={{
                                 marginLeft: 8,
-                                background: "#00bcd4",
+                                background: "#722ed1",
                                 border: "none",
                               }}
                               onClick={() => handleViewResult(program.id)}
@@ -972,7 +949,7 @@ const HealthCheckProgramList = () => {
                               <Button
                                 style={{
                                   marginLeft: 8,
-                                  background: "#4caf50",
+                                  background: "#2f54eb",
                                   color: "#fff",
                                   border: "none",
                                 }}
@@ -985,15 +962,15 @@ const HealthCheckProgramList = () => {
                         ) : null}
                       </div>
                       {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
-                      {userRole === "ADMIN" && (
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: 8,
-                            marginLeft: "auto",
-                          }}
-                        >
-                          {program.status === "NOT_STARTED" && (
+                      {userRole === "ADMIN" &&
+                        program.status === "NOT_STARTED" && (
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 8,
+                              marginLeft: "auto",
+                            }}
+                          >
                             <Button
                               type="default"
                               onClick={() => {
@@ -1001,25 +978,18 @@ const HealthCheckProgramList = () => {
                                 setEditMode(true);
                                 setCreateVisible(true);
                               }}
-                              disabled={userRole === "NURSE"}
                             >
                               Sửa
                             </Button>
-                          )}
-                          <Button
-                            danger
-                            type="primary"
-                            onClick={() => handleDelete(program.id)}
-                            disabled={
-                              userRole === "NURSE" ||
-                              program.status === "COMPLETED" ||
-                              program.status === "ON_GOING"
-                            }
-                          >
-                            Xóa
-                          </Button>
-                        </div>
-                      )}
+                            <Button
+                              danger
+                              type="primary"
+                              onClick={() => handleDelete(program.id)}
+                            >
+                              Xóa
+                            </Button>
+                          </div>
+                        )}
                     </div>
                   </Card>
                 ))}
@@ -1167,183 +1137,223 @@ const HealthCheckProgramList = () => {
                         dataIndex: "height",
                         key: "height",
                         align: "center",
-                        render: (value, record) => (
-                          <Input
-                            value={value ?? ""}
-                            onChange={(e) =>
-                              handleEditChange(e.target.value, record, "height")
-                            }
-                            style={{ width: 80 }}
-                            status={
-                              value &&
-                              (isNaN(value) ||
-                                Number(value) < 100 ||
-                                Number(value) > 200)
-                                ? "error"
-                                : ""
-                            }
-                            placeholder="100-200"
-                          />
-                        ),
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value ?? "-"
+                          ) : (
+                            <Input
+                              value={value ?? ""}
+                              onChange={(e) =>
+                                handleEditChange(
+                                  e.target.value,
+                                  record,
+                                  "height"
+                                )
+                              }
+                              style={{ width: 80 }}
+                              status={
+                                value &&
+                                (isNaN(value) ||
+                                  Number(value) < 100 ||
+                                  Number(value) > 200)
+                                  ? "error"
+                                  : ""
+                              }
+                              placeholder="100-200"
+                            />
+                          ),
                       },
+
                       {
                         title: "Cân nặng (kg)",
                         dataIndex: "weight",
                         key: "weight",
                         align: "center",
-                        render: (value, record) => (
-                          <Input
-                            value={value ?? ""}
-                            onChange={(e) =>
-                              handleEditChange(e.target.value, record, "weight")
-                            }
-                            style={{ width: 80 }}
-                            status={
-                              value &&
-                              (!/^\d+$/.test(value) ||
-                                Number(value) < 15 ||
-                                Number(value) > 120)
-                                ? "error"
-                                : ""
-                            }
-                            placeholder="15-120"
-                          />
-                        ),
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value ?? "-"
+                          ) : (
+                            <Input
+                              value={value ?? ""}
+                              onChange={(e) =>
+                                handleEditChange(
+                                  e.target.value,
+                                  record,
+                                  "weight"
+                                )
+                              }
+                              style={{ width: 80 }}
+                              status={
+                                value &&
+                                (!/^\d+$/.test(value) ||
+                                  Number(value) < 15 ||
+                                  Number(value) > 120)
+                                  ? "error"
+                                  : ""
+                              }
+                              placeholder="15-120"
+                            />
+                          ),
                       },
                       {
                         title: "Thị lực (1-10/10)",
                         dataIndex: "vision",
                         key: "vision",
                         align: "center",
-                        render: (value, record) => (
-                          <Input
-                            value={value ?? ""}
-                            onChange={(e) =>
-                              handleEditChange(e.target.value, record, "vision")
-                            }
-                            style={{ width: 80 }}
-                            status={
-                              value && !/^([1-9]|10)\/10$/.test(value)
-                                ? "error"
-                                : ""
-                            }
-                            placeholder="1/10-10/10"
-                          />
-                        ),
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value ?? "-"
+                          ) : (
+                            <Input
+                              value={value ?? ""}
+                              onChange={(e) =>
+                                handleEditChange(
+                                  e.target.value,
+                                  record,
+                                  "vision"
+                                )
+                              }
+                              style={{ width: 80 }}
+                              status={
+                                value && !/^([1-9]|10)\/10$/.test(value)
+                                  ? "error"
+                                  : ""
+                              }
+                              placeholder="1/10-10/10"
+                            />
+                          ),
                       },
                       {
                         title: "Thính lực",
                         dataIndex: "hearing",
                         key: "hearing",
                         align: "center",
-                        render: (value, record) => (
-                          <Input.TextArea
-                            value={value ?? ""}
-                            onChange={(e) =>
-                              handleEditChange(
-                                e.target.value,
-                                record,
-                                "hearing"
-                              )
-                            }
-                            style={{ width: 80, minHeight: 32 }}
-                            autoSize={{ minRows: 1, maxRows: 3 }}
-                          />
-                        ),
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value || "-"
+                          ) : (
+                            <Input.TextArea
+                              value={value ?? ""}
+                              onChange={(e) =>
+                                handleEditChange(
+                                  e.target.value,
+                                  record,
+                                  "hearing"
+                                )
+                              }
+                              style={{ width: 80, minHeight: 32 }}
+                              autoSize={{ minRows: 1, maxRows: 3 }}
+                            />
+                          ),
                       },
                       {
                         title: "Răng miệng",
                         dataIndex: "dentalStatus",
                         key: "dentalStatus",
                         align: "center",
-                        render: (value, record) => (
-                          <Input
-                            value={value ?? ""}
-                            onChange={(e) =>
-                              handleEditChange(
-                                e.target.value,
-                                record,
-                                "dentalStatus"
-                              )
-                            }
-                            style={{ width: 120 }}
-                          />
-                        ),
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value || "-"
+                          ) : (
+                            <Input
+                              value={value ?? ""}
+                              onChange={(e) =>
+                                handleEditChange(
+                                  e.target.value,
+                                  record,
+                                  "dentalStatus"
+                                )
+                              }
+                              style={{ width: 120 }}
+                            />
+                          ),
                       },
                       {
                         title: "Huyết áp",
                         dataIndex: "bloodPressure",
                         key: "bloodPressure",
                         align: "center",
-                        render: (value, record) => (
-                          <Input
-                            value={value ?? ""}
-                            onChange={(e) =>
-                              handleEditChange(
-                                e.target.value,
-                                record,
-                                "bloodPressure"
-                              )
-                            }
-                            style={{ width: 100 }}
-                          />
-                        ),
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value || "-"
+                          ) : (
+                            <Input
+                              value={value ?? ""}
+                              onChange={(e) =>
+                                handleEditChange(
+                                  e.target.value,
+                                  record,
+                                  "bloodPressure"
+                                )
+                              }
+                              style={{ width: 100 }}
+                            />
+                          ),
                       },
                       {
                         title: "Nhịp tim",
                         dataIndex: "heartRate",
                         key: "heartRate",
                         align: "center",
-                        render: (value, record) => (
-                          <Input
-                            value={value ?? ""}
-                            onChange={(e) =>
-                              handleEditChange(
-                                e.target.value,
-                                record,
-                                "heartRate"
-                              )
-                            }
-                            style={{ width: 100 }}
-                          />
-                        ),
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value || "-"
+                          ) : (
+                            <Input
+                              value={value ?? ""}
+                              onChange={(e) =>
+                                handleEditChange(
+                                  e.target.value,
+                                  record,
+                                  "heartRate"
+                                )
+                              }
+                              style={{ width: 100 }}
+                            />
+                          ),
                       },
                       {
                         title: "Tình trạng chung",
                         dataIndex: "generalCondition",
                         key: "generalCondition",
                         align: "center",
-                        render: (value, record) => (
-                          <Input
-                            value={value ?? ""}
-                            onChange={(e) =>
-                              handleEditChange(
-                                e.target.value,
-                                record,
-                                "generalCondition"
-                              )
-                            }
-                            style={{ width: 110 }}
-                          />
-                        ),
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value || "-"
+                          ) : (
+                            <Input
+                              value={value ?? ""}
+                              onChange={(e) =>
+                                handleEditChange(
+                                  e.target.value,
+                                  record,
+                                  "generalCondition"
+                                )
+                              }
+                              style={{ width: 110 }}
+                            />
+                          ),
                       },
                       {
                         title: "Ghi chú",
                         dataIndex: "note",
                         key: "note",
                         align: "center",
-                        render: (value, record) => (
-                          <Input.TextArea
-                            value={value ?? ""}
-                            onChange={(e) =>
-                              handleEditChange(e.target.value, record, "note")
-                            }
-                            disabled={isViewResult}
-                            style={{ width: 120, minHeight: 32 }}
-                            autoSize={{ minRows: 1, maxRows: 3 }}
-                          />
-                        ),
+                        render: (value, record) =>
+                          isViewResult ? (
+                            value || "-"
+                          ) : (
+                            <Input.TextArea
+                              value={value ?? ""}
+                              onChange={(e) =>
+                                handleEditChange(e.target.value, record, "note")
+                              }
+                              style={{ width: 120, minHeight: 32 }}
+                              autoSize={{ minRows: 1, maxRows: 3 }}
+                            />
+                          ),
                       },
+
                       {
                         title: "Đã khám?",
                         dataIndex: "isChecked",
@@ -1412,7 +1422,7 @@ const HealthCheckProgramList = () => {
                         (item.studentDTO?.id + "").includes(studentSearch)
                     )}
                     loading={healthCheckResultsLoading}
-                    rowKey="healthResultId"
+                    rowKey="healthCheckFormId"
                     bordered
                     size="middle"
                     style={{
@@ -1493,7 +1503,7 @@ const HealthCheckProgramList = () => {
         onOk={async () => {
           const r = currentEditRecord;
 
-          // Validate
+          // Validation...
           if (
             !r.height ||
             isNaN(r.height) ||
@@ -1515,7 +1525,7 @@ const HealthCheckProgramList = () => {
           try {
             const token = localStorage.getItem("token");
 
-            // Gọi API POST tạo kết quả
+            // Gửi kết quả
             await axios.post(
               `http://localhost:8080/api/nurse/create-healthCheckResult-byProgram-${selectedProgramId}`,
               {
@@ -1529,26 +1539,53 @@ const HealthCheckProgramList = () => {
                 generalCondition: r.generalCondition,
                 note: r.note,
                 isChecked: r.isChecked,
-                healthCheckFormId: r.healthCheckFormId || r.healthCheckFormDTO?.id,
-
+                healthCheckFormId:
+                  r.healthCheckFormDTO?.id ||
+                  r.healthCheckFormId ||
+                  r.healthCheckForm?.id,
               },
               {
                 headers: { Authorization: `Bearer ${token}` },
               }
             );
 
+            // ⚠️ GỌI LẠI API ĐỂ LOAD DANH SÁCH KẾT QUẢ ĐÃ TẠO
+            // Sau khi post ghi nhận thành công
+            const res = await axios.get(
+              `http://localhost:8080/api/nurse/health-check-result/program/${selectedProgramId}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+
+            // Map lại
+            const convertedResults = res.data.map((form) => {
+              const result = form.healthCheckResultDTO || {};
+              return {
+                healthResultId: result.healthResultId,
+                vision: result.vision || "",
+                hearing: result.hearing || "",
+                weight: result.weight || null,
+                height: result.height || null,
+                dentalStatus: result.dentalStatus || "",
+                bloodPressure: result.bloodPressure || "",
+                heartRate: result.heartRate || "",
+                generalCondition: result.generalCondition || "",
+                note: result.note || "",
+                isChecked: result.isChecked || false,
+                healthCheckFormId: form.id,
+                studentDTO: form.studentDTO,
+              };
+            });
+
+            setEditableResults(convertedResults);
+            setHealthCheckResults(convertedResults);
+
             Swal.fire("Thành công", "Đã ghi nhận kết quả!", "success");
             setEditModalVisible(false);
             setCurrentEditRecord(null);
-
-            // Làm mới danh sách kết quả
-            const res = await axios.get(
-              `http://localhost:8080/api/nurse/health-check-result/program/${selectedProgramId}`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setHealthCheckResults(res.data);
-            setEditableResults(res.data);
-          } catch {
+          } catch (err) {
+            console.error(err);
             Swal.fire("Lỗi", "Không thể ghi nhận kết quả!", "error");
           }
         }}
@@ -1663,6 +1700,8 @@ const HealthCheckProgramList = () => {
                   />
                 </Form.Item>
               </Col>
+              
+
               <Col span={24}>
                 <Form.Item label="Ghi chú">
                   <Input.TextArea
@@ -1677,6 +1716,7 @@ const HealthCheckProgramList = () => {
                   />
                 </Form.Item>
               </Col>
+
               <Col span={24}>
                 <Form.Item>
                   <Checkbox
@@ -1689,6 +1729,33 @@ const HealthCheckProgramList = () => {
                     }
                   >
                     Đánh dấu đã khám
+                  </Checkbox>
+                </Form.Item>
+              </Col>
+              <Col span={24}>
+                <Form.Item>
+                  <Checkbox
+                    checked={currentEditRecord.note === "Không tham gia khám"}
+                    onChange={async (e) => {
+                      const checked = e.target.checked;
+                      if (checked) {
+                        const confirm = await Swal.fire({
+                          title: "Xác nhận?",
+                          text: "Bạn chắc chắn muốn đánh dấu học sinh này là 'Không tham gia khám'?",
+                          icon: "question",
+                          showCancelButton: true,
+                          confirmButtonText: "Đồng ý",
+                          cancelButtonText: "Hủy",
+                        });
+                        if (!confirm.isConfirmed) return;
+                      }
+                      setCurrentEditRecord((prev) => ({
+                        ...prev,
+                        note: checked ? "Không tham gia khám" : "",
+                      }));
+                    }}
+                  >
+                    Đánh dấu không khám
                   </Checkbox>
                 </Form.Item>
               </Col>
