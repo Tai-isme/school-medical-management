@@ -1,10 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, message, Input, Row, Col, Select, Modal, Form } from "antd";
-import { EyeOutlined, EyeInvisibleOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  Table,
+  Button,
+  message,
+  Input,
+  Row,
+  Col,
+  Select,
+  Modal,
+  Form,
+} from "antd";
+import {
+  EyeOutlined,
+  EyeInvisibleOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import Swal from "sweetalert2";
 
+
 import "./AccountManagement.css";
+
 
 const AccountManagement = () => {
   const [accounts, setAccounts] = useState([]);
@@ -21,6 +37,7 @@ const AccountManagement = () => {
   const [editingAccount, setEditingAccount] = useState(null);
   const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
 
+
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
@@ -30,11 +47,16 @@ const AccountManagement = () => {
           return;
         }
 
-        const response = await axios.get("http://localhost:8080/api/admin/accounts", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+
+        const response = await axios.get(
+          "http://localhost:8080/api/admin/accounts",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
 
         const responseData = response.data.map((item) => ({
           userId: item.id,
@@ -47,6 +69,7 @@ const AccountManagement = () => {
           active: item.active, // Thêm trường active để xác định trạng thái tài khoản
         }));
 
+
         setAccounts(responseData);
       } catch (error) {
         console.error("Lỗi khi fetch danh sách tài khoản:", error);
@@ -54,8 +77,10 @@ const AccountManagement = () => {
       }
     };
 
+
     fetchAccounts();
   }, []);
+
 
   const togglePasswordVisibility = (userId) => {
     setVisiblePasswords((prev) => ({
@@ -63,6 +88,7 @@ const AccountManagement = () => {
       [userId]: !prev[userId],
     }));
   };
+
 
   // Lọc dữ liệu theo họ tên, email và vai trò
   const filteredAccounts = accounts.filter((acc) => {
@@ -77,9 +103,17 @@ const AccountManagement = () => {
     );
   });
 
+
   // Định nghĩa columns, loại bỏ cột "Hành động" nếu không phải admin
   const columns = [
-    { title: "Mã", dataIndex: "userId", key: "userId", align: "center", width: 80, ellipsis: true },
+    {
+      title: "Mã",
+      dataIndex: "userId",
+      key: "userId",
+      align: "center",
+      width: 80,
+      ellipsis: true,
+    },
     {
       title: "Họ và tên",
       dataIndex: "fullName",
@@ -88,9 +122,30 @@ const AccountManagement = () => {
       width: 200,
       ellipsis: true,
     },
-    { title: "Email", dataIndex: "email", key: "email", align: "center", width: 250, ellipsis: true },
-    { title: "SĐT", dataIndex: "phone", key: "phone", align: "center", width: 150, ellipsis: true },
-    { title: "Địa chỉ", dataIndex: "address", key: "address", align: "center", width: 200, ellipsis: true },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      align: "center",
+      width: 250,
+      ellipsis: true,
+    },
+    {
+      title: "SĐT",
+      dataIndex: "phone",
+      key: "phone",
+      align: "center",
+      width: 150,
+      ellipsis: true,
+    },
+    {
+      title: "Địa chỉ",
+      dataIndex: "address",
+      key: "address",
+      align: "center",
+      width: 200,
+      ellipsis: true,
+    },
     {
       title: "Vai trò",
       dataIndex: "role",
@@ -131,7 +186,12 @@ const AccountManagement = () => {
                   <Button
                     className="account-action-btn"
                     size="small"
-                    style={{ marginLeft: 8, background: "#52c41a", color: "#fff", border: "none" }} // Xanh lá cây
+                    style={{
+                      marginLeft: 8,
+                      background: "#52c41a",
+                      color: "#fff",
+                      border: "none",
+                    }} // Xanh lá cây
                     onClick={() => handleEnableAccount(record)}
                   >
                     Kích hoạt lại
@@ -143,6 +203,7 @@ const AccountManagement = () => {
         ]
       : []),
   ];
+
 
   // Hàm tạo tài khoản Nurse
   const handleCreateNurse = async (values) => {
@@ -172,9 +233,12 @@ const AccountManagement = () => {
       setCreateModalVisible(false);
       form.resetFields();
       // Reload danh sách tài khoản
-      const response = await axios.get("http://localhost:8080/api/admin/accounts", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        "http://localhost:8080/api/admin/accounts",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const responseData = response.data.map((item) => ({
         userId: item.id,
         fullName: item.fullName,
@@ -198,6 +262,7 @@ const AccountManagement = () => {
     }
   };
 
+
   const handleEditAccount = (record) => {
     setEditingAccount(record);
     setEditModalVisible(true);
@@ -211,6 +276,7 @@ const AccountManagement = () => {
     });
   };
 
+
   const handleUpdateAccount = async (values) => {
     setEditLoading(true);
     try {
@@ -218,6 +284,7 @@ const AccountManagement = () => {
       if (!editingAccount || !editingAccount.userId) {
         throw new Error("Không tìm thấy thông tin tài khoản để cập nhật.");
       }
+
 
       await axios.put(
         `http://localhost:8080/api/admin/account/${editingAccount.userId}`,
@@ -232,6 +299,7 @@ const AccountManagement = () => {
         }
       );
 
+
       Swal.fire({
         icon: "success",
         title: "Cập nhật thành công!",
@@ -239,12 +307,18 @@ const AccountManagement = () => {
         confirmButtonText: "OK",
       });
 
+
       setEditModalVisible(false);
 
+
       // Reload danh sách tài khoản
-      const response = await axios.get("http://localhost:8080/api/admin/accounts", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        "http://localhost:8080/api/admin/accounts",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
 
       const responseData = response.data.map((item) => ({
         userId: item.id,
@@ -256,6 +330,7 @@ const AccountManagement = () => {
         role: item.role.toLowerCase(),
         active: item.active,
       }));
+
 
       setAccounts(responseData);
     } catch (err) {
@@ -270,6 +345,7 @@ const AccountManagement = () => {
     }
   };
 
+
   const handleDisableAccount = async (record) => {
     const result = await Swal.fire({
       title: "Xác nhận vô hiệu hóa",
@@ -282,10 +358,15 @@ const AccountManagement = () => {
       cancelButtonText: "Hủy",
     });
 
+
     if (result.isConfirmed) {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire("Lỗi", "Không tìm thấy token. Vui lòng đăng nhập lại.", "error");
+        Swal.fire(
+          "Lỗi",
+          "Không tìm thấy token. Vui lòng đăng nhập lại.",
+          "error"
+        );
         return;
       }
       try {
@@ -296,11 +377,18 @@ const AccountManagement = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        Swal.fire("Thành công", `Đã vô hiệu hóa tài khoản: ${record.fullName}`, "success");
+        Swal.fire(
+          "Thành công",
+          `Đã vô hiệu hóa tài khoản: ${record.fullName}`,
+          "success"
+        );
         // Reload danh sách tài khoản
-        const response = await axios.get("http://localhost:8080/api/admin/accounts", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          "http://localhost:8080/api/admin/accounts",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         const responseData = response.data.map((item) => ({
           userId: item.id,
           fullName: item.fullName,
@@ -319,6 +407,7 @@ const AccountManagement = () => {
     }
   };
 
+
   const handleEnableAccount = async (record) => {
     const result = await Swal.fire({
       title: "Xác nhận kích hoạt lại",
@@ -331,10 +420,15 @@ const AccountManagement = () => {
       cancelButtonText: "Hủy",
     });
 
+
     if (result.isConfirmed) {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire("Lỗi", "Không tìm thấy token. Vui lòng đăng nhập lại.", "error");
+        Swal.fire(
+          "Lỗi",
+          "Không tìm thấy token. Vui lòng đăng nhập lại.",
+          "error"
+        );
         return;
       }
       try {
@@ -345,11 +439,18 @@ const AccountManagement = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        Swal.fire("Thành công", `Đã kích hoạt lại tài khoản: ${record.fullName}`, "success");
+        Swal.fire(
+          "Thành công",
+          `Đã kích hoạt lại tài khoản: ${record.fullName}`,
+          "success"
+        );
         // Reload danh sách tài khoản
-        const response = await axios.get("http://localhost:8080/api/admin/accounts", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          "http://localhost:8080/api/admin/accounts",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         const responseData = response.data.map((item) => ({
           userId: item.id,
           fullName: item.fullName,
@@ -368,16 +469,21 @@ const AccountManagement = () => {
     }
   };
 
+
   return (
     <div className="account-container">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
         <h2 style={{ margin: 0 }}>Quản lý tài khoản</h2>
         {/* Chỉ hiển thị nút tạo tài khoản Nurse nếu là ADMIN */}
         {userRole === "ADMIN" && (
-          <Button
-            type="primary"
-            onClick={() => setCreateModalVisible(true)}
-          >
+          <Button type="primary" onClick={() => setCreateModalVisible(true)}>
             Tạo tài khoản Nurse
           </Button>
         )}
@@ -425,6 +531,7 @@ const AccountManagement = () => {
         pagination={{ pageSize: 9 }} // Hiển thị tối đa 10 dòng mỗi trang
       />
 
+
       {/* Modal tạo tài khoản Nurse */}
       <Modal
         title="Tạo tài khoản Nurse"
@@ -435,11 +542,7 @@ const AccountManagement = () => {
         okText="Tạo"
         cancelText="Hủy"
       >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleCreateNurse}
-        >
+        <Form form={form} layout="vertical" onFinish={handleCreateNurse}>
           <Form.Item
             label="Họ và tên"
             name="fullName"
@@ -461,7 +564,13 @@ const AccountManagement = () => {
           <Form.Item
             label="Số điện thoại"
             name="phone"
-            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập số điện thoại" },
+              {
+                pattern: /^(0|\+84)[3|5|7|8|9][0-9]{8}$/,
+                message: "Số điện thoại không hợp lệ (VD: 0901234567)",
+              },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -478,6 +587,7 @@ const AccountManagement = () => {
         </Form>
       </Modal>
 
+
       {/* Modal chỉnh sửa tài khoản */}
       <Modal
         title="Chỉnh sửa tài khoản"
@@ -488,11 +598,7 @@ const AccountManagement = () => {
         okText="Cập nhật"
         cancelText="Hủy"
       >
-        <Form
-          form={editForm}
-          layout="vertical"
-          onFinish={handleUpdateAccount}
-        >
+        <Form form={editForm} layout="vertical" onFinish={handleUpdateAccount}>
           <Form.Item
             label="Họ và tên"
             name="fullName"
@@ -509,7 +615,7 @@ const AccountManagement = () => {
             ]}
           >
             <Input />
-          {/* </Form.Item>
+            {/* </Form.Item>
           <Form.Item
             label="Mật khẩu"
             name="password"
@@ -520,7 +626,13 @@ const AccountManagement = () => {
           <Form.Item
             label="Số điện thoại"
             name="phone"
-            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập số điện thoại" },
+              {
+                pattern: /^(0|\+84)[3|5|7|8|9][0-9]{8}$/,
+                message: "Số điện thoại không hợp lệ (VD: 0901234567)",
+              },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -537,4 +649,8 @@ const AccountManagement = () => {
   );
 };
 
+
 export default AccountManagement;
+
+
+

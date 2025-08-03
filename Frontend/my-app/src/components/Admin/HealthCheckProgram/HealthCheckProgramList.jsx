@@ -58,6 +58,8 @@ const HealthCheckProgramList = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentEditRecord, setCurrentEditRecord] = useState(null);
 
+  const [committedForms, setCommittedForms] = useState([]);
+
   useEffect(() => {
     fetchProgram();
   }, []);
@@ -145,6 +147,7 @@ const HealthCheckProgramList = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setHealthCheckResults(res.data);
+      setEditableResults(res.data);
       setSelectedProgramId(programId);
       setActiveTab("result"); // Đảm bảo chuyển tab
       setShowResultPage(true);
@@ -271,78 +274,131 @@ const HealthCheckProgramList = () => {
     }
   };
 
+  // const handleCreateResult = async (programId) => {
+  //   setHealthCheckResultsLoading(true);
+  //   const token = localStorage.getItem("token");
+
+  //   try {
+  //     // 1. Lấy danh sách form đã commit
+  //     const committedRes = await axios.get(
+  //       `http://localhost:8080/api/nurse/health-check-programs/${programId}/committed-forms`,
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+
+  //     const committedForms = committedRes.data.filter((form) => form.commit);
+  //     console.log("Danh sách form sau khi lọc commit:", committedForms);
+  //     if (committedForms.length === 0) {
+  //       await Swal.fire("Không có phiếu nào đã commit!", "", "info");
+  //       return;
+  //     }
+
+  //     // 2. Tạo kết quả cho từng form
+  //     for (const form of committedForms) {
+  //       if (!form.id || form.id === 0) {
+  //         console.warn("❌ Form không hợp lệ:", form);
+  //         continue;
+  //       }
+
+  //       const payload = {
+  //         level: "",
+  //         note: "",
+  //         vision: "",
+  //         hearing: "",
+  //         weight: null,
+  //         height: null,
+  //         dentalStatus: "",
+  //         bloodPressure: "",
+  //         heartRate: null,
+  //         generalCondition: "",
+  //         isChecked: false,
+  //         healthCheckFormId: form.id,
+  //       };
+
+  //       console.log("✅ Gửi kết quả cho form ID:", form.id);
+
+  //       await axios.post(
+  //         `http://localhost:8080/api/nurse/create-healthCheckResult-byProgram-${programId}`,
+  //         payload,
+  //         { headers: { Authorization: `Bearer ${token}` } }
+  //       );
+  //     }
+
+  //     // 3. Lấy danh sách kết quả
+  //     const res = await axios.get(
+  //       `http://localhost:8080/api/nurse/health-check-result/program/${programId}`,
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+
+  //     // 4. Cập nhật UI
+  //     setHealthCheckResults(res.data);
+  //     setEditableResults(res.data);
+  //     setSelectedProgramId(programId);
+  //     setActiveTab("result");
+  //     setShowResultPage(true);
+
+  //     // 5. Cập nhật trạng thái nếu là y tá
+  //     if (userRole === "NURSE") {
+  //       setPrograms((prev) =>
+  //         prev.map((p) =>
+  //           p.id === programId ? { ...p, status: "GENERATED_RESULT" } : p
+  //         )
+  //       );
+  //     }
+
+  //     await Swal.fire("Tạo kết quả thành công!", "", "success");
+  //   } catch (error) {
+  //     console.error(error);
+  //     Swal.fire(
+  //       "Lỗi",
+  //       error?.response?.data?.message || "Không thể tạo kết quả!",
+  //       "error"
+  //     );
+  //   } finally {
+  //     setHealthCheckResultsLoading(false);
+  //   }
+  // };
+
   const handleCreateResult = async (programId) => {
     setHealthCheckResultsLoading(true);
     const token = localStorage.getItem("token");
 
     try {
-      // 1. Lấy danh sách form đã commit
+      // 1. Gọi API mới để lấy form đã commit
       const committedRes = await axios.get(
-        `http://localhost:8080/api/nurse/health-check-programs/${programId}/committed-forms`,
+        `http://localhost:8080/api/nurse/health-check-forms-commit/program/${programId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const committedForms = committedRes.data.filter((form) => form.commit);
-      console.log("Danh sách form sau khi lọc commit:", committedForms);
+      const committedForms = committedRes.data || [];
+
       if (committedForms.length === 0) {
         await Swal.fire("Không có phiếu nào đã commit!", "", "info");
         return;
       }
 
-      // 2. Tạo kết quả cho từng form
-      for (const form of committedForms) {
-        if (!form.id || form.id === 0) {
-          console.warn("❌ Form không hợp lệ:", form);
-          continue;
-        }
+      // 2. Mapping dữ liệu sang editableResults
+      const resultForms = committedForms.map((form) => ({
+        level: "",
+        note: "",
+        vision: "",
+        hearing: "",
+        weight: null,
+        height: null,
+        dentalStatus: "",
+        bloodPressure: "",
+        heartRate: null,
+        generalCondition: "",
+        isChecked: false,
+        healthCheckFormId: form.id,
+        studentDTO: form.studentDTO,
+      }));
 
-        const payload = {
-          level: "",
-          note: "",
-          vision: "",
-          hearing: "",
-          weight: null,
-          height: null,
-          dentalStatus: "",
-          bloodPressure: "",
-          heartRate: null,
-          generalCondition: "",
-          isChecked: false,
-          healthCheckFormId: form.id,
-        };
-
-        console.log("✅ Gửi kết quả cho form ID:", form.id);
-
-        await axios.post(
-          `http://localhost:8080/api/nurse/create-healthCheckResult-byProgram-${programId}`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      }
-
-      // 3. Lấy danh sách kết quả
-      const res = await axios.get(
-        `http://localhost:8080/api/nurse/health-check-result/program/${programId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // 4. Cập nhật UI
-      setHealthCheckResults(res.data);
-      setEditableResults(res.data);
+      // 3. Cập nhật UI
+      setEditableResults(resultForms);
+      setHealthCheckResults(resultForms); // nếu cần
       setSelectedProgramId(programId);
       setActiveTab("result");
       setShowResultPage(true);
-
-      // 5. Cập nhật trạng thái nếu là y tá
-      if (userRole === "NURSE") {
-        setPrograms((prev) =>
-          prev.map((p) =>
-            p.id === programId ? { ...p, status: "COMPLETED" } : p
-          )
-        );
-      }
-
-      await Swal.fire("Tạo kết quả thành công!", "", "success");
     } catch (error) {
       console.error(error);
       Swal.fire(
@@ -750,121 +806,183 @@ const HealthCheckProgramList = () => {
                           Xem chi tiết
                         </Button>
 
-                        {program.status === "NOT_STARTED" && userRole === "ADMIN" ? (
-  <Button
-    type="primary"
-    style={{
-      background: "#21ba45",
-      border: "none",
-    }}
-    onClick={async () => {
-      const token = localStorage.getItem("token");
-      try {
-        await axios.patch(
-          `http://localhost:8080/api/admin/health-check-program/${program.id}?status=ON_GOING`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        await Swal.fire({
-          icon: "success",
-          title: "Thành công!",
-          text: "Chương trình đã được bắt đầu.",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-        fetchProgram();
-      } catch (error) {
-        await Swal.fire({
-          icon: "error",
-          title: "Thất bại!",
-          text: "Không thể bắt đầu chương trình!",
-          confirmButtonColor: "#3085d6",
-        });
-      }
-    }}
-  >
-    Bắt đầu chương trình
-  </Button>
-) : program.status === "ON_GOING" ? (
-  userRole === "NURSE" ? (
-    <Button
-      style={{
-        marginLeft: 8,
-        background: "#00bcd4",
-        color: "#fff",
-        border: "none",
-      }}
-      onClick={() => handleSendNotification(program.id)}
-    >
-      Gửi thông báo
-    </Button>
-  ) : null // Admin: không hiện nút gì ngoài "Xem chi tiết"
-) : (
-  <>
-    <Button
-      type="primary"
-      style={{
-        marginLeft: 8,
-        background: "#00bcd4",
-        border: "none",
-      }}
-      onClick={() => handleViewResult(program.id)}
-    >
-      Xem kết quả
-    </Button>
-    <Button
-      style={{
-        marginLeft: 8,
-        background: "#1976d2",
-        color: "#fff",
-        border: "none",
-      }}
-      onClick={() => handleCreateResult(program.id)}
-    >
-      Tạo kết quả
-    </Button>
-    <Button
-      style={{
-        marginLeft: 8,
-        background: "#ff9800",
-        color: "#fff",
-        border: "none",
-      }}
-      onClick={() => handleEditResult(program.id)}
-    >
-      Chỉnh sửa kết quả
-    </Button>
-    <Button
-      style={{
-        marginLeft: 8,
-        background: "#00bcd4",
-        color: "#fff",
-        border: "none",
-      }}
-      onClick={() => handleSendNotification(program.id)}
-    >
-      Gửi thông báo
-    </Button>
-    {program.status === "COMPLETED" && (
-      <Button
-        style={{
-          marginLeft: 8,
-          background: "#4caf50",
-          color: "#fff",
-          border: "none",
-        }}
-        onClick={() => handleExportExcel(program.id)}
-      >
-        Xuất Excel
-      </Button>
-    )}
-  </>
-)}
+                        {program.status === "NOT_STARTED" &&
+                        userRole === "ADMIN" ? (
+                          <Button
+                            type="primary"
+                            style={{ background: "#21ba45", border: "none" }}
+                            onClick={async () => {
+                              const token = localStorage.getItem("token");
+                              try {
+                                await axios.patch(
+                                  `http://localhost:8080/api/admin/health-check-program/${program.id}?status=ON_GOING`,
+                                  {},
+                                  {
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                  }
+                                );
+                                await Swal.fire({
+                                  icon: "success",
+                                  title: "Thành công!",
+                                  text: "Chương trình đã được bắt đầu.",
+                                  showConfirmButton: false,
+                                  timer: 1500,
+                                });
+                                fetchProgram();
+                              } catch (error) {
+                                await Swal.fire({
+                                  icon: "error",
+                                  title: "Thất bại!",
+                                  text: "Không thể bắt đầu chương trình!",
+                                  confirmButtonColor: "#3085d6",
+                                });
+                              }
+                            }}
+                          >
+                            Bắt đầu chương trình
+                          </Button>
+                        ) : program.status === "ON_GOING" &&
+                          userRole === "NURSE" ? (
+                          <Button
+                            style={{
+                              marginLeft: 8,
+                              background: "#00bcd4",
+                              color: "#fff",
+                              border: "none",
+                            }}
+                            onClick={() => handleSendNotification(program.id)}
+                          >
+                            Gửi thông báo
+                          </Button>
+                        ) : program.status === "FORM_SENT" &&
+                          userRole === "NURSE" ? (
+                          <Button
+                            style={{
+                              marginLeft: 8,
+                              background: "#1976d2",
+                              color: "#fff",
+                              border: "none",
+                            }}
+                            onClick={() => handleCreateResult(program.id)}
+                          >
+                            Tạo kết quả
+                          </Button>
+                        ) : program.status === "GENERATED_RESULT" &&
+                          (userRole === "ADMIN" || userRole === "NURSE") ? (
+                          <>
+                            {userRole === "NURSE" && (
+                              <Button
+                                style={{
+                                  marginLeft: 8,
+                                  background: "#ff9800",
+                                  color: "#fff",
+                                  border: "none",
+                                }}
+                                onClick={() => handleEditResult(program.id)}
+                              >
+                                Chỉnh sửa kết quả
+                              </Button>
+                            )}
 
+                            <Button
+                              type="primary"
+                              style={{
+                                marginLeft: 8,
+                                background: "#00bcd4",
+                                border: "none",
+                              }}
+                              onClick={() => handleViewResult(program.id)}
+                            >
+                              Xem kết quả
+                            </Button>
+
+                            {userRole === "ADMIN" && (
+                              <Button
+                                style={{
+                                  marginLeft: 8,
+                                  background: "#4caf50",
+                                  color: "#fff",
+                                  border: "none",
+                                }}
+                                onClick={async () => {
+                                  const confirm = await Swal.fire({
+                                    title: "Xác nhận hoàn thành chương trình?",
+                                    text: "Bạn chắc chắn muốn chuyển sang trạng thái 'Đã hoàn thành'?",
+                                    icon: "question",
+                                    showCancelButton: true,
+                                    confirmButtonColor: "#4caf50",
+                                    cancelButtonColor: "#aaa",
+                                    confirmButtonText: "Hoàn thành",
+                                    cancelButtonText: "Hủy",
+                                  });
+
+                                  if (!confirm.isConfirmed) return;
+
+                                  const token = localStorage.getItem("token");
+                                  try {
+                                    await axios.patch(
+                                      `http://localhost:8080/api/admin/health-check-program/${program.id}?status=COMPLETED`,
+                                      {},
+                                      {
+                                        headers: {
+                                          Authorization: `Bearer ${token}`,
+                                        },
+                                      }
+                                    );
+
+                                    await Swal.fire({
+                                      icon: "success",
+                                      title: "Thành công!",
+                                      text: "Chương trình đã chuyển sang trạng thái hoàn thành.",
+                                      showConfirmButton: false,
+                                      timer: 1500,
+                                    });
+
+                                    fetchProgram(); // Cập nhật lại UI
+                                  } catch (error) {
+                                    Swal.fire({
+                                      icon: "error",
+                                      title: "Lỗi!",
+                                      text: "Không thể hoàn thành chương trình.",
+                                    });
+                                  }
+                                }}
+                              >
+                                Hoàn thành chương trình
+                              </Button>
+                            )}
+                          </>
+                        ) : program.status === "COMPLETED" ? (
+                          <>
+                            <Button
+                              type="primary"
+                              style={{
+                                marginLeft: 8,
+                                background: "#00bcd4",
+                                border: "none",
+                              }}
+                              onClick={() => handleViewResult(program.id)}
+                            >
+                              Xem kết quả
+                            </Button>
+
+                            {userRole === "ADMIN" && (
+                              <Button
+                                style={{
+                                  marginLeft: 8,
+                                  background: "#4caf50",
+                                  color: "#fff",
+                                  border: "none",
+                                }}
+                                onClick={() => handleExportExcel(program.id)}
+                              >
+                                Xuất Excel
+                              </Button>
+                            )}
+                          </>
+                        ) : null}
                       </div>
                       {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
                       {userRole === "ADMIN" && (
@@ -961,21 +1079,6 @@ const HealthCheckProgramList = () => {
                         {program.adminDTO?.fullName} (ID: {program.adminDTO?.id}
                         )
                       </Descriptions.Item>
-                      {/* <Descriptions.Item label="Lớp tham gia">
-                        {program.participateClasses &&
-                        program.participateClasses.length > 0
-                          ? program.participateClasses
-                              .map((p) =>
-                                p.classDTO?.className
-                                  ? `${p.classDTO.className} (Sĩ số: ${
-                                      p.classDTO.quantity || "-"
-                                    })`
-                                  : ""
-                              )
-                              .filter(Boolean)
-                              .join(", ")
-                          : "-"}
-                      </Descriptions.Item> */}
                       <Descriptions.Item label="Lớp tham gia">
                         {program.participateClasses &&
                         program.participateClasses.length > 0
@@ -1389,7 +1492,8 @@ const HealthCheckProgramList = () => {
         }}
         onOk={async () => {
           const r = currentEditRecord;
-          // Validate đơn giản
+
+          // Validate
           if (
             !r.height ||
             isNaN(r.height) ||
@@ -1410,8 +1514,10 @@ const HealthCheckProgramList = () => {
 
           try {
             const token = localStorage.getItem("token");
-            await axios.put(
-              `http://localhost:8080/api/nurse/health-check-result/${r.healthResultId}`,
+
+            // Gọi API POST tạo kết quả
+            await axios.post(
+              `http://localhost:8080/api/nurse/create-healthCheckResult-byProgram-${selectedProgramId}`,
               {
                 vision: r.vision,
                 hearing: r.hearing,
@@ -1423,17 +1529,19 @@ const HealthCheckProgramList = () => {
                 generalCondition: r.generalCondition,
                 note: r.note,
                 isChecked: r.isChecked,
-                healthCheckFormId: r.healthCheckFormDTO?.id,
+                healthCheckFormId: r.healthCheckFormId || r.healthCheckFormDTO?.id,
+
               },
               {
                 headers: { Authorization: `Bearer ${token}` },
               }
             );
+
             Swal.fire("Thành công", "Đã ghi nhận kết quả!", "success");
             setEditModalVisible(false);
             setCurrentEditRecord(null);
 
-            // Refresh bảng
+            // Làm mới danh sách kết quả
             const res = await axios.get(
               `http://localhost:8080/api/nurse/health-check-result/program/${selectedProgramId}`,
               { headers: { Authorization: `Bearer ${token}` } }
@@ -1441,7 +1549,7 @@ const HealthCheckProgramList = () => {
             setHealthCheckResults(res.data);
             setEditableResults(res.data);
           } catch {
-            Swal.fire("Lỗi", "Không thể lưu kết quả!", "error");
+            Swal.fire("Lỗi", "Không thể ghi nhận kết quả!", "error");
           }
         }}
       >

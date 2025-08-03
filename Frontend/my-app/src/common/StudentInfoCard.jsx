@@ -123,7 +123,7 @@ export default function StudentInfoCard({ onChange }) {
         }
       </Text>
       <Text type="secondary" style={{ fontSize: 16, marginBottom: 8 }}>
-        Lớp: {selectedStudent?.className || selectedStudent?.classID || "--"}
+        Lớp: {selectedStudent?.classDTO.className || selectedStudent?.classDTO.className || "--"}
       </Text>
       
       <Text type="secondary" style={{ fontSize: 16 }}>

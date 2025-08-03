@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, Form, Input, Button } from "antd";
 
+
 const HealthRecordModal = ({
   open,
   onCancel,
@@ -9,6 +10,7 @@ const HealthRecordModal = ({
   loading = false,
 }) => {
   const [form] = Form.useForm();
+
 
   React.useEffect(() => {
     if (data) {
@@ -28,6 +30,7 @@ const HealthRecordModal = ({
       form.resetFields();
     }
   }, [data, form, open]);
+
 
   return (
     <Modal
@@ -81,4 +84,6 @@ const HealthRecordModal = ({
   );
 };
 
+
 export default HealthRecordModal;
+

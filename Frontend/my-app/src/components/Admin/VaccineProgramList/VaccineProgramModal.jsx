@@ -3,6 +3,7 @@ import { Modal, Form, Input, Select, DatePicker, Button } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
 
+
 const VaccineProgramModal = ({
   open,
   onCancel,
@@ -19,6 +20,7 @@ const VaccineProgramModal = ({
   const [nurseOptions, setNurseOptions] = useState([]);
   const [selectedVaccineId, setSelectedVaccineId] = useState(null);
   const [classOptions, setClassOptions] = useState([]);
+
 
   // Fetch nurse list from API
   useEffect(() => {
@@ -40,6 +42,7 @@ const VaccineProgramModal = ({
     };
     fetchNurses();
   }, []);
+
 
   // Fetch class list from API
   useEffect(() => {
@@ -63,10 +66,12 @@ const VaccineProgramModal = ({
     fetchClasses();
   }, []);
 
+
   // Đảm bảo đồng bộ khi mở modal chỉnh sửa
   React.useEffect(() => {
     setSelectedClasses(initialValues.classIds || []);
   }, [initialValues, open]);
+
 
   useEffect(() => {
     if (open) {
@@ -85,6 +90,7 @@ const VaccineProgramModal = ({
     }
   }, [initialValues, open, form]);
 
+
   const handleClassToggle = (value) => {
     setSelectedClasses((prev) =>
       prev.includes(value)
@@ -98,10 +104,12 @@ const VaccineProgramModal = ({
     });
   };
 
+
   const vaccineOptions = vaccineList.map(vac => ({
     value: vac.id, // hoặc vac.vaccineNameId nếu API trả về
     label: vac.vaccineName,
   }));
+
 
   const doseOptions = React.useMemo(() => {
     const vaccine = vaccineList.find(v => v.id === selectedVaccineId);
@@ -111,6 +119,7 @@ const VaccineProgramModal = ({
       label: `Mũi ${i + 1}`,
     }));
   }, [selectedVaccineId, vaccineList]);
+
 
   return (
     <Modal
@@ -133,6 +142,7 @@ const VaccineProgramModal = ({
         >
           <Input placeholder="Nhập tên chương trình tiêm chủng" disabled={viewMode} />
         </Form.Item>
+
 
         {/* Loại vaccine và Mũi vaccine trên cùng 1 hàng */}
         <div style={{ display: "flex", gap: 16 }}>
@@ -171,6 +181,7 @@ const VaccineProgramModal = ({
             />
           </Form.Item>
         </div>
+
 
         {/* Thời gian thực hiện và gửi form */}
         <div style={{ display: "flex", gap: 16 }}>
@@ -225,6 +236,7 @@ const VaccineProgramModal = ({
           </Form.Item>
         </div>
 
+
         {/* Chọn lớp dạng button group đẹp */}
         <Form.Item
           label={<span><span role="img" aria-label="class">🏫</span> Chọn lớp</span>}
@@ -242,6 +254,7 @@ const VaccineProgramModal = ({
           />
         </Form.Item>
 
+
         <Form.Item
           label="Y tá quản lý"
           name="nurseId" // Sửa lại thành nurseId
@@ -255,6 +268,7 @@ const VaccineProgramModal = ({
           />
         </Form.Item>
 
+
         <Form.Item
           label="Địa điểm diễn ra"
           name="location"
@@ -263,6 +277,7 @@ const VaccineProgramModal = ({
           <Input placeholder="Nhập địa điểm diễn ra" />
         </Form.Item>
 
+
         <Form.Item
           label="Mô tả"
           name="description"
@@ -270,6 +285,7 @@ const VaccineProgramModal = ({
         >
           <Input.TextArea rows={3} placeholder="Nhập mô tả về chương trình tiêm chủng" />
         </Form.Item>
+
 
         {/* Hiển thị phác đồ tiêm */}
         {(() => {
@@ -306,6 +322,7 @@ const VaccineProgramModal = ({
           return null;
         })()}
 
+
         <Form.Item>
           {!viewMode && (
             <Button
@@ -323,4 +340,6 @@ const VaccineProgramModal = ({
   );
 };
 
+
 export default VaccineProgramModal;
+

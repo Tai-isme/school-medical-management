@@ -14,15 +14,19 @@ const columns = [
     key: "typeEvent",
     width: 200,
     render: (text) => (
-      <span style={{
-        fontSize: 15,
-        color: '#333',
-        fontFamily: 'inherit',
-        padding: 4,
-        whiteSpace: 'pre-wrap',
-        overflowWrap: 'break-word',
-        fontWeight: 400,
-      }}>{text}</span>
+      <span
+        style={{
+          fontSize: 15,
+          color: "#333",
+          fontFamily: "inherit",
+          padding: 4,
+          whiteSpace: "pre-wrap",
+          overflowWrap: "break-word",
+          fontWeight: 400,
+        }}
+      >
+        {text}
+      </span>
     ),
   },
   {
@@ -32,15 +36,23 @@ const columns = [
     width: 110,
     sorter: (a, b) => new Date(a.date) - new Date(b.date),
     render: (text) => (
-      <span style={{
-        fontSize: 15,
-        color: '#333',
-        fontFamily: 'inherit',
-        padding: 4,
-        whiteSpace: 'pre-wrap',
-        overflowWrap: 'break-word',
-        fontWeight: 400,
-      }}>{new Date(text).toLocaleDateString("vi-VN")}</span>
+      <span
+        style={{
+          fontSize: 15,
+          color: "#333",
+          fontFamily: "inherit",
+          padding: 4,
+          whiteSpace: "pre-wrap",
+          overflowWrap: "break-word",
+          fontWeight: 400,
+        }}
+      >
+        {new Date(text).toLocaleString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })}
+      </span>
     ),
   },
   {
@@ -48,15 +60,19 @@ const columns = [
     key: "nurseDTO",
     width: 110,
     render: (_, record) => (
-      <span style={{
-        fontSize: 15,
-        color: '#333',
-        fontFamily: 'inherit',
-        padding: 4,
-        whiteSpace: 'pre-wrap',
-        overflowWrap: 'break-word',
-        fontWeight: 400,
-      }}>{record.nurseDTO?.fullName || "Không rõ"}</span>
+      <span
+        style={{
+          fontSize: 15,
+          color: "#333",
+          fontFamily: "inherit",
+          padding: 4,
+          whiteSpace: "pre-wrap",
+          overflowWrap: "break-word",
+          fontWeight: 400,
+        }}
+      >
+        {record.nurseDTO?.fullName || "Không rõ"}
+      </span>
     ),
   },
   {
@@ -65,7 +81,7 @@ const columns = [
     key: "description",
     width: 320,
     render: (text) => {
-      const lines = text ? text.split('\n').length : 1;
+      const lines = text ? text.split("\n").length : 1;
       const approxLines = Math.max(lines, Math.ceil((text?.length || 0) / 80));
       return (
         <textarea
@@ -73,15 +89,15 @@ const columns = [
           readOnly
           rows={approxLines}
           style={{
-            width: '100%',
-            border: 'none',
-            background: 'transparent',
+            width: "100%",
+            border: "none",
+            background: "transparent",
             fontSize: 15,
-            color: '#333',
+            color: "#333",
             padding: 4,
-            whiteSpace: 'pre-wrap',
-            overflowWrap: 'break-word',
-            resize: 'none',
+            whiteSpace: "pre-wrap",
+            overflowWrap: "break-word",
+            resize: "none",
           }}
         />
       );
@@ -123,14 +139,16 @@ const MedicalIncident = () => {
           `http://localhost:8080/api/parent/medical-events/${selectedStudentId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log(`http://localhost:8080/api/parent/medical-events/${selectedStudentId}`);
+        console.log(
+          `http://localhost:8080/api/parent/medical-events/${selectedStudentId}`
+        );
         setEvents(
-          (res.data || []).map(event => ({
+          (res.data || []).map((event) => ({
             ...event,
             onViewDetail: (evt) => {
               setSelectedEvent(evt);
               setDetailVisible(true);
-            }
+            },
           }))
         );
       } catch (err) {
@@ -141,11 +159,23 @@ const MedicalIncident = () => {
   }, [selectedStudentId]);
 
   return (
-    <div className="medical-incident-container" style={{ position: "relative" }}>
+    <div
+      className="medical-incident-container"
+      style={{ position: "relative" }}
+    >
       {/* Nút Home ở góc trên trái */}
-      <div style={{ position: "absolute", top: 16, left: 32, display: "flex", alignItems: "center", zIndex: 10 }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 16,
+          left: 32,
+          display: "flex",
+          alignItems: "center",
+          zIndex: 10,
+        }}
+      >
         <button
-          onClick={() => window.location.href = '/'}
+          onClick={() => (window.location.href = "/")}
           style={{
             background: "#e3f2fd",
             border: "none",
@@ -157,11 +187,14 @@ const MedicalIncident = () => {
             justifyContent: "center",
             boxShadow: "0 2px 8px #1976d220",
             cursor: "pointer",
-            marginRight: 8
+            marginRight: 8,
           }}
           title="Về trang chủ"
         >
-          <FontAwesomeIcon icon={faHouse} style={{ color: "#1976d2", fontSize: 22 }} />
+          <FontAwesomeIcon
+            icon={faHouse}
+            style={{ color: "#1976d2", fontSize: 22 }}
+          />
         </button>
         <span
           style={{
@@ -171,15 +204,20 @@ const MedicalIncident = () => {
             background: "#e3f2fd",
             borderRadius: 8,
             padding: "4px 14px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
-          onClick={() => window.location.href = '/'}
+          onClick={() => (window.location.href = "/")}
           title="Về trang chủ"
         >
           Về trang chủ
         </span>
       </div>
-      <h1 className="main-title" style={{ margin: '0px 0px 20px 0px', fontSize: '24px'  }}>Sự cố y tế</h1>
+      <h1
+        className="main-title"
+        style={{ margin: "0px 0px 20px 0px", fontSize: "24px" }}
+      >
+        Sự cố y tế
+      </h1>
       <div className="incident-content">
         {/* Left Section: Student Overview */}
         <div className="left-panel">
