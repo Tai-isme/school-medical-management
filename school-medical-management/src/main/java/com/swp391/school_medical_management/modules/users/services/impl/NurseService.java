@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -212,7 +213,167 @@ public class NurseService {
         return medicalRequestDTOList;
     }
 
+    // Hàm lấy khi status là COMFIRMED
+    // public List<MedicalRequestDTO> getAllMedicalRequestByStatusConfirmed() {
+    //     List<MedicalRequestDTO> medicalRequestDTOListReturn = new ArrayList<MedicalRequestDTO>();
+
+
+        
+    //     List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository
+    //             .findByStatus(MedicalRequestEntity.MedicalRequestStatus.CONFIRMED);
+
+
+        
+    //     if (medicalRequestEntityList.isEmpty()) {
+    //         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No confirmed medical requests found");
+    //     }
+       
+    //     for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
+    //         MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+
+    //         StudentEntity studentEntity = medicalRequestEntity.getStudent();
+    //         StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+
+    //         medicalRequestDTO.setStudentDTO(studentDTO);
+
+    //         try {
+    //             UserEntity nurse = userRepository.findById(medicalRequestEntity.getNurse().getUserId())
+    //                     .orElseThrow(() -> new UsernameNotFoundException("Nurse not found"));
+    //             UserDTO nurseDTO = modelMapper.map(nurse, UserDTO.class);
+    //             medicalRequestDTO.setNurseDTO(nurseDTO);
+    //         } catch (Exception e) {
+    //             medicalRequestDTO.setNurseDTO(null);
+    //         }
+    //         ClassDTO classDTO =
+    //                 modelMapper.map(classRepository.findById(studentEntity.getClassEntity().getClassId()).get(),
+    //                         ClassDTO.class);
+    //         classDTO.setStudents(null);
+    //         studentDTO.setClassDTO(classDTO);
+
+    //         medicalRequestDTO.setParentDTO(modelMapper.map(studentEntity.getParent(), UserDTO.class));
+
+    //         List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity
+    //                 .getMedicalRequestDetailEntities();
+
+
+    //         List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
+    //                 .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
+    //                         MedicalRequestDetailDTO.class))
+    //                 .collect(Collectors.toList());
+
+    //         MedicalRequestDTO medicalRequestDTOReturn = new MedicalRequestDTO();
+
+    //                 for (MedicalRequestDetailDTO medicalRequestDetailDTO : medicalRequestDetailDTOList) {
+
+    //                     if(medicalRequestDetailDTO.getStatus().equals("TAKEN")) {
+    //                         continue; // Chỉ lấy những chi tiết thuốc chưa được uống
+    //                     }
+
+    //                     if(medicalRequestDTOReturn.getMedicalRequestDetailDTO() == null || medicalRequestDTOReturn.getMedicalRequestDetailDTO().size() == 0) {
+    //                         medicalRequestDTOReturn = medicalRequestDTO;
+    //                         List<MedicalRequestDetailDTO> list = medicalRequestDTOReturn.getMedicalRequestDetailDTO();
+    //                         if (list == null) {
+    //                             list = new ArrayList<>();
+    //                         }
+    //                         list.add(medicalRequestDetailDTO);
+    //                         medicalRequestDTOReturn.setMedicalRequestDetailDTO(list); 
+    //                         medicalRequestDTOListReturn.add(medicalRequestDTOReturn);
+    //                     }else{
+                            
+    //                         for (MedicalRequestDetailDTO detail : medicalRequestDTOReturn.getMedicalRequestDetailDTO()) {
+    //                             if(medicalRequestDetailDTO.getTimeSchedule().equals(detail.getTimeSchedule())){
+
+    //                                 List<MedicalRequestDetailDTO> list = medicalRequestDTOReturn.getMedicalRequestDetailDTO();
+    //                                 if (list == null) {
+    //                                     list = new ArrayList<>();
+    //                                 }
+    //                                 medicalRequestDTOReturn.setMedicalRequestDetailDTO(list);
+                                   
+    //                             }else{
+    //                                 // Nếu không trùng thì tạo mới MedicalRequestDTO
+    //                                 medicalRequestDTOListReturn.add(medicalRequestDTOReturn);
+    //                                 medicalRequestDTOReturn = medicalRequestDTO;
+    //                                 List<MedicalRequestDetailDTO> list = medicalRequestDTOReturn.getMedicalRequestDetailDTO();
+    //                                 list.add(medicalRequestDetailDTO);
+    //                                 medicalRequestDTOReturn.setMedicalRequestDetailDTO(list);
+    //                                 medicalRequestDTOListReturn.add(medicalRequestDTOReturn);   
+    //                             }
+
+    //                     }}
+    //                 }
+    //         };
+    //     return medicalRequestDTOListReturn; // Chưa implement
+    // }
+
+    public List<MedicalRequestDTO> getAllMedicalRequestByStatusConfirmed() {
+    List<MedicalRequestDTO> result = new ArrayList<>();
+
+    List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository
+            .findByStatus(MedicalRequestEntity.MedicalRequestStatus.CONFIRMED);
+
+    if (medicalRequestEntityList.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No confirmed medical requests found");
+    }
+
+    for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
+        // Lấy các detail có status NOT_TAKEN
+        List<MedicalRequestDetailEntity> notTakenDetails = medicalRequestEntity.getMedicalRequestDetailEntities()
+                .stream()
+                .filter(d -> d.getStatus() == MedicalRequestDetailEntity.Status.NOT_TAKEN)
+                .collect(Collectors.toList());
+
+        // Nhóm theo timeSchedule
+        Map<Object, List<MedicalRequestDetailEntity>> groupedByTimeSchedule = notTakenDetails.stream()
+                .collect(Collectors.groupingBy(MedicalRequestDetailEntity::getTimeSchedule));
+
+        for (List<MedicalRequestDetailEntity> group : groupedByTimeSchedule.values()) {
+            MedicalRequestDTO dto = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+
+            // Map student, nurse, parent, class như cũ
+            StudentEntity studentEntity = medicalRequestEntity.getStudent();
+            StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+            ClassEntity classEntity = studentEntity.getClassEntity();
+            if (classEntity != null) {
+                ClassDTO classDTO = modelMapper.map(classEntity, ClassDTO.class);
+                classDTO.setStudents(null);
+                studentDTO.setClassDTO(classDTO);
+            }
+            dto.setStudentDTO(studentDTO);
+
+            try {
+                UserEntity nurse = userRepository.findById(medicalRequestEntity.getNurse().getUserId())
+                        .orElseThrow(() -> new UsernameNotFoundException("Nurse not found"));
+                UserDTO nurseDTO = modelMapper.map(nurse, UserDTO.class);
+                dto.setNurseDTO(nurseDTO);
+            } catch (Exception e) {
+                dto.setNurseDTO(null);
+            }
+
+            dto.setParentDTO(modelMapper.map(studentEntity.getParent(), UserDTO.class));
+
+            // Map các detail trong group
+            List<MedicalRequestDetailDTO> detailDTOs = group.stream()
+                    .map(detail -> modelMapper.map(detail, MedicalRequestDetailDTO.class))
+                    .collect(Collectors.toList());
+            dto.setMedicalRequestDetailDTO(detailDTOs);
+
+            result.add(dto);
+        }
+    }
+    return result;
+}
+
     public List<MedicalRequestDTO> getAllMedicalRequestByStatus(String statusStr) {
+        if(statusStr == null || statusStr.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status cannot be null or empty");
+        }
+
+        if(statusStr.equalsIgnoreCase("CONFIRMED")){
+            return getAllMedicalRequestByStatusConfirmed();
+        }
+
+        logger.info("Fetching medical requests with status: {}", statusStr);
+
         MedicalRequestEntity.MedicalRequestStatus status;
         try {
             status = MedicalRequestEntity.MedicalRequestStatus.valueOf(statusStr.toUpperCase());
@@ -230,6 +391,13 @@ public class NurseService {
             StudentEntity studentEntity = medicalRequestEntity.getStudent();
 
             StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+            ClassEntity classEntity = studentEntity.getClassEntity();
+            if (classEntity != null) {
+                ClassDTO classDTO = modelMapper.map(classEntity, ClassDTO.class);
+                classDTO.setStudents(null); // nếu không muốn lấy danh sách học sinh trong class
+                studentDTO.setClassDTO(classDTO);
+            }
+
             List<MedicalRequestDetailEntity> medicalRequestDetailEntityList = medicalRequestEntity.getMedicalRequestDetailEntities();
 
             List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestDetailEntityList.stream()
