@@ -307,7 +307,7 @@ const handleGiveMedicine = async () => {
       )}
       {detailData?.[0]?.status === "CANCELLED" && (
   <div style={{ marginTop: 16 }}>
-    <div style={{ fontWeight: "bold", marginBottom: 4 }}>Lý do từ chối:</div>
+    <div style={{ fontWeight: "bold", color: "red", marginBottom: 4 }}>Lý do từ chối:</div>
     <Input.TextArea
       rows={3}
       value={detailData?.[0]?.reasonRejected || "---"}
