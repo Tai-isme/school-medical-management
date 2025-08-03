@@ -8,7 +8,7 @@ html, body {
 
 /* Tổng container lấn đầy toàn bộ chiều ngang bên phải */
 .medicine-table-container {
-  margin-left: 240px;
+  /* margin-left: 240px; */
   flex: 1;
   padding: 24px;
   font-family: 'Segoe UI', sans-serif;
