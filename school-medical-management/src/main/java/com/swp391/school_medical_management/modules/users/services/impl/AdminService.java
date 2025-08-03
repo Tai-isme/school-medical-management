@@ -33,6 +33,64 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.swp391.school_medical_management.helpers.ExcelExportStyleUtil;
+import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.UpdateProfileRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineNameRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineProgramRequest;
+import com.swp391.school_medical_management.modules.users.dtos.request.VaccineUnitRequest;
+import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.CommitedPercentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultExportDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultStatsDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ParticipateClassDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.ParticipationDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormStatsDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultExportDTO;
+import com.swp391.school_medical_management.modules.users.dtos.response.VaccineUnitDTO;
+import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.ParticipateClassEntity;
+import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineUnitEntity;
+import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
+import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
+import com.swp391.school_medical_management.modules.users.repositories.ParticipateClassRepository;
+import com.swp391.school_medical_management.modules.users.repositories.RefreshTokenRepository;
+import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
+import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineNameRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
+import com.swp391.school_medical_management.modules.users.repositories.VaccineUnitRepository;
+import com.swp391.school_medical_management.modules.users.repositories.projection.EventStatRaw;
+import com.swp391.school_medical_management.modules.users.repositories.projection.HealthCheckResultByProgramStatsRaw;
+import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
+import com.swp391.school_medical_management.service.EmailService;
+import com.swp391.school_medical_management.service.PasswordService;
 
 @Service
 public class AdminService {
@@ -1398,15 +1456,20 @@ public class AdminService {
             }
         }
 
-        VaccineNameEntity entity = modelMapper.map(request, VaccineNameEntity.class);
-
         UserEntity admin = userRepository.findById(request.getAdminId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
-        entity.setUser(admin);
 
-        entity.setTotalUnit(request.getVaccineUnits().size());
+        VaccineNameEntity vaccineEntity = new VaccineNameEntity();
+        vaccineEntity.setVaccineName(request.getVaccineName());
+        vaccineEntity.setManufacture(request.getManufacture());
+        vaccineEntity.setAgeFrom(request.getAgeFrom());
+        vaccineEntity.setAgeTo(request.getAgeTo());
+        vaccineEntity.setUrl(request.getUrl());
+        vaccineEntity.setDescription(request.getDescription());
+        vaccineEntity.setTotalUnit(request.getVaccineUnits().size());
+        vaccineEntity.setUser(admin);
 
-        VaccineNameEntity savedVaccine = vaccineNameRepository.save(entity);
+        VaccineNameEntity savedVaccine = vaccineNameRepository.save(vaccineEntity);
 
         List<VaccineUnitEntity> unitEntities = new ArrayList<>();
         for (VaccineUnitRequest unitReq : request.getVaccineUnits()) {
@@ -1419,16 +1482,34 @@ public class AdminService {
 
         vaccineUnitRepository.saveAll(unitEntities);
 
-        VaccineNameDTO dto = modelMapper.map(savedVaccine, VaccineNameDTO.class);
-        dto.setUserDTO(modelMapper.map(admin, UserDTO.class));
+        VaccineNameDTO dto = new VaccineNameDTO();
+        dto.setId(savedVaccine.getVaccineNameId());
+        dto.setUserId(admin.getUserId());
+        dto.setVaccineName(savedVaccine.getVaccineName());
+        dto.setManufacture(savedVaccine.getManufacture());
+        dto.setAgeFrom(savedVaccine.getAgeFrom());
+        dto.setAgeTo(savedVaccine.getAgeTo());
+        dto.setTotalUnit(savedVaccine.getTotalUnit());
+        dto.setUrl(savedVaccine.getUrl());
+        dto.setDescription(savedVaccine.getDescription());
 
-        List<VaccineUnitDTO> unitDTOs = unitEntities.stream()
-                .map(unit -> modelMapper.map(unit, VaccineUnitDTO.class))
-                .collect(Collectors.toList());
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(admin.getUserId());
+        userDTO.setFullName(admin.getFullName());
+        dto.setUserDTO(userDTO);
+
+        List<VaccineUnitDTO> unitDTOs = unitEntities.stream().map(unit -> {
+            VaccineUnitDTO dtoUnit = new VaccineUnitDTO();
+            dtoUnit.setUnit(unit.getUnit());
+            dtoUnit.setSchedule(unit.getSchedule());
+            dtoUnit.setVaccineId(unit.getUnitId());
+            return dtoUnit;
+        }).collect(Collectors.toList());
         dto.setVaccineUnitDTOs(unitDTOs);
 
         return dto;
     }
+
 
 
     @Transactional
