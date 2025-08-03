@@ -690,8 +690,12 @@ public class ParentService {
                     formDTO.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
                 }
                 dto.setHealthCheckFormDTO(formDTO);
+                StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
+                ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
+                classDTO.setStudents(null);
+                studentDTO.setClassDTO(classDTO);
+                dto.setStudentDTO(studentDTO);
             }
-            dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
             return dto;
         }).collect(Collectors.toList());
         return healthCheckResultDTOList;
@@ -710,11 +714,19 @@ public class ParentService {
             VaccineFormDTO vaccineFormDTO = modelMapper.map(form, VaccineFormDTO.class);
 
             vaccineFormDTO.setVaccineProgramDTO(modelMapper.map(form.getVaccineProgram(), VaccineProgramDTO.class));
-            vaccineFormDTO.setVaccineNameDTO(modelMapper.map(form.getVaccineName(), VaccineNameDTO.class));
+            VaccineNameDTO vaccineNameDTO = modelMapper.map(form.getVaccineName(), VaccineNameDTO.class);
+            vaccineNameDTO.setVaccineUnitDTOs(vaccineUnitRepository.findByVaccineName_VaccineNameId(form.getVaccineName().getVaccineNameId())
+                    .stream().map(unit -> modelMapper.map(unit, VaccineUnitDTO.class)).collect(Collectors.toList()));
+            vaccineFormDTO.setVaccineNameDTO(vaccineNameDTO);
+
             vaccineFormDTO.setNurseDTO(modelMapper.map(form.getNurse(), UserDTO.class));
 
             dto.setVaccineFormDTO(vaccineFormDTO);
-            dto.setStudentDTO(vaccineFormDTO.getStudentDTO());
+            StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
+            ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
+            classDTO.setStudents(null);
+            studentDTO.setClassDTO(classDTO);
+            dto.setStudentDTO(studentDTO);
             return dto;
         }).collect(Collectors.toList());
         return vaccineResultDTOList;
@@ -825,7 +837,11 @@ public class ParentService {
             dto.setStudentDTO(modelMapper.map(studentEntity, StudentDTO.class));
             dto.setParentDTO(modelMapper.map(studentEntity.getParent(), UserDTO.class));
             dto.setNurseDTO(modelMapper.map(medicalEventEntity.getNurse(), UserDTO.class));
-            dto.setClassDTO(modelMapper.map(studentEntity.getClass(), ClassDTO.class));
+            StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+            ClassDTO classDTO = modelMapper.map(studentEntity.getClassEntity(), ClassDTO.class);
+            classDTO.setStudents(null);
+            studentDTO.setClassDTO(classDTO);
+            dto.setStudentDTO(studentDTO);
 
             return dto;
         }).collect(Collectors.toList());
