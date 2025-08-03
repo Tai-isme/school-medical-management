@@ -1,0 +1,27 @@
+/* HealthCheckModal.css */
+
+.custom-modal .ant-modal-content {
+  padding: 24px;
+  border-radius: 12px;
+}
+
+.custom-modal .ant-modal-title {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.custom-modal .ant-descriptions-bordered .ant-descriptions-item-label {
+  font-weight: 600;
+  background-color: #f5f5f5;
+}
+
+.custom-modal .ant-descriptions-bordered .ant-descriptions-item-content {
+  padding: 8px 16px;
+}
+
+.custom-modal .ant-tag {
+  font-size: 14px;
+  padding: 3px 10px;
+  border-radius: 8px;
+}
