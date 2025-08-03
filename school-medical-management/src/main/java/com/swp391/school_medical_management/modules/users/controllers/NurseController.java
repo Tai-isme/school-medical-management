@@ -204,8 +204,8 @@ public class NurseController {
     }
 
     @GetMapping("/vaccine-result/program/{programId}")
-    public ResponseEntity<List<VaccineResultDTO>> getVaccineResultByProgram(@PathVariable int programId) {
-        List<VaccineResultDTO> results = nurseService.getVaccineResultByProgram(programId);
+    public ResponseEntity<List<VaccineFormDTO>> getVaccineResultByProgram(@PathVariable int programId) {
+        List<VaccineFormDTO> results = nurseService.getCommittedVaccineFormsByProgram(programId);
         return ResponseEntity.ok(results);
     }
 

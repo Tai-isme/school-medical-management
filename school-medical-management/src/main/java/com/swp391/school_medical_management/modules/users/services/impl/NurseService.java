@@ -2139,6 +2139,13 @@ public class NurseService {
             dto.setParentID(entity.getParent().getUserId());
             // dto.setNurseID(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
             dto.setStudentDTO(modelMapper.map(entity.getStudent(), StudentDTO.class));
+            
+            // Tìm vaccineResultDTO từ VaccineResultEntity
+            VaccineResultEntity vaccineResultEntity = vaccineResultRepository.findByVaccineFormEntity(entity)
+                    .orElse(null);
+                    dto.setVaccineResultDTO(
+                    vaccineResultEntity != null ? modelMapper.map(vaccineResultEntity, VaccineResultDTO.class) : null);
+
             // dto.setParentDTO(modelMapper.map(entity.getParent(), UserDTO.class));
             // if (entity.getNurse() != null) {
             //     dto.setNurseDTO(modelMapper.map(entity.getNurse(), UserDTO.class));
