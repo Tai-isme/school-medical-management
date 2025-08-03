@@ -24,6 +24,9 @@ const MedicalRequest = () => {
   const [filterStudent, setFilterStudent] = useState("");
   const [filterClass, setFilterClass] = useState("");
 
+  const [detailData, setDetailData] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
   useEffect(() => {
     fetchRequests(activeTab);
     // eslint-disable-next-line
@@ -40,7 +43,19 @@ const MedicalRequest = () => {
       const res = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setRequests(res.data);
+
+      // Gộp các đơn có cùng requestId, gộp tất cả detail lại
+      const map = new Map();
+      for (const item of res.data) {
+        if (!map.has(item.requestId)) {
+          // Clone object và clone mảng chi tiết
+          map.set(item.requestId, { ...item, medicalRequestDetailDTO: [...item.medicalRequestDetailDTO] });
+        } else {
+          // Đã có, chỉ cần push thêm các detail (không gộp theo timeSchedule, giữ nguyên từng detail)
+          map.get(item.requestId).medicalRequestDetailDTO.push(...item.medicalRequestDetailDTO);
+        }
+      }
+      setRequests(Array.from(map.values()));
     } catch {
       message.error("Không thể tải dữ liệu!");
       setRequests([]);
@@ -176,8 +191,29 @@ const MedicalRequest = () => {
             type="link"
             style={{ marginBottom: 4, padding: 0 }}
             onClick={() => {
-              setSelectedId(record.requestId);
+              setDetailLoading(true);
+              if (activeTab === "CONFIRMED") {
+                // Tab "Đã duyệt": chỉ hiện thuốc của khung giờ này
+                setDetailData([
+                  {
+                    ...record,
+                    medicalRequestDetailDTO: record.medicalRequestDetailDTO,
+                    timeScheduleGroup: record.timeScheduleGroup,
+                  },
+                ]);
+              } else {
+                // Các tab khác: hiện tất cả thuốc của đơn này (gộp lại)
+                const found = requests.find(r => r.requestId === record.requestId);
+                setDetailData([
+                  {
+                    ...found,
+                    medicalRequestDetailDTO: found?.medicalRequestDetailDTO || [],
+                    timeScheduleGroup: null,
+                  },
+                ]);
+              }
               setModalVisible(true);
+              setTimeout(() => setDetailLoading(false), 200);
             }}
           >
             Xem chi tiết
@@ -204,8 +240,37 @@ const MedicalRequest = () => {
     },
   ];
 
-  // Lọc dữ liệu theo 3 trường filter (không lọc status nữa vì đã lấy đúng status từ API)
-  const filteredData = requests
+  // Tạo mảng dữ liệu cho table
+  let tableData = [];
+  if (activeTab === "CONFIRMED") {
+    // Tab "Đã duyệt": tách dòng theo từng khung giờ
+    requests.forEach((req) => {
+      const group = {};
+      req.medicalRequestDetailDTO.forEach((detail) => {
+        const key = detail.timeSchedule || "Khác";
+        if (!group[key]) group[key] = [];
+        group[key].push(detail);
+      });
+      Object.entries(group).forEach(([time, details]) => {
+        tableData.push({
+          ...req,
+          medicalRequestDetailDTO: details,
+          timeScheduleGroup: time,
+          rowKey: req.requestId + "_" + time,
+        });
+      });
+    });
+  } else {
+    // Các tab khác: mỗi đơn là 1 dòng, không tách theo khung giờ
+    tableData = requests.map((req) => ({
+      ...req,
+      timeScheduleGroup: null,
+      rowKey: req.requestId,
+    }));
+  }
+
+  // Lọc dữ liệu theo 3 trường filter
+  const filteredData = tableData
     .filter((item) =>
       item.requestName?.toLowerCase().includes(filterName.toLowerCase())
     )
@@ -256,17 +321,18 @@ const MedicalRequest = () => {
         <Table
           columns={columns}
           dataSource={filteredData}
-          rowKey="requestId"
+          rowKey="rowKey"
           loading={loading}
           pagination={{ pageSize: 9 }}
           bordered
           scroll={{ x: 1100 }}
         />
         <SendMedicineDetailModal
-          open={modalVisible}
-          onClose={() => setModalVisible(false)}
-          requestId={selectedId}
-        />
+  open={modalVisible}
+  onClose={() => setModalVisible(false)}
+  loading={detailLoading}
+  detailData={detailData}
+/>
       </div>
     </div>
   );
