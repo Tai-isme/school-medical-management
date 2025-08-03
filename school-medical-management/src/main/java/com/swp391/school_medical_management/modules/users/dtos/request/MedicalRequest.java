@@ -24,7 +24,6 @@ public class MedicalRequest {
     @Size(max = 500, message = "Reason for rejection must be at most 500 characters")
     private String reasonRejected;
 
-
     @Positive(message = "Parent ID must be a positive number")
     private int parentId;
 
@@ -33,7 +32,6 @@ public class MedicalRequest {
 
     @Positive(message = "Student ID must be a positive number")
     private int studentId;
-
 
     @NotEmpty(message = "Medical request details must not be empty")
     @Valid

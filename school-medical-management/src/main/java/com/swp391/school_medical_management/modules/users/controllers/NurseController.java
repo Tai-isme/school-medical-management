@@ -51,9 +51,10 @@ public class NurseController {
         return ResponseEntity.ok(medicalRequestDetailDTO);
     }
 
-    @PatchMapping("/medical-request-detail/status/taken/{requestDetailId}")
-    public ResponseEntity<String> updateMedicalRequestDetailStatusTaken(@PathVariable int requestDetailId) {
-        return ResponseEntity.ok(nurseService.updateMedicalRequestDetailStatus(requestDetailId));
+    @PutMapping("/medical-request-detail/status/taken")
+    public ResponseEntity<List<MedicalRequestDetailDTO>> updateMedicalRequestDetailStatusTaken(@RequestBody List<UpdateRequestDetailStatusRequest> requests) {
+        List<MedicalRequestDetailDTO> medicalRequestDetailDTOS = nurseService.updateMedicalRequestDetailStatus(requests);
+        return ResponseEntity.ok(medicalRequestDetailDTOS);
     }
 
     @PutMapping("/medical-request/{requestId}/status")
@@ -216,7 +217,6 @@ public class NurseController {
         List<VaccineFormDTO> results = nurseService.viewVaccineResultByProgram(programId);
         return ResponseEntity.ok(results);
     }
-
 
 
     @DeleteMapping("/vaccine-result/{vaccineResultId}")

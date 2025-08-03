@@ -1,13 +1,10 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.entities.*;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,67 +15,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.swp391.school_medical_management.modules.users.dtos.request.BlogRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckResultRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.MedicalEventRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.ReplyFeedbackRequest;
-import com.swp391.school_medical_management.modules.users.dtos.request.UpdateMedicalRequestStatus;
-import com.swp391.school_medical_management.modules.users.dtos.request.VaccineResultRequest;
-import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ParticipateClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineNameDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
-import com.swp391.school_medical_management.modules.users.entities.BlogEntity;
-import com.swp391.school_medical_management.modules.users.entities.ClassEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity;
-import com.swp391.school_medical_management.modules.users.entities.HealthCheckResultEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalEventEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRecordEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestDetailEntity;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
-import com.swp391.school_medical_management.modules.users.entities.ParticipateClassEntity;
-import com.swp391.school_medical_management.modules.users.entities.StudentEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
-import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineHistoryEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
-import com.swp391.school_medical_management.modules.users.entities.VaccineUnitEntity;
-import com.swp391.school_medical_management.modules.users.repositories.BlogRepository;
-import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
-import com.swp391.school_medical_management.modules.users.repositories.FeedbackRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckProgramRepository;
-import com.swp391.school_medical_management.modules.users.repositories.HealthCheckResultRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalEventRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRecordsRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestDetailRepository;
-import com.swp391.school_medical_management.modules.users.repositories.MedicalRequestRepository;
-import com.swp391.school_medical_management.modules.users.repositories.ParticipateClassRepository;
-import com.swp391.school_medical_management.modules.users.repositories.StudentRepository;
-import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineFormRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineHistoryRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineProgramRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineResultRepository;
-import com.swp391.school_medical_management.modules.users.repositories.VaccineUnitRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class NurseService {
@@ -218,16 +161,14 @@ public class NurseService {
     //     List<MedicalRequestDTO> medicalRequestDTOListReturn = new ArrayList<MedicalRequestDTO>();
 
 
-        
     //     List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository
     //             .findByStatus(MedicalRequestEntity.MedicalRequestStatus.CONFIRMED);
 
 
-        
     //     if (medicalRequestEntityList.isEmpty()) {
     //         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No confirmed medical requests found");
     //     }
-       
+
     //     for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
     //         MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
 
@@ -279,7 +220,7 @@ public class NurseService {
     //                         medicalRequestDTOReturn.setMedicalRequestDetailDTO(list); 
     //                         medicalRequestDTOListReturn.add(medicalRequestDTOReturn);
     //                     }else{
-                            
+
     //                         for (MedicalRequestDetailDTO detail : medicalRequestDTOReturn.getMedicalRequestDetailDTO()) {
     //                             if(medicalRequestDetailDTO.getTimeSchedule().equals(detail.getTimeSchedule())){
 
@@ -288,7 +229,7 @@ public class NurseService {
     //                                     list = new ArrayList<>();
     //                                 }
     //                                 medicalRequestDTOReturn.setMedicalRequestDetailDTO(list);
-                                   
+
     //                             }else{
     //                                 // Nếu không trùng thì tạo mới MedicalRequestDTO
     //                                 medicalRequestDTOListReturn.add(medicalRequestDTOReturn);
@@ -306,69 +247,69 @@ public class NurseService {
     // }
 
     public List<MedicalRequestDTO> getAllMedicalRequestByStatusConfirmed() {
-    List<MedicalRequestDTO> result = new ArrayList<>();
+        List<MedicalRequestDTO> result = new ArrayList<>();
 
-    List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository
-            .findByStatus(MedicalRequestEntity.MedicalRequestStatus.CONFIRMED);
+        List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository
+                .findByStatus(MedicalRequestEntity.MedicalRequestStatus.CONFIRMED);
 
-    if (medicalRequestEntityList.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No confirmed medical requests found");
-    }
-
-    for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
-        // Lấy các detail có status NOT_TAKEN
-        List<MedicalRequestDetailEntity> notTakenDetails = medicalRequestEntity.getMedicalRequestDetailEntities()
-                .stream()
-                .filter(d -> d.getStatus() == MedicalRequestDetailEntity.Status.NOT_TAKEN)
-                .collect(Collectors.toList());
-
-        // Nhóm theo timeSchedule
-        Map<Object, List<MedicalRequestDetailEntity>> groupedByTimeSchedule = notTakenDetails.stream()
-                .collect(Collectors.groupingBy(MedicalRequestDetailEntity::getTimeSchedule));
-
-        for (List<MedicalRequestDetailEntity> group : groupedByTimeSchedule.values()) {
-            MedicalRequestDTO dto = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
-
-            // Map student, nurse, parent, class như cũ
-            StudentEntity studentEntity = medicalRequestEntity.getStudent();
-            StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
-            ClassEntity classEntity = studentEntity.getClassEntity();
-            if (classEntity != null) {
-                ClassDTO classDTO = modelMapper.map(classEntity, ClassDTO.class);
-                classDTO.setStudents(null);
-                studentDTO.setClassDTO(classDTO);
-            }
-            dto.setStudentDTO(studentDTO);
-
-            try {
-                UserEntity nurse = userRepository.findById(medicalRequestEntity.getNurse().getUserId())
-                        .orElseThrow(() -> new UsernameNotFoundException("Nurse not found"));
-                UserDTO nurseDTO = modelMapper.map(nurse, UserDTO.class);
-                dto.setNurseDTO(nurseDTO);
-            } catch (Exception e) {
-                dto.setNurseDTO(null);
-            }
-
-            dto.setParentDTO(modelMapper.map(studentEntity.getParent(), UserDTO.class));
-
-            // Map các detail trong group
-            List<MedicalRequestDetailDTO> detailDTOs = group.stream()
-                    .map(detail -> modelMapper.map(detail, MedicalRequestDetailDTO.class))
-                    .collect(Collectors.toList());
-            dto.setMedicalRequestDetailDTO(detailDTOs);
-
-            result.add(dto);
+        if (medicalRequestEntityList.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No confirmed medical requests found");
         }
+
+        for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
+            // Lấy các detail có status NOT_TAKEN
+            List<MedicalRequestDetailEntity> notTakenDetails = medicalRequestEntity.getMedicalRequestDetailEntities()
+                    .stream()
+                    .filter(d -> d.getStatus() == MedicalRequestDetailEntity.Status.NOT_TAKEN)
+                    .collect(Collectors.toList());
+
+            // Nhóm theo timeSchedule
+            Map<Object, List<MedicalRequestDetailEntity>> groupedByTimeSchedule = notTakenDetails.stream()
+                    .collect(Collectors.groupingBy(MedicalRequestDetailEntity::getTimeSchedule));
+
+            for (List<MedicalRequestDetailEntity> group : groupedByTimeSchedule.values()) {
+                MedicalRequestDTO dto = modelMapper.map(medicalRequestEntity, MedicalRequestDTO.class);
+
+                // Map student, nurse, parent, class như cũ
+                StudentEntity studentEntity = medicalRequestEntity.getStudent();
+                StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+                ClassEntity classEntity = studentEntity.getClassEntity();
+                if (classEntity != null) {
+                    ClassDTO classDTO = modelMapper.map(classEntity, ClassDTO.class);
+                    classDTO.setStudents(null);
+                    studentDTO.setClassDTO(classDTO);
+                }
+                dto.setStudentDTO(studentDTO);
+
+                try {
+                    UserEntity nurse = userRepository.findById(medicalRequestEntity.getNurse().getUserId())
+                            .orElseThrow(() -> new UsernameNotFoundException("Nurse not found"));
+                    UserDTO nurseDTO = modelMapper.map(nurse, UserDTO.class);
+                    dto.setNurseDTO(nurseDTO);
+                } catch (Exception e) {
+                    dto.setNurseDTO(null);
+                }
+
+                dto.setParentDTO(modelMapper.map(studentEntity.getParent(), UserDTO.class));
+
+                // Map các detail trong group
+                List<MedicalRequestDetailDTO> detailDTOs = group.stream()
+                        .map(detail -> modelMapper.map(detail, MedicalRequestDetailDTO.class))
+                        .collect(Collectors.toList());
+                dto.setMedicalRequestDetailDTO(detailDTOs);
+
+                result.add(dto);
+            }
+        }
+        return result;
     }
-    return result;
-}
 
     public List<MedicalRequestDTO> getAllMedicalRequestByStatus(String statusStr) {
-        if(statusStr == null || statusStr.isBlank()) {
+        if (statusStr == null || statusStr.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status cannot be null or empty");
         }
 
-        if(statusStr.equalsIgnoreCase("CONFIRMED")){
+        if (statusStr.equalsIgnoreCase("CONFIRMED")) {
             return getAllMedicalRequestByStatusConfirmed();
         }
 
@@ -435,23 +376,40 @@ public class NurseService {
                 .collect(Collectors.toList());
     }
 
-    public String updateMedicalRequestDetailStatus(int medicalRequestDetailId) {
-        MedicalRequestDetailEntity detail = medicalRequestDetailRepository.findById(medicalRequestDetailId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chi tiết thuốc!"));
-        detail.setStatus(MedicalRequestDetailEntity.Status.TAKEN);
-        medicalRequestDetailRepository.save(detail);
+    public List<MedicalRequestDetailDTO> updateMedicalRequestDetailStatus(List<UpdateRequestDetailStatusRequest> requests) {
+        List<MedicalRequestDetailDTO> result = new ArrayList<>();
 
-        List<MedicalRequestDetailEntity> details = medicalRequestDetailRepository.findByMedicalRequest_RequestId((detail.getMedicalRequest().getRequestId()));
+        for (UpdateRequestDetailStatusRequest req : requests) {
+            MedicalRequestDetailEntity detail = medicalRequestDetailRepository.findById(req.getRequestDetailId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chi tiết thuốc! ID: " + req.getRequestDetailId()));
 
-        boolean allTaken = details.stream()
-                .allMatch(d -> d.getStatus() == MedicalRequestDetailEntity.Status.TAKEN);
+            detail.setStatus(MedicalRequestDetailEntity.Status.TAKEN);
+            detail.setNote(req.getNote()); // nếu có field note
+            medicalRequestDetailRepository.save(detail);
 
-        if (allTaken) {
-            MedicalRequestEntity request = detail.getMedicalRequest();
-            request.setStatus(MedicalRequestEntity.MedicalRequestStatus.COMPLETED);
-            medicalRequestRepository.save(request);
+            result.add(modelMapper.map(detail, MedicalRequestDetailDTO.class)); // mapper nếu có
         }
-        return "Cập nhật trạng thái thành công!";
+
+        // Kiểm tra nếu tất cả detail của 1 request đã TAKEN => cập nhật status request
+        // Giả sử tất cả requestDetailId thuộc cùng 1 MedicalRequest
+        if (!requests.isEmpty()) {
+            int requestId = medicalRequestDetailRepository.findById(requests.get(0).getRequestDetailId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
+                    .getMedicalRequest().getRequestId();
+
+            List<MedicalRequestDetailEntity> allDetails = medicalRequestDetailRepository.findByMedicalRequest_RequestId(requestId);
+
+            boolean allTaken = allDetails.stream()
+                    .allMatch(d -> d.getStatus() == MedicalRequestDetailEntity.Status.TAKEN);
+
+            if (allTaken) {
+                MedicalRequestEntity request = allDetails.get(0).getMedicalRequest();
+                request.setStatus(MedicalRequestEntity.MedicalRequestStatus.COMPLETED);
+                medicalRequestRepository.save(request);
+            }
+        }
+
+        return result;
     }
 
     public List<MedicalEventDTO> getMedicalEventsByStudent(int studentId) {
@@ -1984,7 +1942,6 @@ public class NurseService {
     }
 
 
-
     // Thien
     public List<ClassDTO> getAllClasses() {
         List<ClassEntity> classEntities = classRepository.findAll();
@@ -2305,11 +2262,11 @@ public class NurseService {
             dto.setParentID(entity.getParent().getUserId());
             // dto.setNurseID(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
             dto.setStudentDTO(modelMapper.map(entity.getStudent(), StudentDTO.class));
-            
+
             // Tìm vaccineResultDTO từ VaccineResultEntity
             VaccineResultEntity vaccineResultEntity = vaccineResultRepository.findByVaccineFormEntity(entity)
                     .orElse(null);
-                    dto.setVaccineResultDTO(
+            dto.setVaccineResultDTO(
                     vaccineResultEntity != null ? modelMapper.map(vaccineResultEntity, VaccineResultDTO.class) : null);
 
             // dto.setParentDTO(modelMapper.map(entity.getParent(), UserDTO.class));
@@ -2338,11 +2295,11 @@ public class NurseService {
             dto.setParentID(entity.getParent().getUserId());
             // dto.setNurseID(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
             dto.setStudentDTO(modelMapper.map(entity.getStudent(), StudentDTO.class));
-            
+
             // Tìm vaccineResultDTO từ VaccineResultEntity
             VaccineResultEntity vaccineResultEntity = vaccineResultRepository.findByVaccineFormEntity(entity)
                     .orElse(null);
-                    dto.setVaccineResultDTO(
+            dto.setVaccineResultDTO(
                     vaccineResultEntity != null ? modelMapper.map(vaccineResultEntity, VaccineResultDTO.class) : null);
 
             return dto;
