@@ -20,12 +20,13 @@ const VaccineProgramResultTab = ({
   resultTablePage,
   resultTablePageSize,
   setResultTablePage,
+  
 }) => {
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
   const [modalForm] = Form.useForm();
-
+console.log("VaccineProgramResultTab rendered with program:", program);
 
   // Khi bấm "Ghi nhận"
   const handleOpenModal = (record) => {
@@ -44,7 +45,7 @@ const VaccineProgramResultTab = ({
 
 
   // Khi xác nhận trong modal
-  const handleModalOk = async () => {
+const handleModalOk = async () => {
   try {
     const values = await modalForm.validateFields();
     const token = localStorage.getItem("token");
@@ -71,7 +72,7 @@ const VaccineProgramResultTab = ({
     );
     const data = await response.json();
 
-    // So sánh vaccineFormId với currentRecord.vaccineFormId
+    // Luôn cập nhật dữ liệu và đóng modal
     if (data.vaccineFormId === currentRecord?.vaccineFormId) {
       setSampleResultData([
         {
@@ -82,10 +83,10 @@ const VaccineProgramResultTab = ({
         },
       ]);
     }
-
-    setModalVisible(false);
+    setModalVisible(false); // Đảm bảo luôn đóng modal
   } catch (err) {
-    // Xử lý lỗi nếu cần
+    // Có thể hiện thông báo lỗi ở đây nếu muốn
+    setModalVisible(false); // Đảm bảo modal vẫn đóng khi có lỗi
   }
 };
 
@@ -295,7 +296,7 @@ const VaccineProgramResultTab = ({
             </Form.Item> */}
             <Form.Item
               label="Ghi chú:"
-              name="detailNote"
+              name="resultNote"
             >
               <Input.TextArea rows={3} />
             </Form.Item>

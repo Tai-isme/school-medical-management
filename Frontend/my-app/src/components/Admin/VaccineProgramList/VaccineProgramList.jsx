@@ -1008,23 +1008,29 @@ const handleSendNotification = async (programId, deadline) => {
 {program.status === "GENERATED_RESULT" &&
   JSON.parse(localStorage.getItem("users"))?.id === program.nurseId && (
     <Button
-      type="primary"
-      style={{ marginLeft: 8, background: "#faad14", border: "none" }}
-      onClick={() => handleEditResult(program.vaccineId)}
-    >
-      Điều chỉnh kết quả
-    </Button>
+  type="primary"
+  style={{ marginLeft: 8, background: "#faad14", border: "none" }}
+  onClick={() => {
+    setProgram(program); // Thêm dòng này!
+    handleEditResult(program.vaccineId);
+  }}
+>
+  Điều chỉnh kết quả
+</Button>
 )}
 {/* Nút Xem kết quả và Xuất kết quả ra excel */}
 {program.status === "COMPLETED" || program.status === "GENERATED_RESULT"  && (
   <>
     <Button
-      type="primary"
-      style={{ marginLeft: 8, background: "#1890ff", border: "none" }}
-      onClick={() => handleViewResult(program.vaccineId)}
-    >
-      Xem kết quả
-    </Button>
+  type="primary"
+  style={{ marginLeft: 8, background: "#1890ff", border: "none" }}
+  onClick={() => {
+    setProgram(program); // Thêm dòng này!
+    handleViewResult(program.vaccineId);
+  }}
+>
+  Xem kết quả
+</Button>
 
   </>
 )}
