@@ -324,7 +324,7 @@ const handleViewResult = async (programId) => {
   try {
     const token = localStorage.getItem("token");
     const res = await axios.get(
-      `http://localhost:8080/api/nurse/vaccine-result/program/${programId}`,
+      `http://localhost:8080/api/nurse/view-vaccine-result-by-programId/${programId}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     // Khi nhận response từ API (res.data là mảng như bạn gửi ở trên)
@@ -587,12 +587,13 @@ setEditableRows(mappedData.map((item) => ({ ...item })));
   const token = localStorage.getItem("token");
   try {
     const response = await axios.post(
-      `http://localhost:8080/api/admin/export-vaccine-result-excel-by-vaccine-program/${vaccineProgramId}`,
-      {
-        responseType: "blob",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+  `http://localhost:8080/api/admin/export-vaccine-result-excel-by-vaccine-program/${vaccineProgramId}`,
+  {},
+  {
+    responseType: "blob",
+    headers: { Authorization: `Bearer ${token}` },
+  }
+);
     // Tạo link tải file
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement("a");
@@ -1062,7 +1063,7 @@ const handleSendNotification = async (programId, deadline) => {
 </Button>
 )}
 {/* Nút Xem kết quả và Xuất kết quả ra excel */}
-{program.status === "COMPLETED" || program.status === "GENERATED_RESULT"  && (
+{(program.status === "COMPLETED" || program.status === "GENERATED_RESULT")  && (
   <>
     <Button
   type="primary"
@@ -1126,7 +1127,7 @@ const handleSendNotification = async (programId, deadline) => {
         const token = localStorage.getItem("token");
         try {
           await axios.patch(
-            `http://localhost:8080/api/admin/vaccine-program/${program.vaccineId}?status=COMPLETED`,
+            `http://localhost:8080/api/admin/completed-vaccine-program/${program.vaccineId}?status=COMPLETED`,
             {},
             {
               headers: { Authorization: `Bearer ${token}` },
