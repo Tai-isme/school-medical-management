@@ -34,6 +34,7 @@ const MedicalRequest = () => {
   const [rejectLoading, setRejectLoading] = useState(false);
 
   const [isRejectMode, setIsRejectMode] = useState(false);
+  const [isGiveMedicineMode, setIsGiveMedicineMode] = useState(false);
   useEffect(() => {
     fetchRequests(activeTab);
     // eslint-disable-next-line
@@ -218,12 +219,25 @@ const handleReject = (record) => {
       key: "actions",
       align: "center",
       width: 120,
-      render: (_, record) => (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-          <Button
-            type="link"
-            style={{ marginBottom: 4, padding: 0 }}
-            onClick={() => {
+      render: (_, record) => {
+        // Lấy nurseId từ localStorage
+        const nurseId = (() => {
+          try {
+            const userStr = localStorage.getItem("users");
+            if (!userStr) return null;
+            const user = JSON.parse(userStr);
+            return user.id;
+          } catch {
+            return null;
+          }
+        })();
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+            <Button
+              type="link"
+              style={{ marginBottom: 4, padding: 0 }}
+              onClick={() => {
               setDetailLoading(true);
               if (activeTab === "CONFIRMED") {
                 setDetailData([
@@ -248,35 +262,56 @@ const handleReject = (record) => {
               setTimeout(() => setDetailLoading(false), 200);
             }}
           >
-            Xem chi tiết
-          </Button>
-          {record.status === "CONFIRMED" ? (
-            <Button type="primary" disabled>
-              Đã cho uống
+              Xem chi tiết
             </Button>
-          ) : (
-            <div>
+            {record.status === "CONFIRMED" ? (
               <Button
                 type="primary"
-                style={{ marginRight: 8 }}
-                disabled={record.status !== "PROCESSING"}
-                onClick={() => handleApprove(record.requestId)}
-              >
-                Duyệt
-              </Button>
-              <Button
-                danger
+                disabled={!record.nurseDTO || record.nurseDTO.id !== nurseId}
+                
                 onClick={() => {
-                  handleReject(record);
+                  if (record.nurseDTO && record.nurseDTO.id === nurseId) {
+                    setDetailLoading(true);
+                    setIsGiveMedicineMode(true);
+                    setDetailData([
+                      {
+                        ...record,
+                        medicalRequestDetailDTO: record.medicalRequestDetailDTO,
+                        timeScheduleGroup: record.timeScheduleGroup,
+                      },
+                    ]);
+                    setIsGiveMedicineMode(true);
+                    setModalVisible(true);
+                    setTimeout(() => setDetailLoading(false), 200);
+                  }
                 }}
-                disabled={record.status !== "PROCESSING"}
               >
-                Từ chối
+                Ghi nhận
               </Button>
-            </div>
-          )}
-        </div>
-      ),
+            ) : (
+              <div>
+                <Button
+                  type="primary"
+                  style={{ marginRight: 8 }}
+                  disabled={record.status !== "PROCESSING"}
+                  onClick={() => handleApprove(record.requestId)}
+                >
+                  Duyệt
+                </Button>
+                <Button
+                  danger
+                  onClick={() => {
+                    handleReject(record);
+                  }}
+                  disabled={record.status !== "PROCESSING"}
+                >
+                  Từ chối
+                </Button>
+              </div>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -367,22 +402,29 @@ const handleReject = (record) => {
           bordered
           scroll={{ x: 1100 }}
         />
-        <SendMedicineDetailModal
+<SendMedicineDetailModal
   open={modalVisible}
   onClose={() => {
     setModalVisible(false);
     setIsRejectMode(false);
+    setIsGiveMedicineMode(false);
   }}
   loading={detailLoading}
   detailData={detailData}
   reason={rejectReason}
   onReasonChange={e => setRejectReason(e.target.value)}
   isRejectMode={isRejectMode}
+  isGiveMedicineMode={isGiveMedicineMode}
   showReasonInput={isRejectMode}
   onRejectSuccess={() => {
     setModalVisible(false);
     setIsRejectMode(false);
     fetchRequests(activeTab);
+  }}
+  onGiveMedicine={() => {
+    setModalVisible(false);
+    setIsGiveMedicineMode(false);
+    fetchRequests(activeTab); // fetch lại dữ liệu sau khi ghi nhận
   }}
 />
         <Modal
