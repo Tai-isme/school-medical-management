@@ -21,4 +21,5 @@ public class HealthCheckFormDTO {
     private UserDTO parentDTO;
     private UserDTO nurseDTO;
     private HealthCheckProgramDTO healthCheckProgramDTO;
+    private HealthCheckResultDTO healthCheckResultDTO;
 }
