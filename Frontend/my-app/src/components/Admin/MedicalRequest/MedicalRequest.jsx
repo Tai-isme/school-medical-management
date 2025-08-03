@@ -6,7 +6,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import axios from "axios";
 import Swal from "sweetalert2"; // Thêm dòng này ở đầu file
 import "./MedicalRequest.css";
-
+import SendMedicineDetailModal from "./SendMedicineDetailModal";
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
@@ -360,52 +360,13 @@ const MedicalRequest = () => {
           </TabPane>
         </Tabs>
 
-        <Modal
-          title="Chi tiết yêu cầu"
-          open={modalVisible}
-          onCancel={() => setModalVisible(false)}
-          footer={null}
-        >
-          {selectedRequest ? (
-            <div>
-              <p>
-                <strong>Mã yêu cầu:</strong> {selectedRequest.requestId}
-              </p>
-              <p>
-                <strong>Tên yêu cầu:</strong> {selectedRequest.requestName}
-              </p>
-              <p>
-                <strong>Ngày gửi:</strong>{" "}
-                {dayjs(selectedRequest.date).format("DD/MM/YYYY")}
-              </p>
-              <p>
-                <strong>Thời gian dùng thuốc:</strong>{" "}
-                {selectedRequest.medicalRequestDetailDTO[0]?.time}
-              </p>
-              <p>
-                <strong>Học sinh:</strong>{" "}
-                {selectedRequest.studentDTO?.fullName + "   (" + selectedRequest.studentDTO?.id +")" || "Không rõ"} 
-              </p>
-              <p>
-                <strong>Ghi chú:</strong> {selectedRequest.note || "Không có"}
-              </p>
-              <p>
-                <strong>Chi tiết thuốc:</strong>
-              </p>
-              <ul>
-                {Array.isArray(selectedRequest.medicalRequestDetailDTO) && selectedRequest.medicalRequestDetailDTO.length > 0 ? (
-                  selectedRequest.medicalRequestDetailDTO.map((item, idx) => (
-                    <li key={idx}>
-                      {item.medicineName} - {item.dosage}
-                    </li>
-                  ))
-                ) : (
-                  <li>Không có</li>
-                )}
-              </ul>
-            </div>
-          ) : null}
-        </Modal>
+
+        <SendMedicineDetailModal
+  open={modalVisible}
+  onClose={() => setModalVisible(false)}
+  loading={false}
+  detailData={selectedRequest}
+/>
 
         <Modal
           title="Nhập lý do từ chối"
