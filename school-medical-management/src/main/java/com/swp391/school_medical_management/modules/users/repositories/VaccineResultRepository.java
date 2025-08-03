@@ -23,6 +23,7 @@ public interface VaccineResultRepository extends JpaRepository<VaccineResultEnti
 
     List<VaccineResultEntity> findByVaccineFormEntity_VaccineProgram_VaccineId(int vaccineId);
 
+
     // @Query("""
     //             SELECT
     //                 p.vaccineId AS programId,

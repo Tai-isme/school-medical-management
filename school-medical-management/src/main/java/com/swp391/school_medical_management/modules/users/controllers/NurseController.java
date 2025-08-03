@@ -203,11 +203,21 @@ public class NurseController {
         return ResponseEntity.ok(vaccineResultDTO);
     }
 
+    //Nút Tạo kết quả
     @GetMapping("/vaccine-result/program/{programId}")
-    public ResponseEntity<List<VaccineResultDTO>> getVaccineResultByProgram(@PathVariable int programId) {
-        List<VaccineResultDTO> results = nurseService.getVaccineResultByProgram(programId);
+    public ResponseEntity<List<VaccineFormDTO>> getVaccineResultByProgram(@PathVariable int programId) {
+        List<VaccineFormDTO> results = nurseService.getCommittedVaccineFormsByProgram(programId);
         return ResponseEntity.ok(results);
     }
+
+    //Nút Xem kết quả
+    @GetMapping("/view-vaccine-result-by-programId/{programId}")
+    public ResponseEntity<List<VaccineFormDTO>> viewVaccineResultByProgram(@PathVariable int programId) {
+        List<VaccineFormDTO> results = nurseService.viewVaccineResultByProgram(programId);
+        return ResponseEntity.ok(results);
+    }
+
+
 
     @DeleteMapping("/vaccine-result/{vaccineResultId}")
     public ResponseEntity<Void> deleteVaccineResult(@PathVariable int vaccineResultId) {

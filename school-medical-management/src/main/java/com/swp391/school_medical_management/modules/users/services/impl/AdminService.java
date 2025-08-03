@@ -70,6 +70,7 @@ import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineFormEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineNameEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineProgramEntity;
+import com.swp391.school_medical_management.modules.users.entities.VaccineResultEntity;
 import com.swp391.school_medical_management.modules.users.entities.VaccineUnitEntity;
 import com.swp391.school_medical_management.modules.users.repositories.ClassRepository;
 import com.swp391.school_medical_management.modules.users.repositories.HealthCheckFormRepository;
@@ -746,6 +747,117 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Chương trình đã ở trạng thái: " + newStatus);
         }
+
+        vaccineProgramEntity.setStatus(newStatus);
+        vaccineProgramRepository.save(vaccineProgramEntity);
+
+        UserEntity admin = vaccineProgramEntity.getAdmin();
+        UserDTO adminDTO = new UserDTO();
+        adminDTO.setId(admin.getUserId());
+        adminDTO.setFullName(admin.getFullName());
+        adminDTO.setEmail(admin.getEmail());
+        adminDTO.setPhone(admin.getPhone());
+        adminDTO.setAddress(admin.getAddress());
+        adminDTO.setRole(admin.getRole());
+
+        UserEntity nurse = vaccineProgramEntity.getNurse();
+        UserDTO nurseDTO = new UserDTO();
+        nurseDTO.setId(nurse.getUserId());
+        nurseDTO.setFullName(nurse.getFullName());
+        nurseDTO.setEmail(nurse.getEmail());
+        nurseDTO.setPhone(nurse.getPhone());
+        nurseDTO.setAddress(nurse.getAddress());
+        nurseDTO.setRole(nurse.getRole());
+
+        List<ParticipateClassEntity> participateEntities = participateClassRepository
+                .findAllByProgramIdAndType(vaccineProgramEntity.getVaccineId(), ParticipateClassEntity.Type.VACCINE);
+
+        List<ParticipateClassDTO> participateClassDTOs = new ArrayList<>();
+        for (ParticipateClassEntity participate : participateEntities) {
+            ParticipateClassDTO participateDTO = new ParticipateClassDTO();
+            participateDTO.setParticipate_id(participate.getParticipateId());
+            participateDTO.setProgram_id(participate.getProgramId());
+            participateDTO.setClass_id(participate.getClazz().getClassId());
+
+            ClassEntity clazz = participate.getClazz();
+            ClassDTO classDTO = new ClassDTO();
+            classDTO.setClassId(clazz.getClassId());
+            classDTO.setClassName(clazz.getClassName());
+            classDTO.setTeacherName(clazz.getTeacherName());
+            classDTO.setQuantity(clazz.getQuantity());
+
+            participateDTO.setClassDTO(classDTO);
+            participateClassDTOs.add(participateDTO);
+        }
+
+        VaccineProgramDTO programDTO = new VaccineProgramDTO();
+        programDTO.setVaccineProgramId(vaccineProgramEntity.getVaccineId());
+        programDTO.setVaccineProgramName(vaccineProgramEntity.getVaccineProgramName());
+        programDTO.setDescription(vaccineProgramEntity.getDescription());
+        programDTO.setDateSendForm(vaccineProgramEntity.getDateSendForm());
+        programDTO.setStartDate(vaccineProgramEntity.getStartDate());
+        programDTO.setLocation(vaccineProgramEntity.getLocation());
+        programDTO.setStatus(vaccineProgramEntity.getStatus().toString());
+        programDTO.setUnit(vaccineProgramEntity.getUnit());
+
+        programDTO.setAdminId(admin.getUserId());
+        programDTO.setNurseId(nurse.getUserId());
+        programDTO.setAdminDTO(adminDTO);
+        programDTO.setNurseDTO(nurseDTO);
+        programDTO.setParticipateClassDTOs(participateClassDTOs);
+
+        return programDTO;
+    }
+
+    public VaccineProgramDTO completeVaccineProgramStatus(int id, String status) {
+        VaccineProgramEntity vaccineProgramEntity = vaccineProgramRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Không tìm thấy chương trình tiêm chủng"));
+
+        VaccineProgramEntity.VaccineProgramStatus newStatus;
+        try {
+            newStatus = VaccineProgramEntity.VaccineProgramStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ: " + status);
+        }
+
+        if (vaccineProgramEntity.getStatus() == VaccineProgramEntity.VaccineProgramStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chương trình đã hoàn thành và không thể cập nhật");
+        }
+
+        if (vaccineProgramEntity.getStatus() == newStatus) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chương trình đã ở trạng thái: " + newStatus);
+        }
+
+    //---------------------------------------------------------------------------------------------
+        // Tìm xem ai không tham gia tiêm chủng
+        //Tìm form đã gửi
+        List<VaccineFormEntity> vaccineForms = vaccineFormRepository
+                .findByVaccineProgram(vaccineProgramEntity);
+
+        if (vaccineForms.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chương trình tiêm chủng chưa có form nào được gửi!");
+        }
+
+        for (VaccineFormEntity form : vaccineForms) {
+            
+            VaccineResultEntity vaccineResult = vaccineResultRepository
+                    .findByVaccineFormEntity(form)
+                    .orElse(null);
+
+                    if(vaccineResult == null){
+                        VaccineResultEntity vaccineResultEntity = new VaccineResultEntity();
+                        vaccineResultEntity.setVaccineFormEntity(form);
+                        vaccineResultEntity.setStudentEntity(form.getStudent());
+                        vaccineResultEntity.setIsInjected(false);
+                        vaccineResultEntity.setResultNote("Không tham gia tiêm chủng");
+
+                        vaccineResultRepository.save(vaccineResultEntity);
+                    }
+        }
+        //---------------------------------------------------------------------------------------------
 
         vaccineProgramEntity.setStatus(newStatus);
         vaccineProgramRepository.save(vaccineProgramEntity);
