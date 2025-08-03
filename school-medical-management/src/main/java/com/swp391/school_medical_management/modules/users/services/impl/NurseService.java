@@ -2086,6 +2086,8 @@ public class NurseService {
             formDTO.setHealthCheckProgramDTO(programDTO);
 
             result.add(formDTO);
+
+            
         }
         return result;
     }
@@ -2103,6 +2105,7 @@ public class NurseService {
             program.setStatus(HealthCheckProgramEntity.HealthCheckProgramStatus.GENERATED_RESULT);
             healthCheckProgramRepository.save(program);
         }
+
 
         return healthCheckForms.stream().map(entity -> {
             HealthCheckFormDTO dto = modelMapper.map(entity, HealthCheckFormDTO.class);
