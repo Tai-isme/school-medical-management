@@ -13,7 +13,6 @@ const tabStatus = [
   { key: "CANCELLED", label: "Từ chối" },
 ];
 
-
 const MedicalRequest = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,22 +20,24 @@ const MedicalRequest = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [activeTab, setActiveTab] = useState("ALL");
 
-
   // Lọc
   const [filterName, setFilterName] = useState("");
   const [filterStudent, setFilterStudent] = useState("");
   const [filterClass, setFilterClass] = useState("");
 
-
   const [detailData, setDetailData] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
+  const [rejectDetailData, setRejectDetailData] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectLoading, setRejectLoading] = useState(false);
 
+  const [isRejectMode, setIsRejectMode] = useState(false);
   useEffect(() => {
     fetchRequests(activeTab);
     // eslint-disable-next-line
   }, [activeTab]);
-
 
   const fetchRequests = async (status) => {
     setLoading(true);
@@ -49,7 +50,6 @@ const MedicalRequest = () => {
       const res = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
 
       // Gộp các đơn có cùng requestId, gộp tất cả detail lại
       const map = new Map();
@@ -71,32 +71,30 @@ const MedicalRequest = () => {
     }
   };
 
-
   const handleApprove = async (id) => {
-  const result = await Swal.fire({
-    title: "Bạn chắc chắn muốn duyệt đơn thuốc này?",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Duyệt",
-    cancelButtonText: "Hủy",
-  });
+    const result = await Swal.fire({
+      title: "Bạn chắc chắn muốn duyệt đơn thuốc này?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Duyệt",
+      cancelButtonText: "Hủy",
+    });
 
-  if (result.isConfirmed) {
-    const token = localStorage.getItem("token");
-    try {
-      await axios.put(
-        `http://localhost:8080/api/nurse/medical-request/${id}/status`,
-        { status: "CONFIRMED", reason_rejected: null },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      message.success("Duyệt thành công!");
-      fetchRequests(activeTab);
-    } catch {
-      message.error("Duyệt thất bại!");
+    if (result.isConfirmed) {
+      const token = localStorage.getItem("token");
+      try {
+        await axios.put(
+          `http://localhost:8080/api/nurse/medical-request/${id}/status`,
+          { status: "CONFIRMED", reason_rejected: null },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        message.success("Duyệt thành công!");
+        fetchRequests(activeTab);
+      } catch {
+        message.error("Duyệt thất bại!");
+      }
     }
-  }
-};
-
+  };
 
   const handleDelete = async (id) => {
     Modal.confirm({
@@ -119,6 +117,21 @@ const MedicalRequest = () => {
     });
   };
 
+const handleReject = (record) => {
+  setDetailLoading(true);
+  setIsRejectMode(true); // bật chế độ từ chối
+  const found = requests.find(r => r.requestId === record.requestId);
+  setDetailData([
+    {
+      ...found,
+      medicalRequestDetailDTO: found?.medicalRequestDetailDTO || [],
+      timeScheduleGroup: null,
+    },
+  ]);
+  setModalVisible(true);
+  setTimeout(() => setDetailLoading(false), 200);
+  setRejectReason(""); // reset lý do mỗi lần mở
+};
 
   const columns = [
     {
@@ -213,7 +226,6 @@ const MedicalRequest = () => {
             onClick={() => {
               setDetailLoading(true);
               if (activeTab === "CONFIRMED") {
-                // Tab "Đã duyệt": chỉ hiện thuốc của khung giờ này
                 setDetailData([
                   {
                     ...record,
@@ -222,7 +234,6 @@ const MedicalRequest = () => {
                   },
                 ]);
               } else {
-                // Các tab khác: hiện tất cả thuốc của đơn này (gộp lại)
                 const found = requests.find(r => r.requestId === record.requestId);
                 setDetailData([
                   {
@@ -232,34 +243,42 @@ const MedicalRequest = () => {
                   },
                 ]);
               }
+              
               setModalVisible(true);
               setTimeout(() => setDetailLoading(false), 200);
             }}
           >
             Xem chi tiết
           </Button>
-          <div>
-            <Button
-              type="primary"
-              style={{ marginRight: 8 }}
-              disabled={record.status !== "PROCESSING"}
-              onClick={() => handleApprove(record.requestId)}
-            >
-              Duyệt
+          {record.status === "CONFIRMED" ? (
+            <Button type="primary" disabled>
+              Đã cho uống
             </Button>
-            <Button
-              danger
-              onClick={() => handleDelete(record.requestId)}
-              disabled={record.status !== "PROCESSING"}
-            >
-              Từ chối
-            </Button>
-          </div>
+          ) : (
+            <div>
+              <Button
+                type="primary"
+                style={{ marginRight: 8 }}
+                disabled={record.status !== "PROCESSING"}
+                onClick={() => handleApprove(record.requestId)}
+              >
+                Duyệt
+              </Button>
+              <Button
+                danger
+                onClick={() => {
+                  handleReject(record);
+                }}
+                disabled={record.status !== "PROCESSING"}
+              >
+                Từ chối
+              </Button>
+            </div>
+          )}
         </div>
       ),
     },
   ];
-
 
   // Tạo mảng dữ liệu cho table
   let tableData = [];
@@ -290,7 +309,6 @@ const MedicalRequest = () => {
     }));
   }
 
-
   // Lọc dữ liệu theo 3 trường filter
   const filteredData = tableData
     .filter((item) =>
@@ -302,7 +320,6 @@ const MedicalRequest = () => {
     .filter((item) =>
       item.studentDTO?.classDTO?.className?.toLowerCase().includes(filterClass.toLowerCase())
     );
-
 
   return (
     <div className="medical-request-wrapper">
@@ -352,15 +369,102 @@ const MedicalRequest = () => {
         />
         <SendMedicineDetailModal
   open={modalVisible}
-  onClose={() => setModalVisible(false)}
+  onClose={() => {
+    setModalVisible(false);
+    setIsRejectMode(false);
+  }}
   loading={detailLoading}
   detailData={detailData}
+  reason={rejectReason}
+  onReasonChange={e => setRejectReason(e.target.value)}
+  isRejectMode={isRejectMode}
+  showReasonInput={isRejectMode}
+  onRejectSuccess={() => {
+    setModalVisible(false);
+    setIsRejectMode(false);
+    fetchRequests(activeTab);
+  }}
 />
+        <Modal
+          title="Lý do từ chối đơn thuốc"
+          visible={rejectModalVisible}
+          onCancel={() => setRejectModalVisible(false)}
+          footer={null}
+          width={400}
+        >
+          <div style={{ marginBottom: 16 }}>
+            <b>Mã đơn thuốc:</b> #{rejectDetailData?.requestId}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <b>Tên đơn thuốc:</b> {rejectDetailData?.requestName}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <b>Ngày cho uống:</b>{" "}
+            {rejectDetailData?.date
+              ? new Date(rejectDetailData.date).toLocaleDateString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
+              : "---"}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <b>Tên học sinh:</b> {rejectDetailData?.studentDTO?.fullName}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <b>Lớp:</b> {rejectDetailData?.studentDTO?.classDTO?.className}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <b>Y tá phụ trách:</b> {rejectDetailData?.nurseDTO?.fullName}
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <b>Ảnh đơn thuốc:</b>
+            <div style={{ marginTop: 8 }}>
+              {rejectDetailData?.image ? (
+                <Image
+                  src={rejectDetailData.image}
+                  alt="Ảnh đơn thuốc"
+                  width={100}
+                  height={100}
+                  style={{ objectFit: "cover", borderRadius: 8, border: "1px solid #eee" }}
+                  preview={false}
+                />
+              ) : (
+                <span>---</span>
+              )}
+            </div>
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <b>Lý do từ chối:</b>
+            <Input.TextArea
+              rows={4}
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              placeholder="Nhập lý do từ chối đơn thuốc"
+              style={{ marginTop: 8 }}
+            />
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+            <Button onClick={() => setRejectModalVisible(false)}>
+              Hủy
+            </Button>
+            <Button
+              type="primary"
+              danger
+              loading={rejectLoading}
+              onClick={() => {
+                setRejectLoading(true);
+                handleReject(rejectDetailData.requestId);
+              }}
+            >
+              Từ chối đơn thuốc
+            </Button>
+          </div>
+        </Modal>
       </div>
     </div>
   );
 };
-
 
 export default MedicalRequest;
 
