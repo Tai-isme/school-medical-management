@@ -2267,10 +2267,8 @@ public class NurseService {
         }
 
         HealthCheckProgramEntity program = healthCheckForms.get(0).getHealthCheckProgram();
-        if (program.getStatus() != HealthCheckProgramEntity.HealthCheckProgramStatus.GENERATED_RESULT) {
-            program.setStatus(HealthCheckProgramEntity.HealthCheckProgramStatus.GENERATED_RESULT);
-            healthCheckProgramRepository.save(program);
-        }
+        program.setStatus(HealthCheckProgramEntity.HealthCheckProgramStatus.GENERATED_RESULT);
+        healthCheckProgramRepository.save(program);
 
         return healthCheckForms.stream().map(entity -> {
             HealthCheckFormDTO dto = modelMapper.map(entity, HealthCheckFormDTO.class);
