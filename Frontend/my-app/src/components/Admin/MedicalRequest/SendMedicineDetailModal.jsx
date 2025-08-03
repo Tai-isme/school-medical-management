@@ -210,7 +210,7 @@ const handleGiveMedicine = async () => {
                   }}
                 >
                   <div style={{ fontWeight: "bold", marginBottom: 12 }}>
-                    Chi tiết đơn thuốc (Khung giờ: {group.timeScheduleGroup}):
+                    Chi tiết đơn thuốc:
                   </div>
                   {group.medicalRequestDetailDTO.map((item, idx2) => (
                     <div

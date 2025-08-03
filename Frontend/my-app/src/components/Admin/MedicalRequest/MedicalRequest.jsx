@@ -11,11 +11,11 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 const tabStatus = [
-  { key: "ALL", label: "Tất cả" },
   { key: "PROCESSING", label: "Chờ duyệt" },
   { key: "CONFIRMED", label: "Đã duyệt" },
   { key: "COMPLETED", label: "Đã hoàn thành" },
   { key: "CANCELLED", label: "Từ chối" },
+  { key: "ALL", label: "Tất cả" },
 ];
 
 const MedicalRequest = () => {
@@ -23,7 +23,7 @@ const MedicalRequest = () => {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [activeTab, setActiveTab] = useState("ALL");
+  const [activeTab, setActiveTab] = useState("PROCESSING");
 
   // Lọc
   const [filterName, setFilterName] = useState("");
@@ -295,6 +295,17 @@ const handleReject = (record) => {
           }
         })();
 
+        const userRole = (() => {
+  try {
+    const userStr = localStorage.getItem("users");
+    if (!userStr) return null;
+    const user = JSON.parse(userStr);
+    return user.role;
+  } catch {
+    return null;
+  }
+})();
+
         if (record.status === "COMPLETED") {
           return (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
@@ -399,10 +410,9 @@ const handleReject = (record) => {
             {record.status === "CONFIRMED" ? (
               <Button
                 type="primary"
-                disabled={!record.nurseDTO || record.nurseDTO.id !== nurseId}
-                
+                disabled={userRole === "ADMIN" || !record.nurseDTO || record.nurseDTO.id !== nurseId}
                 onClick={() => {
-                  if (record.nurseDTO && record.nurseDTO.id === nurseId) {
+                  if (userRole !== "ADMIN" && record.nurseDTO && record.nurseDTO.id === nurseId) {
                     setDetailLoading(true);
                     setIsGiveMedicineMode(true);
                     setDetailData([
@@ -425,7 +435,7 @@ const handleReject = (record) => {
                 <Button
                   type="primary"
                   style={{ marginRight: 8 }}
-                  disabled={record.status !== "PROCESSING"}
+                  disabled={userRole === "ADMIN" || record.status !== "PROCESSING"}
                   onClick={() => handleApprove(record.requestId)}
                 >
                   Duyệt
@@ -435,7 +445,7 @@ const handleReject = (record) => {
                   onClick={() => {
                     handleReject(record);
                   }}
-                  disabled={record.status !== "PROCESSING"}
+                  disabled={userRole === "ADMIN" || record.status !== "PROCESSING"}
                 >
                   Từ chối
                 </Button>
