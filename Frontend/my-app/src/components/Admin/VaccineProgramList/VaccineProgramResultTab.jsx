@@ -9,6 +9,7 @@ const VaccineProgramResultTab = ({
   searchTermResult,
   setSearchTermResult,
   sampleResultData,
+  setSampleResultData, // Thêm prop này
   editableRows,
   handleEditCell,
   handleSaveRow,
@@ -20,16 +21,18 @@ const VaccineProgramResultTab = ({
   resultTablePage,
   resultTablePageSize,
   setResultTablePage,
-  
+  handleEditResult, // <-- thêm prop này
+  viewMode, // Thêm prop này
 }) => {
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
   const [modalForm] = Form.useForm();
 console.log("VaccineProgramResultTab rendered with program:", program);
-
+console.log("viewMode:", viewMode);
   // Khi bấm "Ghi nhận"
   const handleOpenModal = (record) => {
+     console.log("Record khi mở modal:", record);
     setCurrentRecord(record);
     modalForm.setFieldsValue({
       reaction: record.reaction || "",
@@ -49,10 +52,11 @@ const handleModalOk = async () => {
   try {
     const values = await modalForm.validateFields();
     const token = localStorage.getItem("token");
-    const vaccineFormId = currentRecord?.vaccineFormId;
+    const vaccineFormId = currentRecord?.vaccineFormId || currentRecord?.id;
     const programId = program?.vaccineProgramId;
 
-    const response = await fetch(
+    // Ghi nhận kết quả
+    await fetch(
       `http://localhost:8080/api/nurse/create-vaccineResults-byProgram/${programId}`,
       {
         method: "POST",
@@ -70,23 +74,34 @@ const handleModalOk = async () => {
         }),
       }
     );
-    const data = await response.json();
 
-    // Luôn cập nhật dữ liệu và đóng modal
-    if (data.vaccineFormId === currentRecord?.vaccineFormId) {
-      setSampleResultData([
-        {
-          reaction: data.reaction,
-          actionsTaken: data.actionsTaken,
-          resultNote: data.resultNote,
-          isInjected: data.isInjected,
+    // Gọi lại API để lấy dữ liệu mới nhất
+    const res = await fetch(
+      `http://localhost:8080/api/nurse/vaccine-result/program/${programId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      ]);
-    }
-    setModalVisible(false); // Đảm bảo luôn đóng modal
+      }
+    );
+    const data = await res.json();
+
+    // Map lại dữ liệu để Table đọc đúng
+    const mappedData = data.map(item => ({
+      vaccineResultId: item.vaccineResultDTO?.vaccineResultId || null,
+      vaccineFormId: item.id,
+      reaction: item.vaccineResultDTO?.reaction || "",
+      actionsTaken: item.vaccineResultDTO?.actionsTaken || "",
+      resultNote: item.vaccineResultDTO?.resultNote || "",
+      isInjected: typeof item.vaccineResultDTO?.isInjected === "boolean" ? item.vaccineResultDTO.isInjected : false,
+      createdAt: item.vaccineResultDTO?.createdAt || "",
+      studentDTO: item.studentDTO || null,
+    }));
+
+    setSampleResultData(mappedData); // dùng props
+    setModalVisible(false);
   } catch (err) {
-    // Có thể hiện thông báo lỗi ở đây nếu muốn
-    setModalVisible(false); // Đảm bảo modal vẫn đóng khi có lỗi
+    setModalVisible(false);
   }
 };
 
@@ -108,6 +123,78 @@ const handleModalOk = async () => {
     studentDTO: studentInfo || null,
   });
 
+
+  const filteredData = (sampleResultData || []).filter(item =>
+    item.studentDTO?.fullName?.toLowerCase().includes(searchTermResult?.toLowerCase() || "")
+  );
+
+  const columns = [
+    {
+      title: "Mã học sinh",
+      dataIndex: ["studentDTO", "studentId"],
+      key: "studentId",
+      render: (_, record) => record.studentDTO?.studentId,
+      sorter: (a, b) => (a.studentDTO?.studentId || 0) - (b.studentDTO?.studentId || 0),
+    },
+    {
+      title: "Học sinh",
+      dataIndex: ["studentDTO", "fullName"],
+      key: "studentName",
+      render: (_, record) => record.studentDTO?.fullName,
+      sorter: (a, b) =>
+        (a.studentDTO?.fullName || "").localeCompare(b.studentDTO?.fullName || ""),
+    },
+    {
+      title: "Lớp",
+      dataIndex: ["studentDTO", "classDTO", "className"],
+      key: "className",
+      render: (_, record) => record.studentDTO?.classDTO?.className || "",
+    },
+    {
+      title: "Giới tính",
+      dataIndex: ["studentDTO", "gender"],
+      key: "gender",
+      render: (_, record) =>
+        record.studentDTO?.gender === "MALE" ? "Nam" : "Nữ",
+    },
+    {
+      title: "Phản ứng sau tiêm",
+      dataIndex: "reaction",
+      key: "reaction",
+    },
+    {
+      title: "Cách xử lý",
+      dataIndex: "actionsTaken",
+      key: "actionsTaken",
+    },
+    {
+      title: "Mô tả chi tiết",
+      dataIndex: "resultNote",
+      key: "resultNote",
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => text ? dayjs(text).format("YYYY-MM-DD") : "",
+    },
+    {
+      title: "Đã tiêm?",
+      dataIndex: "isInjected",
+      key: "isInjected",
+      render: (val) => val ? "Đã tiêm" : "Chưa tiêm",
+    },
+    {
+      title: "Thao tác",
+      key: "action",
+      render: (_, record) =>
+        !viewMode && Array.isArray(editableRows) && editableRows.length > 0 ? (
+          <Button type="primary" onClick={() => handleOpenModal(record)}>
+            Ghi nhận
+          </Button>
+        ) : null,
+    },
+  ];
 
   return (
     <div style={{ marginTop: 24 }}>
@@ -152,75 +239,15 @@ const handleModalOk = async () => {
           />
         </div>
         <Table
-          columns={[
-            {
-              title: "ID kết quả",
-              dataIndex: "vaccineResultId",
-              key: "vaccineResultId",
-            },
-            {
-              title: "Học sinh",
-              dataIndex: ["studentDTO", "fullName"],
-              key: "studentName",
-              render: (_, record) => record.studentDTO?.fullName,
-            },
-            {
-              title: "Lớp",
-              dataIndex: ["studentDTO", "classDTO", "className"],
-              key: "className",
-              render: (_, record) => record.studentDTO?.classDTO?.className || "",
-            },
-            {
-              title: "Giới tính",
-              dataIndex: ["studentDTO", "gender"],
-              key: "gender",
-              render: (_, record) =>
-                record.studentDTO?.gender === "MALE" ? "Nam" : "Nữ",
-            },
-            {
-              title: "Phản ứng sau tiêm",
-              dataIndex: "reaction",
-              key: "reaction",
-            },
-            {
-              title: "Cách xử lý",
-              dataIndex: "actionsTaken",
-              key: "actionsTaken",
-            },
-            {
-              title: "Mô tả chi tiết",
-              dataIndex: "resultNote",
-              key: "resultNote",
-            },
-            {
-              title: "Ngày tạo",
-              dataIndex: "createdAt",
-              key: "createdAt",
-              render: (text) => text ? dayjs(text).format("YYYY-MM-DD") : "",
-            },
-            {
-              title: "Đã tiêm?",
-              dataIndex: "isInjected",
-              key: "isInjected",
-              render: (val) => val ? "Đã tiêm" : "Chưa tiêm",
-            },
-            {
-              title: "Thao tác",
-              key: "action",
-              render: (_, record) =>
-                Array.isArray(editableRows) && editableRows.length > 0 ? (
-                  <Button type="primary" onClick={() => handleOpenModal(record)}>
-                    Ghi nhận
-                  </Button>
-                ) : null,
-            },
-          ]}
-          dataSource={sampleResultData}
-          rowKey="vaccineResultId"
+          columns={viewMode ? columns.filter(col => col.key !== "action") : columns}
+          dataSource={filteredData.sort((a, b) =>
+            (a.studentDTO?.fullName || "").localeCompare(b.studentDTO?.fullName || "")
+          )}
+          rowKey={record => record.studentDTO?.studentId || Math.random()}
           pagination={{
             current: resultTablePage,
             pageSize: resultTablePageSize,
-            total: sampleResultData?.length || 0,
+            total: filteredData.length,
             onChange: setResultTablePage,
             showSizeChanger: false,
           }}

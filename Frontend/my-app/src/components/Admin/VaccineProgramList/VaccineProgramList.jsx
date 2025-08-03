@@ -139,7 +139,10 @@ const VaccineProgramList = () => {
         })) || [],
         vaccineFormDTOs: item.vaccineFormDTOs || [],
         note: item.vaccineFormDTOs?.[0]?.note || "",
-      }));
+      }))
+      // Sắp xếp giảm dần theo vaccineProgramId
+      .sort((a, b) => b.vaccineProgramId - a.vaccineProgramId);
+
       setPrograms(programs);
     } catch (error) {
       setPrograms([]);
@@ -324,8 +327,21 @@ const handleViewResult = async (programId) => {
       `http://localhost:8080/api/nurse/vaccine-result/program/${programId}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    setSampleResultData(res.data); // <-- Thêm dòng này để cập nhật dữ liệu cho bảng
-    setEditableRows([]); // Đảm bảo không hiện nút Ghi nhận
+    // Khi nhận response từ API (res.data là mảng như bạn gửi ở trên)
+const mappedData = res.data.map(item => ({
+  vaccineResultId: item.vaccineResultDTO?.vaccineResultId || null,
+  vaccineFormId: item.id,
+  reaction: item.vaccineResultDTO?.reaction || "",
+  actionsTaken: item.vaccineResultDTO?.actionsTaken || "",
+  resultNote: item.vaccineResultDTO?.resultNote || "",
+  isInjected: typeof item.vaccineResultDTO?.isInjected === "boolean" ? item.vaccineResultDTO.isInjected : false,
+  createdAt: item.vaccineResultDTO?.createdAt || "",
+  studentDTO: item.studentDTO || null,
+  // ...bạn có thể thêm các trường khác nếu cần
+}));
+
+setSampleResultData(mappedData);
+setEditableRows(mappedData.map((item) => ({ ...item })));
   } catch (err) {
     setSampleResultData([]);
     setEditableRows([]);
@@ -592,24 +608,34 @@ const handleViewResult = async (programId) => {
 
 
   const handleEditResult = async (programId) => {
-    setSelectedVaccineResultLoading(true);
-    setActiveTab("result");
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `http://localhost:8080/api/nurse/vaccine-result/program/${programId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setSampleResultData(res.data); // bật chế độ editable
-      setEditableRows(res.data.map((item) => ({ ...item })));
-    } catch (error) {
-      setSampleResultData([]);
-      setEditableRows([]);
-      message.error("Không lấy được dữ liệu kết quả!");
-    } finally {
-      setSelectedVaccineResultLoading(false);
-    }
-  };
+  setSelectedVaccineResultLoading(true);
+  setActiveTab("result");
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get(
+      `http://localhost:8080/api/nurse/vaccine-result/program/${programId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const mappedData = res.data.map(item => ({
+      vaccineResultId: item.vaccineResultDTO?.vaccineResultId || null,
+      vaccineFormId: item.id,
+      reaction: item.vaccineResultDTO?.reaction || "",
+      actionsTaken: item.vaccineResultDTO?.actionsTaken || "",
+      resultNote: item.vaccineResultDTO?.resultNote || "",
+      isInjected: typeof item.vaccineResultDTO?.isInjected === "boolean" ? item.vaccineResultDTO.isInjected : false,
+      createdAt: item.vaccineResultDTO?.createdAt || "",
+      studentDTO: item.studentDTO || null,
+    }));
+    setSampleResultData(mappedData);
+    setEditableRows(mappedData.map((item) => ({ ...item })));
+  } catch (error) {
+    setSampleResultData([]);
+    setEditableRows([]);
+    message.error("Không lấy được dữ liệu kết quả!");
+  } finally {
+    setSelectedVaccineResultLoading(false);
+  }
+};
 
 
 // ...existing code...
@@ -619,7 +645,7 @@ const handleSendNotification = async (programId, deadline) => {
   try {
     await axios.post(
       `http://localhost:8080/api/nurse/create-vaccine-form/${programId}?expDate=${deadline ? deadline.format("YYYY-MM-DD") : ""}`,
-      null, // Không truyền body
+      null,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     Swal.fire({
@@ -631,14 +657,21 @@ const handleSendNotification = async (programId, deadline) => {
     setNotifyModalVisible(false);
     setNotifyDeadline(null);
     setNotifyProgramId(null);
+    fetchProgram();
   } catch (error) {
-    Swal.fire({
-      icon: "error",
-      title: "Thất bại",
-      text: "Gửi thông báo thất bại!",
-      confirmButtonText: "OK",
-    });
-  } finally {
+  // Lấy message từ response nếu có
+  let msg = "Gửi thông báo thất bại!";
+  if (error.response && error.response.data && error.response.data.message) {
+    // Xóa "400 BAD_REQUEST" và các ký tự thừa
+    msg = error.response.data.message.replace(/400 BAD_REQUEST\s*/g, "").replace(/^"|"$/g, "").trim();
+  }
+  Swal.fire({
+    icon: "error",
+    title: "Thất bại",
+    text: msg,
+    confirmButtonText: "OK",
+  });
+} finally {
     setNotifyLoading(false);
   }
 };
@@ -665,7 +698,12 @@ const handleSendNotification = async (programId, deadline) => {
     >
       <Tabs
         activeKey={activeTab}
-        onChange={setActiveTab}
+        onChange={(key) => {
+    setActiveTab(key);
+    if (key === "program") {
+      fetchProgram();
+    }
+  }}
         items={[
           {
             key: "program",
@@ -867,19 +905,21 @@ const handleSendNotification = async (programId, deadline) => {
                             </div>
                            
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              Ngày thực hiện: {program.startDate}
-                            </div>
-
-
-                            <div style={{ color: "#555", marginBottom: 8 }}>
-                              Ngày gửi thông báo cho phụ huynh: {program.dateSendForm}
-                            </div>
-                            {/* <div style={{ color: "#555", marginBottom: 8 }}>
-                              Nhà sản xuất: {program.manufacture}
-                            </div> */}
-                            <div style={{ color: "#555", marginBottom: 8 }}>
-                              Địa điểm: {program.location}
-                            </div>
+  Ngày thực hiện: <span style={{ color: "#1890ff", fontWeight: 600 }}>{program.startDate}</span>
+</div>
+<div style={{ color: "#555", marginBottom: 8 }}>
+  Ngày gửi thông báo cho phụ huynh: <span style={{ color: "#52c41a", fontWeight: 600 }}>{program.dateSendForm}</span>
+</div>
+<div style={{ color: "#555", marginBottom: 8 }}>
+  {program.vaccineFormDTOs && program.vaccineFormDTOs.length > 0 && (
+    <>
+      Ngày hết hạn đăng ký: <span style={{ color: "#faad14", fontWeight: 600 }}>{program.vaccineFormDTOs[0].expDate}</span>
+    </>
+  )}
+</div>
+<div style={{ color: "#555", marginBottom: 8 }}>
+  Địa điểm: <span style={{ color: "#d4380d", fontWeight: 600 }}>{program.location}</span>
+</div>
                             {/* <div style={{ color: "#555", marginBottom: 8 }}>
                               Tổng số mũi: {program.totalUnit}
                             </div> */}
@@ -999,7 +1039,10 @@ const handleSendNotification = async (programId, deadline) => {
     <Button
       type="primary"
       style={{ marginLeft: 8, background: "#21ba45", border: "none" }}
-      onClick={() => handleCreateProgramResult(program)}
+      onClick={() => {
+        setProgram(program); // Thêm dòng này!
+        handleCreateProgramResult(program)
+      }}
     >
       Tạo kết quả
     </Button>
@@ -1330,22 +1373,25 @@ const handleSendNotification = async (programId, deadline) => {
             label: "Kết quả chương trình",
             children: (
               <VaccineProgramResultTab
-                program={program} // Thêm dòng này
-                searchTermResult={searchTermResult}
-                setSearchTermResult={setSearchTermResult}
-                sampleResultData={sampleResultData}
-                editableRows={editableRows}
-                handleEditCell={handleEditCell}
-                handleSaveRow={handleSaveRow}
-                selectedVaccineResultId={selectedVaccineResultId}
-                selectedVaccineResult={selectedVaccineResult}
-                filteredNurseResults={filteredNurseResults}
-                selectedVaccineResultLoading={selectedVaccineResultLoading}
-                nurseResultsLoading={nurseResultsLoading}
-                resultTablePage={resultTablePage}
-                resultTablePageSize={resultTablePageSize}
-                setResultTablePage={setResultTablePage}
-              />
+  program={program}
+  searchTermResult={searchTermResult}
+  setSearchTermResult={setSearchTermResult}
+  sampleResultData={sampleResultData}
+  setSampleResultData={setSampleResultData}
+  editableRows={editableRows}
+  handleEditCell={handleEditCell}
+  handleSaveRow={handleSaveRow}
+  selectedVaccineResultId={selectedVaccineResultId}
+  selectedVaccineResult={selectedVaccineResult}
+  filteredNurseResults={filteredNurseResults}
+  selectedVaccineResultLoading={selectedVaccineResultLoading}
+  nurseResultsLoading={nurseResultsLoading}
+  resultTablePage={resultTablePage}
+  resultTablePageSize={resultTablePageSize}
+  setResultTablePage={setResultTablePage}
+  handleEditResult={handleEditResult} // <-- thêm dòng này
+  viewMode={ modalMode === "view"}
+/>
             ),
           },
         ]}
