@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 // import { Table } from 'antd';
-import StudentInfoCard from '../../../common/StudentInfoCard';
-import { Input, DatePicker, Row, Col, message } from 'antd';
-import dayjs from 'dayjs';
-import VaccineHistoryDetailModal from './VaccineHistoryDetailModal';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHouse } from '@fortawesome/free-solid-svg-icons';
+import StudentInfoCard from "../../../common/StudentInfoCard";
+import { Input, DatePicker, Row, Col, message } from "antd";
+import dayjs from "dayjs";
+import VaccineHistoryDetailModal from "./VaccineHistoryDetailModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHouse } from "@fortawesome/free-solid-svg-icons";
 // import './VaccineResult.css';
 
 const VaccineResultCard = () => {
@@ -15,14 +15,14 @@ const VaccineResultCard = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [modalLoading, setModalLoading] = useState(false); // Thêm state cho loading modal
-  const [filterName, setFilterName] = useState('');
-  const [filterDate, setFilterDate] = useState('');
+  const [filterName, setFilterName] = useState("");
+  const [filterDate, setFilterDate] = useState("");
 
   useEffect(() => {
-    const studentsData = JSON.parse(localStorage.getItem('students')) || [];
+    const studentsData = JSON.parse(localStorage.getItem("students")) || [];
     setStudents(studentsData);
 
-    const studentIdAlready = localStorage.getItem('studentIdAlready');
+    const studentIdAlready = localStorage.getItem("studentIdAlready");
     if (studentIdAlready && studentIdAlready !== "null") {
       setSelectedStudentId(Number(studentIdAlready));
     }
@@ -36,7 +36,7 @@ const VaccineResultCard = () => {
 
   const fetchVaccineHistory = async (studentId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await fetch(
         `http://localhost:8080/api/parent/vaccine-result/student/${studentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -49,9 +49,10 @@ const VaccineResultCard = () => {
   };
 
   // Lọc dữ liệu nếu cần
-  const filteredHistory = vaccineHistory.filter(item => {
-    const name = item.vaccineFormDTO?.vaccineNameDTO?.vaccineName?.toLowerCase() || '';
-    const date = item.vaccineFormDTO?.vaccineProgramDTO?.startDate || '';
+  const filteredHistory = vaccineHistory.filter((item) => {
+    const name =
+      item.vaccineFormDTO?.vaccineNameDTO?.vaccineName?.toLowerCase() || "";
+    const date = item.vaccineFormDTO?.vaccineProgramDTO?.startDate || "";
     const matchName = name.includes(filterName.toLowerCase());
     const matchDate = filterDate ? date === filterDate : true;
     return matchName && matchDate;
@@ -59,30 +60,27 @@ const VaccineResultCard = () => {
 
   // Hàm lấy chi tiết vaccine result
   const handleShowDetail = (item) => {
-    // Truyền đúng dữ liệu cho modal
-    setModalData({
-      vaccineName: item.vaccineFormDTO?.vaccineNameDTO,
-      vaccineDate: item.vaccineFormDTO?.vaccineProgramDTO?.startDate,
-      status: item.vaccineFormDTO?.vaccineProgramDTO?.status,
-      manufacture: item.vaccineFormDTO?.vaccineNameDTO?.manufacture,
-      reaction: item.reaction,
-      resultNote: item.resultNote,
-      statusHealth: item.statusHealth,
-      actionsTaken: item.actionsTaken,
-      note: item.vaccineFormDTO?.note,
-      unit: item.vaccineFormDTO?.vaccineProgramDTO?.unit,
-      description: item.vaccineFormDTO?.vaccineNameDTO?.description,
-      url: item.vaccineFormDTO?.vaccineNameDTO?.url,
-    });
+    // item là một đối tượng hoàn chỉnh chứa tất cả thông tin
+    // mà component VaccineHistoryDetailModal cần.
+    setModalData([item]);
     setModalOpen(true);
   };
 
   return (
     <div className="student-profile-container" style={{ position: "relative" }}>
       {/* Nút Home ở góc trên trái */}
-      <div style={{ position: "absolute", top: 16, left: 32, display: "flex", alignItems: "center", zIndex: 10 }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 16,
+          left: 32,
+          display: "flex",
+          alignItems: "center",
+          zIndex: 10,
+        }}
+      >
         <button
-          onClick={() => window.location.href = '/'}
+          onClick={() => (window.location.href = "/")}
           style={{
             background: "#e3f2fd",
             border: "none",
@@ -94,11 +92,14 @@ const VaccineResultCard = () => {
             justifyContent: "center",
             boxShadow: "0 2px 8px #1976d220",
             cursor: "pointer",
-            marginRight: 8
+            marginRight: 8,
           }}
           title="Về trang chủ"
         >
-          <FontAwesomeIcon icon={faHouse} style={{ color: "#1976d2", fontSize: 22 }} />
+          <FontAwesomeIcon
+            icon={faHouse}
+            style={{ color: "#1976d2", fontSize: 22 }}
+          />
         </button>
         <span
           style={{
@@ -108,15 +109,20 @@ const VaccineResultCard = () => {
             background: "#e3f2fd",
             borderRadius: 8,
             padding: "4px 14px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
-          onClick={() => window.location.href = '/'}
+          onClick={() => (window.location.href = "/")}
           title="Về trang chủ"
         >
           Về trang chủ
         </span>
       </div>
-      <h1 className="main-title" style={{ margin: '0px 0px 20px 0px', fontSize: '24px'  }}>Kết quả tiêm vaccine</h1>
+      <h1
+        className="main-title"
+        style={{ margin: "0px 0px 20px 0px", fontSize: "24px" }}
+      >
+        Kết quả tiêm vaccine
+      </h1>
       <div className="profile-content">
         {/* Left Section: Student Overview */}
         <div className="left-panel">
@@ -125,20 +131,34 @@ const VaccineResultCard = () => {
         {/* Right Section: Vaccine History */}
         <div className="right-panel">
           <div className="vaccine-history-section">
-
             {/* Bộ lọc */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-              <div style={{ display: 'flex', gap: 12, width: '100%', maxWidth: 600 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 24,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  width: "100%",
+                  maxWidth: 600,
+                }}
+              >
                 <Input
                   placeholder="Lọc theo tên vaccine"
                   value={filterName}
-                  onChange={e => setFilterName(e.target.value)}
+                  onChange={(e) => setFilterName(e.target.value)}
                   allowClear
                 />
                 <DatePicker
                   placeholder="Lọc theo ngày"
                   value={filterDate ? dayjs(filterDate) : null}
-                  onChange={date => setFilterDate(date ? date.format('YYYY-MM-DD') : '')}
+                  onChange={(date) =>
+                    setFilterDate(date ? date.format("YYYY-MM-DD") : "")
+                  }
                   allowClear
                   style={{ width: 200 }}
                   format="YYYY-MM-DD"
@@ -147,7 +167,9 @@ const VaccineResultCard = () => {
             </div>
 
             {filteredHistory.length === 0 ? (
-              <div style={{textAlign: 'center', color: '#888', marginTop: 32}}>
+              <div
+                style={{ textAlign: "center", color: "#888", marginTop: 32 }}
+              >
                 Không có dữ liệu phù hợp.
               </div>
             ) : (
@@ -176,49 +198,64 @@ const VaccineResultCard = () => {
                     background: #e8f5e9;
                   }
                 `}</style>
-                <div style={{
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 16,
-  width: '100%',
-  alignItems: 'stretch',
-  maxHeight: '62vh',
-  overflowY: 'auto',
-  paddingRight: 8,
-}}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 16,
+                    width: "100%",
+                    alignItems: "stretch",
+                    maxHeight: "62vh",
+                    overflowY: "auto",
+                    paddingRight: 8,
+                  }}
+                >
                   {filteredHistory.map((item, idx) => (
                     <div
                       key={idx}
                       className="vaccine-history-item"
                       onClick={() => handleShowDetail(item)}
                     >
-                      <div style={{
-                        fontWeight: 600,
-                        fontSize: 18,
-                        color: '#1976d2',
-                        marginBottom: 8,
-                      }}>
-                        {item.vaccineFormDTO?.vaccineNameDTO?.vaccineName || "---"}
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          fontSize: 18,
+                          color: "#1976d2",
+                          marginBottom: 8,
+                        }}
+                      >
+                        {item.vaccineFormDTO?.vaccineNameDTO?.vaccineName ||
+                          "---"}
                       </div>
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        width: '100%',
-                        fontSize: 15,
-                        color: '#888',
-                      }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          width: "100%",
+                          fontSize: 15,
+                          color: "#888",
+                        }}
+                      >
                         <div>
-                          Ngày: <span style={{color: '#1976d2', fontWeight: 500}}>
-                    {item.vaccineFormDTO?.vaccineProgramDTO?.startDate || '---'}
-                  </span>
+                          Ngày:{" "}
+                          <span style={{ color: "#1976d2", fontWeight: 500 }}>
+                            {item.vaccineFormDTO?.vaccineProgramDTO?.startDate
+                              ? item.vaccineFormDTO.vaccineProgramDTO.startDate
+                                  .split("-")
+                                  .reverse()
+                                  .join("/")
+                              : "---"}
+                          </span>
                         </div>
                         <div>
                           Trạng thái:{" "}
-                          <span style={{ color: '#43a047', fontWeight: 600 }}>
-                            {item.vaccineFormDTO?.vaccineProgramDTO?.status === "COMPLETED"
+                          <span style={{ color: "#43a047", fontWeight: 600 }}>
+                            {item.vaccineFormDTO?.vaccineProgramDTO?.status ===
+                            "COMPLETED"
                               ? "Đã hoàn thành"
-                              : item.vaccineFormDTO?.vaccineProgramDTO?.status || "---"}
+                              : item.vaccineFormDTO?.vaccineProgramDTO
+                                  ?.status || "---"}
                           </span>
                         </div>
                       </div>

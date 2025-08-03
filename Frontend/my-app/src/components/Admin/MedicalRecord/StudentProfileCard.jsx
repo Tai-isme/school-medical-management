@@ -73,7 +73,12 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
             Lớp: {studentInfo?.classDTO?.className || ""}
           </div>
           <div style={{ fontSize: 16 }}>
-            Giới tính: {studentInfo?.gender || ""}
+            Giới tính:{" "}
+            {studentInfo?.gender === "MALE"
+              ? "Nam"
+              : studentInfo?.gender === "FEMALE"
+              ? "Nữ"
+              : "---"}
           </div>
         </Col>
       </Row>
@@ -90,7 +95,14 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
                 layout="vertical"
                 style={{ maxWidth: 700, margin: "0 auto" }}
               >
-                <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 20, marginBottom: 16 }}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    fontSize: 20,
+                    marginBottom: 16,
+                  }}
+                >
                   Thông tin học sinh
                 </div>
                 <Row gutter={16}>
@@ -118,16 +130,28 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
                   </Col>
                 </Row>
                 <Form.Item label="Bị dị ứng với các loại nào">
-                  <Input.TextArea value={safeRecord.allergies || ""} readOnly  rows={3} />
+                  <Input.TextArea
+                    value={safeRecord.allergies || ""}
+                    readOnly
+                    rows={3}
+                  />
                 </Form.Item>
                 <Form.Item label="Bệnh mãn tính">
-                  <Input.TextArea value={safeRecord.chronicDisease || ""} readOnly  rows={2} />
+                  <Input.TextArea
+                    value={safeRecord.chronicDisease || ""}
+                    readOnly
+                    rows={2}
+                  />
                 </Form.Item>
                 {/* <Form.Item label="Lịch sử điều trị">
                   <Input.TextArea value={safeRecord.treatmentHistory || ""} readOnly  rows={2} />
                 </Form.Item> */}
                 <Form.Item label="Ghi chú">
-                  <Input.TextArea value={safeRecord.note || ""} readOnly  rows={2} />
+                  <Input.TextArea
+                    value={safeRecord.note || ""}
+                    readOnly
+                    rows={2}
+                  />
                 </Form.Item>
               </Form>
             ),
@@ -136,8 +160,17 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
             key: "vaccine",
             label: "Các Vaccine đã tiêm",
             children: (
-              <div style={{ background: "#f9fbfd", borderRadius: 8, padding: 12 }}>
-                <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 20, marginBottom: 12 }}>
+              <div
+                style={{ background: "#f9fbfd", borderRadius: 8, padding: 12 }}
+              >
+                <div
+                  style={{
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    fontSize: 20,
+                    marginBottom: 12,
+                  }}
+                >
                   Các loại vaccin đã tiêm
                 </div>
                 <Row style={{ fontWeight: "bold", marginBottom: 8 }}>
