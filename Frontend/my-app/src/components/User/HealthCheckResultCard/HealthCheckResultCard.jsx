@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 // import { Table } from 'antd';
-import StudentInfoCard from '../../../common/StudentInfoCard';
-import { Input, DatePicker, Row, Col } from 'antd';
-import dayjs from 'dayjs';
-import HealthCheckResultDetailModal from './HealthCheckResultDetailModal';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHouse } from '@fortawesome/free-solid-svg-icons';
+import StudentInfoCard from "../../../common/StudentInfoCard";
+import { Input, DatePicker, Row, Col } from "antd";
+import dayjs from "dayjs";
+import HealthCheckResultDetailModal from "./HealthCheckResultDetailModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHouse } from "@fortawesome/free-solid-svg-icons";
 // import './VaccineResult.css';
 
 const HealthCheckResultCard = () => {
@@ -13,17 +13,17 @@ const HealthCheckResultCard = () => {
   const [selectedStudentId, setSelectedStudentId] = useState();
   const [vaccineHistory, setVaccineHistory] = useState([]);
   const [openDetailIdx, setOpenDetailIdx] = useState(null);
-  const [filterName, setFilterName] = useState('');
-  const [filterDate, setFilterDate] = useState('');
+  const [filterName, setFilterName] = useState("");
+  const [filterDate, setFilterDate] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
-    const studentsData = JSON.parse(localStorage.getItem('students')) || [];
+    const studentsData = JSON.parse(localStorage.getItem("students")) || [];
     setStudents(studentsData);
 
-    const studentIdAlready = localStorage.getItem('studentIdAlready');
+    const studentIdAlready = localStorage.getItem("studentIdAlready");
     if (studentIdAlready && studentIdAlready !== "null") {
       setSelectedStudentId(Number(studentIdAlready));
     }
@@ -32,7 +32,7 @@ const HealthCheckResultCard = () => {
   // Sửa hàm fetch thành gọi API mới
   const fetchHealthCheckHistory = async (studentId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await fetch(
         `http://localhost:8080/api/parent/health-check-result/student/${studentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -51,10 +51,14 @@ const HealthCheckResultCard = () => {
   }, [selectedStudentId]);
 
   // Lọc dữ liệu theo tên chương trình và ngày
-  const filteredHistory = vaccineHistory.filter(item => {
-    const programName = item.healthCheckFormDTO?.healthCheckProgramDTO?.healthCheckName || "";
-    const checkDate = item.healthCheckFormDTO?.healthCheckProgramDTO?.startDate || "";
-    const matchName = programName.toLowerCase().includes(filterName.toLowerCase());
+  const filteredHistory = vaccineHistory.filter((item) => {
+    const programName =
+      item.healthCheckFormDTO?.healthCheckProgramDTO?.healthCheckName || "";
+    const checkDate =
+      item.healthCheckFormDTO?.healthCheckProgramDTO?.startDate || "";
+    const matchName = programName
+      .toLowerCase()
+      .includes(filterName.toLowerCase());
     const matchDate = filterDate ? checkDate === filterDate : true;
     // Nếu muốn lọc trạng thái hoàn thành, sửa lại nếu cần
     // const matchStatus = item.healthCheckFormDTO?.healthCheckProgramDTO?.status === "COMPLETED";
@@ -63,38 +67,30 @@ const HealthCheckResultCard = () => {
 
   // const vaccineColumns = [...]; // Không dùng Table nữa
 
-  const selectedStudent = students.find(s => s.id === selectedStudentId);
+  const selectedStudent = students.find((s) => s.id === selectedStudentId);
 
   // Hàm lấy chi tiết kết quả khám sức khỏe
   const handleShowDetail = (item) => {
-    setModalData({
-      programName: item.healthCheckFormDTO?.healthCheckProgramDTO?.healthCheckName,
-      date: item.healthCheckFormDTO?.healthCheckProgramDTO?.startDate,
-      status: item.healthCheckFormDTO?.healthCheckProgramDTO?.status,
-      description: item.healthCheckFormDTO?.healthCheckProgramDTO?.description,
-      location: item.healthCheckFormDTO?.healthCheckProgramDTO?.location,
-      nurseName: item.healthCheckFormDTO?.nurseDTO?.fullName,
-      note: item.note,
-      vision: item.vision,
-      hearing: item.hearing,
-      weight: item.weight,
-      height: item.height,
-      dentalStatus: item.dentalStatus,
-      bloodPressure: item.bloodPressure,
-      heartRate: item.heartRate,
-      generalCondition: item.generalCondition,
-      diagnosis: item.diagnosis,
-      level: item.level,
-    });
+    console.log("Selected item:", item);
+    setModalData(item);
     setModalOpen(true);
   };
 
   return (
     <div className="student-profile-container" style={{ position: "relative" }}>
       {/* Nút Home ở góc trên trái */}
-      <div style={{ position: "absolute", top: 16, left: 32, display: "flex", alignItems: "center", zIndex: 10 }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 16,
+          left: 32,
+          display: "flex",
+          alignItems: "center",
+          zIndex: 10,
+        }}
+      >
         <button
-          onClick={() => window.location.href = '/'}
+          onClick={() => (window.location.href = "/")}
           style={{
             background: "#e3f2fd",
             border: "none",
@@ -106,11 +102,14 @@ const HealthCheckResultCard = () => {
             justifyContent: "center",
             boxShadow: "0 2px 8px #1976d220",
             cursor: "pointer",
-            marginRight: 8
+            marginRight: 8,
           }}
           title="Về trang chủ"
         >
-          <FontAwesomeIcon icon={faHouse} style={{ color: "#1976d2", fontSize: 22 }} />
+          <FontAwesomeIcon
+            icon={faHouse}
+            style={{ color: "#1976d2", fontSize: 22 }}
+          />
         </button>
         <span
           style={{
@@ -120,15 +119,20 @@ const HealthCheckResultCard = () => {
             background: "#e3f2fd",
             borderRadius: 8,
             padding: "4px 14px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
-          onClick={() => window.location.href = '/'}
+          onClick={() => (window.location.href = "/")}
           title="Về trang chủ"
         >
           Về trang chủ
         </span>
       </div>
-      <h2 className="main-title" style={{ margin: '0px 0px 20px 0px', fontSize: '24px'  }}>Kết quả khám sức khỏe định kỳ</h2>
+      <h2
+        className="main-title"
+        style={{ margin: "0px 0px 20px 0px", fontSize: "24px" }}
+      >
+        Kết quả khám sức khỏe định kỳ
+      </h2>
       <div className="profile-content">
         {/* Left Section: Student Overview */}
         <div className="left-panel">
@@ -137,20 +141,34 @@ const HealthCheckResultCard = () => {
         {/* Right Section: Vaccine History */}
         <div className="right-panel">
           <div className="vaccine-history-section">
-
             {/* Bộ lọc */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-              <div style={{ display: 'flex', gap: 12, width: '100%', maxWidth: 600 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 24,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  width: "100%",
+                  maxWidth: 600,
+                }}
+              >
                 <Input
                   placeholder="Lọc theo tên chương trình"
                   value={filterName}
-                  onChange={e => setFilterName(e.target.value)}
+                  onChange={(e) => setFilterName(e.target.value)}
                   allowClear
                 />
                 <DatePicker
                   placeholder="Lọc theo ngày"
                   value={filterDate ? dayjs(filterDate) : null}
-                  onChange={date => setFilterDate(date ? date.format('YYYY-MM-DD') : '')}
+                  onChange={(date) =>
+                    setFilterDate(date ? date.format("YYYY-MM-DD") : "")
+                  }
                   allowClear
                   style={{ width: 200 }}
                   format="YYYY-MM-DD"
@@ -158,16 +176,18 @@ const HealthCheckResultCard = () => {
               </div>
             </div>
 
-            <div style={{
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 16,
-  width: '100%',
-  alignItems: 'stretch',
-  maxHeight: '62vh',
-  overflowY: 'auto',
-  paddingRight: 8,
-}}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                width: "100%",
+                alignItems: "stretch",
+                maxHeight: "62vh",
+                overflowY: "auto",
+                paddingRight: 8,
+              }}
+            >
               <style>{`
                 .health-history-item {
                   background: #fff;
@@ -192,7 +212,9 @@ const HealthCheckResultCard = () => {
                 }
               `}</style>
               {filteredHistory.length === 0 ? (
-                <div style={{textAlign: 'center', color: '#888', marginTop: 32}}>
+                <div
+                  style={{ textAlign: "center", color: "#888", marginTop: 32 }}
+                >
                   Không có dữ liệu phù hợp.
                 </div>
               ) : (
@@ -202,35 +224,45 @@ const HealthCheckResultCard = () => {
                     className="health-history-item"
                     onClick={() => handleShowDetail(item)}
                   >
-                    <div style={{
-                      fontWeight: 600,
-                      fontSize: 18,
-                      color: '#1976d2',
-                      marginBottom: 8,
-                    }}>
-                      {item.healthCheckFormDTO?.healthCheckProgramDTO?.healthCheckName || "---"}
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        fontSize: 18,
+                        color: "#1976d2",
+                        marginBottom: 8,
+                      }}
+                    >
+                      {item.healthCheckFormDTO?.healthCheckProgramDTO
+                        ?.healthCheckName || "---"}
                     </div>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      width: '100%',
-                      fontSize: 15,
-                      color: '#888',
-                    }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        width: "100%",
+                        fontSize: 15,
+                        color: "#888",
+                      }}
+                    >
                       <div>
-                        Ngày: <span style={{color: '#1976d2', fontWeight: 500}}>
-          {item.healthCheckFormDTO?.healthCheckProgramDTO?.startDate || '---'}
-        </span>
+                        Ngày:{" "}
+                        <span style={{ color: "#1976d2", fontWeight: 500 }}>
+                          {item.healthCheckFormDTO?.healthCheckProgramDTO
+                            ?.startDate || "---"}
+                        </span>
                       </div>
                       <div>
                         Trạng thái:{" "}
-                        <span style={{color: '#43a047', fontWeight: 600}}>
-          {item.healthCheckFormDTO?.healthCheckProgramDTO?.status || "---"}
-        </span>
+                        <span style={{ color: "#43a047", fontWeight: 600 }}>
+                          {item.healthCheckFormDTO?.healthCheckProgramDTO
+                            ?.status === "COMPLETED"
+                            ? "Đã hoàn thành"
+                            : item.vaccineFormDTO?.vaccineProgramDTO?.status ||
+                              "---"}
+                        </span>
                       </div>
                     </div>
-   
                   </div>
                 ))
               )}
