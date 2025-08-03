@@ -14,9 +14,14 @@ import {
   DatePicker,
   Popover,
 } from "antd";
+import Swal from "sweetalert2";
 import dayjs from "dayjs";
 import { Upload } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -41,6 +46,21 @@ const MedicalEventList = () => {
   const [previewImage, setPreviewImage] = useState("");
 
   const [editingId, setEditingId] = useState(null);
+
+  const [fileList, setFileList] = useState([]);
+
+  const renderLevelText = (level) => {
+    switch (level) {
+      case "LOW":
+        return "Nhẹ";
+      case "MEDIUM":
+        return "Trung bình";
+      case "HIGH":
+        return "Nặng";
+      default:
+        return "Không rõ";
+    }
+  };
 
   useEffect(() => {
     if (createModalVisible) {
@@ -182,30 +202,34 @@ const MedicalEventList = () => {
       };
 
       if (editingId) {
-        // Chế độ sửa: Gọi API PUT
+        // Chế độ sửa
         await axios.put(
           `http://localhost:8080/api/nurse/medical-event/${editingId}`,
           payload,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        message.success("Cập nhật sự kiện thành công!");
+        Swal.fire({
+          icon: "success",
+          title: "Cập nhật sự kiện thành công!",
+          showConfirmButton: false,
+          timer: 2000,
+        });
 
-        // Reload toàn bộ danh sách khi sửa
-        fetchMedicalEvents();
+        fetchMedicalEvents(); // Cập nhật danh sách
       } else {
-        // Chế độ tạo mới: Gọi API POST
+        // Chế độ tạo mới
         const res = await axios.post(
           "http://localhost:8080/api/nurse/medical-event",
           payload,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        message.success("Tạo sự kiện thành công!");
+        Swal.fire({
+          icon: "success",
+          title: "Tạo sự kiện thành công!",
+          showConfirmButton: false,
+          timer: 2000,
+        });
 
-        // Chuẩn hóa dữ liệu sự kiện mới
         const newEvent = {
           ...res.data,
           studentName:
@@ -216,7 +240,6 @@ const MedicalEventList = () => {
           parentphone: res.data.parentDTO?.phone || "Không có",
         };
 
-        // Đẩy sự kiện mới lên đầu danh sách
         setData((prev) => [newEvent, ...prev]);
         setFilteredData((prev) => [newEvent, ...prev]);
       }
@@ -232,70 +255,85 @@ const MedicalEventList = () => {
     }
   };
 
-const handleEditClick = async (item) => {
-  setEditingId(item.eventId);
-  setCreateModalVisible(true);
+  const handleEditClick = async (item) => {
+    setEditingId(item.eventId);
+    setCreateModalVisible(true);
 
-  try {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    let loadedClassOptions = classOptions;
+      let loadedClassOptions = classOptions;
 
-    // ❶ Tải danh sách lớp nếu chưa có
-    if (classOptions.length === 0) {
-      const classRes = await axios.get(
-        "http://localhost:8080/api/nurse/class-list",
+      // 1. Nếu chưa có danh sách lớp, tải
+      if (classOptions.length === 0) {
+        const classRes = await axios.get(
+          "http://localhost:8080/api/nurse/class-list",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        loadedClassOptions = classRes.data;
+        setClassOptions(loadedClassOptions);
+      }
+
+      // 2. Tải danh sách học sinh theo lớp
+      const classId = item.classDTO?.classId;
+      const studentId = item.studentDTO?.studentId;
+
+      const studentRes = await axios.get(
+        `http://localhost:8080/api/admin/students/${classId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      loadedClassOptions = classRes.data;
-      setClassOptions(loadedClassOptions); // cập nhật state
-    }
+      const loadedStudentOptions = studentRes.data;
+      setStudentOptions(loadedStudentOptions);
 
-    // ❷ Tải danh sách học sinh
-    const studentRes = await axios.get(
-      `http://localhost:8080/api/admin/students/${classId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
+      // 3. Set giá trị form
+      form.setFieldsValue({
+        eventName: item.eventName,
+        typeEvent: item.typeEvent,
+        date: dayjs(item.date),
+        classId,
+        studentId,
+        levelCheck: item.levelCheck,
+        location: item.location,
+        description: item.description,
+        actionsTaken: item.actionsTaken,
+      });
+
+      // 4. Set ảnh và hiển thị preview
+      if (item.image) {
+        setUploadedImage(item.image);
+        setFileList([
+          {
+            uid: "-1",
+            name: "Ảnh đã lưu",
+            status: "done",
+            url: item.image, // Preview ảnh đã lưu
+          },
+        ]);
+      } else {
+        setFileList([]); // Không có ảnh thì clear preview
       }
-    );
-    const loadedStudentOptions = studentRes.data;
-    setStudentOptions(loadedStudentOptions); // cập nhật state
-
-    // ❸ Sau khi đã có đủ option, set toàn bộ giá trị form
-    form.setFieldsValue({
-      eventName: item.eventName,
-      typeEvent: item.typeEvent,
-      date: dayjs(item.date),
-      classId: item.classId,
-      studentId: item.studentId,
-      levelCheck: item.levelCheck,
-      location: item.location,
-      description: item.description,
-      actionsTaken: item.actionsTaken,
-    });
-
-    // Ảnh
-    if (item.image) {
-      setUploadedImage(item.image);
+    } catch (error) {
+      console.error("Lỗi khi load dữ liệu chỉnh sửa:", error);
+      message.error("Không thể tải thông tin chỉnh sửa.");
     }
-  } catch (error) {
-    console.error("Lỗi khi load dữ liệu chỉnh sửa:", error);
-    message.error("Không thể tải thông tin chỉnh sửa.");
-  }
-};
+  };
 
-
-
-
-  const handleDeleteEvent = async (medicalEventId) => {
-    Modal.confirm({
+  const handleDeleteEvent = (medicalEventId) => {
+    Swal.fire({
       title: "Bạn có chắc muốn xoá sự kiện này?",
-      okText: "Xoá",
-      okType: "danger",
-      cancelText: "Huỷ",
-      onOk: async () => {
+      text: "Hành động này không thể hoàn tác.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xoá",
+      cancelButtonText: "Hủy",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
         try {
           const token = localStorage.getItem("token");
           await axios.delete(
@@ -304,13 +342,13 @@ const handleEditClick = async (item) => {
               headers: { Authorization: `Bearer ${token}` },
             }
           );
-          message.success("Xoá sự kiện thành công!");
-          fetchMedicalEvents(); // refresh danh sách
+          Swal.fire("Đã xoá!", "Sự kiện đã được xoá.", "success");
+          fetchMedicalEvents();
         } catch (err) {
           console.error("Lỗi xoá sự kiện:", err);
-          message.error("Không thể xoá sự kiện.");
+          Swal.fire("Lỗi!", "Không thể xoá sự kiện.", "error");
         }
-      },
+      }
     });
   };
 
@@ -368,13 +406,22 @@ const handleEditClick = async (item) => {
             onChange={(value) => setSelectedLevel(value)}
             allowClear
           >
-            <Option value="LOW">LOW</Option>
-            <Option value="MEDIUM">MEDIUM</Option>
-            <Option value="HIGH">HIGH</Option>
+            <Option value="LOW">Nhẹ</Option>
+            <Option value="MEDIUM">Trung bình</Option>
+            <Option value="HIGH">Nặng</Option>
           </Select>
         </Col>
         <Col span={6}>
-          <Button type="primary" onClick={() => setCreateModalVisible(true)}>
+          <Button
+            type="primary"
+            onClick={() => {
+              setEditingId(null);
+              form.resetFields();
+              setUploadedImage(null);
+              setFileList([]);
+              setCreateModalVisible(true);
+            }}
+          >
             Tạo sự cố
           </Button>
         </Col>
@@ -395,66 +442,75 @@ const handleEditClick = async (item) => {
                 transition: "box-shadow 0.2s",
                 position: "relative",
               }}
-              // onClick={() => {
-              //   setSelectedEvent(item);
-              //   setDetailModalVisible(true);
-              // }}
             >
+              {/* Tag mức độ */}
               <div style={getLevelStyle(item.levelCheck)}>
-                {item.levelCheck}
+                {renderLevelText(item.levelCheck)}
               </div>
-              <h3
-                style={{
-                  color: "#ff4d4f",
-                  textTransform: "uppercase",
-                  fontWeight: "bold",
-                }}
-              >
-                {item.eventName}
-              </h3>
-              <p>
-                <strong>Học sinh:</strong> {item.studentName}
-              </p>
-              <p>
-                <strong>Lớp:</strong> {item.className}
-              </p>
-              <p>
-                <strong>Ngày:</strong> {dayjs(item.date).format("DD/MM/YYYY")}
-              </p>
-              <p>
-                <strong>Y tá phụ trách:</strong> {item.nurseName}
-              </p>
-              <Popover
-                title="📞 Thông tin liên hệ"
-                content={
-                  <div>
-                    <p>
-                      <strong>Phụ huynh:</strong> {item.parentName}
-                    </p>
-                    <p>
-                      <strong>Điện thoại:</strong> {item.parentphone}
-                    </p>
-                  </div>
-                }
-                trigger="click"
-              >
-                <div
+
+              {/* Nội dung bên trái */}
+              <div>
+                <h3
                   style={{
-                    display: "inline-block",
-                    padding: "8px 12px",
-                    background: "#f0f0f0",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                    width: "fit-content",
-                    marginTop: 8,
+                    color: "#ff4d4f",
+                    textTransform: "uppercase",
+                    fontWeight: "bold",
                   }}
                 >
-                  📞 Xem thông tin phụ huynh
-                </div>
-              </Popover>
+                  {item.eventName}
+                </h3>
+                <p>
+                  <strong>Học sinh:</strong> {item.studentName}
+                </p>
+                <p>
+                  <strong>Lớp:</strong> {item.className}
+                </p>
+                <p>
+                  <strong>Ngày:</strong> {dayjs(item.date).format("DD/MM/YYYY")}
+                </p>
+                <p>
+                  <strong>Y tá phụ trách:</strong> {item.nurseName}
+                </p>
+                <Popover
+                  title="📞 Thông tin liên hệ"
+                  content={
+                    <div>
+                      <p>
+                        <strong>Phụ huynh:</strong> {item.parentName}
+                      </p>
+                      <p>
+                        <strong>Điện thoại:</strong> {item.parentphone}
+                      </p>
+                    </div>
+                  }
+                  trigger="click"
+                >
+                  <div
+                    style={{
+                      display: "inline-block",
+                      padding: "8px 12px",
+                      background: "#f0f0f0",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                      width: "fit-content",
+                      marginTop: 8,
+                    }}
+                  >
+                    📞 Xem thông tin phụ huynh
+                  </div>
+                </Popover>
+              </div>
 
-              {/* Nút hành động */}
-              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              {/* Hàng chứa các nút hành động */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginTop: 16,
+                }}
+              >
+                {/* Bên trái: Xem chi tiết */}
                 <Button
                   type="link"
                   onClick={() => {
@@ -464,16 +520,38 @@ const handleEditClick = async (item) => {
                 >
                   Xem chi tiết
                 </Button>
-                <Button
-                  type="link"
-                  danger
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteEvent(item.eventId);
-                  }}
-                >
-                  Xoá
-                </Button>
+
+                {/* Bên phải: Sửa và Xoá */}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() => handleEditClick(item)}
+                    style={{
+                      backgroundColor: "#ffa940",
+                      borderColor: "#ffa940",
+                      color: "#fff",
+                    }}
+                  >
+                    Sửa
+                  </Button>
+                  <Button
+                    type="primary"
+                    icon={<DeleteOutlined />}
+                    danger
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteEvent(item.eventId);
+                    }}
+                    style={{
+                      backgroundColor: "#ff4d4f",
+                      borderColor: "#ff4d4f",
+                      color: "#fff",
+                    }}
+                  >
+                    Xoá
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}
@@ -501,13 +579,6 @@ const handleEditClick = async (item) => {
           <Button key="close" onClick={() => setDetailModalVisible(false)}>
             Đóng
           </Button>,
-          <Button
-            key="edit"
-            type="primary"
-            onClick={() => handleEditClick(selectedEvent)}
-          >
-            Sửa
-          </Button>,
         ]}
         bodyStyle={{
           position: "relative",
@@ -520,8 +591,9 @@ const handleEditClick = async (item) => {
         {selectedEvent && (
           <div>
             <div style={getLevelStyle(selectedEvent.levelCheck)}>
-              {selectedEvent.levelCheck}
+              {renderLevelText(selectedEvent.levelCheck)}
             </div>
+
             <div
               style={{
                 display: "grid",
@@ -634,7 +706,24 @@ const handleEditClick = async (item) => {
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="Ngày" name="date" rules={[{ required: true }]}>
+              <Form.Item
+                label="Ngày"
+                name="date"
+                rules={[
+                  { required: true, message: "Vui lòng chọn ngày" },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      const today = dayjs().startOf("day");
+                      const selected = value.startOf("day");
+
+                      return selected.isSame(today)
+                        ? Promise.resolve()
+                        : Promise.reject("Chỉ được chọn ngày hôm nay");
+                    },
+                  },
+                ]}
+              >
                 <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
               </Form.Item>
             </Col>
@@ -693,29 +782,48 @@ const handleEditClick = async (item) => {
                 rules={[{ required: true }]}
               >
                 <Select>
-                  <Option value="LOW">LOW</Option>
-                  <Option value="MEDIUM">MEDIUM</Option>
-                  <Option value="HIGH">HIGH</Option>
+                  <Option value="LOW">Nhẹ</Option>
+                  <Option value="MEDIUM">Trung bình</Option>
+                  <Option value="HIGH">Nặng</Option>
                 </Select>
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item label="Ảnh">
                 <Upload
+                  listType="picture-card"
+                  fileList={fileList}
                   beforeUpload={(file) => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                      setUploadedImage(e.target.result);
+                      const base64 = e.target.result;
+                      setUploadedImage(base64);
+                      setFileList([
+                        {
+                          uid: "-1",
+                          name: file.name,
+                          status: "done",
+                          url: base64,
+                        },
+                      ]);
                     };
                     reader.readAsDataURL(file);
                     return false;
                   }}
-                  showUploadList={{ showRemoveIcon: true }}
-                  onRemove={() => setUploadedImage(null)}
+                  onRemove={() => {
+                    setUploadedImage(null);
+                    setFileList([]);
+                  }}
+                  onPreview={(file) => {
+                    setPreviewImage(file.url); // hoặc file.thumbUrl
+                    setPreviewVisible(true);
+                  }}
                   accept="image/*"
                   maxCount={1}
                 >
-                  <Button icon={<UploadOutlined />}>Tải ảnh</Button>
+                  {fileList.length === 0 && (
+                    <Button icon={<UploadOutlined />}>Tải ảnh</Button>
+                  )}
                 </Upload>
               </Form.Item>
             </Col>
@@ -742,6 +850,7 @@ const handleEditClick = async (item) => {
         footer={null}
         onCancel={() => setPreviewVisible(false)}
         centered
+        zIndex={2000}
         bodyStyle={{ padding: 0, backgroundColor: "transparent" }}
       >
         <img

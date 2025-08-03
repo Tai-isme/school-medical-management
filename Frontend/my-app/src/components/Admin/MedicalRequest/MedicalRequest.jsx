@@ -7,11 +7,14 @@ import axios from "axios";
 import Swal from "sweetalert2"; // Thêm dòng này ở đầu file
 import "./MedicalRequest.css";
 
+
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
+
 const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
+
 
 const statusMap = {
   PROCESSING: "Chờ xử lý",
@@ -20,12 +23,14 @@ const statusMap = {
   CANCELLED: "Từ chối",
 };
 
+
 const colorMap = {
   PROCESSING: "gold",
   CONFIRMED: "green", // Đổi SUBMITTED thành CONFIRMED
   COMPLETED: "blue",
   CANCELLED: "red",
 };
+
 
 const MedicalRequest = () => {
   const [requests, setRequests] = useState([]);
@@ -41,18 +46,22 @@ const MedicalRequest = () => {
   const [rejectModalVisible, setRejectModalVisible] = useState(false); // State để hiển thị modal từ chối
   const [rejectRequestId, setRejectRequestId] = useState(null); // State để lưu requestId của yêu cầu bị từ chối
 
+
   // Gọi API lấy tất cả khi đổi tab hoặc lần đầu
   useEffect(() => {
     fetchRequests();
   }, []);
 
+
   useEffect(() => {
     setCurrentPage(1);
   }, [activeStatus, searchTerm, dateRange]);
 
+
   useEffect(() => {
     fetchRequests(activeStatus);
   }, [activeStatus]); // Gọi lại khi đổi tab
+
 
   const fetchRequests = async (status = "PROCESSING") => {
     setLoading(true);
@@ -74,16 +83,18 @@ const MedicalRequest = () => {
     }
   };
 
+
   const handleViewDetail = (record) => {
     setSelectedRequest(record);
     setModalVisible(true);
   };
 
+
   const handleApprove = async (id) => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/nurse/${id}/status`,
+        `http://localhost:8080/api/nurse/medical-request/${id}/status`,
         {
           status: "CONFIRMED", // Đổi SUBMITTED thành CONFIRMED
           reason_rejected: null
@@ -107,17 +118,19 @@ const MedicalRequest = () => {
     }
   };
 
+
   const handleRejectClick = (id) => {
     setRejectRequestId(id); // Lưu requestId
     setRejectModalVisible(true); // Hiển thị modal
   };
 
+
   const handleRejectConfirm = async () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/nurse/${rejectRequestId}/status`,
-        { 
+        `http://localhost:8080/api/nurse/medical-request/${rejectRequestId}/status`,
+        {
           status: "CANCELLED",
           reason_rejected: rejectReason
          }, // Gửi lý do từ chối trong body
@@ -143,11 +156,12 @@ const MedicalRequest = () => {
     }
   };
 
+
   const handleGiveMedicine = async (id) => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/nurse/${id}/status`,
+        `http://localhost:8080/api/nurse/medical-request/${id}/status`,
         {
           status: "COMPLETED",
           reason_rejected: null // Không cần lý do từ chối khi cho uống thuốc
@@ -171,6 +185,7 @@ const MedicalRequest = () => {
     }
   };
 
+
   // Lọc theo status cho từng tab
   const getFilteredRequests = () => {
     let filtered = requests;
@@ -192,15 +207,18 @@ const MedicalRequest = () => {
     return filtered.filter(r => matchTerm(r) && matchDate(r));
   };
 
+
   const renderCards = () => {
     const filteredRequests = getFilteredRequests();
     if (loading) return <div>Đang tải...</div>;
     if (filteredRequests.length === 0) return <Empty description="Không có dữ liệu" />;
 
+
     // Phân trang
     const startIdx = (currentPage - 1) * pageSize;
     const endIdx = startIdx + pageSize;
     const pageData = filteredRequests.slice(startIdx, endIdx);
+
 
     return (
       <>
@@ -302,6 +320,7 @@ const MedicalRequest = () => {
     );
   };
 
+
   return (
     <div className="medical-request-wrapper">
       <div className="full-width-content">
@@ -360,6 +379,7 @@ const MedicalRequest = () => {
           </TabPane>
         </Tabs>
 
+
         <Modal
           title="Chi tiết yêu cầu"
           open={modalVisible}
@@ -384,7 +404,7 @@ const MedicalRequest = () => {
               </p>
               <p>
                 <strong>Học sinh:</strong>{" "}
-                {selectedRequest.studentDTO?.fullName + "   (" + selectedRequest.studentDTO?.id +")" || "Không rõ"} 
+                {selectedRequest.studentDTO?.fullName + "   (" + selectedRequest.studentDTO?.id +")" || "Không rõ"}
               </p>
               <p>
                 <strong>Ghi chú:</strong> {selectedRequest.note || "Không có"}
@@ -406,6 +426,7 @@ const MedicalRequest = () => {
             </div>
           ) : null}
         </Modal>
+
 
         <Modal
           title="Nhập lý do từ chối"
@@ -444,4 +465,8 @@ const MedicalRequest = () => {
   );
 };
 
+
 export default MedicalRequest;
+
+
+
