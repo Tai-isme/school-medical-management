@@ -2156,6 +2156,33 @@ public class NurseService {
         }).collect(Collectors.toList());
     }
 
+    // Nút xem kết quả
+    public List<VaccineFormDTO> viewVaccineResultByProgram(int programId) {
+        List<VaccineFormEntity> vaccineForms = vaccineFormRepository
+                .findByVaccineProgram_VaccineId(programId);
+
+        if (vaccineForms.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phiếu tiêm chủng đã xác nhận");
+        }
+
+
+        return vaccineForms.stream().map(entity -> {
+            VaccineFormDTO dto = modelMapper.map(entity, VaccineFormDTO.class);
+            dto.setStudentID(entity.getStudent().getId());
+            dto.setParentID(entity.getParent().getUserId());
+            // dto.setNurseID(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
+            dto.setStudentDTO(modelMapper.map(entity.getStudent(), StudentDTO.class));
+            
+            // Tìm vaccineResultDTO từ VaccineResultEntity
+            VaccineResultEntity vaccineResultEntity = vaccineResultRepository.findByVaccineFormEntity(entity)
+                    .orElse(null);
+                    dto.setVaccineResultDTO(
+                    vaccineResultEntity != null ? modelMapper.map(vaccineResultEntity, VaccineResultDTO.class) : null);
+
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
 
     public void createVaccineForm(int programId, LocalDate expDate) {
         VaccineProgramEntity programEntity = vaccineProgramRepository.findById(programId)
