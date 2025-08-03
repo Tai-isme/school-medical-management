@@ -3,7 +3,7 @@ import { Table, Button, Image, Tag, Modal, message, Input, Tabs } from "antd";
 import axios from "axios";
 import SendMedicineDetailModal from "./SendMedicineDetailModal";
 import "./MedicalRequest.css";
-
+import Swal from "sweetalert2";
 
 const tabStatus = [
   { key: "ALL", label: "Tất cả" },
@@ -73,10 +73,19 @@ const MedicalRequest = () => {
 
 
   const handleApprove = async (id) => {
+  const result = await Swal.fire({
+    title: "Bạn chắc chắn muốn duyệt đơn thuốc này?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Duyệt",
+    cancelButtonText: "Hủy",
+  });
+
+  if (result.isConfirmed) {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/nurse/${id}/status`,
+        `http://localhost:8080/api/nurse/medical-request/${id}/status`,
         { status: "CONFIRMED", reason_rejected: null },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -85,7 +94,8 @@ const MedicalRequest = () => {
     } catch {
       message.error("Duyệt thất bại!");
     }
-  };
+  }
+};
 
 
   const handleDelete = async (id) => {
