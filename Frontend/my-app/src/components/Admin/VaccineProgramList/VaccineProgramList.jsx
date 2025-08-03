@@ -28,8 +28,9 @@ import { Table } from "antd"; // Thêm import này
 import VaccineProgramModal from "./VaccineProgramModal"; // Import component mới tạo
 import VaccineProgramResultTab from "./VaccineProgramResultTab";
 import AddVaccineModal from "./AddVaccineModal";
-import VaccineImportModal from './VaccineImportModal';
-import TemplateDownloadButton from './TemplateDownloadButton';
+import VaccineImportModal from "./VaccineImportModal";
+import GenericTemplateDownloadButton from "./GenericTemplateDownloadButton";
+import ExportResultButton from "./ExportResultButton";
 
 
 const VaccineProgramList = () => {
@@ -794,8 +795,19 @@ const VaccineProgramList = () => {
                           </Button>
 
                           {/* Nút Lấy biểu mẫu căn trái */}
-                          <TemplateDownloadButton userRole={userRole} />
-                          
+                          <GenericTemplateDownloadButton
+                            userRole={userRole}
+                            fileName="vaccine_name_import.xlsx"
+                            filePath="/vaccine_name_import.xlsx"
+                            templateName="biểu mẫu tên vaccine"
+                            fileInfo={[
+                              "Định dạng: Excel (.xlsx)",
+                              "Kích thước: ~15KB",
+                              'Cột mẫu: "Tên vaccine"',
+                            ]}
+                            buttonText="Lấy biểu mẫu Vaccine"
+                          />
+
                           <Button
                             type="default"
                             icon={<UploadOutlined />}
@@ -865,7 +877,7 @@ const VaccineProgramList = () => {
                             </div>
 
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              Ngày thực hiện:{" "}
+                              <strong>Ngày thực hiện:</strong>{" "}
                               <span
                                 style={{ color: "#1890ff", fontWeight: 600 }}
                               >
@@ -880,8 +892,9 @@ const VaccineProgramList = () => {
                                   : "---"}
                               </span>
                             </div>
+
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              Ngày gửi thông báo cho phụ huynh:{" "}
+                              <strong>Ngày gửi thông báo cho phụ huynh:</strong>{" "}
                               <span
                                 style={{ color: "#52c41a", fontWeight: 600 }}
                               >
@@ -896,38 +909,36 @@ const VaccineProgramList = () => {
                                   : "---"}
                               </span>
                             </div>
+
+                            {program.vaccineFormDTOs &&
+                              program.vaccineFormDTOs.length > 0 && (
+                                <div style={{ color: "#555", marginBottom: 8 }}>
+                                  <strong>Ngày hết hạn đăng ký:</strong>{" "}
+                                  <span
+                                    style={{
+                                      color: "#faad14",
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    {program.vaccineFormDTOs[0].expDate}
+                                  </span>
+                                </div>
+                              )}
+
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              {program.vaccineFormDTOs &&
-                                program.vaccineFormDTOs.length > 0 && (
-                                  <>
-                                    Ngày hết hạn đăng ký:{" "}
-                                    <span
-                                      style={{
-                                        color: "#faad14",
-                                        fontWeight: 600,
-                                      }}
-                                    >
-                                      {program.vaccineFormDTOs[0].expDate}
-                                    </span>
-                                  </>
-                                )}
-                            </div>
-                            <div style={{ color: "#555", marginBottom: 8 }}>
-                              Địa điểm:{" "}
+                              <strong>Địa điểm:</strong>{" "}
                               <span
                                 style={{ color: "#d4380d", fontWeight: 600 }}
                               >
                                 {program.location}
                               </span>
                             </div>
-                            {/* <div style={{ color: "#555", marginBottom: 8 }}>
-                              Tổng số mũi: {program.totalUnit}
-                            </div> */}
+
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              Người phụ trách:{" "}
-                              <strong style={{ color: "#222" }}>
+                              <strong>Người phụ trách:</strong>{" "}
+                              <span style={{ color: "#222", fontWeight: 600 }}>
                                 {program.nurse?.fullName}
-                              </strong>{" "}
+                              </span>{" "}
                               -{" "}
                               <span style={{ color: "#1890ff" }}>
                                 SĐT: {program.nurse?.phone}
@@ -1124,20 +1135,19 @@ const VaccineProgramList = () => {
                             {(program.status === "COMPLETED" ||
                               program.status === "GENERATED_RESULT") &&
                               userRole === "ADMIN" && (
-                                <Button
-                                  type="default"
-                                  style={{
-                                    marginLeft: 8,
-                                    border: "1.5px solid #21ba45",
-                                    color: "#21ba45",
-                                    background: "#fff",
-                                  }}
-                                  onClick={() =>
-                                    handleExportResultToExcel(program.vaccineId)
-                                  }
-                                >
-                                  Xuất kết quả ra excel
-                                </Button>
+                                <ExportResultButton
+                                  vaccineProgramId={program.vaccineId}
+                                  userRole={userRole}
+                                  style={{ marginLeft: 8 }} // Giữ lại style margin nếu cần
+                                  buttonText="Xuất kết quả ra Excel"
+                                  confirmTitle="Xác nhận xuất kết quả tiêm chủng"
+                                  confirmContent="Bạn có muốn xuất kết quả tiêm chủng của chương trình này ra file Excel không?"
+                                  fileInfo={[
+                                    "Tên file: ket-qua-tiem-chung-[ID].xlsx",
+                                    "Định dạng: Excel (.xlsx)",
+                                    "Dữ liệu: Kết quả tiêm chủng của chương trình",
+                                  ]}
+                                />
                               )}
 
                             {/* Nút Bắt đầu chương trình */}

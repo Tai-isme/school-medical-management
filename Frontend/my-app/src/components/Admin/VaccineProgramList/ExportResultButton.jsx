@@ -1,65 +1,74 @@
 "use client"
 
 import { useState } from "react"
-import { Button, Modal } from "antd"
+import { Button, Modal, Space } from "antd"
 import { DownloadOutlined, CheckCircleOutlined, FileExcelOutlined } from "@ant-design/icons"
+import axios from "axios" // Đảm bảo bạn đã cài đặt axios
 
-const TemplateDownloadButton = ({ userRole, className, style }) => {
+const ExportResultButton = ({
+  vaccineProgramId,
+  userRole,
+  className,
+  style,
+  buttonText = "Xuất kết quả ra Excel",
+  confirmTitle = "Xác nhận xuất kết quả",
+  confirmContent = "Bạn có muốn xuất kết quả tiêm chủng ra file Excel không?",
+  fileInfo = [], // Thông tin thêm về file xuất (ví dụ: cột, kích thước ước tính)
+}) => {
   const [isDownloading, setIsDownloading] = useState(false)
   const [isDownloaded, setIsDownloaded] = useState(false)
+  const [confirmVisible, setConfirmVisible] = useState(false)
 
-  const [confirmVisible, setConfirmVisible] = useState(false);
-
-  const handleDownload = async () => {
-    console.log("handleDownload: Bắt đầu tải xuống...") // Debug: Bắt đầu tải
+  const handleExport = async () => {
     setIsDownloading(true)
+    setConfirmVisible(false) // Đóng modal xác nhận ngay khi bắt đầu xuất
 
+    const token = localStorage.getItem("token")
     try {
-      // Simulate download delay for better UX
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      const response = await axios.post(
+        `http://localhost:8080/api/admin/export-vaccine-result-excel-by-vaccine-program/${vaccineProgramId}`,
+        {}, // Body rỗng nếu API không yêu cầu
+        {
+          responseType: "blob", // Quan trọng để nhận dữ liệu nhị phân
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      )
 
+      // Tạo link tải file
+      const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement("a")
-      link.href = "/vaccine_name_import.xlsx"
-      link.setAttribute("download", "vaccine_name_import.xlsx")
+      link.href = url
+      link.setAttribute("download", `ket-qua-tiem-chung-${vaccineProgramId}.xlsx`) // Tên file động
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
+      window.URL.revokeObjectURL(url) // Giải phóng URL object
 
       setIsDownloaded(true)
-      console.log("handleDownload: Tải xuống thành công!") // Debug: Tải thành công
-
-      // Show success notification
       Modal.success({
-        title: "Tải xuống thành công!",
-        content: "File mẫu đã được tải về máy của bạn.",
+        title: "Xuất file thành công!",
+        content: "Kết quả tiêm chủng đã được xuất ra file Excel.",
         okText: "Đóng",
         icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
       })
-
-      // Reset success state after 3 seconds
       setTimeout(() => setIsDownloaded(false), 3000)
     } catch (error) {
-      console.error("handleDownload: Tải xuống thất bại!", error) // Debug: Tải thất bại
-      // Show error notification
+      console.error("Export failed:", error)
       Modal.error({
-        title: "Tải xuống thất bại!",
-        content: "Có lỗi xảy ra khi tải file. Vui lòng thử lại.",
+        title: "Xuất file thất bại!",
+        content: error.response?.data?.message || "Có lỗi xảy ra khi xuất file. Vui lòng thử lại.",
         okText: "Đóng",
       })
     } finally {
       setIsDownloading(false)
-      console.log("handleDownload: Kết thúc quá trình tải.") // Debug: Kết thúc
     }
   }
 
   const showConfirmModal = () => {
-    setConfirmVisible(true);
+    setConfirmVisible(true)
   }
 
-  console.log("TemplateDownloadButton: Component đang render. userRole:", userRole) // Debug: Component render
-
   if (userRole !== "ADMIN") {
-    console.log("TemplateDownloadButton: userRole không phải ADMIN, không hiển thị nút.") // Debug: Không phải admin
     return null
   }
 
@@ -85,10 +94,7 @@ const TemplateDownloadButton = ({ userRole, className, style }) => {
             <DownloadOutlined />
           )
         }
-        onClick={() => {
-          console.log("Button: onClick được kích hoạt.") // Debug: onClick kích hoạt
-          showConfirmModal()
-        }}
+        onClick={showConfirmModal}
         disabled={isDownloading}
         className={className}
         style={{
@@ -124,19 +130,20 @@ const TemplateDownloadButton = ({ userRole, className, style }) => {
           }
         }}
       >
-        {isDownloading ? "Đang tải..." : isDownloaded ? "Đã tải xong" : "Lấy biểu mẫu"}
+        {isDownloading ? "Đang xuất..." : isDownloaded ? "Đã xuất xong" : buttonText}
       </Button>
 
-      {/* Modal xác nhận tải xuống */}
       <Modal
         open={confirmVisible}
-        onOk={async () => {
-          setConfirmVisible(false);
-          await handleDownload();
-        }}
+        onOk={handleExport}
         onCancel={() => setConfirmVisible(false)}
-        title="Xác nhận tải xuống"
-        okText="Tải xuống"
+        title={
+          <Space>
+            <FileExcelOutlined style={{ color: "#52c41a", fontSize: 20 }} />
+            {confirmTitle}
+          </Space>
+        }
+        okText="Xuất file"
         cancelText="Hủy"
         okButtonProps={{
           icon: <DownloadOutlined />,
@@ -152,31 +159,30 @@ const TemplateDownloadButton = ({ userRole, className, style }) => {
         }}
         width={480}
         centered
-        icon={<FileExcelOutlined style={{ color: "#52c41a" }} />}
       >
         <div style={{ marginTop: 16 }}>
-          <p style={{ marginBottom: 12, fontSize: 14 }}>Bạn có muốn tải xuống file mẫu Excel không?</p>
-          <div
-            style={{
-              backgroundColor: "#f6ffed",
-              border: "1px solid #b7eb8f",
-              borderRadius: 6,
-              padding: 12,
-              fontSize: 13,
-            }}
-          >
-            <div style={{ fontWeight: 500, marginBottom: 8, color: "#389e0d" }}>📋 Thông tin file:</div>
-            <ul style={{ margin: 0, paddingLeft: 16, color: "#52c41a" }}>
-              <li>Tên file: vaccine_name_import.xlsx</li>
-              <li>Định dạng: Excel (.xlsx)</li>
-              <li>Kích thước: ~15KB</li>
-              <li>Cột mẫu: "Tên vaccine"</li>
-            </ul>
-          </div>
+          <p style={{ marginBottom: 12, fontSize: 14 }}>{confirmContent}</p>
+          {fileInfo.length > 0 && (
+            <div
+              style={{
+                backgroundColor: "#f6ffed",
+                border: "1px solid #b7eb8f",
+                borderRadius: 6,
+                padding: 12,
+                fontSize: 13,
+              }}
+            >
+              <div style={{ fontWeight: 500, marginBottom: 8, color: "#389e0d" }}>📋 Thông tin file:</div>
+              <ul style={{ margin: 0, paddingLeft: 16, color: "#52c41a" }}>
+                {fileInfo.map((info, index) => (
+                  <li key={index}>{info}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </Modal>
 
-      {/* CSS Animation for spinner */}
       <style jsx>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
@@ -187,4 +193,4 @@ const TemplateDownloadButton = ({ userRole, className, style }) => {
   )
 }
 
-export default TemplateDownloadButton
+export default ExportResultButton

@@ -1,87 +1,36 @@
-import React, { useRef, useState } from "react";
-import { Button } from "antd";
-import { PlusOutlined, FileExcelOutlined, UploadOutlined } from "@ant-design/icons";
-import StudentList from "./StudentList";
-import StudentProfileCard from "./StudentProfileCard";
-import EmergencyContact from "./EmergencyContact";
-import MedicalHistory from "./MedicalHistory";
-import Swal from "sweetalert2";
+"use client"
+
+import { useState } from "react" // Đã xóa useRef vì không còn dùng file input trực tiếp
+import { Button } from "antd"
+import { UploadOutlined } from "@ant-design/icons" // Đã xóa FileExcelOutlined vì nó được dùng trong modal
+
+import StudentList from "./StudentList"
+import StudentProfileCard from "./StudentProfileCard"
+import EmergencyContact from "./EmergencyContact"
+import MedicalHistory from "./MedicalHistory"
+import GenericTemplateDownloadButton from "../VaccineProgramList/GenericTemplateDownloadButton" // Đảm bảo đường dẫn đúng
+import StudentImportModal from "./StudentImportModal" // Đã cập nhật đường dẫn
+
 export default function MedicalDashboard() {
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const fileInputRef = useRef(null);
-  const [uploading, setUploading] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [importStudentVisible, setImportStudentVisible] = useState(false) // State để điều khiển modal import học sinh
+  const userRole = localStorage.getItem("role") // Lấy role từ localStorage
+
+  // Hàm để refresh danh sách học sinh sau khi import thành công
+  // Bạn cần triển khai logic này dựa trên cách StudentList của bạn tải dữ liệu
+  const fetchStudentList = () => {
+    console.log("Refreshing student list after successful import...")
+    // Ví dụ: Nếu StudentList có một prop như `onRefresh` hoặc `refreshData`, bạn có thể gọi nó ở đây.
+    // Hoặc nếu StudentList lấy dữ liệu từ một context/redux store, bạn có thể dispatch một action để tải lại dữ liệu.
+    // Hiện tại, đây chỉ là một placeholder.
+  }
 
   // Handler mẫu cho các nút
   const handleAddStudent = () => {
     // Mở modal/thực hiện chức năng thêm học sinh
+    console.log("Thêm học sinh được click")
     // ...
-  };
-
-  const handleDownloadTemplate = () => {
-    const link = document.createElement('a');
-    link.href = '/student_template.xlsx';
-    link.download = 'student_template.xlsx';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleImportExcel = () => {
-    fileInputRef.current.click();
-  };
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const token = localStorage.getItem("token"); // Nếu cần token
-      const response = await fetch("http://localhost:8080/api/admin/student/import-excel", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        // Kiểm tra xem phản hồi có phải JSON hợp lệ không
-        let errorMessage = "Import thất bại!";
-        try {
-          const errorData = await response.json(); // Lấy dữ liệu lỗi từ API nếu có
-          errorMessage = errorData.message || errorMessage;
-        } catch {
-          // Nếu không phải JSON hợp lệ, sử dụng phản hồi dạng text
-          const errorText = await response.text();
-          errorMessage = errorText || errorMessage;
-        }
-        throw new Error(errorMessage);
-      }
-
-      // Hiển thị thông báo thành công
-      Swal.fire({
-        icon: "success",
-        title: "Import thành công!",
-        text: "Dữ liệu đã được cập nhật.",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } catch (err) {
-      // Hiển thị thông báo thất bại với lỗi chi tiết
-      Swal.fire({
-        icon: "error",
-        title: "Import thất bại!",
-        text: err.message, // Hiển thị lỗi chi tiết từ API hoặc phản hồi dạng text
-        showConfirmButton: true,
-      });
-    } finally {
-      setUploading(false);
-      e.target.value = ""; // Reset input để chọn lại file nếu cần
-    }
-  };
+  }
 
   return (
     <div
@@ -95,7 +44,15 @@ export default function MedicalDashboard() {
         padding: 0, // Xóa padding ngoài cùng
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: 0, padding: 0 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          margin: 0,
+          padding: 0,
+        }}
+      >
         <h2
           style={{
             textAlign: "left",
@@ -108,40 +65,61 @@ export default function MedicalDashboard() {
         >
           Quản lý hồ sơ học sinh
         </h2>
-        <div style={{ marginRight: 32, display: "flex", gap: 12, marginTop: 12, marginBottom: 10 }}>
+        <div
+          style={{
+            marginRight: 32,
+            display: "flex",
+            gap: 12,
+            marginTop: 12,
+            marginBottom: 10,
+          }}
+        >
+          {/* Nút Thêm học sinh (nếu bạn muốn sử dụng) */}
           {/* <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddStudent}
-          >
-            Thêm học sinh
-          </Button> */}
-          <Button
-            icon={<FileExcelOutlined />}
-            onClick={handleDownloadTemplate}
-          >
-            Lấy biểu mẫu
-          </Button>
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleAddStudent}
+        >
+          Thêm học sinh
+        </Button> */}
+
+          {/* Nút Lấy biểu mẫu Học sinh (sử dụng GenericTemplateDownloadButton) */}
+          <GenericTemplateDownloadButton
+            userRole={userRole}
+            fileName="student_template.xlsx"
+            filePath="/student_template.xlsx" // Đảm bảo file này tồn tại trong thư mục public/
+            templateName="biểu mẫu học sinh"
+            fileInfo={[
+              "Định dạng: Excel (.xlsx)",
+              "Kích thước: ~10KB",
+              'Cột mẫu: "Mã học sinh", "Tên học sinh", "Lớp", "Ngày sinh"',
+            ]}
+            buttonText="Lấy biểu mẫu Học sinh"
+          />
+
+          {/* Nút Import Excel Học sinh (mở StudentImportModal) */}
           <Button
             icon={<UploadOutlined />}
-            onClick={handleImportExcel}
-            loading={uploading}
+            onClick={() => setImportStudentVisible(true)} // Mở modal import học sinh
+            type="primary"
+            style={{ backgroundColor: "#1890ff", borderColor: "#1890ff" }} // Màu xanh dương cho import
           >
-            Import Excel
+            Import Excel Học sinh
           </Button>
         </div>
       </div>
+
       <div
         style={{
           display: "flex",
-          height: "calc(100vh - 64px)",
+          height: "calc(100vh - 64px)", // Điều chỉnh chiều cao để phù hợp với header
           gap: 14,
           padding: 0, // Xóa padding ngoài cùng
-          margin: 0,  // Xóa margin ngoài cùng
+          margin: 0, // Xóa margin ngoài cùng
           boxSizing: "border-box",
         }}
       >
-        {/* Cột trái */}
+        {/* Cột trái: Danh sách học sinh */}
         <div
           style={{
             flex: 2,
@@ -151,41 +129,34 @@ export default function MedicalDashboard() {
             minWidth: 340,
             maxWidth: 420,
             padding: 0,
-            // height: "100%",
-            // maxHeight: "calc(100vh - 120px)",
-            // overflowY: "auto",
             margin: 0, // Xóa margin
           }}
         >
           <StudentList
-            onSelect={student => setSelectedStudent(student)}
+            onSelect={(student) => setSelectedStudent(student)}
             selectedId={selectedStudent?.id}
-            onFirstStudentLoaded={student => {
-              if (!selectedStudent && student) setSelectedStudent(student);
+            onFirstStudentLoaded={(student) => {
+              if (!selectedStudent && student) setSelectedStudent(student)
             }}
           />
         </div>
 
-        {/* Cột giữa */}
-        
-          <div >
-            <StudentProfileCard
-              studentId={selectedStudent?.studentId}
-              studentInfo={selectedStudent}
-            />
-          </div>
+        {/* Cột giữa: Hồ sơ học sinh */}
+        <div>
+          <StudentProfileCard studentId={selectedStudent?.studentId} studentInfo={selectedStudent} />
+        </div>
 
-        {/* Cột phải */}
+        {/* Cột phải: Thông tin khẩn cấp và Lịch sử y tế */}
         <div
           style={{
             flex: 2,
             display: "flex",
             flexDirection: "column",
-            height: "910px",
+            height: "910px", // Chiều cao cố định cho cột phải
             minWidth: 340,
             maxWidth: 420,
             gap: 10,
-            overflowY: "auto",
+            overflowY: "auto", // Cho phép cuộn nếu nội dung dài
             margin: 0, // Xóa margin
           }}
         >
@@ -217,13 +188,13 @@ export default function MedicalDashboard() {
           </div>
         </div>
       </div>
-      <input
-        type="file"
-        accept=".xlsx,.xls"
-        style={{ display: "none" }}
-        ref={fileInputRef}
-        onChange={handleFileChange}
+
+      {/* Modal Import Học sinh */}
+      <StudentImportModal
+        open={importStudentVisible}
+        onClose={() => setImportStudentVisible(false)}
+        onSuccess={fetchStudentList} // Gọi hàm này khi import thành công để refresh danh sách
       />
     </div>
-  );
+  )
 }

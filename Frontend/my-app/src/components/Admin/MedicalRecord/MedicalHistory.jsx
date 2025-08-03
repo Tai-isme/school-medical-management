@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
 
 export default function MedicalHistory({ studentId }) {
   const [events, setEvents] = useState([]);
@@ -64,14 +65,26 @@ export default function MedicalHistory({ studentId }) {
           <div
             style={{
               fontWeight: "bold",
-              color: "#ff9800",
+              color: "#d48806",
+              backgroundColor: "#fff7e6",
+              padding: "6px 12px",
+              borderRadius: 8,
+              display: "inline-block",
+              marginBottom: 6,
             }}
           >
-            ⚡ {e.typeEvent}
+            ⚡ Loại sự kiện: {e.typeEvent}
           </div>
-          <div>Ngày xảy ra: {e.date}</div>
-          <div>Y tá phụ trách: {e.nurseDTO.fullName}</div>
-          <div>Mô tả: {e.description}</div>
+
+          <div>
+            <b>Ngày xảy ra:</b> {dayjs(e.date).format("DD/MM/YYYY")}
+          </div>
+          <div>
+            <b>Y tá phụ trách:</b> {e.nurseDTO.fullName}
+          </div>
+          <div>
+            <b>Mô tả:</b> {e.description}
+          </div>
         </div>
       ))}
     </div>
