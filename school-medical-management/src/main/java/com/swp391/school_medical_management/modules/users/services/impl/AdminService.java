@@ -35,13 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
 import com.swp391.school_medical_management.helpers.ExcelExportStyleUtil;
 import com.swp391.school_medical_management.modules.users.dtos.request.HealthCheckProgramRequest;
 import com.swp391.school_medical_management.modules.users.dtos.request.NurseAccountRequest;
@@ -1353,15 +1346,20 @@ public class AdminService {
             }
         }
 
-        VaccineNameEntity entity = modelMapper.map(request, VaccineNameEntity.class);
-
         UserEntity admin = userRepository.findById(request.getAdminId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
-        entity.setUser(admin);
 
-        entity.setTotalUnit(request.getVaccineUnits().size());
+        VaccineNameEntity vaccineEntity = new VaccineNameEntity();
+        vaccineEntity.setVaccineName(request.getVaccineName());
+        vaccineEntity.setManufacture(request.getManufacture());
+        vaccineEntity.setAgeFrom(request.getAgeFrom());
+        vaccineEntity.setAgeTo(request.getAgeTo());
+        vaccineEntity.setUrl(request.getUrl());
+        vaccineEntity.setDescription(request.getDescription());
+        vaccineEntity.setTotalUnit(request.getVaccineUnits().size());
+        vaccineEntity.setUser(admin);
 
-        VaccineNameEntity savedVaccine = vaccineNameRepository.save(entity);
+        VaccineNameEntity savedVaccine = vaccineNameRepository.save(vaccineEntity);
 
         List<VaccineUnitEntity> unitEntities = new ArrayList<>();
         for (VaccineUnitRequest unitReq : request.getVaccineUnits()) {
@@ -1374,18 +1372,36 @@ public class AdminService {
 
         vaccineUnitRepository.saveAll(unitEntities);
 
-        VaccineNameDTO dto = modelMapper.map(savedVaccine, VaccineNameDTO.class);
-        dto.setUserDTO(modelMapper.map(admin, UserDTO.class));
+        VaccineNameDTO dto = new VaccineNameDTO();
+        dto.setId(savedVaccine.getVaccineNameId());
+        dto.setUserId(admin.getUserId());
+        dto.setVaccineName(savedVaccine.getVaccineName());
+        dto.setManufacture(savedVaccine.getManufacture());
+        dto.setAgeFrom(savedVaccine.getAgeFrom());
+        dto.setAgeTo(savedVaccine.getAgeTo());
+        dto.setTotalUnit(savedVaccine.getTotalUnit());
+        dto.setUrl(savedVaccine.getUrl());
+        dto.setDescription(savedVaccine.getDescription());
 
-        List<VaccineUnitDTO> unitDTOs = unitEntities.stream()
-                .map(unit -> modelMapper.map(unit, VaccineUnitDTO.class))
-                .collect(Collectors.toList());
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(admin.getUserId());
+        userDTO.setFullName(admin.getFullName());
+        dto.setUserDTO(userDTO);
+
+        List<VaccineUnitDTO> unitDTOs = unitEntities.stream().map(unit -> {
+            VaccineUnitDTO dtoUnit = new VaccineUnitDTO();
+            dtoUnit.setUnit(unit.getUnit());
+            dtoUnit.setSchedule(unit.getSchedule());
+            dtoUnit.setVaccineId(unit.getUnitId());
+            return dtoUnit;
+        }).collect(Collectors.toList());
         dto.setVaccineUnitDTOs(unitDTOs);
 
         return dto;
     }
 
 
+    
     @Transactional
     public void importVaccineNameFromExcel(MultipartFile file, int adminId) {
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
