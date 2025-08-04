@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 // import { Table } from 'antd';
 import StudentInfoCard from "../../../common/StudentInfoCard";
-import { Input, DatePicker, Row, Col } from "antd";
+import { Input, DatePicker } from "antd";
 import dayjs from "dayjs";
 import HealthCheckResultDetailModal from "./HealthCheckResultDetailModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 // import './VaccineResult.css';
+
+const { RangePicker } = DatePicker;
 
 const HealthCheckResultCard = () => {
   const [students, setStudents] = useState([]);
@@ -14,7 +16,7 @@ const HealthCheckResultCard = () => {
   const [vaccineHistory, setVaccineHistory] = useState([]);
   const [openDetailIdx, setOpenDetailIdx] = useState(null);
   const [filterName, setFilterName] = useState("");
-  const [filterDate, setFilterDate] = useState("");
+  const [filterRange, setFilterRange] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -50,7 +52,7 @@ const HealthCheckResultCard = () => {
     }
   }, [selectedStudentId]);
 
-  // Lọc dữ liệu theo tên chương trình và ngày
+  // Lọc dữ liệu theo tên chương trình và khoảng thời gian
   const filteredHistory = vaccineHistory.filter((item) => {
     const programName =
       item.healthCheckFormDTO?.healthCheckProgramDTO?.healthCheckName || "";
@@ -59,10 +61,16 @@ const HealthCheckResultCard = () => {
     const matchName = programName
       .toLowerCase()
       .includes(filterName.toLowerCase());
-    const matchDate = filterDate ? checkDate === filterDate : true;
-    // Nếu muốn lọc trạng thái hoàn thành, sửa lại nếu cần
-    // const matchStatus = item.healthCheckFormDTO?.healthCheckProgramDTO?.status === "COMPLETED";
-    return matchName && matchDate;
+
+    let matchRange = true;
+    if (filterRange && filterRange.length === 2 && checkDate) {
+      const d = dayjs(checkDate, "YYYY-MM-DD");
+      matchRange =
+        d.isSameOrAfter(filterRange[0], "day") &&
+        d.isSameOrBefore(filterRange[1], "day");
+    }
+
+    return matchName && matchRange;
   });
 
   // const vaccineColumns = [...]; // Không dùng Table nữa
@@ -163,14 +171,12 @@ const HealthCheckResultCard = () => {
                   onChange={(e) => setFilterName(e.target.value)}
                   allowClear
                 />
-                <DatePicker
-                  placeholder="Lọc theo ngày"
-                  value={filterDate ? dayjs(filterDate) : null}
-                  onChange={(date) =>
-                    setFilterDate(date ? date.format("YYYY-MM-DD") : "")
-                  }
+                <RangePicker
+                  placeholder={["Từ ngày", "Đến ngày"]}
+                  value={filterRange}
+                  onChange={setFilterRange}
                   allowClear
-                  style={{ width: 200 }}
+                  style={{ width: 260 }}
                   format="YYYY-MM-DD"
                 />
               </div>
