@@ -1,9 +1,34 @@
-import React, { useState } from "react";
-import { Modal } from "antd";
+import React, { useState, useMemo } from "react";
+import { Modal, Input, Select, DatePicker, Row, Col, Space, Button } from "antd";
 import axios from "axios";
 import VaccineNotificationModalContent from "./VaccineNotificationModalContent";
 import HealthCheckNotificationModalContent from "./HealthCheckNotificationModalContent";
 import "./NotificationsList.css";
+const { Option } = Select;
+const { RangePicker } = DatePicker;
+
+const STATUS_OPTIONS = [
+  { label: "Tất cả", value: "" },
+  { label: "CHƯA ĐĂNG KÝ", value: "pending" },
+  { label: "ĐÃ ĐĂNG KÝ", value: "registered" },
+  { label: "KHÔNG THAM GIA", value: "not_participate" },
+];
+
+const getStatus = (notification) => {
+  if (
+    notification.commit === true ||
+    notification.commit === "true"
+  )
+    return "registered";
+  if (
+    notification.commit === false ||
+    notification.commit === "false" ||
+    (new Date(notification.expDate) < new Date(new Date().toDateString()) &&
+      notification.commit == null)
+  )
+    return "not_participate";
+  return "pending";
+};
 
 const NotificationsList = ({ notifications, fetchNotifications }) => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -11,6 +36,11 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
   const [checked, setChecked] = useState("");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Filter states
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [dateRange, setDateRange] = useState([]);
 
   const handleModalOpen = (notification) => {
     setModalNotification(notification);
@@ -36,7 +66,6 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      // Sau khi gửi thành công:
       if (fetchNotifications) await fetchNotifications();
       setModalOpen(false);
       setModalNotification(null);
@@ -62,7 +91,6 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      // Sau khi gửi thành công:
       if (fetchNotifications) await fetchNotifications();
       setModalOpen(false);
       setModalNotification(null);
@@ -84,11 +112,81 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
       modalNotification.commit === "false");
   const disableSend = isExpired || isRegistered;
 
+  // Filter logic
+  const filteredNotifications = useMemo(() => {
+    return (notifications || [])
+      .filter((n) => {
+        // Filter by search
+        const eventName =
+          n.type === "healthcheck"
+            ? n.healthCheckProgramDTO?.healthCheckName || ""
+            : n.vaccineProgramDTO?.vaccineProgramName || "";
+        if (search && !eventName.toLowerCase().includes(search.toLowerCase()))
+          return false;
+        // Filter by status
+        if (status && getStatus(n) !== status) return false;
+        // Filter by date range (formDate)
+        if (
+          dateRange.length === 2 &&
+          (new Date(n.formDate) < dateRange[0]._d ||
+            new Date(n.formDate) > dateRange[1]._d)
+        )
+          return false;
+        return true;
+      });
+  }, [notifications, search, status, dateRange]);
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setStatus("");
+    setDateRange([]);
+  };
+
   return (
     <>
+      <div style={{ marginBottom: 24 }}>
+        <Row gutter={16} align="middle">
+          <Col xs={24} sm={12} md={8} lg={6}>
+            <Input
+              placeholder="Tìm theo tên sự kiện"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={12} md={8} lg={6}>
+            <Select
+              style={{ width: "100%" }}
+              value={status}
+              onChange={setStatus}
+              placeholder="Lọc theo trạng thái"
+              allowClear
+            >
+              {STATUS_OPTIONS.map((opt) => (
+                <Option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={24} md={8} lg={8}>
+            <RangePicker
+              style={{ width: "100%" }}
+              value={dateRange}
+              onChange={setDateRange}
+              format="DD/MM/YYYY"
+              placeholder={["Từ ngày", "Đến ngày"]}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={4}>
+            <Button onClick={handleResetFilters}>Đặt lại bộ lọc</Button>
+          </Col>
+        </Row>
+      </div>
       <div className="notifications-list">
-        {notifications && notifications.length > 0 ? (
-          notifications.map((notification) => (
+        {filteredNotifications && filteredNotifications.length > 0 ? (
+          filteredNotifications.map((notification) => (
             <div
               className="notification-item"
               key={notification.id}
@@ -139,7 +237,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                         : new Date(notification.expDate) <
                             new Date(new Date().toDateString()) &&
                           notification.commit == null
-                        ? "#bfbfbf" // Màu xám cho "Không tham gia"
+                        ? "#bfbfbf"
                         : new Date(notification.formDate) < new Date()
                         ? "#ff4d4f"
                         : "#1890ff",
@@ -171,7 +269,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
         open={modalOpen}
         onCancel={handleModalClose}
         footer={null}
-        width={600} // Đổi từ 900 thành 600 để modal hẹp hơn
+        width={600}
         centered
         title={
           modalNotification

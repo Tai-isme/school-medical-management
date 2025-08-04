@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import StudentInfoCard from "../../../common/StudentInfoCard";
 import { Input, DatePicker, Row, Col, message } from "antd";
 import dayjs from "dayjs";
+const { RangePicker } = DatePicker;
 import VaccineHistoryDetailModal from "./VaccineHistoryDetailModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
@@ -16,7 +17,7 @@ const VaccineResultCard = () => {
   const [modalData, setModalData] = useState(null);
   const [modalLoading, setModalLoading] = useState(false); // Thêm state cho loading modal
   const [filterName, setFilterName] = useState("");
-  const [filterDate, setFilterDate] = useState("");
+  const [filterRange, setFilterRange] = useState([]);
 
   useEffect(() => {
     const studentsData = JSON.parse(localStorage.getItem("students")) || [];
@@ -54,8 +55,16 @@ const VaccineResultCard = () => {
       item.vaccineFormDTO?.vaccineNameDTO?.vaccineName?.toLowerCase() || "";
     const date = item.vaccineFormDTO?.vaccineProgramDTO?.startDate || "";
     const matchName = name.includes(filterName.toLowerCase());
-    const matchDate = filterDate ? date === filterDate : true;
-    return matchName && matchDate;
+
+    let matchRange = true;
+    if (filterRange && filterRange.length === 2 && date) {
+      const d = dayjs(date, "YYYY-MM-DD");
+      matchRange =
+        d.isSameOrAfter(filterRange[0], "day") &&
+        d.isSameOrBefore(filterRange[1], "day");
+    }
+
+    return matchName && matchRange;
   });
 
   // Hàm lấy chi tiết vaccine result
@@ -153,14 +162,12 @@ const VaccineResultCard = () => {
                   onChange={(e) => setFilterName(e.target.value)}
                   allowClear
                 />
-                <DatePicker
-                  placeholder="Lọc theo ngày"
-                  value={filterDate ? dayjs(filterDate) : null}
-                  onChange={(date) =>
-                    setFilterDate(date ? date.format("YYYY-MM-DD") : "")
-                  }
+                <RangePicker
+                  placeholder={["Từ ngày", "Đến ngày"]}
+                  value={filterRange}
+                  onChange={setFilterRange}
                   allowClear
-                  style={{ width: 200 }}
+                  style={{ width: 260 }}
                   format="YYYY-MM-DD"
                 />
               </div>
