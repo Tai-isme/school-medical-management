@@ -52,26 +52,37 @@ const VaccineNotificationModalContent = ({
         <Descriptions.Item label="Mô tả">
           {notification.vaccineProgramDTO?.description || "--"}
         </Descriptions.Item>
-        <Descriptions.Item label="Tên vắc xin">
+                <Descriptions.Item label="Tên vắc xin">
           {notification.vaccineProgramDTO?.vaccineNameDTO?.vaccineName || "--"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Mũi thực hiện">
+          {notification.vaccineProgramDTO?.unit
+            ? `${notification.vaccineProgramDTO.unit}`
+            : "--"}
         </Descriptions.Item>
         <Descriptions.Item label="Nhà sản xuất">
           {notification.vaccineProgramDTO?.vaccineNameDTO?.manufacture || "--"}
         </Descriptions.Item>
         <Descriptions.Item label="Phác đồ tiêm">
-          {notification.vaccineProgramDTO?.vaccineNameDTO?.totalUnit ? (
-            <div>
-              <b>Phác đồ {notification.vaccineProgramDTO.vaccineNameDTO.totalUnit} mũi:</b>
-              <div style={{ marginTop: 8 }}>
-                {notification.vaccineProgramDTO.vaccineNameDTO.vaccineUnitDTOs?.map((unit) => (
-                  <div key={unit.unit}>
-                    Mũi {unit.unit}: {unit.schedule}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : "--"}
-        </Descriptions.Item>
+  {notification.vaccineProgramDTO?.vaccineNameDTO?.totalUnit ? (
+    <div>
+      <b>Phác đồ {notification.vaccineProgramDTO.vaccineNameDTO.totalUnit} mũi:</b>
+      <div style={{ marginTop: 8 }}>
+        {notification.vaccineProgramDTO.vaccineNameDTO.vaccineUnitDTOs?.map((unitItem) => (
+          <div key={unitItem.unit}>
+            {notification.vaccineProgramDTO.unit === unitItem.unit ? (
+              <b style={{ color: '#d4380d' }}>
+                Mũi {unitItem.unit}: {unitItem.schedule}
+              </b>
+            ) : (
+              <>Mũi {unitItem.unit}: {unitItem.schedule}</>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  ) : "--"}
+</Descriptions.Item>
         <Descriptions.Item label="Ngày tiêm dự kiến">
           {notification.vaccineProgramDTO?.startDate || "--"}
         </Descriptions.Item>

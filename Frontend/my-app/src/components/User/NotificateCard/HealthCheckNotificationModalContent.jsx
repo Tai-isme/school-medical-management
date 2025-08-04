@@ -94,27 +94,29 @@ const HealthCheckNotificationModalContent = ({
         onChange={e => setChecked(e.target.checked)}
         disabled={disabled}
         style={{
-          marginBottom: 8,
-          display: 'block',
-          whiteSpace: 'normal',
-          maxWidth: 320,
-          lineHeight: 1.6,
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'flex-start',
+          maxWidth: 500,
           fontSize: 15,
+          lineHeight: 1.7,
         }}
       >
-        Tôi đã đọc kỹ{' '}
-        <a
-          href="#"
-          style={{ color: '#1890ff', textDecoration: 'underline' }}
-          onClick={e => {
-            e.preventDefault();
-            setConfirmModalOpen(true);
-          }}
-        >
-          Nội dung xác nhận miễn trừ trách nhiệm
-        </a>
-        <br />
-        và đồng ý miễn trừ trách nhiệm pháp lý và các giả định rủi ro cho Nhà trường <Text type="danger">*</Text>
+        <div>
+          Tôi đã đọc kỹ{' '}
+          <a
+            href="#"
+            style={{ color: '#1890ff', textDecoration: 'underline' }}
+            onClick={e => {
+              e.preventDefault();
+              setConfirmModalOpen(true);
+            }}
+          >
+            Nội dung xác nhận miễn trừ trách nhiệm
+          </a>
+          <br />
+          và đồng ý miễn trừ trách nhiệm pháp lý và các giả định rủi ro cho Nhà trường <Text type="danger">*</Text>
+        </div>
       </Checkbox>
       <Modal
         open={confirmModalOpen}
