@@ -32,7 +32,6 @@ import VaccineImportModal from "./VaccineImportModal";
 import GenericTemplateDownloadButton from "./GenericTemplateDownloadButton";
 import ExportResultButton from "./ExportResultButton";
 
-
 const VaccineProgramList = () => {
   const [programs, setPrograms] = useState([]);
   const [detailVisible, setDetailVisible] = useState(false);
@@ -935,13 +934,25 @@ const VaccineProgramList = () => {
                             </div>
 
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              <strong>Người phụ trách:</strong>{" "}
-                              <span style={{ color: "#222", fontWeight: 600 }}>
+                              <strong style={{ color: "#000" }}>
+                                Người phụ trách:
+                              </strong>{" "}
+                              <span
+                                style={{ color: "#1890ff", fontWeight: 400 }}
+                              >
                                 {program.nurse?.fullName}
                               </span>{" "}
-                              -{" "}
-                              <span style={{ color: "#1890ff" }}>
-                                SĐT: {program.nurse?.phone}
+                              | <strong style={{ color: "#000" }}>SĐT:</strong>{" "}
+                              <span
+                                style={{ color: "#1890ff", fontWeight: 400 }}
+                              >
+                                {program.nurse?.phone}
+                              </span>{" "}
+                              | <strong style={{ color: "#000" }}>Email:</strong>{" "}
+                              <span
+                                style={{ color: "#1890ff", fontWeight: 400 }}
+                              >
+                                {program.nurse?.email}
                               </span>
                             </div>
                           </div>
