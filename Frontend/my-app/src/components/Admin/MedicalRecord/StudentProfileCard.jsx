@@ -56,8 +56,8 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
         <Col>
           <Avatar
             src={
-              studentInfo?.avatar
-                ? studentInfo.avatar
+              studentInfo?.avatarUrl
+                ? studentInfo.avatarUrl
                 : "https://res.cloudinary.com/duzh5dnul/image/upload/v1750673843/6473ad42-3f20-4708-9bcf-76dff5d30ab2_avt2.jpg"
             }
             size={120}
