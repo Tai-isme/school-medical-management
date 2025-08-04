@@ -5,6 +5,7 @@ import axios from "axios";
 export default function StudentProfileCard({ studentId, studentInfo }) {
   const [tab, setTab] = useState("chronic");
   const [record, setRecord] = useState(null);
+  const [vaccineHistories, setVaccineHistories] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -19,9 +20,11 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        setRecord(res.data);
+        setRecord(res.data.medicalRecord);
+        setVaccineHistories(res.data.vaccineHistories || []);
       } catch (err) {
         setRecord(null);
+        setVaccineHistories([]);
       } finally {
         setLoading(false);
       }
@@ -41,7 +44,6 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
     chronicDisease: "",
     treatmentHistory: "",
     note: "",
-    vaccineHistories: [],
     studentId: "",
   };
 
@@ -177,11 +179,11 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
                   <Col span={12}>Tên Vaccin</Col>
                   <Col span={12}>Mô tả</Col>
                 </Row>
-                {(safeRecord.vaccineHistories || []).map((v, idx) => (
+                {(vaccineHistories || []).map((v, idx) => (
                   <Row key={idx} gutter={8} style={{ marginBottom: 8 }}>
                     <Col span={12}>
                       <Input
-                        value={v.vaccineName?.vaccineName || ""}
+                        value={v.vaccineNameDTO?.vaccineName || ""}
                         readOnly
                         style={{ fontSize: 16 }}
                       />
