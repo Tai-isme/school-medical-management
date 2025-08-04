@@ -716,7 +716,7 @@ const VaccineProgramList = () => {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    <span style={{ color: "#52c41a", marginRight: 8 }}>🛡️</span>
+                    <span style={{ color: "#52c41a", marginRight: 8 }}>💉</span>
                     Quản Lý Chương Trình Tiêm Chủng
                   </h2>
                   <div
@@ -865,18 +865,31 @@ const VaccineProgramList = () => {
                           }}
                         >
                           <div>
-                            <div
-                              style={{
-                                fontWeight: 700,
-                                fontSize: 18,
-                                marginBottom: 4,
-                              }}
-                            >
-                              {program.vaccineProgramName}
+                            <div style={{ marginBottom: 8 }}>
+                              <span
+                                style={{
+                                  fontWeight: 600,
+                                  fontSize: 14,
+                                  color: "#000",
+                                }}
+                              >
+                                Chương trình:
+                              </span>{" "}
+                              <span
+                                style={{
+                                  fontWeight: 800,
+                                  fontSize: 24,
+                                  color: "#333",
+                                }}
+                              >
+                                {program.vaccineProgramName}
+                              </span>
                             </div>
 
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              <strong>Ngày thực hiện:</strong>{" "}
+                              <span style={{ fontWeight: 600, color: "#000" }}>
+                                Ngày thực hiện:
+                              </span>{" "}
                               <span
                                 style={{ color: "#1890ff", fontWeight: 600 }}
                               >
@@ -893,7 +906,9 @@ const VaccineProgramList = () => {
                             </div>
 
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              <strong>Ngày gửi thông báo cho phụ huynh:</strong>{" "}
+                              <span style={{ fontWeight: 600, color: "#000" }}>
+                                Ngày gửi thông báo cho phụ huynh:
+                              </span>{" "}
                               <span
                                 style={{ color: "#52c41a", fontWeight: 600 }}
                               >
@@ -912,20 +927,34 @@ const VaccineProgramList = () => {
                             {program.vaccineFormDTOs &&
                               program.vaccineFormDTOs.length > 0 && (
                                 <div style={{ color: "#555", marginBottom: 8 }}>
-                                  <strong>Ngày hết hạn đăng ký:</strong>{" "}
+                                  <span
+                                    style={{ fontWeight: 600, color: "#000" }}
+                                  >
+                                    Ngày hết hạn đăng ký:
+                                  </span>{" "}
                                   <span
                                     style={{
                                       color: "#faad14",
                                       fontWeight: 600,
                                     }}
                                   >
-                                    {program.vaccineFormDTOs[0].expDate}
+                                    {program.vaccineFormDTOs[0].expDate
+                                      ? new Date(
+                                          program.vaccineFormDTOs[0].expDate
+                                        ).toLocaleDateString("vi-VN", {
+                                          day: "2-digit",
+                                          month: "2-digit",
+                                          year: "numeric",
+                                        })
+                                      : "---"}
                                   </span>
                                 </div>
                               )}
 
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              <strong>Địa điểm:</strong>{" "}
+                              <span style={{ fontWeight: 600, color: "#000" }}>
+                                Địa điểm:
+                              </span>{" "}
                               <span
                                 style={{ color: "#d4380d", fontWeight: 600 }}
                               >
@@ -934,29 +963,35 @@ const VaccineProgramList = () => {
                             </div>
 
                             <div style={{ color: "#555", marginBottom: 8 }}>
-                              <strong style={{ color: "#000" }}>
+                              <span style={{ fontWeight: 600, color: "#000" }}>
                                 Người phụ trách:
-                              </strong>{" "}
+                              </span>{" "}
                               <span
-                                style={{ color: "#1890ff", fontWeight: 400 }}
+                                style={{ color: "#1890ff", fontWeight: 500 }}
                               >
                                 {program.nurse?.fullName}
                               </span>{" "}
-                              | <strong style={{ color: "#000" }}>SĐT:</strong>{" "}
+                              |{" "}
+                              <span style={{ fontWeight: 600, color: "#000" }}>
+                                SĐT:
+                              </span>{" "}
                               <span
-                                style={{ color: "#1890ff", fontWeight: 400 }}
+                                style={{ color: "#1890ff", fontWeight: 500 }}
                               >
                                 {program.nurse?.phone}
                               </span>{" "}
-                              | <strong style={{ color: "#000" }}>Email:</strong>{" "}
+                              |{" "}
+                              <span style={{ fontWeight: 600, color: "#000" }}>
+                                Email:
+                              </span>{" "}
                               <span
-                                style={{ color: "#1890ff", fontWeight: 400 }}
+                                style={{ color: "#1890ff", fontWeight: 500 }}
                               >
                                 {program.nurse?.email}
                               </span>
                             </div>
                           </div>
-                          {/* Nếu là ADMIN thì cho phép chỉnh trạng thái, nếu là NURSE thì chỉ hiển thị Tag */}
+
                           <Tag
                             color={getStatusColor(program.status)}
                             style={{
@@ -972,6 +1007,7 @@ const VaccineProgramList = () => {
                             {getStatusText(program.status)}
                           </Tag>
                         </div>
+
                         <Row gutter={32} style={{ margin: "24px 0" }}>
                           <Col span={12}>
                             <div
