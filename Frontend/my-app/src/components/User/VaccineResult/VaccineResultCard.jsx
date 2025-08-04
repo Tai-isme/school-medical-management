@@ -251,9 +251,10 @@ const VaccineResultCard = () => {
                         <div>
                           Trạng thái:{" "}
                           <span style={{ color: "#43a047", fontWeight: 600 }}>
-                            {item.vaccineFormDTO?.vaccineProgramDTO?.status ===
-                            "COMPLETED"
-                              ? "Đã hoàn thành"
+                            {["COMPLETED", "GENERATED_RESULT"].includes(
+                              item.vaccineFormDTO?.vaccineProgramDTO?.status
+                            )
+                              ? "Đã có kết quả"
                               : item.vaccineFormDTO?.vaccineProgramDTO
                                   ?.status || "---"}
                           </span>

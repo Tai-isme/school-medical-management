@@ -174,9 +174,21 @@ const VaccineHistoryDetailModal = ({ open, onClose, data, loading }) => {
           <Panel header="💉 Thông tin vắc xin" key="2">
             <p>
               <b>Vắc xin đã tiêm:</b>{" "}
-              {vaccineName.vaccineName && vaccineProgram.unit
-                ? `${vaccineName.vaccineName} - Mũi thứ ${vaccineProgram.unit}`
-                : vaccineName.vaccineName || "---"}
+              {vaccineName.vaccineName || "---"}
+            </p>
+            <p>
+              <b>Mũi thực hiện:</b>{" "}
+              {vaccineProgram.unit ? `Mũi ${vaccineProgram.unit}` : "---"}
+            </p>
+            <p>
+              <b>Lịch tiêm mũi này:</b>{" "}
+              {Array.isArray(vaccineName.vaccineUnitDTOs) && vaccineProgram.unit
+                ? (
+                    vaccineName.vaccineUnitDTOs.find(
+                      (u) => u.unit === vaccineProgram.unit
+                    )?.schedule || "---"
+                  )
+                : "---"}
             </p>
             <p>
               <b>Nhà sản xuất:</b> {vaccineName.manufacture || "---"}

@@ -259,13 +259,13 @@ const HealthCheckResultCard = () => {
                       </div>
                       <div>
                         Trạng thái:{" "}
-                        <span style={{ color: "#43a047", fontWeight: 600 }}>
-                          {item.healthCheckFormDTO?.healthCheckProgramDTO
-                            ?.status === "COMPLETED"
-                            ? "Đã hoàn thành"
-                            : item.vaccineFormDTO?.vaccineProgramDTO?.status ||
-                              "---"}
-                        </span>
+<span style={{ color: "#43a047", fontWeight: 600 }}>
+  {["COMPLETED", "GENERATED_RESULT"].includes(
+    item.healthCheckFormDTO?.healthCheckProgramDTO?.status
+  )
+    ? "Đã có kết quả"
+    : item.healthCheckFormDTO?.healthCheckProgramDTO?.status || "---"}
+</span>
                       </div>
                     </div>
                   </div>

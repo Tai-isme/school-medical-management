@@ -278,11 +278,13 @@ const HealthCheckResultDetailModal = ({ open, onClose, data, loading }) => {
                   ? program.startDate.split("-").reverse().join("/")
                   : "---"}
               </p>
-              <p>
-                <b>Mô tả:</b> {program.description || "---"}
-              </p>
+              
               <p>
                 <b>Địa điểm:</b> {program.location || "---"}
+              </p>
+
+              <p>
+                <b>Mô tả:</b> {program.description || "---"}
               </p>
             </Panel>
 
