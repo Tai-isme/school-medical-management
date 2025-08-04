@@ -2335,8 +2335,7 @@ public class NurseService {
 
     // Nút xem kết quả
     public List<VaccineFormDTO> viewVaccineResultByProgram(int programId) {
-        List<VaccineFormEntity> vaccineForms = vaccineFormRepository.findByVaccineProgram_VaccineId(programId);
-
+        List<VaccineFormEntity> vaccineForms = vaccineFormRepository.findByVaccineProgram_VaccineIdAndCommitIsTrue(programId);
         if (vaccineForms.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phiếu tiêm chủng đã xác nhận");
         }
@@ -2380,7 +2379,7 @@ public class NurseService {
 
     //Nút xem kết quả
     public List<HealthCheckFormDTO> viewHealthCheckResultByProgram(int programId) {
-        List<HealthCheckFormEntity> healthCheckForms = healthCheckFormRepository.findByHealthCheckProgram_Id(programId);
+        List<HealthCheckFormEntity> healthCheckForms = healthCheckFormRepository.findAllByHealthCheckProgram_IdAndCommitIsTrue(programId);
 
         if (healthCheckForms.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phiếu khám sức khỏe");
@@ -2409,7 +2408,9 @@ public class NurseService {
 
             HealthCheckResultEntity resultEntity = healthCheckResultRepository.findByHealthCheckForm(entity).orElse(null);
             dto.setHealthCheckResultDTO(resultEntity != null ? modelMapper.map(resultEntity, HealthCheckResultDTO.class) : null);
-
+            if (resultEntity != null) {
+                dto.setHealthCheckResultDTO(modelMapper.map(resultEntity, HealthCheckResultDTO.class));
+            }
             return dto;
         }).collect(Collectors.toList());
     }
