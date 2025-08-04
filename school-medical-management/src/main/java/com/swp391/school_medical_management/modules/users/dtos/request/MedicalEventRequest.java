@@ -1,8 +1,9 @@
 package com.swp391.school_medical_management.modules.users.dtos.request;
 
+import lombok.Data;
+
 import java.time.LocalDateTime;
 
-import lombok.Data;
 
 @Data
 public class MedicalEventRequest {
@@ -13,6 +14,9 @@ public class MedicalEventRequest {
     private String actionsTaken;
     private String levelCheck;
     private String location;
-    private String image;
     private int studentId;
+    private Integer classId; // Thêm dòng này
 }
+
+
+

@@ -6,6 +6,7 @@ import com.swp391.school_medical_management.modules.users.entities.*;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.*;
 import com.swp391.school_medical_management.service.EmailService;
+import com.swp391.school_medical_management.service.UploadImageFile;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -89,6 +91,9 @@ public class NurseService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private UploadImageFile uploadImageFile;
 
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
         // List<MedicalRequestEntity> pendingMedicalRequestList =
@@ -748,7 +753,8 @@ public class NurseService {
         return dto;
     }
 
-    public MedicalEventDTO createMedicalEvent(int nurseId, MedicalEventRequest request) {
+
+    public MedicalEventDTO createMedicalEvent(int nurseId, MedicalEventRequest request, MultipartFile image) {
         Optional<UserEntity> nurseOpt = userRepository.findUserByUserId(nurseId);
         if (nurseOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Y tá không tồn tại!");
@@ -763,20 +769,29 @@ public class NurseService {
 
         StudentEntity student = studentOpt.get();
 
-        Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findByEventNameAndTypeEventAndDateAndDescriptionAndLevelCheckAndLocationAndImageAndStudent(request.getEventName(), request.getTypeEvent(), request.getDate(), request.getDescription(), MedicalEventEntity.LevelCheck.valueOf(request.getLevelCheck()), request.getLocation(), request.getImage(), student);
+        String imageUrl = null;
+        try {
+            imageUrl = uploadImageFile.uploadImage(image);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+
+        logger.info("Image uploaded successfully: {}", imageUrl);
+
+        Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findByTypeEventAndDateAndDescriptionAndLevelCheckAndLocationAndImageAndStudent(request.getTypeEvent(), request.getDate(), request.getDescription(), MedicalEventEntity.LevelCheck.valueOf(request.getLevelCheck()), request.getLocation(), imageUrl, student);
         if (medicalEventOpt.isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sự kiện y tế này đã tồn tại!");
         }
 
         MedicalEventEntity medicalEventEntity = new MedicalEventEntity();
-        medicalEventEntity.setEventName(request.getEventName());
+        // medicalEventEntity.setEventName(request.getEventName());
         medicalEventEntity.setTypeEvent(request.getTypeEvent());
         medicalEventEntity.setDate(request.getDate());
         medicalEventEntity.setActionsTaken(request.getActionsTaken());
         medicalEventEntity.setDescription(request.getDescription());
         medicalEventEntity.setLevelCheck(MedicalEventEntity.LevelCheck.valueOf(request.getLevelCheck()));
         medicalEventEntity.setLocation(request.getLocation());
-        medicalEventEntity.setImage(request.getImage());
+        medicalEventEntity.setImage(imageUrl); // Lưu đường dẫn hoặc tên file ảnh
         medicalEventEntity.setStudent(student);
         medicalEventEntity.setNurse(nurse);
         medicalEventRepository.save(medicalEventEntity);
@@ -790,6 +805,7 @@ public class NurseService {
         sendMedicalEventEmail(student, request);
         return dto;
     }
+
 
     private void sendMedicalEventEmail(StudentEntity student, MedicalEventRequest request) {
         String to = student.getParent().getEmail();
@@ -832,23 +848,26 @@ public class NurseService {
                         </ul>
                         <p>Vui lòng đăng nhập hệ thống để biết thêm chi tiết.</p>
                     </div>
-                """.formatted(student.getFullName(), request.getEventName(), request.getDescription(), formattedDate, request.getLocation(), levelColor, levelLabel);
+                """.formatted(student.getFullName(), request.getTypeEvent(), request.getDescription(), formattedDate, request.getLocation(), levelColor, levelLabel);
 
         emailService.sendEmail(to, subject, htmlContent);
     }
 
 
-    public MedicalEventDTO updateMedicalEvent(int nurseId, int medicalEventId, MedicalEventRequest request) {
+    public MedicalEventDTO updateMedicalEvent(int nurseId, int medicalEventId, MedicalEventRequest request, MultipartFile image) {
         Optional<MedicalEventEntity> medicalEventOpt = medicalEventRepository.findById(medicalEventId);
         if (medicalEventOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sự kiện y tế không tồn tại!");
         }
 
+
         MedicalEventEntity medicalEvent = medicalEventOpt.get();
+
 
         if (medicalEvent.getNurse() == null || medicalEvent.getNurse().getUserId() != nurseId) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa, sự kiện y tế này do y tá '" + medicalEventOpt.get().getNurse().getFullName() + "' đảm nhiệm!");
         }
+
 
         Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
         if (studentOpt.isEmpty()) {
@@ -856,17 +875,32 @@ public class NurseService {
         }
         StudentEntity student = studentOpt.get();
 
-        medicalEvent.setEventName(request.getEventName());
+
+        // Cập nhật các trường
+        // medicalEvent.setEventName(request.getEventName());
         medicalEvent.setTypeEvent(request.getTypeEvent());
         medicalEvent.setDate(request.getDate());
         medicalEvent.setActionsTaken(request.getActionsTaken());
         medicalEvent.setDescription(request.getDescription());
         medicalEvent.setLevelCheck(MedicalEventEntity.LevelCheck.valueOf(request.getLevelCheck()));
         medicalEvent.setLocation(request.getLocation());
-        medicalEvent.setImage(request.getImage());
         medicalEvent.setStudent(student);
 
+
+        // Xử lý cập nhật ảnh nếu có file mới
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = null;
+            try {
+                imageUrl = uploadImageFile.uploadImage(image);
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi upload ảnh mới");
+            }
+            medicalEvent.setImage(imageUrl);
+        }
+
+
         medicalEventRepository.save(medicalEvent);
+
 
         MedicalEventDTO dto = modelMapper.map(medicalEvent, MedicalEventDTO.class);
         dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
@@ -875,6 +909,7 @@ public class NurseService {
         dto.setClassDTO(modelMapper.map(student.getClassEntity(), ClassDTO.class));
         return dto;
     }
+
 
     public MedicalEventDTO getMedicalEvent(int medicalEventId) {
         // Optional<MedicalEventEntity> medicalEventOpt =
@@ -919,7 +954,7 @@ public class NurseService {
 
             dto.setEventId(event.getEventId());
             dto.setTypeEvent(event.getTypeEvent());
-            dto.setEventName(event.getEventName());
+//            dto.setEventName(event.getEventName());
             dto.setDate(event.getDate());
             dto.setDescription(event.getDescription());
             dto.setActionsTaken(event.getActionsTaken());

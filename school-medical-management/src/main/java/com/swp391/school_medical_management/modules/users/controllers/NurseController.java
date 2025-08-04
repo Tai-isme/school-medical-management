@@ -1,9 +1,12 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
-import java.time.LocalDate;
-import java.util.List;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
+import com.swp391.school_medical_management.modules.users.dtos.response.*;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
+import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
+import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -11,37 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.swp391.school_medical_management.modules.users.dtos.response.BlogResponse;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.ClassStudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.FeedbackDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckProgramDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.HealthCheckResultDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalEventDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRecordDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.MedicalRequestDetailDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.StudentDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.UserDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineFormDTO;
-import com.swp391.school_medical_management.modules.users.dtos.response.VaccineResultDTO;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
-import com.swp391.school_medical_management.modules.users.services.impl.NurseService;
-
-import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.List;
 
 @Validated
 @RestController
@@ -83,8 +60,7 @@ public class NurseController {
     }
 
     @PutMapping("/medical-request/{requestId}/status")
-    public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId,
-                                                                        @RequestBody @Valid UpdateMedicalRequestStatus request) {
+    public ResponseEntity<MedicalRequestDTO> updateMedicalRequestStatus(@PathVariable int requestId, @RequestBody @Valid UpdateMedicalRequestStatus request) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
         MedicalRequestDTO medicalRequestDTO = nurseService.updateMedicalRequestStatus(requestId, request, Integer.parseInt(nurseId));
         return ResponseEntity.ok(medicalRequestDTO);
@@ -97,16 +73,13 @@ public class NurseController {
     }
 
     @GetMapping("/health-check-forms/program/{programId}")
-    public ResponseEntity<List<HealthCheckFormDTO>> getHealthCheckFormsByProgram(
-            @PathVariable int programId,
-            @RequestParam(required = false) Boolean committed) {
+    public ResponseEntity<List<HealthCheckFormDTO>> getHealthCheckFormsByProgram(@PathVariable int programId, @RequestParam(required = false) Boolean committed) {
         List<HealthCheckFormDTO> list = nurseService.getHealthCheckFormsByProgram(programId, committed);
         return ResponseEntity.ok(list);
     }
 
     @GetMapping("/health-check-forms-commit/program/{programId}")
-    public ResponseEntity<List<HealthCheckFormDTO>> getCommittedHealthCheckFormsByProgram(
-            @PathVariable int programId) {
+    public ResponseEntity<List<HealthCheckFormDTO>> getCommittedHealthCheckFormsByProgram(@PathVariable int programId) {
         List<HealthCheckFormDTO> list = nurseService.getCommittedHealthCheckFormsByProgram(programId);
         return ResponseEntity.ok(list);
     }
@@ -118,9 +91,7 @@ public class NurseController {
     }
 
     @GetMapping("/vaccine-forms/program/{programId}")
-    public ResponseEntity<List<VaccineFormDTO>> getVaccineFormsByProgram(
-            @PathVariable int programId,
-            @RequestParam(required = false) Boolean committed) {
+    public ResponseEntity<List<VaccineFormDTO>> getVaccineFormsByProgram(@PathVariable int programId, @RequestParam(required = false) Boolean committed) {
         List<VaccineFormDTO> forms = nurseService.getVaccineFormsByProgram(programId, committed);
         return ResponseEntity.ok(forms);
     }
@@ -144,19 +115,37 @@ public class NurseController {
         return ResponseEntity.ok(events);
     }
 
-    @PostMapping("/medical-event")
-    public ResponseEntity<MedicalEventDTO> createMedicalEvent(@RequestBody MedicalEventRequest request) {
+    @PostMapping(value = "/medical-event", consumes = {"multipart/form-data"})
+    public ResponseEntity<MedicalEventDTO> createMedicalEvent(@RequestPart("request") String requestJson, @RequestPart(value = "image", required = false) MultipartFile image) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalEventDTO medicalEventDTO = nurseService.createMedicalEvent(Integer.parseInt(nurseId), request);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+        MedicalEventRequest request;
+        try {
+            request = mapper.readValue(requestJson, MedicalEventRequest.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid request format: " + e.getMessage());
+        }
+        MedicalEventDTO medicalEventDTO = nurseService.createMedicalEvent(Integer.parseInt(nurseId), request, image);
         return ResponseEntity.status(HttpStatus.CREATED).body(medicalEventDTO);
     }
 
-    @PutMapping("/medical-event/{medicalEventId}")
-    public ResponseEntity<MedicalEventDTO> updateMedicalEvent(@PathVariable int medicalEventId, @RequestBody MedicalEventRequest request) {
+
+    @PutMapping(value = "/medical-event/{medicalEventId}", consumes = {"multipart/form-data"})
+    public ResponseEntity<MedicalEventDTO> updateMedicalEvent(@PathVariable int medicalEventId, @RequestPart("request") String requestJson, @RequestPart(value = "image", required = false) MultipartFile image) {
         String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalEventDTO medicalEventDTO = nurseService.updateMedicalEvent(Integer.parseInt(nurseId), medicalEventId, request);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+        MedicalEventRequest request;
+        try {
+            request = mapper.readValue(requestJson, MedicalEventRequest.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid request format: " + e.getMessage());
+        }
+        MedicalEventDTO medicalEventDTO = nurseService.updateMedicalEvent(Integer.parseInt(nurseId), medicalEventId, request, image);
         return ResponseEntity.ok(medicalEventDTO);
     }
+
 
     @GetMapping("/medical-event/{medicalEventId}")
     public ResponseEntity<MedicalEventDTO> getMedicalEvent(@PathVariable int medicalEventId) {
@@ -179,14 +168,12 @@ public class NurseController {
 
     @PostMapping("/health-check-result")
     public ResponseEntity<List<HealthCheckResultDTO>> createDefaultHealthCheckResultsForAllCommittedForms() {
-        List<HealthCheckResultDTO> healthCheckResultDTOList = nurseService
-                .createDefaultHealthCheckResultsForAllCommittedForms();
+        List<HealthCheckResultDTO> healthCheckResultDTOList = nurseService.createDefaultHealthCheckResultsForAllCommittedForms();
         return ResponseEntity.status(HttpStatus.CREATED).body(healthCheckResultDTOList);
     }
 
     @PutMapping("/health-check-result/{healCheckResultId}")
-    public ResponseEntity<HealthCheckResultDTO> putMethodName(@PathVariable int healCheckResultId,
-                                                              @RequestBody HealthCheckResultRequest request) {
+    public ResponseEntity<HealthCheckResultDTO> putMethodName(@PathVariable int healCheckResultId, @RequestBody HealthCheckResultRequest request) {
         HealthCheckResultDTO healthCheckResultDTO = nurseService.updateHealthCheckResult(healCheckResultId, request);
         return ResponseEntity.ok(healthCheckResultDTO);
     }
@@ -211,8 +198,7 @@ public class NurseController {
     }
 
     @PutMapping("/vaccine-result/{vaccineResultId}")
-    public ResponseEntity<VaccineResultDTO> updateVaccineResult(@PathVariable int vaccineResultId,
-                                                                @RequestBody VaccineResultRequest request) {
+    public ResponseEntity<VaccineResultDTO> updateVaccineResult(@PathVariable int vaccineResultId, @RequestBody VaccineResultRequest request) {
         VaccineResultDTO vaccineResultDTO = nurseService.updateVaccineResult(vaccineResultId, request);
         return ResponseEntity.ok(vaccineResultDTO);
     }
@@ -259,9 +245,7 @@ public class NurseController {
     }
 
     @PutMapping("/{id}/replyfeedback")
-    public ResponseEntity<FeedbackDTO> replyToFeedback(
-            @PathVariable("id") Integer feedbackId,
-            @RequestBody ReplyFeedbackRequest request) {
+    public ResponseEntity<FeedbackDTO> replyToFeedback(@PathVariable("id") Integer feedbackId, @RequestBody ReplyFeedbackRequest request) {
 
         FeedbackDTO dto = nurseService.replyToFeedback(feedbackId, request);
         return ResponseEntity.ok(dto);
@@ -290,9 +274,7 @@ public class NurseController {
     // Lọc ra nhưng học sinh chưa từng tiêm loại vaccine name history đó hoặc chưa
     // từng tham gia chương trình vaccine
     @GetMapping("/students/not-vaccinated")
-    public ResponseEntity<List<StudentDTO>> getStudentsNotVaccinated(
-            @RequestParam(required = false) int vaccineProgramId,
-            @RequestParam(required = false) int vaccineName) {
+    public ResponseEntity<List<StudentDTO>> getStudentsNotVaccinated(@RequestParam(required = false) int vaccineProgramId, @RequestParam(required = false) int vaccineName) {
         List<StudentDTO> result = nurseService.getStudentsNotVaccinated(vaccineProgramId, vaccineName);
         return ResponseEntity.ok(result);
     }
@@ -316,8 +298,7 @@ public class NurseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BlogResponse> updatePost(@PathVariable int id,
-                                                   @RequestBody BlogRequest request) {
+    public ResponseEntity<BlogResponse> updatePost(@PathVariable int id, @RequestBody BlogRequest request) {
         BlogResponse response = nurseService.update(id, request);
         return ResponseEntity.ok(response);
     }
@@ -329,9 +310,7 @@ public class NurseController {
     }
 
     @GetMapping("/users/search")
-    public ResponseEntity<List<UserDTO>> searchUsers(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) UserRole role) {
+    public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam(required = false) String keyword, @RequestParam(required = false) UserRole role) {
         return ResponseEntity.ok(nurseService.searchUsers(keyword, role));
     }
 
@@ -354,8 +333,7 @@ public class NurseController {
     }
 
     @GetMapping("/date/{date}")
-    public ResponseEntity<List<MedicalRequestDTO>> getByDate(
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public ResponseEntity<List<MedicalRequestDTO>> getByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(nurseService.getByDate(date));
     }
 
@@ -365,9 +343,7 @@ public class NurseController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<MedicalRequestDTO>> searchByDateRange(
-            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+    public ResponseEntity<List<MedicalRequestDTO>> searchByDateRange(@RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from, @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok(nurseService.searchByDateRange(from, to));
     }
 
@@ -386,17 +362,13 @@ public class NurseController {
     // }
 
     @PostMapping("/create-healthCheckResult-byProgram-{programId}")
-    public ResponseEntity<HealthCheckResultDTO> createHealthCheckResult(
-            @PathVariable int programId,
-            @RequestBody HealthCheckResultRequest request) {
+    public ResponseEntity<HealthCheckResultDTO> createHealthCheckResult(@PathVariable int programId, @RequestBody HealthCheckResultRequest request) {
         HealthCheckResultDTO dto = nurseService.createResultByProgramId(programId, request);
         return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/create-vaccineResults-byProgram/{programId}")
-    public ResponseEntity<VaccineResultDTO> createVaccineResultsByProgramId(
-            @PathVariable int programId,
-            @RequestBody VaccineResultRequest request) {
+    public ResponseEntity<VaccineResultDTO> createVaccineResultsByProgramId(@PathVariable int programId, @RequestBody VaccineResultRequest request) {
         VaccineResultDTO dto = nurseService.createVaccineResultsByProgramId(programId, request);
         return ResponseEntity.ok(dto);
     }
@@ -418,9 +390,7 @@ public class NurseController {
     }
 
     @PostMapping("/health-check-form/{programId}")
-    public ResponseEntity<String> createFormsForProgram(
-            @PathVariable int programId,
-            @RequestParam("expDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expDate) {
+    public ResponseEntity<String> createFormsForProgram(@PathVariable int programId, @RequestParam("expDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expDate) {
 
         nurseService.createHealthCheckForm(programId, expDate);
         return ResponseEntity.ok("Tạo form thành công.");
@@ -440,9 +410,7 @@ public class NurseController {
     }
 
     @PostMapping("/create-vaccine-form/{programId}")
-    public ResponseEntity<String> createVaccineFormsForProgram(
-            @PathVariable int programId,
-            @RequestParam("expDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expDate) {
+    public ResponseEntity<String> createVaccineFormsForProgram(@PathVariable int programId, @RequestParam("expDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expDate) {
 
         nurseService.createVaccineForm(programId, expDate);
         return ResponseEntity.ok("Tạo form tiêm chủng thành công.");

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class MedicalEventDTO {
     private Integer eventId;
     private String typeEvent;
-    private String eventName;
+    //    private String eventName;
     private LocalDateTime date;
     private String description;
     private String actionsTaken;

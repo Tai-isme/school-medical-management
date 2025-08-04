@@ -282,6 +282,34 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chương trình đã ở trạng thái: " + newStatus);
         }
 
+        //---------------------------------------------------------------------------------------------
+        // Tìm xem ai không tham gia tiêm chủng
+        //Tìm form đã gửi
+        List<HealthCheckFormEntity> healthCheckFormEntities = healthCheckFormRepository
+                .findByHealthCheckProgram_Id(healthCheckProgramEntity.getId());
+
+        if (healthCheckFormEntities.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chương trình khám sức khỏe chưa có thông báo nào được gửi!");
+        }
+
+        for (HealthCheckFormEntity form : healthCheckFormEntities) {
+
+            HealthCheckResultEntity healthCheckResultEntity = healthCheckResultRepository
+                    .findByHealthCheckForm(form)
+                    .orElse(null);
+
+            if (healthCheckResultEntity == null) {
+                HealthCheckResultEntity resultEntity = new HealthCheckResultEntity();
+                resultEntity.setHealthCheckForm(form);
+                resultEntity.setStudent(form.getStudent());
+                resultEntity.setIsChecked(false);
+                resultEntity.setNote("Không tham gia khám sức khỏe");
+
+                healthCheckResultRepository.save(resultEntity);
+            }
+        }
+        //---------------------------------------------------------------------------------------------
+
         healthCheckProgramEntity.setStatus(newStatus);
         healthCheckProgramRepository.save(healthCheckProgramEntity);
 

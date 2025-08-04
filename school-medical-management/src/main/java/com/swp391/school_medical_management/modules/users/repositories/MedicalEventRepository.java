@@ -50,5 +50,5 @@ public interface MedicalEventRepository extends JpaRepository<MedicalEventEntity
             """)
     List<EventStatRaw> getEventStatsByMonth(@Param("year") int year);
 
-    Optional<MedicalEventEntity> findByEventNameAndTypeEventAndDateAndDescriptionAndLevelCheckAndLocationAndImageAndStudent(String eventName, String typeEvent, LocalDateTime date, String description, MedicalEventEntity.LevelCheck levelCheck, String location, String image, StudentEntity student);
+    Optional<MedicalEventEntity> findByTypeEventAndDateAndDescriptionAndLevelCheckAndLocationAndImageAndStudent(String typeEvent, LocalDateTime date, String description, MedicalEventEntity.LevelCheck levelCheck, String location, String image, StudentEntity student);
 }

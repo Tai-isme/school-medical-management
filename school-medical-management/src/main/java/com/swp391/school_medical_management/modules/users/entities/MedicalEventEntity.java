@@ -19,10 +19,10 @@ public class MedicalEventEntity {
     @Column(name = "event_id")
     private int eventId;
 
-    @Column(name = "event_name", length = 255)
-    private String eventName;
+//    @Column(name = "event_name", length = 255)
+//    private String eventName;
 
-    @Column(name = "type_event", length = 100)
+    @Column(name = "type_event", length = 255)
     private String typeEvent;
 
     @Column(name = "date")
