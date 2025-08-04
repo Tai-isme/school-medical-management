@@ -211,7 +211,7 @@ const VaccineProgramModal = ({
           >
             <DatePicker
               style={{ width: "100%" }}
-              format="YYYY-MM-DD"
+              format="DD/MM/YYYY"
               disabledDate={(current) =>
                 current && current < dayjs().startOf("day")
               }
@@ -225,7 +225,7 @@ const VaccineProgramModal = ({
               { required: true, message: "Chọn ngày gửi form" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  const startDate = getFieldValue("startDate");
+                  const startDate = getFieldValue("startDate")?.format("YYYY-MM-DD");
                   if (!value || !startDate) return Promise.resolve();
                   if (!value.isBefore(startDate, "day")) {
                     return Promise.reject(
@@ -241,7 +241,7 @@ const VaccineProgramModal = ({
           >
             <DatePicker
               style={{ width: "100%" }}
-              format="YYYY-MM-DD"
+              format="DD/MM/YYYY"
               disabledDate={(current) =>
                 current && current < dayjs().startOf("day")
               }

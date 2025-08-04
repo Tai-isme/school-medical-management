@@ -196,32 +196,6 @@ const VaccineProgramList = () => {
   });
 
   // Gọi khi mount hoặc khi danh sách chương trình thay đổi
- const handleStartProgram = async (programId) => {
-  const confirm = await Swal.fire({
-    title: "Bắt đầu chương trình?",
-    text: "Bạn có chắc muốn bắt đầu chương trình này?",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Bắt đầu",
-    cancelButtonText: "Hủy",
-  });
-  if (!confirm.isConfirmed) return;
-  const token = localStorage.getItem("token");
-  try {
-    await axios.put(
-      `http://localhost:8080/api/admin/vaccine-program/${programId}/status?status=ON_GOING`,
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    message.success("Đã bắt đầu chương trình!");
-    fetchProgram();
-  } catch {
-    message.error("Bắt đầu chương trình thất bại!");
-  }
-};
-
 
   const handleCreate = async (values) => {
     setLoading(true);
@@ -1233,7 +1207,7 @@ const VaccineProgramList = () => {
                                     const token = localStorage.getItem("token");
                                     try {
                                       await axios.patch(
-                                        `http://localhost:8080/api/admin/vaccine-program/${program.vaccineId}?status=COMPLETED`,
+                                        `http://localhost:8080/api/admin/completed-vaccine-program/${program.vaccineId}?status=COMPLETED`,
                                         {},
                                         {
                                           headers: {
