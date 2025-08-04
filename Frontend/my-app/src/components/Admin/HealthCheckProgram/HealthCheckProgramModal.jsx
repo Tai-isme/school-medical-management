@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, DatePicker, Select, Row, Col } from "antd";
 import axios from "axios";
+import dayjs from "dayjs";
 const HealthCheckProgramModal = ({
   open,
   onCancel,
@@ -201,8 +202,9 @@ const HealthCheckProgramModal = ({
           <Input />
         </Form.Item>
         <Form.Item label="Mô tả" name="description">
-          <Input.TextArea rows={2} />
+          <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
         </Form.Item>
+
         <Form.Item>
           <Button
             type="primary"

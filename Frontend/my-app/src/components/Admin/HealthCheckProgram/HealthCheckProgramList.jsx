@@ -22,7 +22,7 @@ import { Select } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
-
+dayjs.extend(isBetween);
 import Swal from "sweetalert2";
 import HealthCheckProgramModal from "./HealthCheckProgramModal";
 
@@ -445,7 +445,7 @@ const HealthCheckProgramList = () => {
       }
     }
   };
-dayjs.extend(isBetween);
+
   // Lọc danh sách theo tên chương trình và ngày tiêm
   const filteredPrograms = programs.filter((program) => {
     const matchName = program.healthCheckName
@@ -1128,10 +1128,6 @@ dayjs.extend(isBetween);
                         </span>
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="Mô tả">
-                        {program.description || "-"}
-                      </Descriptions.Item>
-
                       <Descriptions.Item label="Ngày bắt đầu">
                         {program.startDate
                           ? dayjs(program.startDate).format("DD/MM/YYYY")
@@ -1149,7 +1145,21 @@ dayjs.extend(isBetween);
                           ? dayjs(program.expDate).format("DD/MM/YYYY")
                           : "-"}
                       </Descriptions.Item>
-
+                      <Descriptions.Item label="Lớp tham gia">
+                        {program.participateClasses &&
+                        program.participateClasses.length > 0
+                          ? program.participateClasses
+                              .map((p) => {
+                                const className = p.classDTO?.className || "";
+                                const teacher = p.classDTO?.teacherName || "";
+                                return teacher
+                                  ? `${className} (GV: ${teacher})`
+                                  : className;
+                              })
+                              .filter(Boolean)
+                              .join(", ")
+                          : "-"}
+                      </Descriptions.Item>
                       <Descriptions.Item label="Địa điểm">
                         {program.location || "-"}
                       </Descriptions.Item>
@@ -1171,10 +1181,8 @@ dayjs.extend(isBetween);
                               {program.nurseDTO.id})
                             </div>
                             <div style={{ color: "#555" }}>
-                              📞 {program.nurseDTO.phone}
-                            </div>
-                            <div style={{ color: "#555" }}>
-                              ✉️ {program.nurseDTO.email}
+                              📞 {program.nurseDTO.phone} | ✉️{" "}
+                              {program.nurseDTO.email}
                             </div>
                           </div>
                         ) : (
@@ -1188,20 +1196,8 @@ dayjs.extend(isBetween);
                           : "-"}
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="Lớp tham gia">
-                        {program.participateClasses &&
-                        program.participateClasses.length > 0
-                          ? program.participateClasses
-                              .map((p) => {
-                                const className = p.classDTO?.className || "";
-                                const teacher = p.classDTO?.teacherName || "";
-                                return teacher
-                                  ? `${className} (GV: ${teacher})`
-                                  : className;
-                              })
-                              .filter(Boolean)
-                              .join(", ")
-                          : "-"}
+                      <Descriptions.Item label="Mô tả">
+                        {program.description || "-"}
                       </Descriptions.Item>
                     </Descriptions>
                   )}
