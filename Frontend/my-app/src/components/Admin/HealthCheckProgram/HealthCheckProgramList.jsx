@@ -27,7 +27,7 @@ import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 import Swal from "sweetalert2";
 import HealthCheckProgramModal from "./HealthCheckProgramModal";
-import urlServer from "../../../api/urlServer";
+import {urlServer} from "../../../api/urlServer";
 
 const HealthCheckProgramList = () => {
   const [programs, setPrograms] = useState([]);
