@@ -114,6 +114,15 @@ public class AdminController {
         return ResponseEntity.ok(vaccineProgramDTO);
     }
 
+    //Thien
+@PutMapping("/vaccine-program/{vaccineProgramId}/status")
+public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(
+        @PathVariable int vaccineProgramId,
+        @RequestParam("status") String status) {
+    VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgramStatus(vaccineProgramId, status);
+    return ResponseEntity.ok(vaccineProgramDTO);
+}
+
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/vaccine-program")
     public ResponseEntity<List<VaccineProgramDTO>> getAllVaccineProgram() {
