@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.services.impl;
 
 import com.swp391.school_medical_management.helpers.ExcelExportStyleUtil;
+import com.swp391.school_medical_management.helpers.FileHelper;
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import com.swp391.school_medical_management.modules.users.entities.*;
@@ -10,6 +11,7 @@ import com.swp391.school_medical_management.modules.users.repositories.projectio
 import com.swp391.school_medical_management.modules.users.repositories.projection.ParticipationRateRaw;
 import com.swp391.school_medical_management.service.EmailService;
 import com.swp391.school_medical_management.service.PasswordService;
+import com.swp391.school_medical_management.service.impl.UploadImageFileImpl;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -30,6 +32,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -104,6 +108,9 @@ public class AdminService {
 
     @Autowired
     private VaccineHistoryRepository vaccineHistoryRepository;
+
+    @Autowired
+    private UploadImageFileImpl uploadImageFile;
 
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, int adminId) {
         UserEntity admin = userRepository.findById(request.getAdminId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
@@ -1233,6 +1240,7 @@ public class AdminService {
 
     @Transactional
     public void importStudentFromExcel(MultipartFile file) {
+
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
             DataFormatter formatter = new DataFormatter();
@@ -1288,12 +1296,22 @@ public class AdminService {
                 if (existingStudentOpt.isPresent()) {
                     continue; // Bỏ qua học sinh đã tồn tại
                 }
+                String encodedName = URLEncoder.encode(studentName, StandardCharsets.UTF_8);
+                String avatarUrl = "https://ui-avatars.com/api/?name=" + encodedName + "&background=random";
+                String imageUrl = null;
+                try {
+                    MultipartFile avatarFile = FileHelper.downloadImageAsMultipartFile(avatarUrl, studentName);
+                    imageUrl = uploadImageFile.uploadImage(avatarFile);
+                } catch (Exception e) {
+                }
+
                 StudentEntity student = new StudentEntity();
                 student.setFullName(studentName);
                 student.setDob(dob);
                 student.setGender(gender);
                 student.setClassEntity(classEntity);
                 student.setParent(parent);
+                student.setAvatarUrl(imageUrl);
                 studentRepository.save(student);
 
                 importedCount++;
