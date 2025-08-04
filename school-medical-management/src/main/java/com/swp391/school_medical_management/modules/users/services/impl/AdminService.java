@@ -264,7 +264,7 @@ public class AdminService {
     }
 
 
-    public HealthCheckProgramDTO updateHealthCheckProgramStatus(int id, String status) {
+    public HealthCheckProgramDTO completeHealthCheckProgram(int id, String status) {
         HealthCheckProgramEntity healthCheckProgramEntity = healthCheckProgramRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình kiểm tra sức khỏe"));
 
         HealthCheckProgramEntity.HealthCheckProgramStatus newStatus;
@@ -703,6 +703,53 @@ public class AdminService {
         dto.setParticipateClassDTOs(participateClassDTOs);
         return dto;
     }
+
+
+    public HealthCheckProgramDTO updateHealthCheckProgramStatus(int id, String status) {
+        HealthCheckProgramEntity healthCheckProgram = healthCheckProgramRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Không tìm thấy chương trình khám sức khỏe nào!"));
+
+        HealthCheckProgramEntity.HealthCheckProgramStatus newStatus;
+        try {
+            newStatus = HealthCheckProgramEntity.HealthCheckProgramStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ: " + status);
+        }
+
+        if (healthCheckProgram.getStatus() == HealthCheckProgramEntity.HealthCheckProgramStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chương trình đã hoàn thành và không thể cập nhật");
+        }
+
+        if (healthCheckProgram.getStatus() == newStatus) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chương trình đã ở trạng thái: " + newStatus);
+        }
+
+        healthCheckProgram.setStatus(newStatus);
+        healthCheckProgramRepository.save(healthCheckProgram);
+
+        List<ParticipateClassEntity> participateEntities = participateClassRepository
+                .findAllByProgramIdAndType(healthCheckProgram.getId(), ParticipateClassEntity.Type.HEALTH_CHECK);
+
+        List<ParticipateClassDTO> participateClassDTOs = participateEntities.stream().map(participateClassEntity -> {
+            ParticipateClassDTO participateDTO = new ParticipateClassDTO();
+            ClassDTO classDTO = modelMapper.map(participateClassEntity.getClazz(), ClassDTO.class);
+            classDTO.setStudents(null);
+            participateDTO.setClassDTO(classDTO);
+            return participateDTO;
+        }).collect(Collectors.toList());
+
+        HealthCheckProgramDTO programDTO = modelMapper.map(healthCheckProgram, HealthCheckProgramDTO.class);
+
+        programDTO.setAdminDTO(modelMapper.map(healthCheckProgram.getAdmin(), UserDTO.class));
+        programDTO.setNurseDTO(modelMapper.map(healthCheckProgram.getNurse(), UserDTO.class));
+        programDTO.setParticipateClasses(participateClassDTOs);
+
+        return programDTO;
+    }
+
 
     public VaccineProgramDTO updateVaccineProgramStatus(int id, String status) {
         VaccineProgramEntity vaccineProgramEntity = vaccineProgramRepository.findById(id)

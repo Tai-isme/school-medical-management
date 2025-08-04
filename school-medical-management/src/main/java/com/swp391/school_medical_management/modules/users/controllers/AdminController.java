@@ -74,6 +74,12 @@ public class AdminController {
         return ResponseEntity.ok(healthCheckProgramDTO);
     }
 
+    @PatchMapping("/completed-health-check-program/{id}")
+    public ResponseEntity<HealthCheckProgramDTO> completeHealthCheckProgram(@PathVariable int id, @RequestParam("status") String status) {
+        HealthCheckProgramDTO healthCheckProgramDTO = adminService.completeHealthCheckProgram(id, status);
+        return ResponseEntity.ok(healthCheckProgramDTO);
+    }
+
     @PatchMapping("/completed-vaccine-program/{id}")
     public ResponseEntity<VaccineProgramDTO> completeVaccineProgramStatus(@PathVariable int id, @RequestParam("status") String status) {
         VaccineProgramDTO vaccineProgramDTO = adminService.completeVaccineProgramStatus(id, status);
