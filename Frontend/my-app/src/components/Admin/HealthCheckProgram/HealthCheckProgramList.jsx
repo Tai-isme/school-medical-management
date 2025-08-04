@@ -586,7 +586,7 @@ const HealthCheckProgramList = () => {
     .sort((a, b) => b.id - a.id) // (Hoặc sắp theo ID nếu startDate không ổn định)
     .slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  if (!programs.length) return <div>Đang tải...</div>;
+  if (!programs.length) return <div>Hiện không có chương trình nào</div>;
 
   return (
     <div
@@ -660,436 +660,485 @@ const HealthCheckProgramList = () => {
                     )}
                   </div>
                 </div>
-                {pagedPrograms.map((program) => (
-                  <Card
-                    key={program.id}
-                    style={{
-                      background: "#f6fcf7",
-                      borderRadius: 10,
-                      border: "1px solid #e6f4ea",
-                      width: "calc(100vw - 260px)",
-                      minWidth: 1200,
-                      margin: "0 auto",
-                      marginBottom: 16,
-                    }}
-                    bodyStyle={{ padding: 24 }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
+                {programs.length === 0 ? (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '40px 20px',
+                    background: '#fff',
+                    borderRadius: 8,
+                    marginTop: 16,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                  }}>
+                    <img
+                      src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
+                      alt="No data"
+                      style={{ 
+                        width: 100,
+                        height: 100,
+                        opacity: 0.5,
+                        marginBottom: 16
                       }}
+                    />
+                    <div style={{ color: '#888', fontSize: 16 }}>
+                      Chưa có chương trình khám sức khỏe nào
+                    </div>
+                  </div>
+                ) : filteredPrograms.length === 0 ? (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '40px 20px',
+                    background: '#fff',
+                    borderRadius: 8,
+                    marginTop: 16,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                  }}>
+                    <img
+                      src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
+                      alt="No data"
+                      style={{ 
+                        width: 100,
+                        height: 100,
+                        opacity: 0.5,
+                        marginBottom: 16
+                      }}
+                    />
+                    <div style={{ color: '#888', fontSize: 16 }}>
+                      Không tìm thấy chương trình phù hợp với điều kiện lọc
+                    </div>
+                  </div>
+                ) : (
+                  pagedPrograms.map((program) => (
+                    <Card
+                      key={program.id}
+                      style={{
+                        background: "#f6fcf7",
+                        borderRadius: 10,
+                        border: "1px solid #e6f4ea",
+                        width: "calc(100vw - 260px)",
+                        minWidth: 1200,
+                        margin: "0 auto",
+                        marginBottom: 16,
+                      }}
+                      bodyStyle={{ padding: 24 }}
                     >
-                      <div>
-                        <div style={{ marginBottom: 6 }}>
-                          <span
-                            style={{
-                              fontWeight: 600,
-                              fontSize: 14,
-                              color: "#000",
-                            }}
-                          >
-                            Chương trình:
-                          </span>{" "}
-                          <span
-                            style={{
-                              fontWeight: 800,
-                              fontSize: 25,
-                              color: "#333",
-                            }}
-                          >
-                            {program.healthCheckName}
-                          </span>
-                        </div>
-
-                        <div style={{ color: "#555", marginBottom: 2 }}>
-                          <span style={{ fontWeight: 600, color: "#000" }}>
-                            Ngày thực hiện:
-                          </span>{" "}
-                          <span style={{ color: "#1890ff", fontWeight: 600 }}>
-                            {dayjs(program.startDate).format("DD/MM/YYYY")}
-                          </span>
-                        </div>
-
-                        <div style={{ color: "#555", marginBottom: 2 }}>
-                          <span style={{ fontWeight: 600, color: "#000" }}>
-                            Ngày gửi thông báo cho phụ huynh:
-                          </span>{" "}
-                          <span style={{ color: "#4CAF50", fontWeight: 600 }}>
-                            {dayjs(program.dateSendForm).format("DD/MM/YYYY")}
-                          </span>
-                        </div>
-
-                        <div style={{ color: "#555", marginBottom: 2 }}>
-                          <span style={{ fontWeight: 600, color: "#000" }}>
-                            Ngày hết hạn đăng ký:
-                          </span>{" "}
-                          <span style={{ color: "#f57c00", fontWeight: 600 }}>
-                            {dayjs(program.registerDeadline).format(
-                              "DD/MM/YYYY"
-                            )}
-                          </span>
-                        </div>
-
-                        <div style={{ color: "#555", marginBottom: 2 }}>
-                          <span style={{ fontWeight: 600, color: "#000" }}>
-                            Địa điểm:
-                          </span>{" "}
-                          <span style={{ color: "#d32f2f", fontWeight: 600 }}>
-                            {program.location}
-                          </span>
-                        </div>
-
-                        <div
-                          style={{
-                            color: "#000",
-                            fontWeight: 600,
-                            marginTop: 8,
-                          }}
-                        >
-                          <span style={{ fontWeight: 600, color: "#000" }}>
-                            Người phụ trách:
-                          </span>{" "}
-                          <a
-                            href="#"
-                            style={{ color: "#1976d2", fontWeight: 500 }}
-                          >
-                            {program.nurseDTO?.fullName}
-                          </a>{" "}
-                          |{" "}
-                          <span style={{ fontWeight: 600, color: "#000" }}>
-                            SĐT:
-                          </span>{" "}
-                          <a
-                            href={`tel:${program.nurseDTO?.phoneNumber}`}
-                            style={{ color: "#1976d2", fontWeight: 500 }}
-                          >
-                            {program.nurseDTO?.phoneNumber}
-                          </a>{" "}
-                          |{" "}
-                          <span style={{ fontWeight: 600, color: "#000" }}>
-                            Email:
-                          </span>{" "}
-                          <a
-                            href={`mailto:${program.nurseDTO?.email}`}
-                            style={{ color: "#1976d2", fontWeight: 500 }}
-                          >
-                            {program.nurseDTO?.email}
-                          </a>
-                        </div>
-                      </div>
-
-                      <Tag
-                        color={getStatusColor(program.status)}
+                      <div
                         style={{
-                          fontSize: 13,
-                          padding: "4px 10px",
-                          borderRadius: 16,
-                          fontWeight: 500,
-                          textTransform: "capitalize",
-                          color: "#333",
-                          marginTop: 4,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
                         }}
                       >
-                        {getStatusText(program.status)}
-                      </Tag>
-                    </div>
+                        <div>
+                          <div style={{ marginBottom: 6 }}>
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                fontSize: 14,
+                                color: "#000",
+                              }}
+                            >
+                              Chương trình:
+                            </span>{" "}
+                            <span
+                              style={{
+                                fontWeight: 800,
+                                fontSize: 25,
+                                color: "#333",
+                              }}
+                            >
+                              {program.healthCheckName}
+                            </span>
+                          </div>
 
-                    <Row gutter={32} style={{ margin: "24px 0" }}>
-                      <Col span={12}>
-                        <div
-                          style={{
-                            background: "#fff",
-                            borderRadius: 8,
-                            padding: 16,
-                            textAlign: "center",
-                          }}
-                        >
+                          <div style={{ color: "#555", marginBottom: 2 }}>
+                            <span style={{ fontWeight: 600, color: "#000" }}>
+                              Ngày thực hiện:
+                            </span>{" "}
+                            <span style={{ color: "#1890ff", fontWeight: 600 }}>
+                              {dayjs(program.startDate).format("DD/MM/YYYY")}
+                            </span>
+                          </div>
+
+                          <div style={{ color: "#555", marginBottom: 2 }}>
+                            <span style={{ fontWeight: 600, color: "#000" }}>
+                              Ngày gửi thông báo cho phụ huynh:
+                            </span>{" "}
+                            <span style={{ color: "#4CAF50", fontWeight: 600 }}>
+                              {dayjs(program.dateSendForm).format("DD/MM/YYYY")}
+                            </span>
+                          </div>
+
+                          <div style={{ color: "#555", marginBottom: 2 }}>
+                            <span style={{ fontWeight: 600, color: "#000" }}>
+                              Ngày hết hạn đăng ký:
+                            </span>{" "}
+                            <span style={{ color: "#f57c00", fontWeight: 600 }}>
+                              {dayjs(program.registerDeadline).format(
+                                "DD/MM/YYYY"
+                              )}
+                            </span>
+                          </div>
+
+                          <div style={{ color: "#555", marginBottom: 2 }}>
+                            <span style={{ fontWeight: 600, color: "#000" }}>
+                              Địa điểm:
+                            </span>{" "}
+                            <span style={{ color: "#d32f2f", fontWeight: 600 }}>
+                              {program.location}
+                            </span>
+                          </div>
+
                           <div
                             style={{
-                              color: "#1890ff",
-                              fontWeight: 700,
-                              fontSize: 32,
+                              color: "#000",
+                              fontWeight: 600,
+                              marginTop: 8,
                             }}
                           >
-                            {program.healthCheckFormDTOs?.length ?? 0}
-                          </div>
-                          <div style={{ color: "#888", fontWeight: 500 }}>
-                            Tổng học sinh dự kiến tham gia
+                            <span style={{ fontWeight: 600, color: "#000" }}>
+                              Người phụ trách:
+                            </span>{" "}
+                            <a
+                              href="#"
+                              style={{ color: "#1976d2", fontWeight: 500 }}
+                            >
+                              {program.nurseDTO?.fullName}
+                            </a>{" "}
+                            |{" "}
+                            <span style={{ fontWeight: 600, color: "#000" }}>
+                              SĐT:
+                            </span>{" "}
+                            <a
+                              href={`tel:${program.nurseDTO?.phoneNumber}`}
+                              style={{ color: "#1976d2", fontWeight: 500 }}
+                            >
+                              {program.nurseDTO?.phoneNumber}
+                            </a>{" "}
+                            |{" "}
+                            <span style={{ fontWeight: 600, color: "#000" }}>
+                              Email:
+                            </span>{" "}
+                            <a
+                              href={`mailto:${program.nurseDTO?.email}`}
+                              style={{ color: "#1976d2", fontWeight: 500 }}
+                            >
+                              {program.nurseDTO?.email}
+                            </a>
                           </div>
                         </div>
-                      </Col>
-                      <Col span={12}>
-                        <div
+
+                        <Tag
+                          color={getStatusColor(program.status)}
                           style={{
-                            background: "#fff",
-                            borderRadius: 8,
-                            padding: 16,
-                            textAlign: "center",
+                            fontSize: 13,
+                            padding: "4px 10px",
+                            borderRadius: 16,
+                            fontWeight: 500,
+                            textTransform: "capitalize",
+                            color: "#333",
+                            marginTop: 4,
                           }}
                         >
-                          <div
-                            style={{
-                              color: "#21ba45",
-                              fontWeight: 700,
-                              fontSize: 32,
-                            }}
-                          >
-                            {program.healthCheckFormDTOs?.filter(
-                              (f) => f.commit
-                            )?.length ?? 0}
-                          </div>
-                          <div style={{ color: "#888", fontWeight: 500 }}>
-                            Đã xác nhận tham gia
-                          </div>
-                        </div>
-                      </Col>
-                    </Row>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <div>
-                        <Button
-                          style={{ marginRight: 8 }}
-                          onClick={() => {
-                            const freshProgram = programs.find(
-                              (p) => p.id === program.id
-                            );
-                            setProgram(freshProgram || program);
-                            setDetailVisible(true);
-                          }}
-                        >
-                          Xem chi tiết
-                        </Button>
-
-                        {program.status === "NOT_STARTED" &&
-                        userRole === "ADMIN" ? (
-                          <Button
-                            type="primary"
-                            style={{ background: "#21ba45", border: "none" }}
-                            onClick={async () => {
-                              const confirm = await Swal.fire({
-                                title: "Xác nhận bắt đầu chương trình?",
-                                text: "Sau khi bắt đầu, chương trình sẽ chuyển sang trạng thái 'Đang diễn ra'.",
-                                icon: "question",
-                                showCancelButton: true,
-                                confirmButtonColor: "#1890ff",
-                                cancelButtonColor: "#aaa",
-                                confirmButtonText: "Bắt đầu",
-                                cancelButtonText: "Hủy",
-                              });
-
-                              if (!confirm.isConfirmed) return;
-
-                              const token = localStorage.getItem("token");
-                              try {
-                                await axios.patch(
-                                  `http://localhost:8080/api/admin/health-check-program/${program.id}?status=ON_GOING`,
-                                  {},
-                                  {
-                                    headers: {
-                                      Authorization: `Bearer ${token}`,
-                                    },
-                                  }
-                                );
-                                await Swal.fire({
-                                  icon: "success",
-                                  title: "Thành công!",
-                                  text: "Chương trình đã được bắt đầu.",
-                                  showConfirmButton: false,
-                                  timer: 1500,
-                                });
-                                fetchProgram();
-                              } catch (error) {
-                                await Swal.fire({
-                                  icon: "error",
-                                  title: "Thất bại!",
-                                  text: "Không thể bắt đầu chương trình!",
-                                  confirmButtonColor: "#3085d6",
-                                });
-                              }
-                            }}
-                          >
-                            Bắt đầu chương trình
-                          </Button>
-                        ) : program.status === "ON_GOING" &&
-                          userRole === "NURSE" ? (
-                          <Button
-                            style={{
-                              marginLeft: 8,
-                              background: "#faad14",
-                              color: "#fff",
-                              border: "none",
-                            }}
-                            onClick={() => handleSendNotification(program.id)}
-                          >
-                            Gửi thông báo
-                          </Button>
-                        ) : program.status === "FORM_SENT" &&
-                          userRole === "NURSE" ? (
-                          <Button
-                            style={{
-                              marginLeft: 8,
-                              background: "#13c2c2",
-                              color: "#fff",
-                              border: "none",
-                            }}
-                            onClick={() => handleCreateResult(program.id)}
-                          >
-                            Tạo kết quả
-                          </Button>
-                        ) : program.status === "GENERATED_RESULT" &&
-                          (userRole === "ADMIN" || userRole === "NURSE") ? (
-                          <>
-                            {userRole === "NURSE" && (
-                              <Button
-                                style={{
-                                  marginLeft: 8,
-                                  background: "#ff7a45",
-                                  color: "#fff",
-                                  border: "none",
-                                }}
-                                onClick={() => handleEditResult(program.id)}
-                              >
-                                Chỉnh sửa kết quả
-                              </Button>
-                            )}
-
-                            <Button
-                              type="primary"
-                              style={{
-                                marginLeft: 8,
-                                background: "#722ed1",
-                                border: "none",
-                              }}
-                              onClick={() => handleViewResult(program.id)}
-                            >
-                              Xem kết quả
-                            </Button>
-
-                            {userRole === "ADMIN" && (
-                              <Button
-                                style={{
-                                  marginLeft: 8,
-                                  background: "#52c41a",
-                                  color: "#fff",
-                                  border: "none",
-                                }}
-                                onClick={async () => {
-                                  const confirm = await Swal.fire({
-                                    title: "Xác nhận hoàn thành chương trình?",
-                                    text: "Bạn chắc chắn muốn chuyển sang trạng thái 'Đã hoàn thành'?",
-                                    icon: "question",
-                                    showCancelButton: true,
-                                    confirmButtonColor: "#4caf50",
-                                    cancelButtonColor: "#aaa",
-                                    confirmButtonText: "Hoàn thành",
-                                    cancelButtonText: "Hủy",
-                                  });
-
-                                  if (!confirm.isConfirmed) return;
-
-                                  const token = localStorage.getItem("token");
-                                  try {
-                                    await axios.patch(
-                                      `http://localhost:8080/api/admin/health-check-program/${program.id}?status=COMPLETED`,
-                                      {},
-                                      {
-                                        headers: {
-                                          Authorization: `Bearer ${token}`,
-                                        },
-                                      }
-                                    );
-
-                                    await Swal.fire({
-                                      icon: "success",
-                                      title: "Thành công!",
-                                      text: "Chương trình đã chuyển sang trạng thái hoàn thành.",
-                                      showConfirmButton: false,
-                                      timer: 1500,
-                                    });
-
-                                    fetchProgram(); // Cập nhật lại UI
-                                  } catch (error) {
-                                    Swal.fire({
-                                      icon: "error",
-                                      title: "Lỗi!",
-                                      text: "Không thể hoàn thành chương trình.",
-                                    });
-                                  }
-                                }}
-                              >
-                                Hoàn thành chương trình
-                              </Button>
-                            )}
-                          </>
-                        ) : program.status === "COMPLETED" ? (
-                          <>
-                            <Button
-                              type="primary"
-                              style={{
-                                marginLeft: 8,
-                                background: "#722ed1",
-                                border: "none",
-                              }}
-                              onClick={() => handleViewResult(program.id)}
-                            >
-                              Xem kết quả
-                            </Button>
-
-                            {userRole === "ADMIN" && (
-                              <Button
-                                style={{
-                                  marginLeft: 8,
-                                  background: "#2f54eb",
-                                  color: "#fff",
-                                  border: "none",
-                                }}
-                                onClick={() => handleExportExcel(program.id)}
-                              >
-                                Xuất Excel
-                              </Button>
-                            )}
-                          </>
-                        ) : null}
+                          {getStatusText(program.status)}
+                        </Tag>
                       </div>
-                      {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
-                      {userRole === "ADMIN" &&
-                        program.status === "NOT_STARTED" && (
+
+                      <Row gutter={32} style={{ margin: "24px 0" }}>
+                        <Col span={12}>
                           <div
                             style={{
-                              display: "flex",
-                              gap: 8,
-                              marginLeft: "auto",
+                              background: "#fff",
+                              borderRadius: 8,
+                              padding: 16,
+                              textAlign: "center",
                             }}
                           >
-                            <Button
-                              type="default"
-                              onClick={() => {
-                                setProgram(program);
-                                setEditMode(true);
-                                setCreateVisible(true);
+                            <div
+                              style={{
+                                color: "#1890ff",
+                                fontWeight: 700,
+                                fontSize: 32,
                               }}
                             >
-                              Sửa
-                            </Button>
-                            <Button
-                              danger
-                              type="primary"
-                              onClick={() => handleDelete(program.id)}
-                            >
-                              Xóa
-                            </Button>
+                              {program.healthCheckFormDTOs?.length ?? 0}
+                            </div>
+                            <div style={{ color: "#888", fontWeight: 500 }}>
+                              Tổng học sinh dự kiến tham gia
+                            </div>
                           </div>
-                        )}
-                    </div>
-                  </Card>
-                ))}
+                        </Col>
+                        <Col span={12}>
+                          <div
+                            style={{
+                              background: "#fff",
+                              borderRadius: 8,
+                              padding: 16,
+                              textAlign: "center",
+                            }}
+                          >
+                            <div
+                              style={{
+                                color: "#21ba45",
+                                fontWeight: 700,
+                                fontSize: 32,
+                              }}
+                            >
+                              {program.healthCheckFormDTOs?.filter(
+                                (f) => f.commit
+                              )?.length ?? 0}
+                            </div>
+                            <div style={{ color: "#888", fontWeight: 500 }}>
+                              Đã xác nhận tham gia
+                            </div>
+                          </div>
+                        </Col>
+                      </Row>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div>
+                          <Button
+                            style={{ marginRight: 8 }}
+                            onClick={() => {
+                              const freshProgram = programs.find(
+                                (p) => p.id === program.id
+                              );
+                              setProgram(freshProgram || program);
+                              setDetailVisible(true);
+                            }}
+                          >
+                            Xem chi tiết
+                          </Button>
+
+                          {program.status === "NOT_STARTED" &&
+                          userRole === "ADMIN" ? (
+                            <Button
+                              type="primary"
+                              style={{ background: "#21ba45", border: "none" }}
+                              onClick={async () => {
+                                const confirm = await Swal.fire({
+                                  title: "Xác nhận bắt đầu chương trình?",
+                                  text: "Sau khi bắt đầu, chương trình sẽ chuyển sang trạng thái 'Đang diễn ra'.",
+                                  icon: "question",
+                                  showCancelButton: true,
+                                  confirmButtonColor: "#1890ff",
+                                  cancelButtonColor: "#aaa",
+                                  confirmButtonText: "Bắt đầu",
+                                  cancelButtonText: "Hủy",
+                                });
+
+                                if (!confirm.isConfirmed) return;
+
+                                const token = localStorage.getItem("token");
+                                try {
+                                  await axios.patch(
+                                    `http://localhost:8080/api/admin/health-check-program/${program.id}?status=ON_GOING`,
+                                    {},
+                                    {
+                                      headers: {
+                                        Authorization: `Bearer ${token}`,
+                                      },
+                                    }
+                                  );
+                                  await Swal.fire({
+                                    icon: "success",
+                                    title: "Thành công!",
+                                    text: "Chương trình đã được bắt đầu.",
+                                    showConfirmButton: false,
+                                    timer: 1500,
+                                  });
+                                  fetchProgram();
+                                } catch (error) {
+                                  await Swal.fire({
+                                    icon: "error",
+                                    title: "Thất bại!",
+                                    text: "Không thể bắt đầu chương trình!",
+                                    confirmButtonColor: "#3085d6",
+                                  });
+                                }
+                              }}
+                            >
+                              Bắt đầu chương trình
+                            </Button>
+                          ) : program.status === "ON_GOING" &&
+                            userRole === "NURSE" ? (
+                            <Button
+                              style={{
+                                marginLeft: 8,
+                                background: "#faad14",
+                                color: "#fff",
+                                border: "none",
+                              }}
+                              onClick={() => handleSendNotification(program.id)}
+                            >
+                              Gửi thông báo
+                            </Button>
+                          ) : program.status === "FORM_SENT" &&
+                            userRole === "NURSE" ? (
+                            <Button
+                              style={{
+                                marginLeft: 8,
+                                background: "#13c2c2",
+                                color: "#fff",
+                                border: "none",
+                              }}
+                              onClick={() => handleCreateResult(program.id)}
+                            >
+                              Tạo kết quả
+                            </Button>
+                          ) : program.status === "GENERATED_RESULT" &&
+                            (userRole === "ADMIN" || userRole === "NURSE") ? (
+                            <>
+                              {userRole === "NURSE" && (
+                                <Button
+                                  style={{
+                                    marginLeft: 8,
+                                    background: "#ff7a45",
+                                    color: "#fff",
+                                    border: "none",
+                                  }}
+                                  onClick={() => handleEditResult(program.id)}
+                                >
+                                  Chỉnh sửa kết quả
+                                </Button>
+                              )}
+
+                              <Button
+                                type="primary"
+                                style={{
+                                  marginLeft: 8,
+                                  background: "#722ed1",
+                                  border: "none",
+                                }}
+                                onClick={() => handleViewResult(program.id)}
+                              >
+                                Xem kết quả
+                              </Button>
+
+                              {userRole === "ADMIN" && (
+                                <Button
+                                  style={{
+                                    marginLeft: 8,
+                                    background: "#52c41a",
+                                    color: "#fff",
+                                    border: "none",
+                                  }}
+                                  onClick={async () => {
+                                    const confirm = await Swal.fire({
+                                      title:
+                                        "Xác nhận hoàn thành chương trình?",
+                                      text: "Bạn chắc chắn muốn chuyển sang trạng thái 'Đã hoàn thành'?",
+                                      icon: "question",
+                                      showCancelButton: true,
+                                      confirmButtonColor: "#4caf50",
+                                      cancelButtonColor: "#aaa",
+                                      confirmButtonText: "Hoàn thành",
+                                      cancelButtonText: "Hủy",
+                                    });
+
+                                    if (!confirm.isConfirmed) return;
+
+                                    const token = localStorage.getItem("token");
+                                    try {
+                                      await axios.patch(
+                                        `http://localhost:8080/api/admin/health-check-program/${program.id}?status=COMPLETED`,
+                                        {},
+                                        {
+                                          headers: {
+                                            Authorization: `Bearer ${token}`,
+                                          },
+                                        }
+                                      );
+
+                                      await Swal.fire({
+                                        icon: "success",
+                                        title: "Thành công!",
+                                        text: "Chương trình đã chuyển sang trạng thái hoàn thành.",
+                                        showConfirmButton: false,
+                                        timer: 1500,
+                                      });
+
+                                      fetchProgram(); // Cập nhật lại UI
+                                    } catch (error) {
+                                      Swal.fire({
+                                        icon: "error",
+                                        title: "Lỗi!",
+                                        text: "Không thể hoàn thành chương trình.",
+                                      });
+                                    }
+                                  }}
+                                >
+                                  Hoàn thành chương trình
+                                </Button>
+                              )}
+                            </>
+                          ) : program.status === "COMPLETED" ? (
+                            <>
+                              <Button
+                                type="primary"
+                                style={{
+                                  marginLeft: 8,
+                                  background: "#722ed1",
+                                  border: "none",
+                                }}
+                                onClick={() => handleViewResult(program.id)}
+                              >
+                                Xem kết quả
+                              </Button>
+
+                              {userRole === "ADMIN" && (
+                                <Button
+                                  style={{
+                                    marginLeft: 8,
+                                    background: "#2f54eb",
+                                    color: "#fff",
+                                    border: "none",
+                                  }}
+                                  onClick={() => handleExportExcel(program.id)}
+                                >
+                                  Xuất Excel
+                                </Button>
+                              )}
+                            </>
+                          ) : null}
+                        </div>
+                        {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
+                        {userRole === "ADMIN" &&
+                          program.status === "NOT_STARTED" && (
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: 8,
+                                marginLeft: "auto",
+                              }}
+                            >
+                              <Button
+                                type="default"
+                                onClick={() => {
+                                  setProgram(program);
+                                  setEditMode(true);
+                                  setCreateVisible(true);
+                                }}
+                              >
+                                Sửa
+                              </Button>
+                              <Button
+                                danger
+                                type="primary"
+                                onClick={() => handleDelete(program.id)}
+                              >
+                                Xóa
+                              </Button>
+                            </div>
+                          )}
+                      </div>
+                    </Card>
+                  ))
+                )}
                 <div style={{ marginTop: 24, textAlign: "center" }}>
                   <Pagination
                     current={currentPage}
