@@ -21,6 +21,8 @@ import { CheckSquareTwoTone, BorderOutlined } from "@ant-design/icons";
 import { Select } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+
 import Swal from "sweetalert2";
 import HealthCheckProgramModal from "./HealthCheckProgramModal";
 
@@ -31,16 +33,17 @@ const HealthCheckProgramList = () => {
   const [loading, setLoading] = useState(false);
   const [program, setProgram] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterDate, setFilterDate] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
   const [resultVisible, setResultVisible] = useState(false);
   const [resultData, setResultData] = useState([]);
   const [resultLoading, setResultLoading] = useState(false);
+  const { RangePicker } = DatePicker;
   const [currentPage, setCurrentPage] = useState(1);
   const [studentsForResult, setStudentsForResult] = useState([]);
   const [createResultVisible, setCreateResultVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("program");
+  const [dateRange, setDateRange] = useState(null);
   const [healthCheckResults, setHealthCheckResults] = useState([]);
   const [healthCheckResultsLoading, setHealthCheckResultsLoading] =
     useState(false);
@@ -59,6 +62,7 @@ const HealthCheckProgramList = () => {
   const [currentEditRecord, setCurrentEditRecord] = useState(null);
 
   const [committedForms, setCommittedForms] = useState([]);
+  const [filterDateRange, setFilterDateRange] = useState(null);
 
   useEffect(() => {
     fetchProgram();
@@ -441,16 +445,25 @@ const HealthCheckProgramList = () => {
       }
     }
   };
-
+dayjs.extend(isBetween);
   // Lọc danh sách theo tên chương trình và ngày tiêm
   const filteredPrograms = programs.filter((program) => {
     const matchName = program.healthCheckName
       ?.toLowerCase()
       .includes(searchTerm.toLowerCase());
-    const matchDate = filterDate
-      ? dayjs(program.startDate).isSame(filterDate, "day")
-      : true;
+
+    const matchDate =
+      filterDateRange?.[0] && filterDateRange?.[1]
+        ? dayjs(program.startDate).isBetween(
+            filterDateRange[0],
+            filterDateRange[1],
+            "day",
+            "[]"
+          )
+        : true;
+
     const matchStatus = filterStatus ? program.status === filterStatus : true;
+
     return matchName && matchDate && matchStatus;
   });
 
@@ -602,7 +615,7 @@ const HealthCheckProgramList = () => {
                   }}
                 >
                   <h2 style={{ margin: 0 }}>
-                    <span style={{ color: "#52c41a", marginRight: 8 }}>🛡️</span>
+                    <span style={{ color: "#52c41a", marginRight: 8 }}>🩺</span>
                     Quản Lý Chương Trình Khám Định Kỳ
                   </h2>
                   <div style={{ display: "flex", gap: 12 }}>
@@ -614,13 +627,12 @@ const HealthCheckProgramList = () => {
                       allowClear
                       style={{ width: 220, background: "#fff" }}
                     />
-                    <DatePicker
-                      placeholder="Lọc theo ngày khám"
-                      value={filterDate}
-                      onChange={setFilterDate}
+                    <DatePicker.RangePicker
+                      value={filterDateRange}
+                      onChange={setFilterDateRange}
                       allowClear
-                      style={{ width: 170 }}
                       format="YYYY-MM-DD"
+                      style={{ width: 300 }}
                     />
                     <Select
                       placeholder="Lọc theo trạng thái"
@@ -670,35 +682,120 @@ const HealthCheckProgramList = () => {
                       }}
                     >
                       <div>
+                        <div style={{ marginBottom: 6 }}>
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              fontSize: 14,
+                              color: "#000",
+                            }}
+                          >
+                            Chương trình:
+                          </span>{" "}
+                          <span
+                            style={{
+                              fontWeight: 800,
+                              fontSize: 25,
+                              color: "#333",
+                            }}
+                          >
+                            {program.healthCheckName}
+                          </span>
+                        </div>
+
+                        <div style={{ color: "#555", marginBottom: 2 }}>
+                          <span style={{ fontWeight: 600, color: "#000" }}>
+                            Ngày thực hiện:
+                          </span>{" "}
+                          <span style={{ color: "#1890ff", fontWeight: 600 }}>
+                            {dayjs(program.startDate).format("DD/MM/YYYY")}
+                          </span>
+                        </div>
+
+                        <div style={{ color: "#555", marginBottom: 2 }}>
+                          <span style={{ fontWeight: 600, color: "#000" }}>
+                            Ngày gửi thông báo cho phụ huynh:
+                          </span>{" "}
+                          <span style={{ color: "#4CAF50", fontWeight: 600 }}>
+                            {dayjs(program.dateSendForm).format("DD/MM/YYYY")}
+                          </span>
+                        </div>
+
+                        <div style={{ color: "#555", marginBottom: 2 }}>
+                          <span style={{ fontWeight: 600, color: "#000" }}>
+                            Ngày hết hạn đăng ký:
+                          </span>{" "}
+                          <span style={{ color: "#f57c00", fontWeight: 600 }}>
+                            {dayjs(program.registerDeadline).format(
+                              "DD/MM/YYYY"
+                            )}
+                          </span>
+                        </div>
+
+                        <div style={{ color: "#555", marginBottom: 2 }}>
+                          <span style={{ fontWeight: 600, color: "#000" }}>
+                            Địa điểm:
+                          </span>{" "}
+                          <span style={{ color: "#d32f2f", fontWeight: 600 }}>
+                            {program.location}
+                          </span>
+                        </div>
+
                         <div
                           style={{
-                            fontWeight: 700,
-                            fontSize: 18,
-                            marginBottom: 4,
+                            color: "#000",
+                            fontWeight: 600,
+                            marginTop: 8,
                           }}
                         >
-                          {program.healthCheckName}
-                        </div>
-                        <div style={{ color: "#555", marginBottom: 2 }}>
-                          Ngày bắt đầu: {program.startDate}
-                        </div>
-                        <div style={{ color: "#555", marginBottom: 2 }}>
-                          Ngày gửi biểu mẫu: {program.dateSendForm}
-                        </div>
-                        <div style={{ color: "#555", marginBottom: 2 }}>
-                          Địa điểm: {program.location}
-                        </div>
-                        <div style={{ color: "#555", marginBottom: 2 }}>
-                          Y tá phụ trách: {program.nurseDTO?.fullName}
+                          <span style={{ fontWeight: 600, color: "#000" }}>
+                            Người phụ trách:
+                          </span>{" "}
+                          <a
+                            href="#"
+                            style={{ color: "#1976d2", fontWeight: 500 }}
+                          >
+                            {program.nurseDTO?.fullName}
+                          </a>{" "}
+                          |{" "}
+                          <span style={{ fontWeight: 600, color: "#000" }}>
+                            SĐT:
+                          </span>{" "}
+                          <a
+                            href={`tel:${program.nurseDTO?.phoneNumber}`}
+                            style={{ color: "#1976d2", fontWeight: 500 }}
+                          >
+                            {program.nurseDTO?.phoneNumber}
+                          </a>{" "}
+                          |{" "}
+                          <span style={{ fontWeight: 600, color: "#000" }}>
+                            Email:
+                          </span>{" "}
+                          <a
+                            href={`mailto:${program.nurseDTO?.email}`}
+                            style={{ color: "#1976d2", fontWeight: 500 }}
+                          >
+                            {program.nurseDTO?.email}
+                          </a>
                         </div>
                       </div>
+
                       <Tag
                         color={getStatusColor(program.status)}
-                        style={{ fontSize: 14, marginTop: 4 }}
+                        style={{
+                          fontSize: 13,
+                          padding: "4px 10px",
+                          borderRadius: 16,
+                          fontWeight: 500,
+                          textTransform: "capitalize",
+                          color: "#333",
+                          marginTop: 4,
+                        }}
                       >
                         {getStatusText(program.status)}
                       </Tag>
                     </div>
+
                     <Row gutter={32} style={{ margin: "24px 0" }}>
                       <Col span={12}>
                         <div
@@ -1006,6 +1103,7 @@ const HealthCheckProgramList = () => {
                   title="Chi tiết chương trình khám sức khỏe"
                   open={detailVisible}
                   onCancel={() => setDetailVisible(false)}
+                  width={650}
                   footer={[
                     <Button key="close" onClick={() => setDetailVisible(false)}>
                       Đóng
@@ -1013,47 +1111,94 @@ const HealthCheckProgramList = () => {
                   ]}
                 >
                   {program && (
-                    <Descriptions column={1} bordered size="small">
+                    <Descriptions
+                      column={1}
+                      bordered
+                      size="middle"
+                      labelStyle={{ fontWeight: 600, minWidth: 140 }}
+                      contentStyle={{ color: "#333" }}
+                    >
                       <Descriptions.Item label="ID">
                         {program.id}
                       </Descriptions.Item>
+
                       <Descriptions.Item label="Tên chương trình">
-                        {program.healthCheckName}
+                        <span style={{ fontWeight: 700 }}>
+                          {program.healthCheckName}
+                        </span>
                       </Descriptions.Item>
+
                       <Descriptions.Item label="Mô tả">
-                        {program.description}
+                        {program.description || "-"}
                       </Descriptions.Item>
+
                       <Descriptions.Item label="Ngày bắt đầu">
-                        {program.startDate}
+                        {program.startDate
+                          ? dayjs(program.startDate).format("DD/MM/YYYY")
+                          : "-"}
                       </Descriptions.Item>
+
                       <Descriptions.Item label="Ngày gửi biểu mẫu">
-                        {program.dateSendForm}
+                        {program.dateSendForm
+                          ? dayjs(program.dateSendForm).format("DD/MM/YYYY")
+                          : "-"}
                       </Descriptions.Item>
+
+                      <Descriptions.Item label="Ngày hết hạn đăng ký">
+                        {program.dateSendForm
+                          ? dayjs(program.expDate).format("DD/MM/YYYY")
+                          : "-"}
+                      </Descriptions.Item>
+
                       <Descriptions.Item label="Địa điểm">
-                        {program.location}
+                        {program.location || "-"}
                       </Descriptions.Item>
 
                       <Descriptions.Item label="Trạng thái">
                         <Tag
                           color={getStatusColor(program.status)}
-                          style={{ fontSize: 14 }}
+                          style={{ fontSize: 14, fontWeight: 500 }}
                         >
                           {getStatusText(program.status)}
                         </Tag>
                       </Descriptions.Item>
+
                       <Descriptions.Item label="Y tá phụ trách">
-                        {program.nurseDTO?.fullName} (ID: {program.nurseDTO?.id}
-                        )
+                        {program.nurseDTO ? (
+                          <div>
+                            <div style={{ fontWeight: 600 }}>
+                              {program.nurseDTO.fullName} (ID:{" "}
+                              {program.nurseDTO.id})
+                            </div>
+                            <div style={{ color: "#555" }}>
+                              📞 {program.nurseDTO.phone}
+                            </div>
+                            <div style={{ color: "#555" }}>
+                              ✉️ {program.nurseDTO.email}
+                            </div>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
                       </Descriptions.Item>
+
                       <Descriptions.Item label="Admin tạo">
-                        {program.adminDTO?.fullName} (ID: {program.adminDTO?.id}
-                        )
+                        {program.adminDTO
+                          ? `${program.adminDTO.fullName} (ID: ${program.adminDTO.id})`
+                          : "-"}
                       </Descriptions.Item>
+
                       <Descriptions.Item label="Lớp tham gia">
                         {program.participateClasses &&
                         program.participateClasses.length > 0
                           ? program.participateClasses
-                              .map((p) => p.classDTO?.className || "")
+                              .map((p) => {
+                                const className = p.classDTO?.className || "";
+                                const teacher = p.classDTO?.teacherName || "";
+                                return teacher
+                                  ? `${className} (GV: ${teacher})`
+                                  : className;
+                              })
                               .filter(Boolean)
                               .join(", ")
                           : "-"}
@@ -1061,6 +1206,7 @@ const HealthCheckProgramList = () => {
                     </Descriptions>
                   )}
                 </Modal>
+
                 <HealthCheckProgramModal
                   open={createVisible}
                   onCancel={() => {
@@ -1700,7 +1846,6 @@ const HealthCheckProgramList = () => {
                   />
                 </Form.Item>
               </Col>
-              
 
               <Col span={24}>
                 <Form.Item label="Ghi chú">
