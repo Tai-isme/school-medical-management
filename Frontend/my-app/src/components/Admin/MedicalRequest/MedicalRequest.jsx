@@ -10,6 +10,8 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
+import CreateMedicalRequestModal from "./CreateMedicalRequestModal";
+
 const tabStatus = [
   { key: "PROCESSING", label: "Chờ duyệt" },
   { key: "CONFIRMED", label: "Đã duyệt" },
@@ -41,6 +43,7 @@ const MedicalRequest = () => {
   const [rejectDetailData, setRejectDetailData] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [rejectLoading, setRejectLoading] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const [isRejectMode, setIsRejectMode] = useState(false);
   const [isGiveMedicineMode, setIsGiveMedicineMode] = useState(false);
@@ -282,7 +285,7 @@ const handleReject = (record) => {
       title: "Hành động",
       key: "actions",
       align: "center",
-      width: 120,
+      width: 150,
       render: (_, record) => {
         const nurseId = (() => {
           try {
@@ -549,14 +552,11 @@ const handleReject = (record) => {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h2 style={{ margin: 0 }}>Quản lý đơn thuốc</h2>
           <Button
-            type="primary"
-            onClick={() => {
-              // TODO: Thay bằng navigation hoặc mở modal tạo đơn thuốc tùy theo thiết kế của bạn
-              message.info("Chức năng tạo đơn thuốc!");
-            }}
-          >
-            Tạo đơn thuốc
-          </Button>
+  type="primary"
+  onClick={() => setCreateModalOpen(true)}
+>
+  Tạo đơn thuốc
+</Button>
         </div>
         {/* 3 ô lọc */}
         <div style={{ marginBottom: 16, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
@@ -680,6 +680,17 @@ const handleReject = (record) => {
     setIsGiveMedicineMode(false);
     fetchRequests(activeTab); // fetch lại dữ liệu sau khi ghi nhận
   }}
+/>
+<CreateMedicalRequestModal
+  open={createModalOpen}
+  onCancel={() => setCreateModalOpen(false)}
+  onSubmit={async (data) => {
+    message.success("Đã gửi đơn thuốc!");
+    setCreateModalOpen(false);
+    // Không cần fetchRequests ở đây nếu đã fetch khi đổi tab
+  }}
+  // activeTab={activeTab} // <-- Giá trị tab hiện tại
+  onChangeTab={setActiveTab} // <-- Hàm đổi tab
 />
       </div>
     </div>
