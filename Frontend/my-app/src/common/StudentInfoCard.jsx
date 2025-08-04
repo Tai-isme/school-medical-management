@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Select, Typography, Avatar, Button, message } from "antd";
 import axios from "axios";
+import dayjs from "dayjs";
 const { Title, Text } = Typography;
 
 export default function StudentInfoCard({ onChange }) {
@@ -23,7 +24,9 @@ export default function StudentInfoCard({ onChange }) {
     setSelectedFile(null);
   }, [selectedStudentId, onChange]);
 
-  const selectedStudent = students.find(s => s.studentId === selectedStudentId);
+  const selectedStudent = students.find(
+    (s) => s.studentId === selectedStudentId
+  );
 
   // Khi chọn file, chỉ tạo preview
   const handleAvatarSelect = (e) => {
@@ -51,7 +54,7 @@ export default function StudentInfoCard({ onChange }) {
           },
         }
       );
-      const newStudents = students.map(s =>
+      const newStudents = students.map((s) =>
         s.studentId === selectedStudentId ? { ...s, avatar: res.data } : s
       );
       setStudents(newStudents);
@@ -79,18 +82,20 @@ export default function StudentInfoCard({ onChange }) {
         minHeight: 520,
         height: "100%",
         boxSizing: "border-box",
-        justifyContent: "center"
+        justifyContent: "center",
       }}
     >
-      
-      <Title level={3} style={{ color: "#8ab4e6", marginBottom: 24 }}>Học sinh</Title>
+      <Title level={3} style={{ color: "#1677ff", marginBottom: 24 }}>
+        Học sinh
+      </Title>
+
       <Select
         style={{ width: "100%", marginBottom: 32 }}
         value={selectedStudentId}
         onChange={setSelectedStudentId}
-        options={students.map(s => ({
+        options={students.map((s) => ({
           value: s.studentId,
-          label: s.fullName || s.name || s.studentId
+          label: s.fullName || s.name || s.studentId,
         }))}
         placeholder="Chọn học sinh"
         size="large"
@@ -98,7 +103,11 @@ export default function StudentInfoCard({ onChange }) {
       <div className="rgb-avatar-border" style={{ marginBottom: 16 }}>
         <Avatar
           size={200}
-          src={previewAvatar || selectedStudent?.avatar || "https://res.cloudinary.com/duzh5dnul/image/upload/v1750673843/6473ad42-3f20-4708-9bcf-76dff5d30ab2_avt2.jpg"}
+          src={
+            previewAvatar ||
+            selectedStudent?.avatar ||
+            "https://res.cloudinary.com/duzh5dnul/image/upload/v1750673843/6473ad42-3f20-4708-9bcf-76dff5d30ab2_avt2.jpg"
+          }
         />
       </div>
       <input
@@ -108,31 +117,39 @@ export default function StudentInfoCard({ onChange }) {
         style={{ display: "none" }}
         onChange={handleAvatarSelect}
       />
-      
-      <Text strong style={{ fontSize: 20, marginBottom: 8 }}>
-        {selectedStudent?.fullName || selectedStudent?.name || "--"}
-      </Text>
-      <Text style={{ fontSize: 16, marginBottom: 8 }}>
-        Mã học sinh: {selectedStudent?.studentId || "--"}
-      </Text>
-      <Text type="secondary" style={{ fontSize: 16, marginBottom: 8 }}>
-        Ngày sinh: {
-          selectedStudent?.dob
-            ? `${selectedStudent.dob} (${new Date().getFullYear() - new Date(selectedStudent.dob).getFullYear()} tuổi)`
-            : "--"
-        }
-      </Text>
-      <Text type="secondary" style={{ fontSize: 16, marginBottom: 8 }}>
-        Lớp: {selectedStudent?.classDTO.className || selectedStudent?.classDTO.className || "--"}
-      </Text>
-      
-      <Text type="secondary" style={{ fontSize: 16 }}>
-        Giới tính: {
-          selectedStudent?.gender === "MALE" ? "Nam"
-          : selectedStudent?.gender === "FEMALE" ? "Nữ"
-          : "--"
-        }
-      </Text>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <Text strong style={{ fontSize: 20, color: "#1C1C1E" }}>
+          {selectedStudent?.fullName || selectedStudent?.name || "--"}
+        </Text>
+
+        <Text style={{ fontSize: 16 }}>
+          🎓 <strong>Mã học sinh:</strong> {selectedStudent?.studentId || "--"}
+        </Text>
+
+        <Text style={{ fontSize: 16 }}>
+          🗓️ <strong>Ngày sinh:</strong>{" "}
+          {selectedStudent?.dob
+            ? `${dayjs(selectedStudent.dob).format(
+                "DD/MM/YYYY"
+              )} (${dayjs().diff(dayjs(selectedStudent.dob), "year")} tuổi)`
+            : "--"}
+        </Text>
+
+        <Text style={{ fontSize: 16 }}>
+          🏫 <strong>Lớp:</strong>{" "}
+          {selectedStudent?.classDTO?.className || "--"}
+        </Text>
+
+        <Text style={{ fontSize: 16 }}>
+          🚻 <strong>Giới tính:</strong>{" "}
+          {selectedStudent?.gender === "MALE"
+            ? "Nam"
+            : selectedStudent?.gender === "FEMALE"
+            ? "Nữ"
+            : "--"}
+        </Text>
+      </div>
     </div>
   );
 }

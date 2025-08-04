@@ -90,7 +90,7 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => (
                 <div
                   style={{ color: "#f44336", fontWeight: 500, marginTop: 4 }}
                 >
-                  Lý do: {detailData.reason ?? ""}
+                  Lý do: {detailData.reasonRejected ?? ""}
                 </div>
               )}
             </div>

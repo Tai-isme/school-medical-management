@@ -13,6 +13,7 @@ import {
   Form,
   DatePicker,
   Popover,
+  Avatar,
 } from "antd";
 import Swal from "sweetalert2";
 import dayjs from "dayjs";
@@ -23,9 +24,11 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 
+
 const { Search } = Input;
 const { Option } = Select;
 const { TextArea } = Input;
+
 
 const MedicalEventList = () => {
   const [data, setData] = useState([]);
@@ -38,16 +41,22 @@ const MedicalEventList = () => {
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
 
+
   const [classOptions, setClassOptions] = useState([]);
   const [studentOptions, setStudentOptions] = useState([]);
+
 
   const [uploadedImage, setUploadedImage] = useState(null);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
 
+
   const [editingId, setEditingId] = useState(null);
 
+
   const [fileList, setFileList] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
 
   const renderLevelText = (level) => {
     switch (level) {
@@ -62,11 +71,13 @@ const MedicalEventList = () => {
     }
   };
 
+
   useEffect(() => {
     if (createModalVisible) {
       fetchClassList();
     }
   }, [createModalVisible]);
+
 
   const fetchClassList = async () => {
     try {
@@ -82,6 +93,7 @@ const MedicalEventList = () => {
       message.error("Không thể tải danh sách lớp");
     }
   };
+
 
   const handleClassChange = async (classId) => {
     form.setFieldsValue({ studentId: undefined }); // reset student select
@@ -99,13 +111,17 @@ const MedicalEventList = () => {
     }
   };
 
+
   const [form] = Form.useForm();
 
+
   const pageSize = 3;
+
 
   useEffect(() => {
     fetchMedicalEvents();
   }, []);
+
 
   const fetchMedicalEvents = async () => {
     try {
@@ -116,6 +132,7 @@ const MedicalEventList = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
 
       const apiData = res.data.map((item) => ({
         ...item,
@@ -129,6 +146,7 @@ const MedicalEventList = () => {
         email: item.nurseDTO?.email || "Không có",
       }));
 
+
       setData(apiData);
       setFilteredData(apiData);
     } catch (error) {
@@ -137,8 +155,10 @@ const MedicalEventList = () => {
     }
   };
 
+
   useEffect(() => {
     let tempData = [...data];
+
 
     if (searchText.trim() !== "") {
       tempData = tempData.filter(
@@ -148,26 +168,32 @@ const MedicalEventList = () => {
       );
     }
 
+
     if (selectedClass) {
       tempData = tempData.filter((item) => item.className === selectedClass);
     }
+
 
     if (selectedLevel) {
       tempData = tempData.filter((item) => item.levelCheck === selectedLevel);
     }
 
+
     setFilteredData(tempData);
     setCurrentPage(1);
   }, [searchText, selectedClass, selectedLevel, data]);
+
 
   const getUniqueClassNames = () => [
     ...new Set(data.map((item) => item.className)),
   ];
 
+
   const paginatedData = filteredData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+
 
   const getLevelStyle = (level) => {
     const baseStyle = {
@@ -182,6 +208,7 @@ const MedicalEventList = () => {
       textTransform: "uppercase",
     };
 
+
     switch (level) {
       case "LOW":
         return { ...baseStyle, backgroundColor: "#52c41a" };
@@ -194,77 +221,106 @@ const MedicalEventList = () => {
     }
   };
 
-  const handleCreateEvent = async (values) => {
-    try {
-      const token = localStorage.getItem("token");
-      const payload = {
-        ...values,
-        date: values.date.toISOString(),
-        image: uploadedImage,
-      };
 
-      if (editingId) {
-        // Chế độ sửa
-        await axios.put(
-          `http://localhost:8080/api/nurse/medical-event/${editingId}`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        Swal.fire({
-          icon: "success",
-          title: "Cập nhật sự kiện thành công!",
-          showConfirmButton: false,
-          timer: 2000,
-        });
-
-        fetchMedicalEvents(); // Cập nhật danh sách
-      } else {
-        // Chế độ tạo mới
-        const res = await axios.post(
-          "http://localhost:8080/api/nurse/medical-event",
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        Swal.fire({
-          icon: "success",
-          title: "Tạo sự kiện thành công!",
-          showConfirmButton: false,
-          timer: 2000,
-        });
-
-        const newEvent = {
-          ...res.data,
-          studentName:
-            res.data.studentDTO?.fullName || `ID ${res.data.studentId}`,
-          className: res.data.classDTO?.className || "Không rõ",
-          nurseName: res.data.nurseDTO?.fullName || `ID ${res.data.nurseId}`,
-          parentName: res.data.parentDTO?.fullName || `ID ${res.data.parentId}`,
-          parentphone: res.data.parentDTO?.phone || "Không có",
-        };
-
-        setData((prev) => [newEvent, ...prev]);
-        setFilteredData((prev) => [newEvent, ...prev]);
-      }
-
-      // Reset form và modal
-      form.resetFields();
-      setUploadedImage(null);
-      setEditingId(null);
-      setCreateModalVisible(false);
-    } catch (error) {
-      console.error("Lỗi tạo/cập nhật sự kiện:", error);
-      message.error("Không thể lưu sự kiện.");
+const handleCreateEvent = async (values) => {
+  try {
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    const requestObj = {
+      typeEvent: values.typeEvent,
+      // Định dạng đúng cho LocalDateTime của Java
+      date: dayjs(values.date).format("YYYY-MM-DDTHH:mm:ss"),
+      classId: values.classId,
+      studentId: values.studentId,
+      levelCheck: values.levelCheck,
+      location: values.location,
+      description: values.description || "",
+      actionsTaken: values.actionsTaken || "",
+    };
+    formData.append("request", JSON.stringify(requestObj));
+    if (fileList.length > 0 && fileList[0].originFileObj) {
+      formData.append("image", fileList[0].originFileObj);
     }
-  };
+
+
+    console.log("Form data to send:", formData);
+    let res;
+    if (editingId) {
+      // Sửa sự kiện
+      res = await axios.put(
+        `http://localhost:8080/api/nurse/medical-event/${editingId}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      Swal.fire({
+        icon: "success",
+        title: "Cập nhật sự kiện thành công!",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+      fetchMedicalEvents();
+    } else {
+      // Tạo mới
+      res = await axios.post(
+        "http://localhost:8080/api/nurse/medical-event",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      Swal.fire({
+        icon: "success",
+        title: "Tạo sự kiện thành công!",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+
+
+      const newEvent = {
+        ...res.data,
+        studentName: res.data.studentDTO?.fullName || `ID ${res.data.studentId}`,
+        className: res.data.classDTO?.className || "Không rõ",
+        nurseName: res.data.nurseDTO?.fullName || `ID ${res.data.nurseId}`,
+        parentName: res.data.parentDTO?.fullName || `ID ${res.data.parentId}`,
+        parentphone: res.data.parentDTO?.phone || "Không có",
+      };
+      setData((prev) => [newEvent, ...prev]);
+      setFilteredData((prev) => [newEvent, ...prev]);
+    }
+
+
+    // Reset form và modal
+    form.resetFields();
+    setUploadedImage(null);
+    setEditingId(null);
+    setCreateModalVisible(false);
+    setFileList([]);
+  } catch (error) {
+    console.error("Lỗi tạo/cập nhật sự kiện:", error);
+    message.error("Không thể lưu sự kiện.");
+  }
+};
+
 
   const handleEditClick = async (item) => {
     setEditingId(item.eventId);
     setCreateModalVisible(true);
 
+
     try {
       const token = localStorage.getItem("token");
 
+
       let loadedClassOptions = classOptions;
+
 
       // 1. Nếu chưa có danh sách lớp, tải
       if (classOptions.length === 0) {
@@ -278,9 +334,11 @@ const MedicalEventList = () => {
         setClassOptions(loadedClassOptions);
       }
 
+
       // 2. Tải danh sách học sinh theo lớp
       const classId = item.classDTO?.classId;
       const studentId = item.studentDTO?.studentId;
+
 
       const studentRes = await axios.get(
         `http://localhost:8080/api/admin/students/${classId}`,
@@ -291,18 +349,18 @@ const MedicalEventList = () => {
       const loadedStudentOptions = studentRes.data;
       setStudentOptions(loadedStudentOptions);
 
+
       // 3. Set giá trị form
       form.setFieldsValue({
-        eventName: item.eventName,
         typeEvent: item.typeEvent,
         date: dayjs(item.date),
-        classId,
-        studentId,
-        levelCheck: item.levelCheck,
-        location: item.location,
         description: item.description,
         actionsTaken: item.actionsTaken,
+        levelCheck: item.levelCheck,
+        location: item.location,
+        studentId,
       });
+
 
       // 4. Set ảnh và hiển thị preview
       if (item.image) {
@@ -318,11 +376,17 @@ const MedicalEventList = () => {
       } else {
         setFileList([]); // Không có ảnh thì clear preview
       }
+
+
+      // Set selectedStudent nếu có studentId
+      const student = loadedStudentOptions.find((s) => s.studentId === studentId);
+      setSelectedStudent(student || null);
     } catch (error) {
       console.error("Lỗi khi load dữ liệu chỉnh sửa:", error);
       message.error("Không thể tải thông tin chỉnh sửa.");
     }
   };
+
 
   const handleDeleteEvent = (medicalEventId) => {
     Swal.fire({
@@ -354,6 +418,7 @@ const MedicalEventList = () => {
     });
   };
 
+
   return (
     <div
       style={{
@@ -378,6 +443,7 @@ const MedicalEventList = () => {
       >
         Danh sách sự kiện y tế
       </h2>
+
 
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
@@ -429,6 +495,7 @@ const MedicalEventList = () => {
         </Col>
       </Row>
 
+
       {filteredData.length === 0 ? (
         <p>Không có dữ liệu phù hợp.</p>
       ) : (
@@ -449,6 +516,7 @@ const MedicalEventList = () => {
               <div style={getLevelStyle(item.levelCheck)}>
                 {renderLevelText(item.levelCheck)}
               </div>
+
 
               {/* Nội dung bên trái */}
               <div>
@@ -503,6 +571,7 @@ const MedicalEventList = () => {
                 </Popover>
               </div>
 
+
               {/* Hàng chứa các nút hành động */}
               <div
                 style={{
@@ -522,6 +591,7 @@ const MedicalEventList = () => {
                 >
                   Xem chi tiết
                 </Button>
+
 
                 {/* Bên phải: Sửa và Xoá */}
                 <div style={{ display: "flex", gap: 8 }}>
@@ -558,6 +628,7 @@ const MedicalEventList = () => {
             </Card>
           ))}
 
+
           <Pagination
             current={currentPage}
             pageSize={pageSize}
@@ -567,6 +638,7 @@ const MedicalEventList = () => {
           />
         </>
       )}
+
 
       {/* Modal Chi tiết */}
       <Modal
@@ -598,6 +670,7 @@ const MedicalEventList = () => {
               {renderLevelText(selectedEvent.levelCheck)}
             </div>
 
+
             <div
               style={{
                 display: "grid",
@@ -627,6 +700,7 @@ const MedicalEventList = () => {
                     📞 Thông tin liên hệ
                   </strong>
 
+
                   <div style={{ marginBottom: 8 }}>
                     <span style={{ fontWeight: 600, color: "#222" }}>
                       👤 Phụ huynh:
@@ -635,6 +709,7 @@ const MedicalEventList = () => {
                       {selectedEvent.parentName}
                     </span>
                   </div>
+
 
                   <div>
                     <span style={{ fontWeight: 600, color: "#222" }}>
@@ -647,11 +722,8 @@ const MedicalEventList = () => {
                 </div>
               </div>
 
+
               {/* Các thông tin khác */}
-              <div>
-                <strong>Tên sự kiện:</strong>
-                <div>{selectedEvent.eventName}</div>
-              </div>
               <div>
                 <strong>Loại sự kiện:</strong>
                 <div>{selectedEvent.typeEvent}</div>
@@ -682,9 +754,11 @@ const MedicalEventList = () => {
               </div>
             </div>
 
+
             <div
               style={{ margin: "16px 0", borderTop: "1px solid #f0f0f0" }}
             ></div>
+
 
             <div style={{ lineHeight: "1.8em" }}>
               <div>
@@ -696,6 +770,7 @@ const MedicalEventList = () => {
                 <div>{selectedEvent.actionsTaken || "(Không có)"}</div>
               </div>
             </div>
+
 
             {selectedEvent.image && (
               <div style={{ marginTop: 16 }}>
@@ -722,7 +797,9 @@ const MedicalEventList = () => {
         )}
       </Modal>
 
+
       {/* Modal Tạo sự kiện */}
+
 
       <Modal
         title={editingId ? "Chỉnh sửa sự kiện y tế" : "Tạo sự kiện y tế"}
@@ -730,22 +807,30 @@ const MedicalEventList = () => {
         onCancel={() => {
           setCreateModalVisible(false);
           setEditingId(null);
+          setSelectedStudent(null);
         }}
         footer={null}
         destroyOnClose
         width={720} // mở rộng modal để chia 2 cột thoải mái
       >
         <Form layout="vertical" form={form} onFinish={handleCreateEvent}>
+          {/* Hiển thị avatar nếu có */}
+          {selectedStudent && selectedStudent.avatarUrl && (
+            <div style={{ textAlign: "center", marginBottom: 16 }}>
+              <Avatar
+                src={selectedStudent.avatarUrl}
+                size={80}
+                style={{ border: "2px solid #91caff" }}
+                alt={selectedStudent.fullName}
+              />
+              <div style={{ marginTop: 8, fontWeight: 500 }}>
+                {selectedStudent.fullName}
+              </div>
+            </div>
+          )}
+
+
           <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="Tên sự kiện"
-                name="eventName"
-                rules={[{ required: true }]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
             <Col span={12}>
               <Form.Item
                 label="Loại sự kiện"
@@ -755,51 +840,29 @@ const MedicalEventList = () => {
                 <Input />
               </Form.Item>
             </Col>
-          </Row>
-
-          <Row gutter={16}>
-            {/* <Col span={12}>
+            <Col span={12}>
               <Form.Item
                 label="Ngày"
                 name="date"
                 rules={[
                   { required: true, message: "Vui lòng chọn ngày" },
                   {
-                    validator: (_, value) => {
-                      if (!value) return Promise.resolve();
-                      const today = dayjs().startOf("day");
-                      const selected = value.startOf("day");
-
-                      return selected.isSame(today)
-                        ? Promise.resolve()
-                        : Promise.reject("Chỉ được chọn ngày hôm nay");
-                    },
+                    validator: (_, value) =>
+                      value && value.isAfter(dayjs(), "day")
+                        ? Promise.reject("Ngày không được vượt quá hôm nay")
+                        : Promise.resolve(),
                   },
                 ]}
               >
-                <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
-              </Form.Item>
-            </Col> */}
-            <Col span={12}>
-              <Form.Item
-                label="Ngày"
-                name="date"
-                rules={[{ required: true, message: "Vui lòng chọn ngày" }]}
-              >
-                <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-
-            <Col span={12}>
-              <Form.Item
-                label="Địa điểm"
-                name="location"
-                rules={[{ required: true }]}
-              >
-                <Input />
+                <DatePicker
+                  format="DD/MM/YYYY"
+                  style={{ width: "100%" }}
+                  disabledDate={(current) => current && current > dayjs().endOf("day")}
+                />
               </Form.Item>
             </Col>
           </Row>
+
 
           <Row gutter={16}>
             <Col span={12}>
@@ -826,6 +889,12 @@ const MedicalEventList = () => {
                 <Select
                   placeholder="Chọn học sinh"
                   disabled={studentOptions.length === 0}
+                  onChange={(studentId) => {
+                    const student = studentOptions.find(
+                      (s) => s.studentId === studentId
+                    );
+                    setSelectedStudent(student || null);
+                  }}
                 >
                   {studentOptions.map((s) => (
                     <Option key={s.studentId} value={s.studentId}>
@@ -837,7 +906,17 @@ const MedicalEventList = () => {
             </Col>
           </Row>
 
+
           <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Địa điểm"
+                name="location"
+                rules={[{ required: true }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
             <Col span={12}>
               <Form.Item
                 label="Mức độ"
@@ -851,54 +930,60 @@ const MedicalEventList = () => {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={12}>
-              <Form.Item label="Ảnh">
-                <Upload
-                  listType="picture-card"
-                  fileList={fileList}
-                  beforeUpload={(file) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                      const base64 = e.target.result;
-                      setUploadedImage(base64);
-                      setFileList([
-                        {
-                          uid: "-1",
-                          name: file.name,
-                          status: "done",
-                          url: base64,
-                        },
-                      ]);
-                    };
-                    reader.readAsDataURL(file);
-                    return false;
-                  }}
-                  onRemove={() => {
-                    setUploadedImage(null);
-                    setFileList([]);
-                  }}
-                  onPreview={(file) => {
-                    setPreviewImage(file.url); // hoặc file.thumbUrl
-                    setPreviewVisible(true);
-                  }}
-                  accept="image/*"
-                  maxCount={1}
-                >
-                  {fileList.length === 0 && (
-                    <Button icon={<UploadOutlined />}>Tải ảnh</Button>
-                  )}
-                </Upload>
-              </Form.Item>
-            </Col>
           </Row>
+
+
+          <Row gutter={16}>
+            <Form.Item label="Ảnh">
+              <Upload
+                listType="picture-card"
+                fileList={fileList}
+                beforeUpload={(file) => {
+                  const reader = new FileReader();
+                  reader.onload = (e) => {
+                    const base64 = e.target.result;
+                    setUploadedImage(base64);
+                    setFileList([
+                      {
+                        uid: "-1",
+                        name: file.name,
+                        status: "done",
+                        url: base64,
+                        originFileObj: file, // Giữ lại file gốc ở đây!
+                      },
+                    ]);
+                  };
+                  reader.readAsDataURL(file);
+                  return false;
+                }}
+                onRemove={() => {
+                  setUploadedImage(null);
+                  setFileList([]);
+                }}
+                onPreview={(file) => {
+                  setPreviewImage(file.url);
+                  setPreviewVisible(true);
+                }}
+                accept="image/*"
+                maxCount={1}
+              >
+                {fileList.length === 0 && (
+                  <Button icon={<UploadOutlined />}>Tải ảnh</Button>
+                )}
+              </Upload>
+            </Form.Item>
+          </Row>
+
 
           <Form.Item label="Mô tả" name="description">
             <TextArea rows={2} placeholder="Mô tả ngắn gọn về sự kiện" />
           </Form.Item>
 
+
           <Form.Item label="Xử lý" name="actionsTaken">
             <TextArea rows={2} placeholder="Hành động đã thực hiện" />
           </Form.Item>
+
 
           <Form.Item style={{ textAlign: "center", marginTop: 24 }}>
             <Button type="primary" htmlType="submit" style={{ width: 200 }}>
@@ -907,6 +992,7 @@ const MedicalEventList = () => {
           </Form.Item>
         </Form>
       </Modal>
+
 
       <Modal
         open={previewVisible}
@@ -926,4 +1012,8 @@ const MedicalEventList = () => {
   );
 };
 
+
 export default MedicalEventList;
+
+
+

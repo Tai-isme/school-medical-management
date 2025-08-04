@@ -67,10 +67,7 @@ const MedicalEventDetailModal = ({ visible, event, onClose, loading }) => {
                 }}
               >
                 <p>
-                  <b>Loại sự cố:</b> {event.typeEvent || "---"}
-                </p>
-                <p>
-                  <b>Sự cố:</b> {event.eventName || "---"}
+                  <b>Sự cố:</b> {event.typeEvent || "---"}
                 </p>
                 <p>
                   <b>Thời điểm xảy ra:</b>{" "}

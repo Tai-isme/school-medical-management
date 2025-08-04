@@ -73,11 +73,16 @@ export default function MedicalHistory({ studentId }) {
               marginBottom: 6,
             }}
           >
-            ⚡ Loại sự kiện: {e.typeEvent}
+            ⚡Sự cố: {e.typeEvent}
           </div>
-
           <div>
             <b>Ngày xảy ra:</b> {dayjs(e.date).format("DD/MM/YYYY")}
+          </div>
+          <div>
+            <b>Xử lý:</b> {e.actionsTaken}
+          </div>
+          <div>
+            <b>Địa điểm:</b> {e.location}
           </div>
           <div>
             <b>Y tá phụ trách:</b> {e.nurseDTO.fullName}
