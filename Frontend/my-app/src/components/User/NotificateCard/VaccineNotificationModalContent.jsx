@@ -49,9 +49,7 @@ const VaccineNotificationModalContent = ({
         <Descriptions.Item label="Chương trình">
           {notification.vaccineProgramDTO?.vaccineProgramName || "--"}
         </Descriptions.Item>
-        <Descriptions.Item label="Mô tả">
-          {notification.vaccineProgramDTO?.description || "--"}
-        </Descriptions.Item>
+        
                 <Descriptions.Item label="Tên vắc xin">
           {notification.vaccineProgramDTO?.vaccineNameDTO?.vaccineName || "--"}
         </Descriptions.Item>
@@ -102,6 +100,9 @@ const VaccineNotificationModalContent = ({
         </Descriptions.Item>
         <Descriptions.Item label="Ghi chú của phụ huynh">
           <Text type="secondary">{notification.note || "Không có"}</Text>
+        </Descriptions.Item>
+        <Descriptions.Item label="Mô tả">
+          {notification.vaccineProgramDTO?.description || "--"}
         </Descriptions.Item>
       </Descriptions>
       <Divider />

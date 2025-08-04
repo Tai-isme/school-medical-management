@@ -52,9 +52,7 @@ const HealthCheckNotificationModalContent = ({
         <Descriptions.Item label="Chương trình">
           {notification.healthCheckProgram?.healthCheckName || notification.healthCheckProgramDTO?.healthCheckName || "--"}
         </Descriptions.Item>
-        <Descriptions.Item label="Mô tả">
-          {notification.healthCheckProgram?.description || notification.healthCheckProgramDTO?.description || "--"}
-        </Descriptions.Item>
+        
         <Descriptions.Item label="Thời gian">
           {notification.healthCheckProgram?.startDate || notification.healthCheckProgramDTO?.startDate || "--"}
         </Descriptions.Item>
@@ -86,6 +84,9 @@ const HealthCheckNotificationModalContent = ({
         </Descriptions.Item>
         <Descriptions.Item label="Ghi chú của phụ huynh">
           <Text type="secondary">{notification.note || "Không có"}</Text>
+        </Descriptions.Item>
+        <Descriptions.Item label="Mô tả">
+          {notification.healthCheckProgram?.description || notification.healthCheckProgramDTO?.description || "--"}
         </Descriptions.Item>
       </Descriptions>
       <Divider />
