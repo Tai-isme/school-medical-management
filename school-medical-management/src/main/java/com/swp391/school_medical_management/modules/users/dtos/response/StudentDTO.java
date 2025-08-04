@@ -20,6 +20,7 @@ public class StudentDTO {
     private String gender;
     private int classId;
     private int parentId;
+    private String avatarUrl;
     private ClassDTO classDTO;
     private UserDTO parentDTO;
 }
