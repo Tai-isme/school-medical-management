@@ -4,6 +4,7 @@ import axios from "axios";
 import VaccineNotificationModalContent from "./VaccineNotificationModalContent";
 import HealthCheckNotificationModalContent from "./HealthCheckNotificationModalContent";
 import "./NotificationsList.css";
+import { urlServer } from "../../../api/urlServer";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
@@ -57,7 +58,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
     const token = localStorage.getItem("token");
     try {
       await axios.patch(
-        `http://localhost:8080/api/parent/vaccine-forms/${modalNotification.id}/commit`,
+        `${urlServer}/api/parent/vaccine-forms/${modalNotification.id}/commit`,
         {
           commit: true,
           note: note || "",
@@ -82,7 +83,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
     const token = localStorage.getItem("token");
     try {
       await axios.patch(
-        `http://localhost:8080/api/parent/health-check-forms/${notification.id}/commit`,
+        `${urlServer}/api/parent/health-check-forms/${notification.id}/commit`,
         {
           commit: true,
           note: note || "",

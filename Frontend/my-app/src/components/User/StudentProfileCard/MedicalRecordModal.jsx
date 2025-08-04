@@ -11,6 +11,7 @@ import {
   Select,
 } from "antd"; // Import Typography
 import axios from "axios";
+import { urlServer } from "../../../api/urlServer";
 
 const { Text } = Typography; // Sử dụng Text để có thể style chữ
 
@@ -99,7 +100,7 @@ export default function MedicalRecordModal({
     try {
       if (editMode) {
         await axios.put(
-          `http://localhost:8080/api/parent/medical-records/${studentId}`,
+          `${urlServer}/api/parent/medical-records/${studentId}`,
           payload,
           {
             headers: {
@@ -110,7 +111,7 @@ export default function MedicalRecordModal({
         message.success(`Cập nhật hồ sơ cho học sinh ${studentId} thành công`);
       } else {
         await axios.post(
-          "http://localhost:8080/api/parent/medical-records",
+          `${urlServer}/api/parent/medical-records`,
           payload,
           {
             headers: {
@@ -155,7 +156,7 @@ export default function MedicalRecordModal({
   useEffect(() => {
     if (open) {
       axios
-        .get("http://localhost:8080/api/parent/get=all-VaccineName", {
+        .get(`${urlServer}/api/parent/get=all-VaccineName`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         })
         .then((res) => {

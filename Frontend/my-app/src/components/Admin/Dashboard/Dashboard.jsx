@@ -7,6 +7,8 @@ import React, { useState, useEffect } from "react";
 import ProgressCard from "./ProgressCard";
 import axios from "axios";
 
+import { urlServer } from "../../../api/urlServer";
+
 function Dashboard() {
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -21,7 +23,7 @@ function Dashboard() {
     }, 1000); 
 
     const token = localStorage.getItem("token");
-    axios.get("http://localhost:8080/api/admin/committed-participation-rate", {
+    axios.get(`${urlServer}/api/admin/committed-participation-rate`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(res => {
       setParticipationRate(res.data);

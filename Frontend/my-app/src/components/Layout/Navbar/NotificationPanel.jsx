@@ -1,6 +1,6 @@
 // NotificationPanel.js
 import React from 'react';
-
+import { urlServer } from '../../../api/urlServer.js';
 const NotificationPanel = ({ notifications, onClose }) => {
   const handleViewDetail = (notification) => {
     console.log("🔍 Chi tiết thông báo:", notification);

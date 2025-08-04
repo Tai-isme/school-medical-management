@@ -13,6 +13,8 @@ import {
 } from "@ant-design/icons"
 import Swal from "sweetalert2"
 
+import { urlServer } from "../../../api/urlServer"
+
 const StudentImportModal = ({ open, onClose, onSuccess }) => {
   const [importFile, setImportFile] = useState(null)
   const [importLoading, setImportLoading] = useState(false)
@@ -97,7 +99,7 @@ const StudentImportModal = ({ open, onClose, onSuccess }) => {
         })
       }, 200)
 
-      const response = await fetch("http://localhost:8080/api/admin/student/import-excel", {
+      const response = await fetch(`${urlServer}/api/admin/student/import-excel`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

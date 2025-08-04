@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button, Modal, Space } from "antd" // Import Space
 import { DownloadOutlined, CheckCircleOutlined, FileExcelOutlined } from "@ant-design/icons"
-
+import { urlServer } from "../../../api/urlServer";
 const GenericTemplateDownloadButton = ({
   fileName, // Tên file sẽ tải xuống (ví dụ: "medical_event_template.xlsx")
   filePath, // Đường dẫn tới file trong thư mục public (ví dụ: "/medical_event_template.xlsx")

@@ -6,7 +6,7 @@ import axios from "axios";
 import { Table, Button } from "antd";
 import StudentInfoCard from "../../../common/StudentInfoCard";
 import MedicalEventDetailModal from "./MedicalEventDetailModal"; // Import modal component
-
+import { urlServer } from "../../../api/urlServer"; 
 const columns = [
   {
     title: "Loại sự kiện",
@@ -136,11 +136,8 @@ const MedicalIncident = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `http://localhost:8080/api/parent/medical-events/${selectedStudentId}`,
+          `${urlServer}/api/parent/medical-events/${selectedStudentId}`,
           { headers: { Authorization: `Bearer ${token}` } }
-        );
-        console.log(
-          `http://localhost:8080/api/parent/medical-events/${selectedStudentId}`
         );
         setEvents(
           (res.data || []).map((event) => ({

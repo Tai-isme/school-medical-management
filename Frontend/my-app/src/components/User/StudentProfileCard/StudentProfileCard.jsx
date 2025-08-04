@@ -7,6 +7,7 @@ import { Button, Modal, Input, Form, Table } from "antd"; // Import Button and M
 import MedicalRecordModal from "./MedicalRecordModal"; // Import MedicalRecordModal component
 import { faHouse } from "@fortawesome/free-solid-svg-icons"; // Thêm dòng này vào đầu file
 import dayjs from "dayjs"; // Import dayjs for date formatting
+import { urlServer } from "../../../api/urlServer";
 
 const StudentProfile = () => {
   const [activeTab, setActiveTab] = useState("general");
@@ -51,7 +52,7 @@ const StudentProfile = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:8080/api/parent/medical-records/${studentId}`,
+        `${urlServer}/api/parent/medical-records/${studentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -128,7 +129,7 @@ const StudentProfile = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:8080/api/parent/medical-records/${selectedStudentId}`,
+        `${urlServer}/api/parent/medical-records/${selectedStudentId}`,
         body,
         { headers: { Authorization: `Bearer ${token}` } }
       );

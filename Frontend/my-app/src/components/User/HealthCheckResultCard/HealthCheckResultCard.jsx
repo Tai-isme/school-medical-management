@@ -7,7 +7,7 @@ import HealthCheckResultDetailModal from "./HealthCheckResultDetailModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 // import './VaccineResult.css';
-
+import { urlServer } from "../../../api/urlServer"; // Giả sử bạn có một file urlServer.js để quản lý URL
 const { RangePicker } = DatePicker;
 
 const HealthCheckResultCard = () => {
@@ -36,7 +36,7 @@ const HealthCheckResultCard = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `http://localhost:8080/api/parent/health-check-result/student/${studentId}`,
+        `${urlServer}/api/parent/health-check-result/student/${studentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();

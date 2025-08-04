@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Input, Table, Modal, Form, Button, DatePicker, Radio } from "antd";
 import dayjs from "dayjs";
 import { SearchOutlined } from "@ant-design/icons";
-
+import { urlServer } from "../../../api/urlServer";
 
 const VaccineProgramResultTab = ({
   program, // Nhận prop này
@@ -57,7 +57,7 @@ const handleModalOk = async () => {
 
     // Ghi nhận kết quả
     await fetch(
-      `http://localhost:8080/api/nurse/create-vaccineResults-byProgram/${programId}`,
+      `${urlServer}/api/nurse/create-vaccineResults-byProgram/${programId}`,
       {
         method: "POST",
         headers: {
@@ -77,7 +77,7 @@ const handleModalOk = async () => {
 
     // Gọi lại API để lấy dữ liệu mới nhất
     const res = await fetch(
-      `http://localhost:8080/api/nurse/vaccine-result/program/${programId}`,
+      `${urlServer}/api/nurse/vaccine-result/program/${programId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

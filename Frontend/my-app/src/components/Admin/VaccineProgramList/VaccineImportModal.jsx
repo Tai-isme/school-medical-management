@@ -12,7 +12,7 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import Swal from "sweetalert2";
-
+import { urlServer } from "../../../api/urlServer";
 const VaccineImportModal = ({ open, onCancel, onSuccess }) => {
   const [importFile, setImportFile] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
@@ -101,7 +101,7 @@ const VaccineImportModal = ({ open, onCancel, onSuccess }) => {
       }, 200);
 
       await axios.post(
-        "http://localhost:8080/api/admin/vaccine-name/import-excel",
+        `${urlServer}/api/admin/vaccine-name/import-excel`,
         formData,
         {
           headers: {

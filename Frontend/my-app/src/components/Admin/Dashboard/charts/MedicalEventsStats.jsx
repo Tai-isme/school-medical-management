@@ -9,6 +9,8 @@ import {
   Tooltip, ResponsiveContainer, Legend
 } from "recharts";
 
+import { urlServer } from "../../../../api/urlServer";
+
 import { useForceResize } from "../../../../hooks/useForceResize";
 
 function MedicalEventsLineChart() {
@@ -22,11 +24,11 @@ function MedicalEventsLineChart() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    axios.get("http://localhost:8080/api/admin/event-stats/monthly", {
+    axios.get(`${urlServer}/api/admin/event-stats/monthly`, {
       headers: {
         Authorization: `Bearer ${token}`
       },
-        params: {
+      params: {
         year: new Date().getFullYear()
       }
     })

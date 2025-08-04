@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Spin, Row, Col, Image, Input, Button, message } from "antd";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { urlServer } from "../../../api/urlServer"; // Import the URL server from your config
 const SendMedicineDetailModal = ({
   open,
   onClose,
@@ -51,7 +52,7 @@ const handleGiveMedicine = async () => {
 
     const token = localStorage.getItem("token");
     await axios.put(
-      "http://localhost:8080/api/nurse/medical-request-detail/status/taken",
+      `${urlServer}/api/nurse/medical-request-detail/status/taken`,
       data,
       {
         headers: {
@@ -105,7 +106,7 @@ const handleGiveMedicine = async () => {
       try {
         const token = localStorage.getItem("token");
         await axios.put(
-          `http://localhost:8080/api/nurse/medical-request/${requestId}/status`,
+          `${urlServer}/api/nurse/medical-request/${requestId}/status`,
           { status: "CANCELLED", reason_rejected: reason },
           { headers: { Authorization: `Bearer ${token}` } }
         );

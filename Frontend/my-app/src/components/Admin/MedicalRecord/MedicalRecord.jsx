@@ -3,7 +3,7 @@ import { Table, Tag, Spin, Alert } from "antd";
 import moment from "moment";
 import axios from "axios";
 import "./MedicalRecord.css";
-
+import { urlServer } from "../../../api/urlServer";
 export default function MedicalRecordTable({ selectedStudentId }) {
   const [medicalRecord, setMedicalRecord] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ export default function MedicalRecordTable({ selectedStudentId }) {
 
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/admin/medical-records/${selectedStudentId}`,
+          `${urlServer}/api/admin/medical-records/${selectedStudentId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

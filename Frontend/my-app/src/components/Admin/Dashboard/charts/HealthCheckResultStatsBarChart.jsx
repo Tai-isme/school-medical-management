@@ -5,6 +5,8 @@ import {
   CartesianGrid, ResponsiveContainer, Legend
 } from "recharts";
 
+import { urlServer } from "../../../../api/urlServer";
+
 import { useForceResize } from "../../../../hooks/useForceResize";
 
 function HealthStatusBarChart() {
@@ -14,7 +16,7 @@ function HealthStatusBarChart() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        axios.get("http://localhost:8080/api/admin/health-check-results-status-by-program", {
+        axios.get(`${urlServer}/api/admin/health-check-results-status-by-program`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(res => {

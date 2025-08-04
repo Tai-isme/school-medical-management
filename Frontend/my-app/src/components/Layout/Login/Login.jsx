@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 
 import './Login.css'; // Đảm bảo import file CSS
+import {urlServer} from '../../../api/urlServer';
 
 function Login({ onClose }) {
     const [username, setUsername] = useState('');
@@ -41,7 +42,7 @@ function Login({ onClose }) {
 
     const handleLoginUsernamePassword = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
+            const response = await fetch(`${urlServer}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: username, password: password }),
@@ -86,7 +87,7 @@ function Login({ onClose }) {
             const idToken = await user.getIdToken();
             console.log("ID Token:", idToken);
 
-            const response = await fetch('http://localhost:8080/api/auth/google', {
+            const response = await fetch(`${urlServer}/api/auth/google`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ idToken }),

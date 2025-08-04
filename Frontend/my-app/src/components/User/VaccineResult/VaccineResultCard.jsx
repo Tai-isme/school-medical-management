@@ -7,6 +7,7 @@ const { RangePicker } = DatePicker;
 import VaccineHistoryDetailModal from "./VaccineHistoryDetailModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
+import { urlServer } from "../../../api/urlServer";
 // import './VaccineResult.css';
 
 const VaccineResultCard = () => {
@@ -39,7 +40,7 @@ const VaccineResultCard = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `http://localhost:8080/api/parent/vaccine-result/student/${studentId}`,
+        `${urlServer}/api/parent/vaccine-result/student/${studentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();

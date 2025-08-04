@@ -27,6 +27,7 @@ import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 import Swal from "sweetalert2";
 import HealthCheckProgramModal from "./HealthCheckProgramModal";
+import urlServer from "../../../api/urlServer";
 
 const HealthCheckProgramList = () => {
   const [programs, setPrograms] = useState([]);
@@ -76,7 +77,7 @@ const HealthCheckProgramList = () => {
       const token = localStorage.getItem("token");
       try {
         const res = await axios.get(
-          "http://localhost:8080/api/nurse/nurse-list",
+          `${urlServer}/api/nurse/nurse-list`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -96,7 +97,7 @@ const HealthCheckProgramList = () => {
       const token = localStorage.getItem("token");
       try {
         const res = await axios.get(
-          "http://localhost:8080/api/nurse/class-list",
+          `${urlServer}/api/nurse/class-list`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -120,7 +121,7 @@ const HealthCheckProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/admin/health-check-program",
+        `${urlServer}/api/admin/health-check-program`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -150,7 +151,7 @@ const HealthCheckProgramList = () => {
 
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/nurse/health-check-result/program/${programId}`,
+        `${urlServer}/api/nurse/health-check-result/program/${programId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -229,7 +230,7 @@ const HealthCheckProgramList = () => {
     try {
       // Gửi thông báo (API này đã tự chuyển trạng thái FORM_SENT)
       await axios.post(
-        `http://localhost:8080/api/nurse/health-check-form/${programId}?expDate=${expDate}`,
+        `${urlServer}/api/nurse/health-check-form/${programId}?expDate=${expDate}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -262,7 +263,7 @@ const HealthCheckProgramList = () => {
     const adminId = admin?.id;
     try {
       await axios.post(
-        "http://localhost:8080/api/admin/health-check-program",
+        `${urlServer}/api/admin/health-check-program`,
         {
           healthCheckName: values.healthCheckName,
           description: values.description,
@@ -313,7 +314,7 @@ const HealthCheckProgramList = () => {
     try {
       // 1. Gọi API mới để lấy form đã commit
       const committedRes = await axios.get(
-        `http://localhost:8080/api/nurse/health-check-forms-commit/program/${programId}`,
+        `${urlServer}/api/nurse/health-check-forms-commit/program/${programId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -433,7 +434,7 @@ const HealthCheckProgramList = () => {
       const token = localStorage.getItem("token");
       try {
         await axios.delete(
-          `http://localhost:8080/api/admin/health-check-program/${programId}`,
+          `${urlServer}/api/admin/health-check-program/${programId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -513,7 +514,7 @@ const HealthCheckProgramList = () => {
 
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/nurse/view-health-check-result-by-programId/${programId}`,
+        `${urlServer}/api/nurse/view-health-check-result-by-programId/${programId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -560,7 +561,7 @@ const HealthCheckProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
-        `http://localhost:8080/api/admin/export-health-check-result-excel-by-health-check-program/${programId}`,
+        `${urlServer}/api/admin/export-health-check-result-excel-by-health-check-program/${programId}`,
         {}, // POST body nếu không có thì để {}
         {
           headers: {
@@ -967,7 +968,7 @@ const HealthCheckProgramList = () => {
                                 const token = localStorage.getItem("token");
                                 try {
                                   await axios.patch(
-                                    `http://localhost:8080/api/admin/health-check-program/${program.id}?status=ON_GOING`,
+                                    `${urlServer}/api/admin/health-check-program/${program.id}?status=ON_GOING`,
                                     {},
                                     {
                                       headers: {
@@ -1086,7 +1087,7 @@ const HealthCheckProgramList = () => {
                                         localStorage.getItem("token");
                                       try {
                                         await axios.patch(
-                                          `http://localhost:8080/api/admin/completed-health-check-program/${program.id}?status=COMPLETED`,
+                                          `${urlServer}/api/admin/completed-health-check-program/${program.id}?status=COMPLETED`,
                                           {},
                                           {
                                             headers: {
@@ -1739,7 +1740,7 @@ const HealthCheckProgramList = () => {
 
             // Gửi kết quả
             await axios.post(
-              `http://localhost:8080/api/nurse/create-healthCheckResult-byProgram-${selectedProgramId}`,
+              `${urlServer}/api/nurse/create-healthCheckResult-byProgram-${selectedProgramId}`,
               {
                 vision: r.vision,
                 hearing: r.hearing,
@@ -1764,7 +1765,7 @@ const HealthCheckProgramList = () => {
             // ⚠️ GỌI LẠI API ĐỂ LOAD DANH SÁCH KẾT QUẢ ĐÃ TẠO
             // Sau khi post ghi nhận thành công
             const res = await axios.get(
-              `http://localhost:8080/api/nurse/health-check-result/program/${selectedProgramId}`,
+              `${urlServer}/api/nurse/health-check-result/program/${selectedProgramId}`,
               {
                 headers: { Authorization: `Bearer ${token}` },
               }

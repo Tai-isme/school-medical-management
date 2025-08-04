@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, Descriptions, Spin, message, Button, Modal, Form, Input } from "antd";
 import axios from "axios";
-
+import { urlServer } from "../../../api/urlServer";
 const cardStyle = {
   background: "#f4fff8",
   borderRadius: 16,
@@ -47,7 +47,7 @@ const AccountInfo = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:8080/api/auth/me", {
+      const res = await axios.get(`${urlServer}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data.data);
@@ -73,7 +73,7 @@ const AccountInfo = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        "http://localhost:8080/api/auth/update-profile",
+        `${urlServer}/api/auth/update-profile`,
         values,
         { headers: { Authorization: `Bearer ${token}` } }
       );

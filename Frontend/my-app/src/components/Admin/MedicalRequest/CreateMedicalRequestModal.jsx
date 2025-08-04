@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Modal, Input, Button, Select, DatePicker, Upload, message, Form, Space, Divider } from "antd";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
-
+import { urlServer } from "../../../api/urlServer";
 const { TextArea } = Input;
 
 const timeOptions = [
@@ -51,7 +51,7 @@ const CreateMedicalRequestModal = ({
     if (open && allClassData.length === 0 && token) {
       const fetchData = async () => {
         try {
-          const res = await axios.get("http://localhost:8080/api/nurse/students", {
+          const res = await axios.get(`${urlServer}/api/nurse/students`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setAllClassData(res.data);
@@ -156,7 +156,7 @@ const CreateMedicalRequestModal = ({
       }
 
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:8080/api/nurse/medical-request", {
+      const response = await fetch(`${urlServer}/api/nurse/medical-request`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`

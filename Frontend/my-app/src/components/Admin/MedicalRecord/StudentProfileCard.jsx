@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Card, Tabs, Form, Input, Row, Col, Avatar, Spin } from "antd";
 import axios from "axios";
+import { urlServer } from "../../../api/urlServer"; 
 
 export default function StudentProfileCard({ studentId, studentInfo }) {
   const [tab, setTab] = useState("chronic");
   const [record, setRecord] = useState(null);
   const [vaccineHistories, setVaccineHistories] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  console.log("aaa" + urlServer);
 
   useEffect(() => {
     if (!studentId) return;
@@ -15,7 +18,7 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `http://localhost:8080/api/admin/medical-records/${studentId}`,
+          `${urlServer}/api/admin/medical-records/${studentId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -58,7 +61,7 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
             src={
               studentInfo?.avatarUrl
                 ? studentInfo.avatarUrl
-                : "https://res.cloudinary.com/duzh5dnul/image/upload/v1750673843/6473ad42-3f20-4708-9bcf-76dff5d30ab2_avt2.jpg"
+                : "https://i.pinimg.com/1200x/8f/1c/a2/8f1ca2029e2efceebd22fa05cca423d7.jpg"
             }
             size={120}
             style={{ border: "2px solid #e0e0e0", background: "#fafafa" }}

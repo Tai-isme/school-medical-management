@@ -18,6 +18,7 @@ import {
 import axios from "axios";
 import Swal from "sweetalert2";
 
+import { urlServer } from "../../../api/urlServer";
 
 import "./AccountManagement.css";
 
@@ -49,7 +50,7 @@ const AccountManagement = () => {
 
 
         const response = await axios.get(
-          "http://localhost:8080/api/admin/accounts",
+          `${urlServer}/api/admin/accounts`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -211,11 +212,11 @@ const AccountManagement = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:8080/api/admin/create-nurses-account",
+        `${urlServer}/api/admin/create-nurses-account`,
         {
           name: values.fullName,
           email: values.email,
-          newPassword: values.password, // Đổi thành newPassword nếu backend yêu cầu
+          newPassword: values.password,
           phone: values.phone,
           address: values.address,
           role: "nurse",
@@ -234,7 +235,7 @@ const AccountManagement = () => {
       form.resetFields();
       // Reload danh sách tài khoản
       const response = await axios.get(
-        "http://localhost:8080/api/admin/accounts",
+        `${urlServer}/api/admin/accounts`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -287,7 +288,7 @@ const AccountManagement = () => {
 
 
       await axios.put(
-        `http://localhost:8080/api/admin/account/${editingAccount.userId}`,
+        `${urlServer}/api/admin/account/${editingAccount.userId}`,
         {
           fullName: values.fullName,
           email: values.email,
@@ -313,7 +314,7 @@ const AccountManagement = () => {
 
       // Reload danh sách tài khoản
       const response = await axios.get(
-        "http://localhost:8080/api/admin/accounts",
+        `${urlServer}/api/admin/accounts`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -371,7 +372,7 @@ const AccountManagement = () => {
       }
       try {
         await axios.patch(
-          `http://localhost:8080/api/auth/update-account-status/${record.userId}/false`,
+          `${urlServer}/api/auth/update-account-status/${record.userId}/false`,
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -384,7 +385,7 @@ const AccountManagement = () => {
         );
         // Reload danh sách tài khoản
         const response = await axios.get(
-          "http://localhost:8080/api/admin/accounts",
+          `${urlServer}/api/admin/accounts`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -433,7 +434,7 @@ const AccountManagement = () => {
       }
       try {
         await axios.patch(
-          `http://localhost:8080/api/auth/update-account-status/${record.userId}/true`,
+          `${urlServer}/api/auth/update-account-status/${record.userId}/true`,
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -446,7 +447,7 @@ const AccountManagement = () => {
         );
         // Reload danh sách tài khoản
         const response = await axios.get(
-          "http://localhost:8080/api/admin/accounts",
+          `${urlServer}/api/admin/accounts`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

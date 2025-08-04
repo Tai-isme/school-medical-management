@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, DatePicker, Button } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
-
+import { urlServer } from "../../../api/urlServer";
 const VaccineProgramModal = ({
   open,
   onCancel,
@@ -26,7 +26,7 @@ const VaccineProgramModal = ({
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "http://localhost:8080/api/nurse/nurse-list",
+          `${urlServer}/api/nurse/nurse-list`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -59,7 +59,7 @@ const VaccineProgramModal = ({
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "http://localhost:8080/api/nurse/class-list",
+          `${urlServer}/api/nurse/class-list`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

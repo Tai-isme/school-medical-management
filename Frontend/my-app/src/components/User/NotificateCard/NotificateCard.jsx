@@ -5,7 +5,7 @@ import "./NotificateCard.css";
 import StudentInfoCard from "../../../common/StudentInfoCard";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHouse } from '@fortawesome/free-solid-svg-icons';
-
+import { urlServer } from "../../../api/urlServer";
 const Notifications = () => {
   const students = JSON.parse(localStorage.getItem("students") || "[]");
   const [selectedStudentId, setSelectedStudentId] = useState(
@@ -21,7 +21,7 @@ const Notifications = () => {
     const fetchEvents = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/parent/all-forms/${selectedStudentId}`,
+          `${urlServer}/api/parent/all-forms/${selectedStudentId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -55,7 +55,7 @@ const Notifications = () => {
     const fetchEvents = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/parent/all-forms/${selectedStudentId}`,
+          `${urlServer}/api/parent/all-forms/${selectedStudentId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,

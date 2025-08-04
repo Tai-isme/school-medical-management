@@ -15,7 +15,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./AppSidebar.css";
-
+import { urlServer } from "../../../api/urlServer";
 const { SubMenu } = Menu;
 
 const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
@@ -36,7 +36,7 @@ const AppSidebar = ({ onMenuSelect, selectedMenu }) => {
     const token = localStorage.getItem("token");
     try {
       await axios.post(
-        "http://localhost:8080/api/auth/logout",
+        `${urlServer}/api/auth/logout`,
         {},
         {
           headers: {

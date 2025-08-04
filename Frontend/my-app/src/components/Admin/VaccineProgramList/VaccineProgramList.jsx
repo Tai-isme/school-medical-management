@@ -31,7 +31,7 @@ import AddVaccineModal from "./AddVaccineModal";
 import VaccineImportModal from "./VaccineImportModal";
 import GenericTemplateDownloadButton from "./GenericTemplateDownloadButton";
 import ExportResultButton from "./ExportResultButton";
-
+import { urlServer } from "../../../api/urlServer";
 const VaccineProgramList = () => {
   const [programs, setPrograms] = useState([]);
   const [detailVisible, setDetailVisible] = useState(false);
@@ -100,7 +100,7 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/admin/vaccine-program",
+        `${urlServer}/api/admin/vaccine-program`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -151,7 +151,7 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/admin/get=all-VaccineName",
+        `${urlServer}/api/admin/get=all-VaccineName`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -167,7 +167,7 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/nurse/vaccine-result",
+        `${urlServer}/api/nurse/vaccine-result`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNurseResults(res.data);
@@ -210,7 +210,7 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/admin/vaccine-program/${programId}/status?status=ON_GOING`,
+        `${urlServer}/api/admin/vaccine-program/${programId}/status?status=ON_GOING`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -228,7 +228,7 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.post(
-        "http://localhost:8080/api/admin/vaccine-program",
+        `${urlServer}/api/admin/vaccine-program`,
         {
           ...values,
           startDate: values.startDate
@@ -237,7 +237,7 @@ const VaccineProgramList = () => {
           dateSendForm: values.sendFormDate
             ? values.sendFormDate.format("YYYY-MM-DD")
             : undefined,
-          classIds: values.classIds, // Đảm bảo gửi đúng tên trường
+          classIds: values.classIds,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -259,7 +259,7 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/admin/vaccine-program/${program.vaccineProgramId}`,
+        `${urlServer}/api/admin/vaccine-program/${program.vaccineProgramId}`,
         {
           vaccineProgramName: values.vaccineProgramName,
           vaccineNameId: values.vaccineNameId,
@@ -316,7 +316,7 @@ const VaccineProgramList = () => {
       const token = localStorage.getItem("token");
       try {
         await axios.delete(
-          `http://localhost:8080/api/admin/vaccine-program/${programId}`,
+          `${urlServer}/api/admin/vaccine-program/${programId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -342,7 +342,7 @@ const VaccineProgramList = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:8080/api/nurse/vaccine-result/program/${programId}`,
+        `${urlServer}/api/nurse/vaccine-result/program/${programId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Khi nhận response từ API (res.data là mảng như bạn gửi ở trên)
@@ -385,7 +385,7 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.patch(
-        `http://localhost:8080/api/admin/vaccine-program/${vaccineId}?status=${status}`,
+        `${urlServer}/api/admin/vaccine-program/${vaccineId}?status=${status}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -404,7 +404,7 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.post(
-        "http://localhost:8080/api/nurse/vaccine-result",
+        `${urlServer}/api/nurse/vaccine-result`,
         {
           statusHealth: values.statusHealth,
           resultNote: values.resultNote,
@@ -443,7 +443,7 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/nurse/vaccine-forms-commit/program/${program.vaccineProgramId}`,
+        `${urlServer}/api/nurse/vaccine-forms-commit/program/${program.vaccineProgramId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -473,7 +473,7 @@ const VaccineProgramList = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:8080/api/nurse/vaccine-result/${record.vaccineResultId}`,
+        `${urlServer}/api/nurse/vaccine-result/${record.vaccineResultId}`,
         {
           statusHealth: record.statusHealth,
           resultNote: record.resultNote,
@@ -618,7 +618,7 @@ const VaccineProgramList = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:8080/api/nurse/vaccine-result/program/${programId}`,
+        `${urlServer}/api/nurse/vaccine-result/program/${programId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const mappedData = res.data.map((item) => ({
@@ -1266,7 +1266,7 @@ const VaccineProgramList = () => {
                                     const token = localStorage.getItem("token");
                                     try {
                                       await axios.patch(
-                                        `http://localhost:8080/api/admin/completed-vaccine-program/${program.vaccineId}?status=COMPLETED`,
+                                        `${urlServer}/api/admin/completed-vaccine-program/${program.vaccineId}?status=COMPLETED`,
                                         {},
                                         {
                                           headers: {

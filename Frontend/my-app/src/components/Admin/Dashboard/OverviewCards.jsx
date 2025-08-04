@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./DashboardWidgets.css";
-
+import { urlServer } from "../../../api/urlServer";
 function OverviewCards() {
   const [studentCount, setStudentCount] = useState(0);
   const [medicalRecordCount, setMedicalRecordCount] = useState(0);
@@ -11,7 +11,7 @@ function OverviewCards() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    axios.get("http://localhost:8080/api/admin/statistics/overview", {
+    axios.get(`${urlServer}/api/admin/statistics/overview`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(res => {
       setStudentCount(res.data.studentCount);

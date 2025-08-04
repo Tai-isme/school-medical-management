@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 
+import { urlServer } from "../../../api/urlServer";
+
 export default function MedicalHistory({ studentId }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,7 +18,7 @@ export default function MedicalHistory({ studentId }) {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `http://localhost:8080/api/nurse/medical-events/${studentId}`,
+          `${urlServer}/api/nurse/medical-events/${studentId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

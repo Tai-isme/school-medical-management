@@ -7,7 +7,7 @@ import NotificationSocket from './NotificationSocket';
 import NotificationPanel from './NotificationPanel';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
-
+import { urlServer } from '../../../api/urlServer.js';
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -33,7 +33,7 @@ const Navbar = () => {
         const students = JSON.parse(localStorage.getItem('students') || '[]');
         const studentId = students[0]?.id;
 
-        const res = await fetch(`http://localhost:8080/api/notify/${studentId}`, {
+        const res = await fetch(`${urlServer}/api/notify/${studentId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -59,7 +59,7 @@ const Navbar = () => {
     try {
       const token = localStorage.getItem('token');
 
-      const res = await fetch("http://localhost:8080/api/auth/logout", {
+      const res = await fetch(`${urlServer}/api/auth/logout`, {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${token}`,

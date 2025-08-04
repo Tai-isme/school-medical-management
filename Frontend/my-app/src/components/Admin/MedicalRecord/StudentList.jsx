@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+import { urlServer } from "../../../api/urlServer";
 export default function StudentList({ onSelect, selectedId, onFirstStudentLoaded }) {
   const [classList, setClassList] = useState([]); // [{className, students, ...}]
   const [loading, setLoading] = useState(true);
@@ -12,7 +12,7 @@ export default function StudentList({ onSelect, selectedId, onFirstStudentLoaded
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `http://localhost:8080/api/nurse/students`,
+          `${urlServer}/api/nurse/students`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-
+import { urlServer } from '../../../api/urlServer.js';
 const NotificationSocket = ({ parentId, onMessage }) => {
   useEffect(() => {
     if (!parentId || typeof onMessage !== 'function') {
@@ -11,7 +11,7 @@ const NotificationSocket = ({ parentId, onMessage }) => {
     }
 
     const token = localStorage.getItem('token');
-    const socket = new SockJS('http://localhost:8080/ws');
+    const socket = new SockJS(`${urlServer}/ws`);
 
     const stompClient = createStompClient(socket, token, parentId, onMessage);
 

@@ -24,6 +24,7 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 
+import { urlServer } from "../../../api/urlServer";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -83,7 +84,7 @@ const MedicalEventList = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "http://localhost:8080/api/nurse/class-list",
+        `${urlServer}/api/nurse/class-list`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -100,7 +101,7 @@ const MedicalEventList = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:8080/api/admin/students/${classId}`,
+        `${urlServer}/api/admin/students/${classId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -127,17 +128,17 @@ const MedicalEventList = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "http://localhost:8080/api/nurse/medical-event",
+        `${urlServer}/api/nurse/medical-event`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-
       const apiData = res.data.map((item) => ({
         ...item,
+        classId: item.studentDTO?.classDTO?.classId || item.classDTO?.classId || item.classId, // Ưu tiên lấy từ studentDTO
         studentName: item.studentDTO?.fullName || `ID ${item.studentId}`,
-        className: item.classDTO?.className || "Không rõ",
+        className: item.classDTO?.className || item.studentDTO?.classDTO?.className || "Không rõ",
         date: item.date,
         nurseName: item.nurseDTO?.fullName || `ID ${item.nurseId}`,
         parentName: item.parentDTO?.fullName || `ID ${item.parentId}`,
@@ -145,7 +146,6 @@ const MedicalEventList = () => {
         nursePhone: item.nurseDTO?.phone || "Không có",
         email: item.nurseDTO?.email || "Không có",
       }));
-
 
       setData(apiData);
       setFilteredData(apiData);
@@ -228,7 +228,6 @@ const handleCreateEvent = async (values) => {
     const formData = new FormData();
     const requestObj = {
       typeEvent: values.typeEvent,
-      // Định dạng đúng cho LocalDateTime của Java
       date: dayjs(values.date).format("YYYY-MM-DDTHH:mm:ss"),
       classId: values.classId,
       studentId: values.studentId,
@@ -242,13 +241,11 @@ const handleCreateEvent = async (values) => {
       formData.append("image", fileList[0].originFileObj);
     }
 
-
-    console.log("Form data to send:", formData);
     let res;
     if (editingId) {
       // Sửa sự kiện
       res = await axios.put(
-        `http://localhost:8080/api/nurse/medical-event/${editingId}`,
+        `${urlServer}/api/nurse/medical-event/${editingId}`,
         formData,
         {
           headers: {
@@ -267,7 +264,7 @@ const handleCreateEvent = async (values) => {
     } else {
       // Tạo mới
       res = await axios.post(
-        "http://localhost:8080/api/nurse/medical-event",
+        `${urlServer}/api/nurse/medical-event`,
         formData,
         {
           headers: {
@@ -283,7 +280,6 @@ const handleCreateEvent = async (values) => {
         timer: 2000,
       });
 
-
       const newEvent = {
         ...res.data,
         studentName: res.data.studentDTO?.fullName || `ID ${res.data.studentId}`,
@@ -295,7 +291,6 @@ const handleCreateEvent = async (values) => {
       setData((prev) => [newEvent, ...prev]);
       setFilteredData((prev) => [newEvent, ...prev]);
     }
-
 
     // Reset form và modal
     form.resetFields();
@@ -314,18 +309,15 @@ const handleCreateEvent = async (values) => {
     setEditingId(item.eventId);
     setCreateModalVisible(true);
 
-
     try {
       const token = localStorage.getItem("token");
 
-
       let loadedClassOptions = classOptions;
 
-
-      // 1. Nếu chưa có danh sách lớp, tải
+      // Nếu chưa có danh sách lớp, tải
       if (classOptions.length === 0) {
         const classRes = await axios.get(
-          "http://localhost:8080/api/nurse/class-list",
+          `${urlServer}/api/nurse/class-list`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -334,14 +326,12 @@ const handleCreateEvent = async (values) => {
         setClassOptions(loadedClassOptions);
       }
 
-
-      // 2. Tải danh sách học sinh theo lớp
-      const classId = item.classDTO?.classId;
+      // Tải danh sách học sinh theo lớp
+      const classId = item.classId; // Lấy classId đã gán ở trên
       const studentId = item.studentDTO?.studentId;
 
-
       const studentRes = await axios.get(
-        `http://localhost:8080/api/admin/students/${classId}`,
+        `${urlServer}/api/admin/students/${classId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -349,8 +339,7 @@ const handleCreateEvent = async (values) => {
       const loadedStudentOptions = studentRes.data;
       setStudentOptions(loadedStudentOptions);
 
-
-      // 3. Set giá trị form
+      // Set giá trị form, chọn sẵn lớp và học sinh
       form.setFieldsValue({
         typeEvent: item.typeEvent,
         date: dayjs(item.date),
@@ -358,6 +347,7 @@ const handleCreateEvent = async (values) => {
         actionsTaken: item.actionsTaken,
         levelCheck: item.levelCheck,
         location: item.location,
+        classId: classId, // <-- chọn sẵn lớp
         studentId,
       });
 
@@ -403,7 +393,7 @@ const handleCreateEvent = async (values) => {
         try {
           const token = localStorage.getItem("token");
           await axios.delete(
-            `http://localhost:8080/api/nurse/medical-event/${medicalEventId}`,
+            `${urlServer}/api/nurse/medical-event/${medicalEventId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }

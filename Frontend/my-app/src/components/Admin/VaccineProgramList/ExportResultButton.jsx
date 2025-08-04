@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button, Modal, Space } from "antd"
 import { DownloadOutlined, CheckCircleOutlined, FileExcelOutlined } from "@ant-design/icons"
 import axios from "axios" // Đảm bảo bạn đã cài đặt axios
-
+import { urlServer } from "../../../api/urlServer";
 const ExportResultButton = ({
   vaccineProgramId,
   userRole,
@@ -26,7 +26,7 @@ const ExportResultButton = ({
     const token = localStorage.getItem("token")
     try {
       const response = await axios.post(
-        `http://localhost:8080/api/admin/export-vaccine-result-excel-by-vaccine-program/${vaccineProgramId}`,
+        `${urlServer}/api/admin/export-vaccine-result-excel-by-vaccine-program/${vaccineProgramId}`,
         {}, // Body rỗng nếu API không yêu cầu
         {
           responseType: "blob", // Quan trọng để nhận dữ liệu nhị phân

@@ -11,7 +11,7 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 import CreateMedicalRequestModal from "./CreateMedicalRequestModal";
-
+import { urlServer } from "../../../api/urlServer";
 const tabStatus = [
   { key: "PROCESSING", label: "Chờ duyệt" },
   { key: "CONFIRMED", label: "Đã duyệt" },
@@ -58,8 +58,8 @@ const MedicalRequest = () => {
       const token = localStorage.getItem("token");
       let url =
         status === "ALL"
-          ? "http://localhost:8080/api/nurse/medical-request"
-          : `http://localhost:8080/api/nurse/medical-request/${status}`;
+          ? `${urlServer}/api/nurse/medical-request`
+          : `${urlServer}/api/nurse/medical-request/${status}`;
       const res = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -97,7 +97,7 @@ const MedicalRequest = () => {
       const token = localStorage.getItem("token");
       try {
         await axios.put(
-          `http://localhost:8080/api/nurse/medical-request/${id}/status`,
+          `${urlServer}/api/nurse/medical-request/${id}/status`,
           { status: "CONFIRMED", reason_rejected: null },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -118,7 +118,7 @@ const MedicalRequest = () => {
       onOk: async () => {
         const token = localStorage.getItem("token");
         try {
-          await axios.delete(`http://localhost:8080/api/nurse/medical-request/${id}`, {
+          await axios.delete(`${urlServer}/api/nurse/medical-request/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           message.success("Xóa thành công!");

@@ -4,6 +4,8 @@ import axios from "axios";
 import { max } from "moment/moment";
 import SendMedicineDetailModal from "./SendMedicineDetailModal";
 import Swal from "sweetalert2";
+import { urlServer } from "../../../api/urlServer"; // Thêm dòng này
+
 // --- Sample Data ---
 // In a real application, this data would come from an API call
 const RequestTable = () => {
@@ -18,7 +20,7 @@ const RequestTable = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "http://localhost:8080/api/parent/medical-request",
+          `${urlServer}/api/parent/medical-request`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -39,7 +41,7 @@ const RequestTable = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:8080/api/parent/medical-request/by-request/${requestId}`, // XEM CHI TIẾT
+        `${urlServer}/api/parent/medical-request/by-request/${requestId}`, // XEM CHI TIẾT
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setDetailData(res.data);
@@ -54,7 +56,7 @@ const RequestTable = () => {
     console.log("Deleting request with ID:", requestId);
     try {
       await axios.delete(
-        `http://localhost:8080/api/parent/medical-request/${requestId}`,
+        `${urlServer}/api/parent/medical-request/${requestId}`,
         {
           //DELETE request
           headers: { Authorization: `Bearer ${token}` },

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Form, Input, Button, Card } from "antd";
 import axios from "axios";
 import Swal from "sweetalert2";
-
+import { urlServer } from "../../../api/urlServer";
 const cardStyle = {
   background: "#f4fff8",
   borderRadius: 16,
@@ -33,7 +33,7 @@ const ChangePasswordForm = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:8080/api/auth/change-password",
+        `${urlServer}/api/auth/change-password`,
         {
           oldPassword: values.oldPassword,
           newPassword: values.newPassword,

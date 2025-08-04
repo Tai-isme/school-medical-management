@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Modal, Form, Input, Button, Space } from "antd";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { urlServer } from "../../../api/urlServer";
 import {
   PlusCircleOutlined,
   EditOutlined,
@@ -38,14 +39,14 @@ const AddVaccineModal = ({
     try {
       if (mode === "add") {
         await axios.post(
-          "http://localhost:8080/api/admin/create-VaccineName",
+          `${urlServer}/api/admin/create-VaccineName`,
           {
             vaccineName: values.vaccineName,
             manufacture: values.manufacture,
             url: values.url,
             note: values.note,
             adminId: 1, // hoặc từ localStorage
-            vaccineUnits: values.vaccineUnits, // thêm dòng này
+            vaccineUnits: values.vaccineUnits,
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -57,7 +58,7 @@ const AddVaccineModal = ({
         });
       } else if (mode === "edit") {
         await axios.put(
-          `http://localhost:8080/api/admin/update-VaccineName/${initialValues._id}`,
+          `${urlServer}/api/admin/update-VaccineName/${initialValues._id}`,
           {
             vaccineName: values.vaccineName,
             manufacture: values.manufacture,

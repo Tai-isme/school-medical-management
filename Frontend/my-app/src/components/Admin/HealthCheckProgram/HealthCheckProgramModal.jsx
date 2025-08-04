@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, DatePicker, Select, Row, Col } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
+
+import { urlServer } from "../../../api/urlServer";
 const HealthCheckProgramModal = ({
   open,
   onCancel,
@@ -18,7 +20,7 @@ const HealthCheckProgramModal = ({
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "http://localhost:8080/api/nurse/nurse-list",
+          `${urlServer}/api/nurse/nurse-list`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

@@ -8,6 +8,7 @@ import { message } from 'antd';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
+import { urlServer } from "../../../api/urlServer";
 
 export default function InstructionForm({ onShowHistory }) {
   // Lấy students từ localStorage
@@ -114,7 +115,7 @@ const handleMedicineChange = (index, event) => {
       const token = localStorage.getItem("token");
       let response;
       if (editingId) {
-        response = await fetch(`http://localhost:8080/api/parent/medical-request/${editingId}`, {
+        response = await fetch(`${urlServer}/api/parent/medical-request/${editingId}`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`
@@ -123,7 +124,7 @@ const handleMedicineChange = (index, event) => {
           body: formData
         });
       } else {
-        response = await fetch("http://localhost:8080/api/parent/medical-request", {
+        response = await fetch(`${urlServer}/api/parent/medical-request`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`
