@@ -115,13 +115,11 @@ public class AdminController {
     }
 
     //Thien
-@PutMapping("/vaccine-program/{vaccineProgramId}/status")
-public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(
-        @PathVariable int vaccineProgramId,
-        @RequestParam("status") String status) {
-    VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgramStatus(vaccineProgramId, status);
-    return ResponseEntity.ok(vaccineProgramDTO);
-}
+    @PutMapping("/vaccine-program/{vaccineProgramId}/status")
+    public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(@PathVariable int vaccineProgramId, @RequestParam("status") String status) {
+        VaccineProgramDTO vaccineProgramDTO = adminService.updateVaccineProgramStatus(vaccineProgramId, status);
+        return ResponseEntity.ok(vaccineProgramDTO);
+    }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/vaccine-program")
@@ -158,11 +156,10 @@ public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_NURSE')")
     @GetMapping("/medical-records/{studentId}")
-    public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable int studentId) {
-        String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRecordDTO medicalRecordDTO = adminService.getMedicalRecordByStudentId(Integer.parseInt(parentId), studentId);
-        if (medicalRecordDTO == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(medicalRecordDTO);
+    public ResponseEntity<RecordAndHistoryDTO> getMedicalRecordsByStudentId(@PathVariable int studentId) {
+        RecordAndHistoryDTO recordAndHistoryDTO = adminService.getMedicalRecordByStudentId(studentId);
+        if (recordAndHistoryDTO == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(recordAndHistoryDTO);
     }
 
     @PostMapping("/student/import-excel")
@@ -247,11 +244,7 @@ public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=vaccine_result_report.xlsx");
 
-        return ResponseEntity
-                .ok()
-                .headers(headers)
-                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
-                .body(new InputStreamResource(in));
+        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(new InputStreamResource(in));
     }
 
     @PostMapping("/export-health-check-result-excel-by-health-check-program/{healthCheckProgramId}")
@@ -260,10 +253,6 @@ public ResponseEntity<VaccineProgramDTO> updateVaccineProgramStatus(
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=health_check_result_report.xlsx");
 
-        return ResponseEntity
-                .ok()
-                .headers(headers)
-                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
-                .body(new InputStreamResource(in));
+        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.ms-excel")).body(new InputStreamResource(in));
     }
 }

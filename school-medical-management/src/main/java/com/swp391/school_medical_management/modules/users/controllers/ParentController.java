@@ -63,12 +63,12 @@ public class ParentController {
 
     @GetMapping("/medical-records/{studentId}")
 //    @PreAuthorize("hasAnyRole('ROLE_PARENT', 'ROLE_ADMIN', 'ROLE_NURSE')")
-    public ResponseEntity<MedicalRecordDTO> getMedicalRecordsByStudentId(@PathVariable int studentId) {
+    public ResponseEntity<RecordAndHistoryDTO> getMedicalRecordsByStudentId(@PathVariable int studentId) {
         String parentId = SecurityContextHolder.getContext().getAuthentication().getName();
-        MedicalRecordDTO medicalRecordDTO = parentService.getMedicalRecordByStudentId(Integer.parseInt(parentId), studentId);
-        if (medicalRecordDTO == null)
+        RecordAndHistoryDTO recordAndHistoryDTO = parentService.getMedicalRecordByStudentId(Integer.parseInt(parentId), studentId);
+        if (recordAndHistoryDTO == null)
             return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(medicalRecordDTO);
+        return ResponseEntity.ok(recordAndHistoryDTO);
     }
 
     @DeleteMapping("/medical-records/{studentId}")

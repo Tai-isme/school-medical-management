@@ -13,8 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MedicalRecordDTO {
-    private Long recordId;
-    private Long studentId;
+    private int recordId;
+    private int studentId;
     private String allergies;
     private String chronicDisease;
     private String vision;

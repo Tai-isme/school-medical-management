@@ -102,6 +102,9 @@ public class AdminService {
     @Autowired
     private VaccineUnitRepository vaccineUnitRepository;
 
+    @Autowired
+    private VaccineHistoryRepository vaccineHistoryRepository;
+
     public HealthCheckProgramDTO createHealthCheckProgram(HealthCheckProgramRequest request, int adminId) {
         UserEntity admin = userRepository.findById(request.getAdminId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Admin"));
 
@@ -1101,13 +1104,41 @@ public class AdminService {
 
 
     //Thien
-    public MedicalRecordDTO getMedicalRecordByStudentId(int parentId, int studentId) {
+    public RecordAndHistoryDTO getMedicalRecordByStudentId(int studentId) {
+        StudentEntity student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy học sinh"));
+
+        // Medical Record
         Optional<MedicalRecordEntity> optMedicalRecord = medicalRecordsRepository.findByStudent_Id(studentId);
-        if (optMedicalRecord.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ y tế cho học sinh với ID: " + studentId);
-        MedicalRecordEntity medicalRecord = optMedicalRecord.get();
-        return modelMapper.map(medicalRecord, MedicalRecordDTO.class);
-        // return null;
+        MedicalRecordDTO medicalRecordDTO;
+        if (optMedicalRecord.isPresent()) {
+            medicalRecordDTO = modelMapper.map(optMedicalRecord.get(), MedicalRecordDTO.class);
+        } else {
+            medicalRecordDTO = new MedicalRecordDTO();
+            medicalRecordDTO.setStudentId(studentId);
+            medicalRecordDTO.setStudentDTO(modelMapper.map(student, StudentDTO.class));
+            medicalRecordDTO.setVaccineHistoryDTOS(Collections.emptyList());
+        }
+
+        // Vaccine History
+        List<VaccineHistoryDTO> vaccineHistoryDTOList = vaccineHistoryRepository.findByStudent(student).stream()
+                .map(history -> {
+                    VaccineHistoryDTO dto = new VaccineHistoryDTO();
+                    dto.setId(history.getId());
+                    dto.setNote(history.getNote());
+                    dto.setCreateBy(history.isCreateBy());
+                    dto.setUnit(history.getUnit());
+                    dto.setStudentId(student.getId());
+                    dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
+                    dto.setVaccineNameDTO(modelMapper.map(history.getVaccineNameEntity(), VaccineNameDTO.class));
+                    return dto;
+                }).collect(Collectors.toList());
+
+        // Trả về gộp
+        RecordAndHistoryDTO dto = new RecordAndHistoryDTO();
+        dto.setMedicalRecord(medicalRecordDTO);
+        dto.setVaccineHistories(vaccineHistoryDTOList);
+        return dto;
     }
 
 
