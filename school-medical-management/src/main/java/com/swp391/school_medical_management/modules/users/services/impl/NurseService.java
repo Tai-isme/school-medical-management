@@ -132,6 +132,8 @@ public class NurseService {
             // TODO: handle exception
         }
 
+        logger.info("imageUrl: {}", imageUrl);
+
         Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
         if (studentOpt.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tim thấy học sinh");
