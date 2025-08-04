@@ -56,10 +56,12 @@ function Login({ onClose }) {
             }
 
             if (data.token && data.users) {
+                // Sau khi lưu localStorage và đóng modal đăng nhập:
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('users', JSON.stringify(data.users));
                 localStorage.setItem('students', JSON.stringify(data.students));
                 localStorage.setItem('role', data.users.role);
+                window.dispatchEvent(new Event("user-login")); // <-- Thêm dòng này
                 onClose();
 
                 const role = data.users.role;
@@ -101,10 +103,12 @@ function Login({ onClose }) {
             }
 
             if (data.token && data.users) {
+                // Sau khi lưu localStorage và đóng modal đăng nhập:
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('users', JSON.stringify(data.users));
                 localStorage.setItem('students', JSON.stringify(data.students));
                 localStorage.setItem('role', data.users.role);
+                window.dispatchEvent(new Event("user-login")); // <-- Thêm dòng này
                 onClose();
 
                 const role = data.users.role;

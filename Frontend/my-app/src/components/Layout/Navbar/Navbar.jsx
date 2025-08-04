@@ -25,6 +25,18 @@ const Navbar = () => {
   }, [isLoginOpen]);
 
   useEffect(() => {
+    // Lắng nghe sự kiện đăng nhập thành công
+    const handleUserLogin = () => {
+      const storedUser = localStorage.getItem('users');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    };
+    window.addEventListener("user-login", handleUserLogin);
+    return () => window.removeEventListener("user-login", handleUserLogin);
+  }, []);
+
+  useEffect(() => {
     if (!user) return;
 
     const fetchNotifications = async () => {
@@ -71,7 +83,11 @@ const Navbar = () => {
         throw new Error("Lỗi khi đăng xuất");
       }
 
-      ['users', 'token', 'students', 'role'].forEach((key) => localStorage.removeItem(key));
+      localStorage.removeItem('token');
+      localStorage.removeItem('users');
+      localStorage.removeItem('students');
+      localStorage.removeItem('role');
+      window.dispatchEvent(new Event("user-login")); // Để Navbar cập nhật lại
       setUser(null);
       navigate('/');
     } catch (error) {
