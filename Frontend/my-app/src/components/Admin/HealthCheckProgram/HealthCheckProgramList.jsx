@@ -1734,25 +1734,6 @@ const HealthCheckProgramList = () => {
         onOk={async () => {
           const r = currentEditRecord;
 
-          // Validation...
-          // if (
-          //   !r.height ||
-          //   isNaN(r.height) ||
-          //   r.height < 100 ||
-          //   r.height > 200
-          // ) {
-          //   Swal.fire("Lỗi", "Chiều cao phải từ 100 đến 200!", "error");
-          //   return;
-          // }
-          // if (!r.weight || isNaN(r.weight) || r.weight < 15 || r.weight > 120) {
-          //   Swal.fire("Lỗi", "Cân nặng phải từ 15 đến 120!", "error");
-          //   return;
-          // }
-          // if (!r.vision || !/^([1-9]|10)\/10$/.test(r.vision)) {
-          //   Swal.fire("Lỗi", "Thị lực không hợp lệ!", "error");
-          //   return;
-          // }
-
           try {
             const token = localStorage.getItem("token");
 
@@ -1937,10 +1918,10 @@ const HealthCheckProgramList = () => {
                   <Input.TextArea
                     value={currentEditRecord.note}
                     onChange={(e) =>
-                      setCurrentEditRecord({
-                        ...currentEditRecord,
+                      setCurrentEditRecord((prev) => ({
+                        ...prev,
                         note: e.target.value,
-                      })
+                      }))
                     }
                     autoSize={{ minRows: 2, maxRows: 4 }}
                   />
@@ -1951,37 +1932,30 @@ const HealthCheckProgramList = () => {
                 <Form.Item>
                   <Checkbox
                     checked={currentEditRecord.isChecked}
-                    onChange={(e) =>
-                      setCurrentEditRecord({
-                        ...currentEditRecord,
-                        isChecked: e.target.checked,
-                      })
-                    }
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setCurrentEditRecord((prev) => ({
+                        ...prev,
+                        isChecked: checked,
+                        notParticipated: checked ? false : prev.notParticipated,
+                      }));
+                    }}
                   >
                     Đánh dấu đã khám
                   </Checkbox>
                 </Form.Item>
               </Col>
+
               <Col span={24}>
                 <Form.Item>
                   <Checkbox
-                    checked={currentEditRecord.note === "Không tham gia khám"}
-                    onChange={async (e) => {
+                    checked={currentEditRecord.notParticipated}
+                    onChange={(e) => {
                       const checked = e.target.checked;
-                      if (checked) {
-                        const confirm = await Swal.fire({
-                          title: "Xác nhận?",
-                          text: "Bạn chắc chắn muốn đánh dấu học sinh này là 'Không tham gia khám'?",
-                          icon: "question",
-                          showCancelButton: true,
-                          confirmButtonText: "Đồng ý",
-                          cancelButtonText: "Hủy",
-                        });
-                        if (!confirm.isConfirmed) return;
-                      }
                       setCurrentEditRecord((prev) => ({
                         ...prev,
-                        note: checked ? "Không tham gia khám" : "",
+                        notParticipated: checked,
+                        isChecked: checked ? false : prev.isChecked,
                       }));
                     }}
                   >
@@ -1989,6 +1963,8 @@ const HealthCheckProgramList = () => {
                   </Checkbox>
                 </Form.Item>
               </Col>
+
+              
             </Row>
           </Form>
         )}
