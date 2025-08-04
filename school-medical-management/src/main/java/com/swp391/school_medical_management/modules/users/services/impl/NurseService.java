@@ -161,7 +161,6 @@ public class NurseService {
     //     List<MedicalRequestDTO> medicalRequestDTOListReturn = new ArrayList<MedicalRequestDTO>();
 
 
-        
     //     List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository
     //             .findByStatus(MedicalRequestEntity.MedicalRequestStatus.CONFIRMED);
 
@@ -331,8 +330,8 @@ public class NurseService {
         List<MedicalRequestDTO> medicalRequestDTOList = new ArrayList<>();
         for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
             StudentEntity studentEntity = medicalRequestEntity.getStudent();
-
             StudentDTO studentDTO = modelMapper.map(studentEntity, StudentDTO.class);
+
             ClassEntity classEntity = studentEntity.getClassEntity();
             if (classEntity != null) {
                 ClassDTO classDTO = modelMapper.map(classEntity, ClassDTO.class);
@@ -351,10 +350,12 @@ public class NurseService {
             MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
                     MedicalRequestDTO.class);
             medicalRequestDTO.setStudentDTO(studentDTO);
+            if (medicalRequestEntity.getNurse() != null) {
+                medicalRequestDTO.setNurseDTO(modelMapper.map(medicalRequestEntity.getNurse(), UserDTO.class));
+            }
             medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
             medicalRequestDTOList.add(medicalRequestDTO);
         }
-
         return medicalRequestDTOList;
     }
 
@@ -491,6 +492,7 @@ public class NurseService {
         }
 
         medicalRequest.setStatus(newStatus);
+        medicalRequest.setNurse(userRepository.findById(nurseId).get());
         medicalRequestRepository.save(medicalRequest);
 
         MedicalRequestDTO dto = modelMapper.map(medicalRequest, MedicalRequestDTO.class);
@@ -501,7 +503,7 @@ public class NurseService {
                 .collect(Collectors.toList());
         dto.setMedicalRequestDetailDTO(detailDTOs);
 
-        dto.setNurseDTO(modelMapper.map(userRepository.findById(nurseId), UserDTO.class));
+        dto.setNurseDTO(modelMapper.map(userRepository.findById(nurseId).get(), UserDTO.class));
         dto.setParentDTO(modelMapper.map(medicalRequest.getParent(), UserDTO.class));
         return dto;
     }
@@ -1910,6 +1912,7 @@ public class NurseService {
 
         Optional<VaccineResultEntity> existed = vaccineResultRepository.findByVaccineFormEntity(form);
         existed.ifPresent(oldResult -> vaccineResultRepository.delete(oldResult));
+        StudentEntity student = form.getStudent();
 
         VaccineResultEntity result = new VaccineResultEntity();
         result.setResultNote(request.getResultNote());
@@ -1924,7 +1927,6 @@ public class NurseService {
 
         VaccineResultEntity savedResult = vaccineResultRepository.save(result);
 
-        StudentEntity student = form.getStudent();
         VaccineNameEntity vaccineName = form.getVaccineName();
 
         Optional<VaccineHistoryEntity> historyOpt = vaccineHistoryRepository.findByStudentAndVaccineNameEntity(student,
@@ -1939,9 +1941,16 @@ public class NurseService {
 
         vaccineHistoryRepository.save(history);
 
-        return modelMapper.map(savedResult, VaccineResultDTO.class);
-    }
+        ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
+        classDTO.setStudents(null);
+        StudentDTO studentDTO = modelMapper.map(student, StudentDTO.class);
+        studentDTO.setClassDTO(classDTO);
 
+        VaccineResultDTO resultDTO = modelMapper.map(savedResult, VaccineResultDTO.class);
+        resultDTO.setStudentDTO(studentDTO);
+
+        return resultDTO;
+    }
 
 
     // Thien
@@ -2300,7 +2309,7 @@ public class NurseService {
             dto.setStudentDTO(studentDTO);
 
             // dto.setNurseID(entity.getNurse() != null ? entity.getNurse().getUserId() : null);
-            dto.setStudentDTO(modelMapper.map(entity.getStudent(), StudentDTO.class));
+//            dto.setStudentDTO(modelMapper.map(entity.getStudent(), StudentDTO.class));
 
             // Tìm vaccineResultDTO từ VaccineResultEntity
             VaccineResultEntity vaccineResultEntity = vaccineResultRepository.findByVaccineFormEntity(entity)
@@ -2402,7 +2411,6 @@ public class NurseService {
             return dto;
         }).collect(Collectors.toList());
     }
-
 
 
     public void createVaccineForm(int programId, LocalDate expDate) {
