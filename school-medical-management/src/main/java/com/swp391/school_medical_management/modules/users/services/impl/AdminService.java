@@ -1085,11 +1085,11 @@ public class AdminService {
             StudentDTO dto = modelMapper.map(student, StudentDTO.class);
 
             // Mapping classDTO
-            if (student.getClassEntity() != null) {
-                ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
-                dto.setClassDTO(classDTO);
-                dto.setClassId(student.getClassEntity().getClassId());
-            }
+            // if (student.getClassEntity() != null) {
+            //     ClassDTO classDTO = modelMapper.map(student.getClassEntity(), ClassDTO.class);
+            //     dto.setClassDTO(classDTO);
+            //     dto.setClassId(student.getClassEntity().getClassId());
+            // }
 
             // Mapping parentDTO
             if (student.getParent() != null) {
