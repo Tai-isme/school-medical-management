@@ -840,10 +840,10 @@ const HealthCheckProgramList = () => {
                               SĐT:
                             </span>{" "}
                             <a
-                              href={`tel:${program.nurseDTO?.phoneNumber}`}
+                              href={`tel:${program.nurseDTO?.phone}`}
                               style={{ color: "#1976d2", fontWeight: 500 }}
                             >
-                              {program.nurseDTO?.phoneNumber}
+                              {program.nurseDTO?.phone}
                             </a>{" "}
                             |{" "}
                             <span style={{ fontWeight: 600, color: "#000" }}>
@@ -1086,7 +1086,7 @@ const HealthCheckProgramList = () => {
                                         localStorage.getItem("token");
                                       try {
                                         await axios.patch(
-                                          `http://localhost:8080/api/admin/health-check-program/${program.id}?status=COMPLETED`,
+                                          `http://localhost:8080/api/admin/completed-health-check-program/${program.id}?status=COMPLETED`,
                                           {},
                                           {
                                             headers: {
@@ -1735,23 +1735,23 @@ const HealthCheckProgramList = () => {
           const r = currentEditRecord;
 
           // Validation...
-          if (
-            !r.height ||
-            isNaN(r.height) ||
-            r.height < 100 ||
-            r.height > 200
-          ) {
-            Swal.fire("Lỗi", "Chiều cao phải từ 100 đến 200!", "error");
-            return;
-          }
-          if (!r.weight || isNaN(r.weight) || r.weight < 15 || r.weight > 120) {
-            Swal.fire("Lỗi", "Cân nặng phải từ 15 đến 120!", "error");
-            return;
-          }
-          if (!r.vision || !/^([1-9]|10)\/10$/.test(r.vision)) {
-            Swal.fire("Lỗi", "Thị lực không hợp lệ!", "error");
-            return;
-          }
+          // if (
+          //   !r.height ||
+          //   isNaN(r.height) ||
+          //   r.height < 100 ||
+          //   r.height > 200
+          // ) {
+          //   Swal.fire("Lỗi", "Chiều cao phải từ 100 đến 200!", "error");
+          //   return;
+          // }
+          // if (!r.weight || isNaN(r.weight) || r.weight < 15 || r.weight > 120) {
+          //   Swal.fire("Lỗi", "Cân nặng phải từ 15 đến 120!", "error");
+          //   return;
+          // }
+          // if (!r.vision || !/^([1-9]|10)\/10$/.test(r.vision)) {
+          //   Swal.fire("Lỗi", "Thị lực không hợp lệ!", "error");
+          //   return;
+          // }
 
           try {
             const token = localStorage.getItem("token");
