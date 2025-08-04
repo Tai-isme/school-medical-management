@@ -123,6 +123,72 @@ public class NurseService {
         return null;
     }
 
+    public MedicalRequestDTO createMedicalRequest(int nurseId, MedicalRequest request, MultipartFile image) {
+
+        String imageUrl = null;
+        try {
+            imageUrl = uploadImageFile.uploadImage(image);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+
+        Optional<StudentEntity> studentOpt = studentRepository.findStudentById(request.getStudentId());
+        if (studentOpt.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tim thấy học sinh");
+        StudentEntity student = studentOpt.get();
+        UserEntity nurse = userRepository.findById(nurseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phụ huynh"));
+
+        if (request.getMedicalRequestDetailRequests() == null ||
+                request.getMedicalRequestDetailRequests().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chi tiết đơn thuốc không được để trống!");
+        }
+
+        if (request.getDate() == null ||
+                request.getDate().isBefore(java.time.LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày gửi thuốc phải là ngày hôm nay hoặc trong tương lai!");
+        }
+
+        MedicalRequestEntity medicalRequestEntity = new MedicalRequestEntity();
+        medicalRequestEntity.setRequestName(request.getRequestName());
+        medicalRequestEntity.setDate(request.getDate());
+        medicalRequestEntity.setStatus(MedicalRequestEntity.MedicalRequestStatus.CONFIRMED);
+        medicalRequestEntity.setNote(request.getNote());
+        medicalRequestEntity.setStudent(student);
+        medicalRequestEntity.setParent(student.getParent());
+        medicalRequestEntity.setNurse(nurse);
+        medicalRequestEntity.setImage(imageUrl);
+
+        medicalRequestEntity.setMedicalRequestDetailEntities(new ArrayList<>());
+
+        for (MedicalRequestDetailRequest details : request.getMedicalRequestDetailRequests()) {
+            MedicalRequestDetailEntity medicalRequestDetailEntity = new MedicalRequestDetailEntity();
+            medicalRequestDetailEntity.setMedicineName(details.getMedicineName());
+            medicalRequestDetailEntity.setQuantity(details.getQuantity());
+            medicalRequestDetailEntity.setType(details.getType());
+            medicalRequestDetailEntity.setMethod(details.getMethod());
+            medicalRequestDetailEntity.setTimeSchedule(details.getTimeSchedule());
+            medicalRequestDetailEntity.setStatus(MedicalRequestDetailEntity.Status.NOT_TAKEN);
+            medicalRequestDetailEntity.setNote(details.getNote());
+            medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
+
+            medicalRequestEntity.getMedicalRequestDetailEntities().add(medicalRequestDetailEntity);
+        }
+
+        medicalRequestRepository.save(medicalRequestEntity);
+        MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
+                MedicalRequestDTO.class);
+        List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestEntity
+                .getMedicalRequestDetailEntities()
+                .stream()
+                .map(medicalRequestDetailEntity -> modelMapper.map(medicalRequestDetailEntity,
+                        MedicalRequestDetailDTO.class))
+                .collect(Collectors.toList());
+        medicalRequestDTO.setMedicalRequestDetailDTO(medicalRequestDetailDTOList);
+        return medicalRequestDTO;
+    }
+
+
     public List<MedicalRequestDTO> getAllMedicalRequest() {
         List<MedicalRequestEntity> medicalRequestEntityList = medicalRequestRepository.findAll();
         if (medicalRequestEntityList.isEmpty()) {

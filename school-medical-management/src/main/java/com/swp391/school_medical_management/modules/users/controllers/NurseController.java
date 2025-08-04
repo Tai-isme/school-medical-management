@@ -1,6 +1,7 @@
 package com.swp391.school_medical_management.modules.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity;
@@ -28,6 +29,24 @@ public class NurseController {
 
     @Autowired
     private NurseService nurseService;
+
+    @PostMapping(value = "/medical-request", consumes = {"multipart/form-data"})
+    public ResponseEntity<MedicalRequestDTO> createMedicalRequest(
+            @RequestPart("request") String requestJson,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        String nurseId = SecurityContextHolder.getContext().getAuthentication().getName();
+        MedicalRequest request;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            request = mapper.readValue(requestJson, MedicalRequest.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid request format: " + e.getMessage());
+        }
+        MedicalRequestDTO medicalRequestDTO = nurseService.createMedicalRequest(Integer.parseInt(nurseId), request,
+                image);
+        return ResponseEntity.status(HttpStatus.CREATED).body(medicalRequestDTO);
+    }
 
     @GetMapping("/medical-request/processing")
     public ResponseEntity<List<MedicalRequestDTO>> getPendingMedicalRequest() {
