@@ -2,13 +2,14 @@ package com.swp391.school_medical_management.service;
 
 import com.swp391.school_medical_management.modules.users.dtos.response.NotificationMessageDTO;
 import com.swp391.school_medical_management.modules.users.entities.NotificationEntity;
-import com.swp391.school_medical_management.modules.users.entities.UserEntity;
 import com.swp391.school_medical_management.modules.users.repositories.NotificationRepository;
 import com.swp391.school_medical_management.modules.users.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,36 +30,52 @@ public class NotificationService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public void sendNotificationToParent(int parentId, String title, String content, String formType, long formId,
-                                         boolean isRead) {
-        UserEntity user = userRepository.findById(parentId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public NotificationMessageDTO sendNotificationToParent(int userId, String title, String content, String formType, int formId, boolean isRead) {
+        NotificationEntity noti = new NotificationEntity();
+        noti.setUser(userRepository.findById(userId).orElseThrow());
+        noti.setTitle(title);
+        noti.setContent(content);
+        noti.setFormType(formType);
+        noti.setFormId(formId);
+        noti.setCreatedAt(LocalDateTime.now());
+        noti.setRead(isRead);
 
-        NotificationEntity notificationEntity = new NotificationEntity();
-        notificationEntity.setUser(user);
-        notificationEntity.setTitle(title);
-        notificationEntity.setContent(content);
-        notificationEntity.setFormType(formType);
-        notificationEntity.setFormId(formId);
-        notificationEntity.setRead(isRead);
-        notificationEntity.setCreatedAt(LocalDateTime.now());
-        notificationRepository.save(notificationEntity);
+        NotificationEntity saved = notificationRepository.save(noti);
+        messagingTemplate.convertAndSend(
+                "/topic/parent/" + userId,
+                modelMapper.map(saved, NotificationMessageDTO.class)
+        );
+        return modelMapper.map(saved, NotificationMessageDTO.class);
+    }
 
-        NotificationMessageDTO message = new NotificationMessageDTO(
-                title,
-                content,
-                notificationEntity.getCreatedAt().toString(),
-                formType,
-                formId,
-                isRead);
-        messagingTemplate.convertAndSend("/topic/parent/" + parentId, message);
+    public NotificationMessageDTO sendNotificationToAllNurse(String title, String content, String formType, int formId) {
+        NotificationEntity noti = new NotificationEntity();
+        noti.setUser(null);
+        noti.setTitle(title);
+        noti.setContent(content);
+        noti.setFormType(formType);
+        noti.setFormId(formId);
+        noti.setCreatedAt(LocalDateTime.now());
+        noti.setRead(false);
+
+        NotificationEntity saved = notificationRepository.save(noti);
+
+        NotificationMessageDTO dto = modelMapper.map(saved, NotificationMessageDTO.class);
+        messagingTemplate.convertAndSend("/topic/nurse/global", dto);
+        return dto;
+    }
+
+    public void markAsRead(int id) {
+        NotificationEntity notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy thông báo"));
+
+        notification.setRead(true); // isRead = true
+        notificationRepository.save(notification);
     }
 
     public List<NotificationMessageDTO> getNotificationByUserId(int userId) {
-        List<NotificationEntity> notificationEntityList = notificationRepository
-                .findByUser_UserIdOrderByCreatedAtDesc(userId);
-        List<NotificationMessageDTO> notificationMessageDTOList = notificationEntityList.stream()
-                .map(notify -> modelMapper.map(notify, NotificationMessageDTO.class)).collect(Collectors.toList());
+        List<NotificationEntity> notificationEntityList = notificationRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
+        List<NotificationMessageDTO> notificationMessageDTOList = notificationEntityList.stream().map(notify -> modelMapper.map(notify, NotificationMessageDTO.class)).collect(Collectors.toList());
         return notificationMessageDTOList;
     }
 }

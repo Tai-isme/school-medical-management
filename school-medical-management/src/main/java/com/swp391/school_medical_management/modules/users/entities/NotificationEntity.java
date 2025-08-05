@@ -28,7 +28,7 @@ public class NotificationEntity {
     private String formType; // "HEALTH_CHECK" hoặc "VACCINE"
 
     @Column(name = "form_id")
-    private Long formId;
+    private int formId;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt = LocalDateTime.now();

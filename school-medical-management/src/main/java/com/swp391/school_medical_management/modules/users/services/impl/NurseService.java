@@ -6,6 +6,7 @@ import com.swp391.school_medical_management.modules.users.entities.*;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.*;
 import com.swp391.school_medical_management.service.EmailService;
+import com.swp391.school_medical_management.service.NotificationService;
 import com.swp391.school_medical_management.service.UploadImageFile;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -94,6 +95,9 @@ public class NurseService {
 
     @Autowired
     private UploadImageFile uploadImageFile;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public List<MedicalRequestDTO> getPendingMedicalRequest() {
         // List<MedicalRequestEntity> pendingMedicalRequestList =
@@ -516,7 +520,25 @@ public class NurseService {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cần cung cấp lý do khi hủy yêu cầu");
                     }
                     medicalRequest.setReasonRejected(request.getReason_rejected());
+                    // Gửi thông báo từ chối
+                    notificationService.sendNotificationToParent(
+                            medicalRequest.getParent().getUserId(),
+                            "Yêu cầu gửi thuốc bị từ chối",
+                            "Yêu cầu gửi thuốc cho học sinh " + student.getFullName() + " đã bị từ chối. Lý do: " + request.getReason_rejected(),
+                            "MEDICAL_REQUEST",
+                            medicalRequest.getRequestId(),
+                            false
+                    );
                 }
+                // Gửi thông báo xác nhận
+                notificationService.sendNotificationToParent(
+                        medicalRequest.getParent().getUserId(),
+                        "Đã xác nhận yêu cầu gửi thuốc",
+                        "Yêu cầu gửi thuốc cho học sinh " + student.getFullName() + " đã được xác nhận.",
+                        "MEDICAL_REQUEST",
+                        medicalRequest.getRequestId(),
+                        false
+                );
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể xác nhận đơn thuốc hoặc từ chối đơn thuốc!");
             }
@@ -528,6 +550,15 @@ public class NurseService {
             if (!allTaken) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tất cả thuốc trong đơn phải được cho uống hết thì mới có thể hoàn thành đơn thuốc");
             }
+            // Gửi thông báo xác nhận
+            notificationService.sendNotificationToParent(
+                    medicalRequest.getParent().getUserId(),
+                    "Đã cho học sinh uống thuốc thành công",
+                    "Học sinh " + student.getFullName() + " đã được uống thuốc. Đơn thuốc: " + medicalRequest.getRequestName(),
+                    "MEDICAL_REQUEST",
+                    medicalRequest.getRequestId(),
+                    false
+            );
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể chuyển trạng thái từ " + currentStatus + " sang " + newStatus);
         }
@@ -861,7 +892,16 @@ public class NurseService {
         medicalEventEntity.setStudent(student);
         medicalEventEntity.setNurse(nurse);
         medicalEventRepository.save(medicalEventEntity);
-
+        /*Gui thong bao */
+        notificationService.sendNotificationToParent(
+                student.getParent().getUserId(),
+                "Thông báo sự cố",
+                "Học sinh " + student.getFullName() + " bị " + medicalEventEntity.getTypeEvent() + " tại " + medicalEventEntity.getLocation(),
+                "MEDICAL_EVENT",
+                medicalEventEntity.getEventId(),
+                false
+        );
+        /*-------------*/
         MedicalEventDTO dto = modelMapper.map(medicalEventEntity, MedicalEventDTO.class);
         dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
         dto.setParentDTO(modelMapper.map(student.getParent(), UserDTO.class));
@@ -2111,6 +2151,17 @@ public class NurseService {
                 form.setHealthCheckProgram(programEntity);
                 form.setNurse(nurse);
                 healthCheckFormRepository.save(form);
+
+                /*Gui thong bao */
+                notificationService.sendNotificationToParent(
+                        parent.getUserId(),
+                        "Thông báo chương trình khám sức khỏe",
+                        "Bạn có phiếu thông báo khám sức khỏe cho học sinh " + form.getStudent().getFullName() + " cần xác nhận.",
+                        "HEALTH_CHECK",
+                        form.getId(),
+                        false
+                );
+                /*-------------*/
             }
         }
         programEntity.setStatus(HealthCheckProgramEntity.HealthCheckProgramStatus.FORM_SENT);
@@ -2525,6 +2576,17 @@ public class NurseService {
                 form.setNote(null);
 
                 vaccineFormRepository.save(form);
+
+                /*Gui thong bao */
+                notificationService.sendNotificationToParent(
+                        parent.getUserId(),
+                        "Thông báo chương trình tiêm chủng",
+                        "Bạn có phiếu thông báo tiêm chủng cho học sinh " + student.getFullName() + " cần xác nhận.",
+                        "VACCINE",
+                        form.getId(),
+                        false
+                );
+                /*-------------*/
             }
         }
 

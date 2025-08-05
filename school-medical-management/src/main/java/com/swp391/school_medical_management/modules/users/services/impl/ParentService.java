@@ -6,6 +6,7 @@ import com.swp391.school_medical_management.modules.users.entities.*;
 import com.swp391.school_medical_management.modules.users.entities.HealthCheckProgramEntity.HealthCheckProgramStatus;
 import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.repositories.*;
+import com.swp391.school_medical_management.service.NotificationService;
 import com.swp391.school_medical_management.service.UploadImageFile;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -67,8 +68,12 @@ public class ParentService {
 
     @Autowired
     private UploadImageFile uploadImageFile;
+
     @Autowired
     private VaccineProgramRepository vaccineProgramRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public MedicalRecordDTO createMedicalRecord(int parentId, MedicalRecordsRequest request) {
         Optional<StudentEntity> studentOpt = studentRepository.findById(request.getStudentId());
@@ -324,6 +329,16 @@ public class ParentService {
         }
 
         medicalRequestRepository.save(medicalRequestEntity);
+
+        /*Gui thong bao */
+        notificationService.sendNotificationToAllNurse(
+                "Thông báo yê cầu gửi thuốc",
+                "Phụ huynh " + medicalRequestEntity.getParent().getFullName() + " đã tạo yêu cầu gửi thuốc mới.",
+                "MEDICAL_REQUEST",
+                medicalRequestEntity.getRequestId()
+        );
+        /*-------------*/
+
         MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
                 MedicalRequestDTO.class);
         List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestEntity
