@@ -123,7 +123,7 @@ const HealthCheckProgramModal = ({
           </Col>
           <Col span={12}>
             <Form.Item
-              label="Ngày gửi form"
+              label="Ngày gửi biểu mẫu"
               name="dateSendForm"
               dependencies={["startDate"]} // Cần thiết để theo dõi thay đổi của startDate
               rules={[

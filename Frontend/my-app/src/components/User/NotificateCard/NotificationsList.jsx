@@ -1,6 +1,16 @@
 import React, { useState, useMemo } from "react";
-import { Modal, Input, Select, DatePicker, Row, Col, Space, Button } from "antd";
+import {
+  Modal,
+  Input,
+  Select,
+  DatePicker,
+  Row,
+  Col,
+  Space,
+  Button,
+} from "antd";
 import axios from "axios";
+import dayjs from "dayjs";
 import VaccineNotificationModalContent from "./VaccineNotificationModalContent";
 import HealthCheckNotificationModalContent from "./HealthCheckNotificationModalContent";
 import "./NotificationsList.css";
@@ -16,10 +26,7 @@ const STATUS_OPTIONS = [
 ];
 
 const getStatus = (notification) => {
-  if (
-    notification.commit === true ||
-    notification.commit === "true"
-  )
+  if (notification.commit === true || notification.commit === "true")
     return "registered";
   if (
     notification.commit === false ||
@@ -115,26 +122,30 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
 
   // Filter logic
   const filteredNotifications = useMemo(() => {
-    return (notifications || [])
-      .filter((n) => {
-        // Filter by search
-        const eventName =
-          n.type === "healthcheck"
-            ? n.healthCheckProgramDTO?.healthCheckName || ""
-            : n.vaccineProgramDTO?.vaccineProgramName || "";
-        if (search && !eventName.toLowerCase().includes(search.toLowerCase()))
-          return false;
-        // Filter by status
-        if (status && getStatus(n) !== status) return false;
-        // Filter by date range (formDate)
-        if (
-          dateRange.length === 2 &&
-          (new Date(n.formDate) < dateRange[0]._d ||
-            new Date(n.formDate) > dateRange[1]._d)
-        )
-          return false;
-        return true;
-      });
+    if (!Array.isArray(notifications)) return [];
+
+    return notifications.filter((n) => {
+      // Extract event name
+      const eventName =
+        n.type === "healthcheck"
+          ? n.healthCheckProgramDTO?.healthCheckName || ""
+          : n.vaccineProgramDTO?.vaccineProgramName || "";
+
+      // Filter by search
+      const matchSearch =
+        !search || eventName.toLowerCase().includes(search.toLowerCase());
+
+      // Filter by status
+      const matchStatus = !status || getStatus(n) === status;
+
+      // Filter by date range
+      const matchDate =
+        !dateRange?.length ||
+        (dayjs(n.formDate).isSameOrAfter(dateRange[0]) &&
+          dayjs(n.formDate).isSameOrBefore(dateRange[1]));
+
+      return matchSearch && matchStatus && matchDate;
+    });
   }, [notifications, search, status, dateRange]);
 
   const handleResetFilters = () => {

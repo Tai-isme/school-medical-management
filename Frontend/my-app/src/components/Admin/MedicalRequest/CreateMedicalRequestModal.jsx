@@ -280,10 +280,10 @@ const CreateMedicalRequestModal = ({
                   <span role="img" aria-label="dob">📅</span> Ngày sinh: {selectedStudent?.dob || "--"}
                 </div>
                 <div style={{ color: "#555", marginBottom: 8 }}>
-                  <span role="img" aria-label="class">🎒</span> Lớp: {selectedStudent?.className || "--"}
+                  <span role="img" aria-label="class">🏫</span> Lớp: {selectedStudent?.className || "--"}
                 </div>
                 <div style={{ color: "#555" }}>
-                  <span role="img" aria-label="gender">🧑‍🎓</span> Giới tính: {selectedStudent?.gender || "--"}
+                  <span role="img" aria-label="gender">🚻</span> Giới tính: {selectedStudent?.gender || "--"}
                 </div>
               </>
             );

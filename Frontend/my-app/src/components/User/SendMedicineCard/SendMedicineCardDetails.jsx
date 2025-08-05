@@ -128,7 +128,7 @@ const RequestTable = () => {
           text = "Đã duyệt";
         } else if (status === "COMPLETED") {
           color = "#4caf50";
-          text = "Đã cho uống";
+          text = "Đã hoàn thành";
         } else if (status === "CANCELLED" || status === "CANCLE") {
           color = "#f44336";
           text = "Bị từ chối";

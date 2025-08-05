@@ -58,6 +58,12 @@ const MedicalEventList = () => {
   const [fileList, setFileList] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
+   const user = JSON.parse(localStorage.getItem("users"));
+  const userRole = user?.role || "";
+
+  const [selectedNurse, setSelectedNurse] = useState("");
+  const [dateRange, setDateRange] = useState([]);
+
   const renderLevelText = (level) => {
     switch (level) {
       case "LOW":
@@ -127,6 +133,7 @@ const MedicalEventList = () => {
           item.classDTO?.classId ||
           item.classId, // Ưu tiên lấy từ studentDTO
         studentName: item.studentDTO?.fullName || `ID ${item.studentId}`,
+        studentAvatar: item.studentDTO?.avatarUrl || `ID ${item.studentId}`,
         className:
           item.classDTO?.className ||
           item.studentDTO?.classDTO?.className ||
@@ -153,7 +160,7 @@ const MedicalEventList = () => {
     if (searchText.trim() !== "") {
       tempData = tempData.filter(
         (item) =>
-          item.eventName?.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.typeEvent?.toLowerCase().includes(searchText.toLowerCase()) ||
           item.studentName?.toLowerCase().includes(searchText.toLowerCase())
       );
     }
@@ -166,9 +173,31 @@ const MedicalEventList = () => {
       tempData = tempData.filter((item) => item.levelCheck === selectedLevel);
     }
 
+    if (selectedNurse) {
+      tempData = tempData.filter((item) => item.nurseName === selectedNurse);
+    }
+
+    if (dateRange && dateRange.length === 2) {
+      const [startDate, endDate] = dateRange;
+      tempData = tempData.filter((item) => {
+        const itemDate = dayjs(item.date);
+        return (
+          itemDate.isSameOrAfter(startDate, "day") &&
+          itemDate.isSameOrBefore(endDate, "day")
+        );
+      });
+    }
+
     setFilteredData(tempData);
     setCurrentPage(1);
-  }, [searchText, selectedClass, selectedLevel, data]);
+  }, [
+    searchText,
+    selectedClass,
+    selectedLevel,
+    selectedNurse,
+    dateRange,
+    data,
+  ]);
 
   const getUniqueClassNames = () => [
     ...new Set(data.map((item) => item.className)),
@@ -416,15 +445,16 @@ const MedicalEventList = () => {
         Danh sách sự kiện y tế
       </h2>
 
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col span={4}>
           <Search
             placeholder="Tìm theo tên sự kiện hoặc học sinh"
             onChange={(e) => setSearchText(e.target.value)}
             allowClear
           />
         </Col>
-        <Col span={6}>
+
+        <Col span={4}>
           <Select
             placeholder="Lọc theo lớp"
             style={{ width: "100%" }}
@@ -438,9 +468,35 @@ const MedicalEventList = () => {
             ))}
           </Select>
         </Col>
-        <Col span={6}>
+
+        <Col span={4}>
           <Select
-            placeholder="Lọc theo mức độ"
+            placeholder="Lọc theo y tá"
+            style={{ width: "100%" }}
+            allowClear
+            onChange={(value) => setSelectedNurse(value)}
+          >
+            {[...new Set(data.map((item) => item.nurseName))].map((nurse) => (
+              <Option key={nurse} value={nurse}>
+                {nurse}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+
+        <Col span={6}>
+          <DatePicker.RangePicker
+            format="DD/MM/YYYY"
+            style={{ width: "100%" }}
+            placeholder={['Từ ngày', 'Đến ngày']}
+            onChange={(dates) => setDateRange(dates)}
+            allowClear
+          />
+        </Col>
+
+        <Col span={3}>
+          <Select
+            placeholder="Mức độ"
             style={{ width: "100%" }}
             onChange={(value) => setSelectedLevel(value)}
             allowClear
@@ -450,19 +506,23 @@ const MedicalEventList = () => {
             <Option value="HIGH">Nặng</Option>
           </Select>
         </Col>
-        <Col span={6}>
-          <Button
-            type="primary"
-            onClick={() => {
-              setEditingId(null);
-              form.resetFields();
-              setUploadedImage(null);
-              setFileList([]);
-              setCreateModalVisible(true);
-            }}
-          >
-            Tạo sự cố
-          </Button>
+
+        <Col span={3}>
+          {userRole !== "ADMIN" && (
+            <Button
+              type="primary"
+              style={{ width: "100%" }}
+              onClick={() => {
+                setEditingId(null);
+                form.resetFields();
+                setUploadedImage(null);
+                setFileList([]);
+                setCreateModalVisible(true);
+              }}
+            >
+              Tạo sự cố
+            </Button>
+          )}
         </Col>
       </Row>
 
@@ -496,7 +556,12 @@ const MedicalEventList = () => {
                     fontWeight: "bold",
                   }}
                 >
-                  {item.eventName}
+                  <p>
+                    <span style={{ color: "#000000", fontWeight: 600 }}>
+                      Sự cố:
+                    </span>{" "}
+                    {item.typeEvent}
+                  </p>
                 </h3>
                 <p>
                   <strong>Học sinh:</strong> {item.studentName}
@@ -652,15 +717,59 @@ const MedicalEventList = () => {
                 <strong>Xử lý:</strong>{" "}
                 {selectedEvent.actionsTaken || "(Không có)"}
               </p>
+
+              {selectedEvent.image ? (
+                <div style={{ marginTop: 12 }}>
+                  <strong>Hình ảnh:</strong>
+                  <img
+                    src={selectedEvent.image}
+                    alt="Ảnh sự kiện"
+                    style={{
+                      maxWidth: "100%",
+                      marginTop: 8,
+                      borderRadius: 6,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      setPreviewImage(selectedEvent.image);
+                      setPreviewVisible(true);
+                    }}
+                  />
+                </div>
+              ) : (
+                <p>
+                  <strong>Hình ảnh:</strong> (Không có hình ảnh)
+                </p>
+              )}
             </Panel>
             <Panel header="🧒 Học sinh" key="3">
-              <p>
-                <strong>Học sinh:</strong> {selectedEvent.studentName}
-              </p>
-              <p>
-                <strong>Lớp:</strong> {selectedEvent.className}
-              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <Avatar
+                  src={selectedEvent.studentDTO?.avatarUrl}
+                  alt={selectedEvent.studentDTO?.fullName}
+                  size={64}
+                  style={{ border: "1px solid #d9d9d9" }}
+                />
+                <div>
+                  <p>
+                    <strong>Học sinh:</strong>{" "}
+                    {selectedEvent.studentDTO?.fullName}
+                  </p>
+                  <p>
+                    <strong>Lớp:</strong> {selectedEvent.className}
+                  </p>
+                  <p>
+                    <strong>Giới tính:</strong>{" "}
+                    {selectedEvent.studentDTO?.gender === "MALE" ? "Nam" : "Nữ"}
+                  </p>
+                  <p>
+                    <strong>Ngày sinh:</strong>{" "}
+                    {dayjs(selectedEvent.studentDTO?.dob).format("DD/MM/YYYY")}
+                  </p>
+                </div>
+              </div>
             </Panel>
+
             <Panel header="📍 Địa điểm & thời gian" key="2">
               <p>
                 <strong>Địa điểm:</strong> {selectedEvent.location}
@@ -689,22 +798,6 @@ const MedicalEventList = () => {
               <p>
                 <strong>Email:</strong> {selectedEvent.email}
               </p>
-            </Panel>
-
-            <Panel header="🖼️ Hình ảnh" key="6">
-              {selectedEvent.image ? (
-                <img
-                  src={selectedEvent.image}
-                  alt="Ảnh sự kiện"
-                  style={{ maxWidth: "100%", borderRadius: 6 }}
-                  onClick={() => {
-                    setPreviewImage(selectedEvent.image);
-                    setPreviewVisible(true);
-                  }}
-                />
-              ) : (
-                "(Không có hình ảnh)"
-              )}
             </Panel>
           </Collapse>
         )}

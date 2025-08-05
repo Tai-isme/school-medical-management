@@ -12,6 +12,17 @@ import {
 } from "antd"; // Import Typography
 import axios from "axios";
 import { urlServer } from "../../../api/urlServer";
+import {
+  UserOutlined,
+  SoundOutlined,
+  DashboardOutlined,
+  ColumnHeightOutlined,
+  EyeOutlined,
+  ExclamationCircleOutlined,
+  WarningOutlined,
+  MedicineBoxOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
 
 const { Text } = Typography; // Sử dụng Text để có thể style chữ
 
@@ -110,15 +121,11 @@ export default function MedicalRecordModal({
         );
         message.success(`Cập nhật hồ sơ cho học sinh ${studentId} thành công`);
       } else {
-        await axios.post(
-          `${urlServer}/api/parent/medical-records`,
-          payload,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        await axios.post(`${urlServer}/api/parent/medical-records`, payload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         message.success(`Khai báo hồ sơ cho học sinh ${studentId} thành công`);
       }
       localStorage.setItem("studentIdAlready", studentId);
@@ -253,6 +260,10 @@ export default function MedicalRecordModal({
       ),
     },
   ];
+  const visionOptions = Array.from({ length: 10 }, (_, i) => ({
+    label: `${i + 1}/10`,
+    value: `${i + 1}/10`,
+  }));
 
   return (
     <Modal
@@ -316,46 +327,41 @@ export default function MedicalRecordModal({
                 <Form.Item
                   label={
                     <span>
-                      Thị giác <span style={{ color: "red" }}>*</span>
+                      <EyeOutlined style={{ marginRight: 8 }} />
+                      Thị giác{" "}
+                      <ExclamationCircleOutlined
+                        style={{ color: "#faad14", marginLeft: 6 }}
+                      />
                     </span>
                   }
                   name="vision"
                   style={{ flex: 1 }}
-                  validateTrigger="onBlur"
                   rules={[
-                    { required: true, message: "Vui lòng nhập thị giác" },
-                    {
-                      validator: (_, value) => {
-                        // Chấp nhận định dạng x/10 với x từ 1 đến 10
-                        if (!value) return Promise.resolve();
-                        const match = value.match(/^([1-9]|10)\/10$/);
-                        if (match) return Promise.resolve();
-                        return Promise.reject(
-                          "Thị giác phải có định dạng từ 1/10 đến 10/10"
-                        );
-                      },
-                    },
+                    { required: true, message: "Vui lòng chọn thị giác" },
                   ]}
                 >
-                  <Input
-                    placeholder="Vd: 10/10"
-                    onFocus={() =>
-                      form.setFields([{ name: "vision", errors: [] }])
-                    }
+                  <Select
+                    placeholder="🔥 Đây là dropdown thị giác"
+                    options={visionOptions}
+                    showSearch
+                    optionFilterProp="label"
                   />
                 </Form.Item>
 
                 <Form.Item
                   label={
                     <span>
-                      Thính lực <span style={{ color: "red" }}>*</span>
+                      👂Thính lực <span style={{ color: "red" }}>*</span>
                     </span>
                   }
                   name="hearing"
                   style={{ flex: 1 }}
                   validateTrigger="onBlur"
                   rules={[
-                    { required: true, message: "Vui lòng nhập thính lực" },
+                    {
+                      required: true,
+                      message: "Vui lòng nhập thông tin thính lực",
+                    },
                   ]}
                 >
                   <Input
@@ -370,6 +376,7 @@ export default function MedicalRecordModal({
                 <Form.Item
                   label={
                     <span>
+                      <DashboardOutlined style={{ marginRight: 8 }} />
                       Cân nặng <span style={{ color: "red" }}>*</span>
                     </span>
                   }
@@ -382,7 +389,7 @@ export default function MedicalRecordModal({
                       validator: (_, value) =>
                         value && Number(value) > 0
                           ? Promise.resolve()
-                          : Promise.reject("Cân nặng phải lớn hơn 0"),
+                          : Promise.reject("Cân nặng phải là số lớn hơn 0"),
                     },
                   ]}
                 >
@@ -394,9 +401,11 @@ export default function MedicalRecordModal({
                     }
                   />
                 </Form.Item>
+
                 <Form.Item
                   label={
                     <span>
+                      <ColumnHeightOutlined style={{ marginRight: 8 }} />
                       Chiều cao <span style={{ color: "red" }}>*</span>
                     </span>
                   }
@@ -409,7 +418,7 @@ export default function MedicalRecordModal({
                       validator: (_, value) =>
                         value && Number(value) > 0
                           ? Promise.resolve()
-                          : Promise.reject("Chiều cao phải lớn hơn 0"),
+                          : Promise.reject("Chiều cao phải là số lớn hơn 0"),
                     },
                   ]}
                 >
@@ -422,14 +431,39 @@ export default function MedicalRecordModal({
                   />
                 </Form.Item>
               </div>
-              <Form.Item label="Bị dị ứng với các loại nào" name="allergies">
+              <Form.Item
+                label={
+                  <span>
+                    <WarningOutlined style={{ marginRight: 8 }} />
+                    Bị dị ứng với các loại nào
+                  </span>
+                }
+                name="allergies"
+              >
                 <Input.TextArea rows={2} placeholder="Hải sản, Tôm,..." />
               </Form.Item>
-              <Form.Item label="Bệnh mãn tính" name="chronicDisease">
+
+              <Form.Item
+                label={
+                  <span>
+                    <MedicineBoxOutlined style={{ marginRight: 8 }} />
+                    Bệnh mãn tính
+                  </span>
+                }
+                name="chronicDisease"
+              >
                 <Input.TextArea rows={2} placeholder="hen suyễn,..." />
               </Form.Item>
 
-              <Form.Item label="Ghi chú" name="note">
+              <Form.Item
+                label={
+                  <span>
+                    <FileTextOutlined style={{ marginRight: 8 }} />
+                    Ghi chú
+                  </span>
+                }
+                name="note"
+              >
                 <Input.TextArea rows={2} placeholder="ghi chú thêm" />
               </Form.Item>
             </div>
