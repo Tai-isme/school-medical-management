@@ -17,75 +17,49 @@ const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
 
   const fetchNotifications = async () => {
-    if (!selectedStudentId) return;
-    const fetchEvents = async () => {
-      try {
-        const res = await axios.get(
-          `${urlServer}/api/parent/all-forms/${selectedStudentId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const { healthCheckForms = [], vaccineForms = [] } = res.data;
+    if (!selectedStudentId) {
+      setNotifications([]);
+      return;
+    }
+    try {
+      const res = await axios.get(
+        `${urlServer}/api/parent/all-forms/${selectedStudentId}`,
+        {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
+      )
+      const { healthCheckForms = [], vaccineForms = [] } = res.data;
 
-        const healthNoti = healthCheckForms.map((item) => ({
-          ...item,
-          type: "healthcheck",
-        }));
+      // Chuẩn hóa healthCheckForms
+      const healthCheckNotifications = healthCheckForms.map((item) => ({
+        ...item,
+        type: "healthcheck",
+        formDate: item.healthCheckProgramDTO?.dateSendForm || item.expDate, // dùng dateSendForm nếu có
+        note: item.notes, // chú ý: healthCheck dùng notes, vaccine dùng note
+      }));
 
-        const vaccineNoti = vaccineForms.map((item) => ({
-          ...item,
-          type: "vaccine",
-        }));
+      // Chuẩn hóa vaccineForms
+      const vaccineNotifications = vaccineForms.map((item) => ({
+        ...item,
+        type: "vaccine",
+        formDate: item.vaccineProgramDTO?.dateSendForm || item.expDate,
+        note: item.note,
+      }));
 
-        setNotifications([...healthNoti, ...vaccineNoti]);
-        console.log("Fetched notifications:", notifications);
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-        setNotifications([]);
-      }
-    };
-    fetchEvents();
+      setNotifications([...healthCheckNotifications, ...vaccineNotifications]);
+    } catch (error) {
+      setNotifications([]);
+    }
   };
 
   useEffect(() => {
-    if (!selectedStudentId) return;
-    const fetchEvents = async () => {
-      try {
-        const res = await axios.get(
-          `${urlServer}/api/parent/all-forms/${selectedStudentId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const { healthCheckForms = [], vaccineForms = [] } = res.data;
-
-        const healthNoti = healthCheckForms.map((item) => ({
-          ...item,
-          type: "healthcheck",
-        }));
-
-        const vaccineNoti = vaccineForms.map((item) => ({
-          ...item,
-          type: "vaccine",
-        }));
-
-        setNotifications([...healthNoti, ...vaccineNoti]);
-        console.log("Fetched notifications:", notifications);
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-        setNotifications([]);
-      }
-    };
-    fetchEvents();
+    setNotifications([]); // Reset notifications khi đổi học sinh
+    fetchNotifications();
+    // eslint-disable-next-line
   }, [selectedStudentId]);
-
   
-
   return (
     <div className="notifications-container" style={{ position: "relative" }}>
       {/* Nút Home ở góc trên trái */}

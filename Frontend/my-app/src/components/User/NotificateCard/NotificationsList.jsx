@@ -127,28 +127,28 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
       .sort((a, b) => new Date(b.expDate) - new Date(a.expDate));
   }, [notifications]);
 
-const filteredNotifications = useMemo(() => {
-  return sortedNotifications
-    .filter((n) => {
-      // ...existing code...
-      // Filter by date range (formDate)
-      if (
-        Array.isArray(dateRange) &&
-        dateRange.length === 2 &&
-        dateRange[0] &&
-        dateRange[1] &&
-        n.formDate
-      ) {
+  const filteredNotifications = useMemo(() => {
+    return sortedNotifications
+      .filter((n) => {
+        // ...existing code...
+        // Filter by date range (formDate)
         if (
-          new Date(n.formDate) < new Date(dateRange[0]._d) ||
-          new Date(n.formDate) > new Date(dateRange[1]._d)
+          Array.isArray(dateRange) &&
+          dateRange.length === 2 &&
+          dateRange[0] &&
+          dateRange[1] &&
+          n.formDate
         ) {
-          return false;
+          if (
+            new Date(n.formDate) < new Date(dateRange[0]._d) ||
+            new Date(n.formDate) > new Date(dateRange[1]._d)
+          ) {
+            return false;
+          }
         }
-      }
-      return true;
-    });
-}, [sortedNotifications, search, status, dateRange]);
+        return true;
+      });
+  }, [sortedNotifications, search, status, dateRange]);
 
   const handleResetFilters = () => {
     setSearch("");
