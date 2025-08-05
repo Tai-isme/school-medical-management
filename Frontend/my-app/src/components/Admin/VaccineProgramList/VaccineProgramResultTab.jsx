@@ -3,7 +3,7 @@ import { Input, Table, Modal, Form, Button, DatePicker, Radio } from "antd";
 import dayjs from "dayjs";
 import { SearchOutlined } from "@ant-design/icons";
 import { urlServer } from "../../../api/urlServer";
-
+import { CheckSquareTwoTone, BorderOutlined } from "@ant-design/icons";
 const VaccineProgramResultTab = ({
   program, // Nhận prop này
   searchTermResult,
@@ -182,7 +182,13 @@ const handleModalOk = async () => {
       title: "Đã tiêm?",
       dataIndex: "isInjected",
       key: "isInjected",
-      render: (val) => val ? "Đã tiêm" : "Chưa tiêm",
+      align: "center",
+      render: (value) =>
+        value ? (
+          <CheckSquareTwoTone twoToneColor="#52c41a" style={{ fontSize: 22 }} />
+        ) : (
+          <BorderOutlined style={{ fontSize: 22, color: "#aaa" }} />
+        ),
     },
     {
       title: "Thao tác",

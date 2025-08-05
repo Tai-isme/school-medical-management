@@ -53,7 +53,7 @@ const VaccineResultCard = () => {
   // Lọc dữ liệu nếu cần
   const filteredHistory = vaccineHistory.filter((item) => {
     const name =
-      item.vaccineFormDTO?.vaccineNameDTO?.vaccineName?.toLowerCase() || "";
+      item.vaccineFormDTO?.vaccineProgramDTO?.vaccineProgramName?.toLowerCase() || "";
     const date = item.vaccineFormDTO?.vaccineProgramDTO?.startDate || "";
     const matchName = name.includes(filterName.toLowerCase());
 
@@ -232,7 +232,7 @@ const VaccineResultCard = () => {
                           marginBottom: 8,
                         }}
                       >
-                        {item.vaccineFormDTO?.vaccineNameDTO?.vaccineName ||
+                        {item.vaccineFormDTO?.vaccineProgramDTO?.vaccineProgramName ||
                           "---"}
                       </div>
                       <div

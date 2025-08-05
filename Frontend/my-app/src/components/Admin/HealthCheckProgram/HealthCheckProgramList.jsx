@@ -76,6 +76,11 @@ const HealthCheckProgramList = () => {
   }, []);
 
   useEffect(() => {
+  fetchProgram();
+}, [activeTab]);
+
+
+  useEffect(() => {
     // Fetch y tá
     const fetchNurses = async () => {
       const token = localStorage.getItem("token");
@@ -1357,295 +1362,104 @@ const HealthCheckProgramList = () => {
                 >
                   <Table
                     columns={[
-                      {
-                        title: "Mã học sinh",
-                        dataIndex: ["studentDTO", "id"],
-                        key: "studentId",
-                        align: "center",
-                        width: 90, // Giảm chiều rộng
-                        render: (_, record) =>
-                          record.studentDTO?.studentId || "-",
-                      },
-                      {
-                        title: "Tên học sinh",
-                        dataIndex: ["studentDTO", "fullName"],
-                        key: "studentName",
-                        align: "center",
-                        render: (_, record) =>
-                          record.studentDTO?.fullName || "-",
-                      },
-                      {
-                        title: "Lớp",
-                        dataIndex: ["studentDTO", "classDTO", "className"],
-                        key: "className",
-                        align: "center",
-                        render: (_, record) =>
-                          record.studentDTO?.classDTO?.className || "-",
-                      },
-                      {
-                        title: "Chiều cao (cm)",
-                        dataIndex: "height",
-                        key: "height",
-                        align: "center",
-                        render: (value, record) =>
-                          isViewResult ? (
-                            value ?? "-"
-                          ) : (
-                            <Input
-                              value={value ?? ""}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  e.target.value,
-                                  record,
-                                  "height"
-                                )
-                              }
-                              style={{ width: 80 }}
-                              status={
-                                value &&
-                                (isNaN(value) ||
-                                  Number(value) < 100 ||
-                                  Number(value) > 200)
-                                  ? "error"
-                                  : ""
-                              }
-                              placeholder="100-200"
-                            />
-                          ),
-                      },
+    {
+      title: "Mã học sinh",
+      dataIndex: ["studentDTO", "id"],
+      key: "studentId",
+      align: "center",
+      width: 90,
+      render: (_, record) => record.studentDTO?.studentId || "-",
+    },
+    {
+      title: "Tên học sinh",
+      dataIndex: ["studentDTO", "fullName"],
+      key: "studentName",
+      align: "center",
+      render: (_, record) => record.studentDTO?.fullName || "-",
+    },
+    {
+      title: "Lớp",
+      dataIndex: ["studentDTO", "classDTO", "className"],
+      key: "className",
+      align: "center",
+      render: (_, record) => record.studentDTO?.classDTO?.className || "-",
+    },
+    {
+      title: "Chiều cao (cm)",
+      dataIndex: "height",
+      key: "height",
+      align: "center",
+      render: (value) => value ?? "-",
+    },
+    {
+      title: "Cân nặng (kg)",
+      dataIndex: "weight",
+      key: "weight",
+      align: "center",
+      render: (value) => value ?? "-",
+    },
+    {
+      title: "Thị lực (1-10/10)",
+      dataIndex: "vision",
+      key: "vision",
+      align: "center",
+      render: (value) => value ?? "-",
+    },
+    {
+      title: "Thính lực",
+      dataIndex: "hearing",
+      key: "hearing",
+      align: "center",
+      render: (value) => value || "-",
+    },
+    {
+      title: "Răng miệng",
+      dataIndex: "dentalStatus",
+      key: "dentalStatus",
+      align: "center",
+      render: (value) => value || "-",
+    },
+    {
+      title: "Huyết áp",
+      dataIndex: "bloodPressure",
+      key: "bloodPressure",
+      align: "center",
+      render: (value) => value || "-",
+    },
+    {
+      title: "Nhịp tim",
+      dataIndex: "heartRate",
+      key: "heartRate",
+      align: "center",
+      render: (value) => value || "-",
+    },
+    {
+      title: "Tình trạng chung",
+      dataIndex: "generalCondition",
+      key: "generalCondition",
+      align: "center",
+      render: (value) => value || "-",
+    },
+    {
+      title: "Ghi chú",
+      dataIndex: "note",
+      key: "note",
+      align: "center",
+      render: (value) => value || "-",
+    },
 
                       {
-                        title: "Cân nặng (kg)",
-                        dataIndex: "weight",
-                        key: "weight",
-                        align: "center",
-                        render: (value, record) =>
-                          isViewResult ? (
-                            value ?? "-"
-                          ) : (
-                            <Input
-                              value={value ?? ""}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  e.target.value,
-                                  record,
-                                  "weight"
-                                )
-                              }
-                              style={{ width: 80 }}
-                              status={
-                                value &&
-                                (!/^\d+$/.test(value) ||
-                                  Number(value) < 15 ||
-                                  Number(value) > 120)
-                                  ? "error"
-                                  : ""
-                              }
-                              placeholder="15-120"
-                            />
-                          ),
-                      },
-                      {
-                        title: "Thị lực (1-10/10)",
-                        dataIndex: "vision",
-                        key: "vision",
-                        align: "center",
-                        render: (value, record) =>
-                          isViewResult ? (
-                            value ?? "-"
-                          ) : (
-                            <Input
-                              value={value ?? ""}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  e.target.value,
-                                  record,
-                                  "vision"
-                                )
-                              }
-                              style={{ width: 80 }}
-                              status={
-                                value && !/^([1-9]|10)\/10$/.test(value)
-                                  ? "error"
-                                  : ""
-                              }
-                              placeholder="1/10-10/10"
-                            />
-                          ),
-                      },
-                      {
-                        title: "Thính lực",
-                        dataIndex: "hearing",
-                        key: "hearing",
-                        align: "center",
-                        render: (value, record) =>
-                          isViewResult ? (
-                            value || "-"
-                          ) : (
-                            <Input.TextArea
-                              value={value ?? ""}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  e.target.value,
-                                  record,
-                                  "hearing"
-                                )
-                              }
-                              style={{ width: 80, minHeight: 32 }}
-                              autoSize={{ minRows: 1, maxRows: 3 }}
-                            />
-                          ),
-                      },
-                      {
-                        title: "Răng miệng",
-                        dataIndex: "dentalStatus",
-                        key: "dentalStatus",
-                        align: "center",
-                        render: (value, record) =>
-                          isViewResult ? (
-                            value || "-"
-                          ) : (
-                            <Input
-                              value={value ?? ""}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  e.target.value,
-                                  record,
-                                  "dentalStatus"
-                                )
-                              }
-                              style={{ width: 120 }}
-                            />
-                          ),
-                      },
-                      {
-                        title: "Huyết áp",
-                        dataIndex: "bloodPressure",
-                        key: "bloodPressure",
-                        align: "center",
-                        render: (value, record) =>
-                          isViewResult ? (
-                            value || "-"
-                          ) : (
-                            <Input
-                              value={value ?? ""}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  e.target.value,
-                                  record,
-                                  "bloodPressure"
-                                )
-                              }
-                              style={{ width: 100 }}
-                            />
-                          ),
-                      },
-                      {
-                        title: "Nhịp tim",
-                        dataIndex: "heartRate",
-                        key: "heartRate",
-                        align: "center",
-                        render: (value, record) =>
-                          isViewResult ? (
-                            value || "-"
-                          ) : (
-                            <Input
-                              value={value ?? ""}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  e.target.value,
-                                  record,
-                                  "heartRate"
-                                )
-                              }
-                              style={{ width: 100 }}
-                            />
-                          ),
-                      },
-                      {
-                        title: "Tình trạng chung",
-                        dataIndex: "generalCondition",
-                        key: "generalCondition",
-                        align: "center",
-                        render: (value, record) =>
-                          isViewResult ? (
-                            value || "-"
-                          ) : (
-                            <Input
-                              value={value ?? ""}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  e.target.value,
-                                  record,
-                                  "generalCondition"
-                                )
-                              }
-                              style={{ width: 110 }}
-                            />
-                          ),
-                      },
-                      {
-                        title: "Ghi chú",
-                        dataIndex: "note",
-                        key: "note",
-                        align: "center",
-                        render: (value, record) =>
-                          isViewResult ? (
-                            value || "-"
-                          ) : (
-                            <Input.TextArea
-                              value={value ?? ""}
-                              onChange={(e) =>
-                                handleEditChange(e.target.value, record, "note")
-                              }
-                              style={{ width: 120, minHeight: 32 }}
-                              autoSize={{ minRows: 1, maxRows: 3 }}
-                            />
-                          ),
-                      },
-
-                      {
-                        title: "Đã khám?",
-                        dataIndex: "isChecked",
-                        key: "isChecked",
-                        align: "center",
-                        render: (value, record) =>
-                          isViewResult ? (
-                            value ? (
-                              <CheckSquareTwoTone
-                                twoToneColor="#52c41a"
-                                style={{ fontSize: 22, cursor: "not-allowed" }}
-                              />
-                            ) : (
-                              <BorderOutlined
-                                style={{
-                                  fontSize: 22,
-                                  color: "#aaa",
-                                  cursor: "not-allowed",
-                                }}
-                              />
-                            )
-                          ) : value ? (
-                            <CheckSquareTwoTone
-                              twoToneColor="#52c41a"
-                              style={{ fontSize: 22, cursor: "pointer" }}
-                              onClick={() =>
-                                handleEditChange(false, record, "isChecked")
-                              }
-                            />
-                          ) : (
-                            <BorderOutlined
-                              style={{
-                                fontSize: 22,
-                                color: "#aaa",
-                                cursor: "pointer",
-                              }}
-                              onClick={() =>
-                                handleEditChange(true, record, "isChecked")
-                              }
-                            />
-                          ),
-                      },
+      title: "Đã khám?",
+      dataIndex: "isChecked",
+      key: "isChecked",
+      align: "center",
+      render: (value) =>
+        value ? (
+          <CheckSquareTwoTone twoToneColor="#52c41a" style={{ fontSize: 22 }} />
+        ) : (
+          <BorderOutlined style={{ fontSize: 22, color: "#aaa" }} />
+        ),
+    },
                       {
                         title: "Thao tác",
                         key: "action",
