@@ -36,6 +36,8 @@ import VaccineImportModal from "./VaccineImportModal";
 import GenericTemplateDownloadButton from "./GenericTemplateDownloadButton";
 import ExportResultButton from "./ExportResultButton";
 import { urlServer } from "../../../api/urlServer";
+const { RangePicker } = DatePicker;
+
 const VaccineProgramList = () => {
   const [programs, setPrograms] = useState([]);
   const [detailVisible, setDetailVisible] = useState(false);
@@ -61,7 +63,6 @@ const VaccineProgramList = () => {
   const [resultTablePageSize, setResultTablePageSize] = useState(8); // Số dòng mỗi trang
   const pageSize = 3; // Số chương trình mỗi trang
   const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
-  const [filterDateRange, setFilterDateRange] = useState(null);
 
   // Thêm state để lưu danh sách vaccine
   const [vaccineList, setVaccineList] = useState([]);
@@ -91,6 +92,9 @@ const VaccineProgramList = () => {
   const [notifyProgramId, setNotifyProgramId] = useState(null);
   const [notifyDeadline, setNotifyDeadline] = useState(null);
   const [notifyLoading, setNotifyLoading] = useState(false);
+
+  const [filterNurse, setFilterNurse] = useState(""); // Lọc theo người phụ trách
+  const [filterDateRange, setFilterDateRange] = useState([null, null]); // Lọc theo khoảng thời gian
 
   useEffect(() => {
     fetchProgram();
@@ -181,12 +185,25 @@ const VaccineProgramList = () => {
 
   // Lọc danh sách theo tên chương trình và ngày tiêm
   const filteredPrograms = programs.filter((program) => {
-    const matchName = program.healthCheckName
-      ?.toLowerCase()
-      .includes(searchTerm.toLowerCase());
-
-    const matchDate =
-      filterDateRange?.[0] && filterDateRange?.[1]
+    const matchName =
+      typeof program.vaccineProgramName === "object"
+        ? program.vaccineProgramName?.vaccineProgramName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        : typeof program.vaccineProgramName === "string"
+        ? program.vaccineProgramName.toLowerCase().includes(searchTerm.toLowerCase())
+        : false;
+    const matchDate = filterDate
+      ? dayjs(program.vaccineDate).isSame(filterDate, "day")
+      : true;
+    const matchStatus = filterStatus ? program.status === filterStatus : true;
+    const matchNurse = filterNurse
+      ? String(program.nurseId) === String(filterNurse)
+      : true;
+    const matchDateRange =
+      Array.isArray(filterDateRange) &&
+      filterDateRange[0] &&
+      filterDateRange[1]
         ? dayjs(program.startDate).isBetween(
             filterDateRange[0],
             filterDateRange[1],
@@ -194,10 +211,7 @@ const VaccineProgramList = () => {
             "[]"
           )
         : true;
-
-    const matchStatus = filterStatus ? program.status === filterStatus : true;
-
-    return matchName && matchDate && matchStatus;
+    return matchName && matchDate && matchStatus && matchNurse && matchDateRange;
   });
 
   // Gọi khi mount hoặc khi danh sách chương trình thay đổi
@@ -784,16 +798,35 @@ const VaccineProgramList = () => {
                         allowClear
                         style={{ width: 220, background: "#fff" }}
                       />
-                      <ConfigProvider locale={viVN}>
-                        <DatePicker.RangePicker
-                          value={filterDateRange}
-                          onChange={setFilterDateRange}
-                          allowClear
-                          format="YYYY-MM-DD"
-                          placeholder={["Từ ngày", "Đến ngày"]}
-                          style={{ width: 300 }}
-                        />
-                      </ConfigProvider>
+                      <RangePicker
+                        placeholder={["Từ ngày", "Đến ngày"]}
+                        value={filterDateRange}
+                        onChange={setFilterDateRange}
+                        allowClear
+                        style={{ width: 240 }}
+                        format="YYYY-MM-DD"
+                      />
+                      <Select
+                        placeholder="Lọc theo người phụ trách"
+                        value={filterNurse}
+                        onChange={setFilterNurse}
+                        allowClear
+                        style={{ width: 200 }}
+                        options={[
+                          { value: "", label: "Tất cả người phụ trách" },
+                          ...programs
+                            .filter((p) => p.nurse)
+                            .map((p) => ({
+                              value: p.nurseId,
+                              label: p.nurse?.fullName,
+                            }))
+                            .filter(
+                              (v, i, arr) =>
+                                arr.findIndex((x) => x.value === v.value) === i // loại trùng
+                            ),
+                        ]}
+                      />
+                  
                       <Select
                         placeholder="Lọc theo trạng thái"
                         value={filterStatus}
@@ -804,6 +837,8 @@ const VaccineProgramList = () => {
                           { value: "", label: "Tất cả trạng thái" },
                           { value: "NOT_STARTED", label: "Chưa bắt đầu" },
                           { value: "ON_GOING", label: "Đang diễn ra" },
+                          { value: "FORM_SENT", label: "Đã gửi thông báo" },
+                          { value: "GENERATED_RESULT", label: "Đã tạo kết quả" },
                           { value: "COMPLETED", label: "Đã hoàn thành" },
                         ]}
                       />
@@ -1069,7 +1104,7 @@ const VaccineProgramList = () => {
                                 {program.vaccineFormDTOs?.length || 0}
                               </div>
                               <div style={{ color: "#888", fontWeight: 500 }}>
-                                Tổng học sinh
+                                Tổng học sinh dự kiến tham gia
                               </div>
                             </div>
                           </Col>
@@ -1096,7 +1131,7 @@ const VaccineProgramList = () => {
                                   : 0}
                               </div>
                               <div style={{ color: "#888", fontWeight: 500 }}>
-                                Đã xác nhận
+                                Đã xác nhận tham gia
                               </div>
                             </div>
                           </Col>
@@ -1443,28 +1478,28 @@ const VaccineProgramList = () => {
                   }}
                 />
                 <Modal
-                  title="Chọn ngày hết hạn đăng ký"
+                  title={<span style={{ fontWeight: 700, fontSize: 22 }}>Chọn ngày hết hạn đăng ký</span>}
                   open={notifyModalVisible}
                   onCancel={() => {
                     setNotifyModalVisible(false);
                     setNotifyDeadline(null);
                     setNotifyProgramId(null);
                   }}
-                  onOk={() =>
-                    handleSendNotification(notifyProgramId, notifyDeadline)
-                  }
+                  onOk={() => handleSendNotification(notifyProgramId, notifyDeadline)}
                   okText="Gửi thông báo"
+                  cancelText="Hủy"
                   confirmLoading={notifyLoading}
                 >
+                  <div style={{ marginBottom: 8, fontWeight: 600 }}>
+                    Ngày hết hạn gửi phiếu
+                  </div>
                   <DatePicker
                     value={notifyDeadline}
                     onChange={setNotifyDeadline}
                     format="YYYY-MM-DD"
                     style={{ width: "100%" }}
                     placeholder="Chọn ngày hết hạn đăng ký"
-                    disabledDate={(current) =>
-                      current && current < dayjs().startOf("day")
-                    }
+                    disabledDate={(current) => current && current < dayjs().startOf("day")}
                   />
                 </Modal>
               </>

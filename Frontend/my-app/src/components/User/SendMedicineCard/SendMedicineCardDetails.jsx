@@ -72,6 +72,7 @@ const RequestTable = () => {
 
   const handleEditRequest = (record) => {
     setEditingRequest(record);
+    console.log("Editing request:", record.studentDTO.studentId);
     // Có thể dùng context, hoặc truyền qua props để mở form chỉnh sửa ở InstructionForm
     window.dispatchEvent(
       new CustomEvent("edit-medicine-request", { detail: record })
