@@ -179,19 +179,27 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
                   Các loại vaccin đã tiêm
                 </div>
                 <Row style={{ fontWeight: "bold", marginBottom: 8 }}>
-                  <Col span={12}>Tên Vaccin</Col>
-                  <Col span={12}>Mô tả</Col>
+                  <Col span={8}>Tên Vaccin</Col>
+                  <Col span={3}>Mũi thứ</Col>
+                  <Col span={13}>Mô tả</Col>
                 </Row>
                 {(vaccineHistories || []).map((v, idx) => (
                   <Row key={idx} gutter={8} style={{ marginBottom: 8 }}>
-                    <Col span={12}>
+                    <Col span={8}>
                       <Input
                         value={v.vaccineNameDTO?.vaccineName || ""}
                         readOnly
                         style={{ fontSize: 16 }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col span={3}>
+                      <Input
+                        value={"Mũi " +  v.unit || ""}
+                        readOnly
+                        style={{ fontSize: 16 }}
+                      />
+                    </Col>
+                    <Col span={13}>
                       <Input.TextArea
                         value={v.note || ""}
                         readOnly

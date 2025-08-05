@@ -551,12 +551,17 @@ const handleReject = (record) => {
       <div className="medicine-table-container">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h2 style={{ margin: 0 }}>Quản lý đơn thuốc</h2>
+          
+          { /* Nút tạo đơn thuốc chỉ hiển thị với y tá */ }
+          { localStorage.getItem("role") === "NURSE" && (
+
           <Button
   type="primary"
   onClick={() => setCreateModalOpen(true)}
 >
   Tạo đơn thuốc
 </Button>
+)}
         </div>
         {/* 3 ô lọc */}
         <div style={{ marginBottom: 16, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
