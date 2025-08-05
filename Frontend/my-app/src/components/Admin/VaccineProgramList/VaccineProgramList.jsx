@@ -1259,8 +1259,7 @@ const VaccineProgramList = () => {
                               </>
                             )}
 
-                            {(program.status === "COMPLETED" ||
-                              program.status === "GENERATED_RESULT") &&
+                            {program.status === "COMPLETED"  &&
                               userRole === "ADMIN" && (
                                 <ExportResultButton
                                   vaccineProgramId={program.vaccineId}
