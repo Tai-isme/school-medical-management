@@ -285,7 +285,7 @@ const handleReject = (record) => {
       title: "Hành động",
       key: "actions",
       align: "center",
-      width: 150,
+      width: 180,
       render: (_, record) => {
         const nurseId = (() => {
           try {

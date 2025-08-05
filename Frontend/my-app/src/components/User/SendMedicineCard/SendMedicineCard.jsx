@@ -9,13 +9,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 import { urlServer } from "../../../api/urlServer";
-import { Form, Input, DatePicker, Upload, Button, Select, Card, Divider, Space, Row, Col } from 'antd';
+import { Form, Input, DatePicker, Select, Button, Upload, Row, Col, Divider, Card } from 'antd';
 import { UploadOutlined, CloseCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-
 const { Option } = Select;
 
 export default function InstructionForm({ onShowHistory, value }) {
+  const [form] = Form.useForm();
   // Lấy students từ localStorage
   const storedStudents = JSON.parse(localStorage.getItem('students') || '[]');
   const students = (storedStudents.length > 0
@@ -299,45 +299,130 @@ useEffect(() => {
         {activeTab === 'create' && (
           <div className="prescription-details-section">
             <Form
-  layout="vertical"
-  onFinish={async () => {
-    const result = await Swal.fire({
-      title: 'Xác nhận gửi đơn thuốc?',
-      text: 'Bạn có chắc chắn muốn gửi đơn thuốc này?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Gửi',
-      cancelButtonText: 'Hủy',
-    });
-    if (!result.isConfirmed) return;
-    handleSubmit();
-  }}
->
-              <Form.Item label="Mục đích gửi thuốc" required>
-                <Input
-                  value={purpose}
-                  onChange={e => setPurpose(e.target.value)}
-                  placeholder="Vd: Thuốc trị ho, thuốc hạ sốt..."
-                />
-              </Form.Item>
-              <Row gutter={16}>
-                <Col xs={24} md={12}>
-                  <Form.Item label="Ngày dùng" required>
-                    <DatePicker
-                      value={usageTime ? dayjs(usageTime) : null}
-                      onChange={date => {
-                        setUsageTime(date ? date.format('YYYY-MM-DD') : '');
-                        setDateError('');
-                      }}
-                      style={{ width: '100%' }}
-                      disabledDate={current => current && current < dayjs().startOf('day')}
-                    />
-                    {dateError && <div style={{ color: 'red', fontSize: 13 }}>{dateError}</div>}
-                  </Form.Item>
-                </Col>
-                <Col xs={24} md={12}>
-                  <Form.Item label="Ảnh đơn thuốc (nếu có)">
-                    <div style={{
+      form={form}
+      layout="vertical"
+      onFinish={async (values) => {
+        // Validate từng thuốc nếu muốn
+        for (const [i, med] of (values.medicines || []).entries()) {
+          if (!med.name || !med.quantity || !med.unit || !med.usage || !med.method) {
+            message.error(`Vui lòng nhập đầy đủ thông tin cho thuốc thứ ${i + 1}`);
+            return;
+          }
+        }
+        // Nếu qua hết validate thì xác nhận gửi
+        const result = await Swal.fire({
+          title: 'Xác nhận gửi đơn thuốc?',
+          text: 'Bạn có chắc chắn muốn gửi đơn thuốc này?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Gửi',
+          cancelButtonText: 'Hủy',
+        });
+        if (!result.isConfirmed) return;
+
+        // LẤY DỮ LIỆU THUỐC TỪ values.medicines
+        const medicalRequestObject = {
+          requestName: values.purpose,
+          note: values.note,
+          date: values.usageTime,
+          studentId: selectedStudent.studentId,
+          medicalRequestDetailRequests: (values.medicines || []).map(med => ({
+            medicineName: med.name,
+            quantity: med.quantity,
+            type: med.unit,
+            method: med.method,
+            timeSchedule: med.usage,
+            note: med.usage ? '' : med.usage
+          }))
+        };
+
+        const formData = new FormData();
+        formData.append('request', JSON.stringify(medicalRequestObject));
+        if (imageFile) {
+          formData.append('image', imageFile);
+        }
+
+        try {
+          const token = localStorage.getItem("token");
+          let response;
+          if (editingId) {
+            response = await fetch(`${urlServer}/api/parent/medical-request/${editingId}`, {
+              method: "PUT",
+              headers: {
+                Authorization: `Bearer ${token}`
+              },
+              body: formData
+            });
+          } else {
+            response = await fetch(`${urlServer}/api/parent/medical-request`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`
+              },
+              body: formData
+            });
+          }
+
+          if (!response.ok) throw new Error("Có lỗi khi gửi đơn thuốc!");
+
+          setActiveTab('history');
+          setPurpose('');
+          setNote('');
+          setUsageTime('');
+          setMedicines([{ name: '', quantity: '', unit: '', usage: '', method: '' }]);
+          setImageFile(null);
+          setEditingId(null);
+          message.success(editingId ? 'Đã cập nhật đơn thuốc!' : 'Đơn thuốc đã được gửi thành công!');
+          toast.success(editingId ? 'Đã cập nhật đơn thuốc!' : 'Đơn thuốc đã được gửi thành công!');
+        } catch (error) {
+          let errorMsg = 'Có lỗi xảy ra!';
+          if (error && error.message) {
+            try {
+              const errObj = JSON.parse(error.message);
+              if (errObj.message) errorMsg = errObj.message;
+            } catch {
+              errorMsg = error.message;
+            }
+          }
+          message.error(errorMsg);
+          toast.error(errorMsg);
+        }
+      }}
+    >
+      <Form.Item
+        label="Mục đích gửi thuốc"
+        name="purpose"
+        rules={[{ required: true, message: "Vui lòng nhập mục đích gửi thuốc!" }]}
+        initialValue={purpose}
+      >
+        <Input
+          value={purpose}
+          onChange={e => setPurpose(e.target.value)}
+          placeholder="Vd: Thuốc trị ho, thuốc hạ sốt..."
+        />
+      </Form.Item>
+      <Row gutter={16}>
+        <Col xs={24} md={12}>
+          <Form.Item
+            label="Ngày dùng"
+            name="usageTime"
+            rules={[{ required: true, message: "Vui lòng chọn ngày dùng!" }]}
+            initialValue={usageTime ? dayjs(usageTime) : null}
+          >
+            <DatePicker
+              value={usageTime ? dayjs(usageTime) : null}
+              onChange={date => {
+                setUsageTime(date ? date.format('YYYY-MM-DD') : '');
+                setDateError('');
+              }}
+              style={{ width: '100%' }}
+              disabledDate={current => current && current < dayjs().startOf('day')}
+            />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={12}>
+          <Form.Item label="Ảnh đơn thuốc (nếu có)">
+            <div style={{
       display: "flex",
       alignItems: "center",
       gap: 16,
@@ -396,109 +481,120 @@ useEffect(() => {
         </div>
       )}
     </div>
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Divider orientation="left">Chi tiết đơn thuốc</Divider>
-              {medicines.map((medicine, index) => (
-                <Card
-                  key={index}
-                  style={{ marginBottom: 16, background: "#e0f2ff", borderRadius: 8, position: 'relative' }}
-                  bodyStyle={{ padding: 16 }}
-                >
-                  <Button
-                    type="text"
-                    icon={<CloseCircleOutlined style={{ color: "#d00" }} />}
-                    onClick={() => handleRemoveMedicine(index)}
-                    style={{ position: 'absolute', top: 8, right: 8 }}
-                  />
-                  <Row gutter={16}>
-                    <Col xs={24} md={12} lg={10}>
-                      <Form.Item label="Tên thuốc" required>
-                        <Input
-                          name="name"
-                          value={medicine.name}
-                          onChange={e => handleMedicineChange(index, e)}
-                          placeholder="Paracetamol, Aspirin..."
-                        />
-                      </Form.Item>
-                    </Col>
-                    <Col xs={12} md={6} lg={5}>
-                      <Form.Item label="Số lượng" required>
-                        <Input
-                          type="number"
-                          min={1}
-                          name="quantity"
-                          value={medicine.quantity}
-                          onChange={e => {
-                            const val = e.target.value.replace(/[^0-9]/g, '');
-                            handleMedicineChange(index, { target: { name: 'quantity', value: val } });
-                          }}
-                        />
-                      </Form.Item>
-                    </Col>
-                    <Col xs={12} md={6} lg={9}>
-                      <Form.Item label="Đơn vị" required>
-                        <Select
-                          name="unit"
-                          value={medicine.unit}
-                          onChange={value => handleMedicineChange(index, { target: { name: 'unit', value } })}
-                          placeholder="Chọn đơn vị"
-                        >
-                          <Option value="">-- Chọn đơn vị --</Option>
-                          <Option value="Viên">Viên</Option>
-                          <Option value="Gói">Gói</Option>
-                          <Option value="Vỉ">Vỉ</Option>
-                          <Option value="Chai">Chai</Option>
-                          <Option value="Lọ">Lọ</Option>
-                          <Option value="Tuýp">Tuýp</Option>
-                          <Option value="Miếng dán">Miếng dán</Option>
-                          <Option value="Liều">Liều</Option>
-                          <Option value="Ống">Ống</Option>
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Form.Item label="Cách dùng" required>
-                    <Input
-                      name="method"
-                      value={medicine.method}
-                      onChange={e => handleMedicineChange(index, e)}
-                      placeholder="Nhập cách dùng (vd: uống, bôi, tiêm...)"
-                    />
-                  </Form.Item>
-                  <Form.Item label="Thời gian" required>
-                    <Select
-                      name="usage"
-                      value={medicine.usage}
-                      onChange={value => handleMedicineChange(index, { target: { name: 'usage', value } })}
-                      placeholder="Chọn thời gian"
-                    >
-                      <Option value="">-- Chọn thời gian --</Option>
-                      <Option value="Sau ăn sáng từ 9h-9h30">Sau ăn sáng từ 9h-9h30</Option>
-                      <Option value="Trước ăn trưa: 10h30-11h">Trước ăn trưa: 10h30-11h</Option>
-                      <Option value="Sau ăn trưa: từ 11h30-12h">Sau ăn trưa: từ 11h30-12h</Option>
-                    </Select>
-                  </Form.Item>
-                </Card>
-              ))}
-              <Button type="dashed" icon={<PlusOutlined />} onClick={handleAddMedicine} style={{ marginBottom: 16 }}>
-                Thêm thuốc
-              </Button>
-              <Form.Item label="Ghi chú">
-                <Input.TextArea
-                  value={note}
-                  onChange={e => setNote(e.target.value)}
-                  placeholder="Bổ sung thêm thông tin .........."
-                  rows={3}
-                />
+          </Form.Item>
+        </Col>
+      </Row>
+      <Divider orientation="left">Chi tiết đơn thuốc</Divider>
+      <Form.List name="medicines" initialValue={medicines}>
+  {(fields, { add, remove }) => (
+    <>
+      {fields.map(({ key, name, ...restField }, index) => (
+        <Card
+          key={key}
+          style={{ marginBottom: 16, background: "#e0f2ff", borderRadius: 8, position: 'relative' }}
+          bodyStyle={{ padding: 16 }}
+        >
+          <Button
+            type="text"
+            icon={<CloseCircleOutlined style={{ color: "#d00" }} />}
+            onClick={() => remove(name)}
+            style={{ position: 'absolute', top: 8, right: 8 }}
+          />
+          <Row gutter={16}>
+            <Col xs={24} md={12} lg={10}>
+              <Form.Item
+                {...restField}
+                name={[name, 'name']}
+                label="Tên thuốc"
+                rules={[{ required: true, message: "Vui lòng nhập tên thuốc!" }]}
+              >
+                <Input placeholder="Paracetamol, Aspirin..." />
               </Form.Item>
-              <Form.Item>
-                <Button type="primary" htmlType="submit" style={{ width: 180, fontWeight: 600 }}>
-                  {editingId ? "Cập nhật" : "Xác nhận gửi"}
-                </Button>
+            </Col>
+            <Col xs={12} md={6} lg={5}>
+              <Form.Item
+                {...restField}
+                name={[name, 'quantity']}
+                label="Số lượng"
+                rules={[
+                  { required: true, message: "Vui lòng nhập số lượng!" },
+                  { pattern: /^[1-9][0-9]*$/, message: "Số lượng phải là số nguyên dương!" }
+                ]}
+              >
+                <Input type="number" min={1} />
               </Form.Item>
-            </Form>
+            </Col>
+            <Col xs={12} md={6} lg={9}>
+              <Form.Item
+                {...restField}
+                name={[name, 'unit']}
+                label="Đơn vị"
+                rules={[{ required: true, message: "Vui lòng chọn đơn vị!" }]}
+              >
+                <Select placeholder="Chọn đơn vị">
+                  <Option value="">-- Chọn đơn vị --</Option>
+                  <Option value="Viên">Viên</Option>
+                  <Option value="Gói">Gói</Option>
+                  <Option value="Vỉ">Vỉ</Option>
+                  <Option value="Chai">Chai</Option>
+                  <Option value="Lọ">Lọ</Option>
+                  <Option value="Tuýp">Tuýp</Option>
+                  <Option value="Miếng dán">Miếng dán</Option>
+                  <Option value="Liều">Liều</Option>
+                  <Option value="Ống">Ống</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item
+            {...restField}
+            name={[name, 'method']}
+            label="Cách dùng"
+            rules={[{ required: true, message: "Vui lòng nhập cách dùng!" }]}
+          >
+            <Input placeholder="Nhập cách dùng (vd: uống, bôi, tiêm...)" />
+          </Form.Item>
+          <Form.Item
+            {...restField}
+            name={[name, 'usage']}
+            label="Thời gian"
+            rules={[{ required: true, message: "Vui lòng chọn thời gian!" }]}
+          >
+            <Select placeholder="Chọn thời gian">
+              <Option value="">-- Chọn thời gian --</Option>
+              <Option value="Sau ăn sáng từ 9h-9h30">Sau ăn sáng từ 9h-9h30</Option>
+              <Option value="Trước ăn trưa: 10h30-11h">Trước ăn trưa: 10h30-11h</Option>
+              <Option value="Sau ăn trưa: từ 11h30-12h">Sau ăn trưa: từ 11h30-12h</Option>
+            </Select>
+          </Form.Item>
+        </Card>
+      ))}
+      <Button type="dashed" icon={<PlusOutlined />} onClick={() => add()} style={{ marginBottom: 16 }}>
+        Thêm thuốc
+      </Button>
+    </>
+  )}
+</Form.List>
+      <Form.Item label="Ghi chú">
+        <Input.TextArea
+          value={note}
+          onChange={e => setNote(e.target.value)}
+          placeholder="Bổ sung thêm thông tin .........."
+          rows={3}
+        />
+      </Form.Item>
+      <Form.Item>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            style={{ width: 180, fontWeight: 600 }}
+          >
+            {editingId ? "Cập nhật" : "Xác nhận gửi"}
+          </Button>
+        </div>
+      </Form.Item>
+    </Form>
           </div>
         )}
       </div>
