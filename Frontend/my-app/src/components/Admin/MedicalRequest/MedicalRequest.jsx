@@ -243,16 +243,16 @@ const handleReject = (record) => {
       width: 120,
       render: (status) => {
         let color = "#faad14";
-        let text = "Chờ duyệt";
+        let text = "CHỜ DUYỆT";
         if (status === "CONFIRMED") {
           color = "#1890ff";
-          text = "Đã xác nhận";
+          text = "ĐÃ XÁC NHẬN";
         } else if (status === "COMPLETED") {
           color = "#21ba45";
-          text = "Hoàn thành";
+          text = "HOÀN THÀNH";
         } else if (status === "CANCELLED") {
           color = "#ff4d4f";
-          text = "Bị từ chối";
+          text = "BỊ TỪ CHỐI";
         }
         return (
           <span style={{ fontWeight: 600, color }}>

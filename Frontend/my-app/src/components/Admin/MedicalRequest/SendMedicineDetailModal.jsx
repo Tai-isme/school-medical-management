@@ -19,7 +19,7 @@ const SendMedicineDetailModal = ({
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [medicineNotes, setMedicineNotes] = useState({});
 
-  console.log('isGiveMedicineMode:', isGiveMedicineMode);
+  console.log("isGiveMedicineMode:", isGiveMedicineMode);
 
   // Reset ghi chú khi mở modal mới
   useEffect(() => {
@@ -41,39 +41,41 @@ const SendMedicineDetailModal = ({
   };
 
   // Hàm xác nhận cho uống thuốc
-const handleGiveMedicine = async () => {
-  setConfirmLoading(true);
-  try {
-    // Chuẩn bị dữ liệu gửi lên API
-    const data = Object.entries(medicineNotes).map(([requestDetailId, note]) => ({
-      requestDetailId: Number(requestDetailId),
-      note: note || "",
-    }));
+  const handleGiveMedicine = async () => {
+    setConfirmLoading(true);
+    try {
+      // Chuẩn bị dữ liệu gửi lên API
+      const data = Object.entries(medicineNotes).map(
+        ([requestDetailId, note]) => ({
+          requestDetailId: Number(requestDetailId),
+          note: note || "",
+        })
+      );
 
-    const token = localStorage.getItem("token");
-    await axios.put(
-      `${urlServer}/api/nurse/medical-request-detail/status/taken`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${urlServer}/api/nurse/medical-request-detail/status/taken`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      message.success("Đã lưu ghi chú và xác nhận cho uống thuốc!");
+      if (onGiveMedicine) onGiveMedicine(medicineNotes); // callback ở MedicalRequest
+      if (window && window.location) {
+        // Không reload trang, chỉ đóng modal
+        if (onClose) onClose();
       }
-    );
-
-    message.success("Đã lưu ghi chú và xác nhận cho uống thuốc!");
-    if (onGiveMedicine) onGiveMedicine(medicineNotes); // callback ở MedicalRequest
-    if (window && window.location) {
-      // Không reload trang, chỉ đóng modal
-      if (onClose) onClose();
+    } catch {
+      message.error("Lưu thất bại!");
+    } finally {
+      setConfirmLoading(false);
     }
-  } catch {
-    message.error("Lưu thất bại!");
-  } finally {
-    setConfirmLoading(false);
-  }
-};
+  };
 
   // Lấy requestId từ detailData
   const requestId =
@@ -120,7 +122,19 @@ const handleGiveMedicine = async () => {
       }
     }
   };
+  const statusMap = {
+    CONFIRMED: "ĐÃ XÁC NHẬN",
+    COMPLETED: "HOÀN THÀNH",
+    PROCESSING: "CHỜ XÁC NHẬN",
+    CANCELLED: "ĐÃ BỊ HỦY",
+  };
 
+  const statusColorMap = {
+    CONFIRMED: "#1976d2", // xanh dương
+    COMPLETED: "green", // xanh lá
+    PROCESSING: "orange", // cam
+    CANCELLED: "red", // đỏ
+  };
   return (
     <Modal
       open={open}
@@ -169,8 +183,17 @@ const handleGiveMedicine = async () => {
                     <b>Ghi chú:</b> {group.note}
                   </div>
                   <div style={{ marginBottom: 12 }}>
-                    <b>Trạng thái:</b> {group.status}
+                    <b>Trạng thái:</b>{" "}
+                    <span
+                      style={{
+                        color: statusColorMap[group.status] || "gray",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {statusMap[group.status] || "KHÔNG XÁC ĐỊNH"}
+                    </span>
                   </div>
+
                   <div style={{ marginBottom: 12 }}>
                     <b>Học sinh nhận thuốc:</b> {group.studentDTO.fullName}
                   </div>
@@ -178,7 +201,7 @@ const handleGiveMedicine = async () => {
                     <b>Y tá phụ trách:</b>{" "}
                     {group.nurseDTO && group.nurseDTO.fullName
                       ? group.nurseDTO.fullName
-                      : "chưa có"}
+                      : "Chưa có"}
                   </div>
                   {group.image && (
                     <div style={{ marginBottom: 16 }}>
@@ -238,9 +261,11 @@ const handleGiveMedicine = async () => {
                       <div>
                         <b>Trạng thái uống thuốc:</b>{" "}
                         {item.status === "TAKEN" ? (
-                          <span style={{ color: "#21ba45" }}>Đã cho uống</span>
+                          <span style={{ color: "#21ba45", fontWeight: "bold" }}>Đã cho uống</span>
                         ) : (
-                          <span style={{ color: "#faad14" }}>Chưa cho uống</span>
+                          <span style={{ color: "#faad14", fontWeight: "bold" }}>
+                            Chưa cho uống
+                          </span>
                         )}
                       </div>
                       {/* Thêm ô nhập ghi chú khi ở chế độ cho uống thuốc */}
@@ -264,7 +289,6 @@ const handleGiveMedicine = async () => {
                     </div>
                   ))}
                   {/* Hiển thị lý do từ chối nếu trạng thái là CANCELLED */}
-                
                 </div>
               </Col>
             </Row>
@@ -307,21 +331,20 @@ const handleGiveMedicine = async () => {
         </div>
       )}
       {detailData?.[0]?.status === "CANCELLED" && (
-  <div style={{ marginTop: 16 }}>
-    <div style={{ fontWeight: "bold", color: "red", marginBottom: 4 }}>Lý do từ chối:</div>
-    <Input.TextArea
-      rows={3}
-      value={detailData?.[0]?.reasonRejected || "---"}
-      readOnly
-      style={{ marginBottom: 12, background: "#f5f5f5", color: "#333" }}
-    />
-  </div>
-)}
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontWeight: "bold", color: "red", marginBottom: 4 }}>
+            Lý do từ chối:
+          </div>
+          <Input.TextArea
+            rows={3}
+            value={detailData?.[0]?.reasonRejected || "---"}
+            readOnly
+            style={{ marginBottom: 12, background: "#f5f5f5", color: "#333" }}
+          />
+        </div>
+      )}
     </Modal>
   );
 };
 
 export default SendMedicineDetailModal;
-
-
-
