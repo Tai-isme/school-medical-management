@@ -81,6 +81,9 @@ const VaccineNotificationModalContent = ({
     </div>
   ) : "--"}
 </Descriptions.Item>
+<Descriptions.Item label="Độ tuổi áp dụng">
+          {notification.vaccineProgramDTO?.vaccineNameDTO?.ageFrom + " - " + notification.vaccineProgramDTO?.vaccineNameDTO?.ageTo + " (Tuổi)" || "--"}
+        </Descriptions.Item>
         <Descriptions.Item label="Ngày tiêm dự kiến">
           {notification.vaccineProgramDTO?.startDate || "--"}
         </Descriptions.Item>

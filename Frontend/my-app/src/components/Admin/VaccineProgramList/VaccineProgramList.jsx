@@ -964,7 +964,7 @@ const VaccineProgramList = () => {
 
                             <div style={{ color: "#555", marginBottom: 8 }}>
                               <span style={{ fontWeight: 600, color: "#000" }}>
-                                Ngày thực hiện:
+                                Ngày thực hiện chương trình:
                               </span>{" "}
                               <span
                                 style={{ color: "#1890ff", fontWeight: 600 }}
@@ -981,24 +981,7 @@ const VaccineProgramList = () => {
                               </span>
                             </div>
 
-                            <div style={{ color: "#555", marginBottom: 8 }}>
-                              <span style={{ fontWeight: 600, color: "#000" }}>
-                                Ngày gửi thông báo cho phụ huynh:
-                              </span>{" "}
-                              <span
-                                style={{ color: "#52c41a", fontWeight: 600 }}
-                              >
-                                {program.dateSendForm
-                                  ? new Date(
-                                      program.dateSendForm
-                                    ).toLocaleDateString("vi-VN", {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "numeric",
-                                    })
-                                  : "---"}
-                              </span>
-                            </div>
+                            
 
                             {program.vaccineFormDTOs &&
                               program.vaccineFormDTOs.length > 0 && (
@@ -1006,7 +989,7 @@ const VaccineProgramList = () => {
                                   <span
                                     style={{ fontWeight: 600, color: "#000" }}
                                   >
-                                    Ngày hết hạn đăng ký:
+                                    Ngày hết hạn đăng ký tham gia:
                                   </span>{" "}
                                   <span
                                     style={{
@@ -1026,6 +1009,25 @@ const VaccineProgramList = () => {
                                   </span>
                                 </div>
                               )}
+
+                              <div style={{ color: "#555", marginBottom: 8 }}>
+                              <span style={{ fontWeight: 600, color: "#000" }}>
+                                Ngày gửi thông báo cho phụ huynh:
+                              </span>{" "}
+                              <span
+                                style={{ color: "#52c41a", fontWeight: 600 }}
+                              >
+                                {program.dateSendForm
+                                  ? new Date(
+                                      program.dateSendForm
+                                    ).toLocaleDateString("vi-VN", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    })
+                                  : "---"}
+                              </span>
+                            </div>
 
                             <div style={{ color: "#555", marginBottom: 8 }}>
                               <span style={{ fontWeight: 600, color: "#000" }}>
@@ -1165,6 +1167,7 @@ const VaccineProgramList = () => {
                                 });
                                 setProgram(program);
                                 setCreateVisible(true);
+                                
                               }}
                             >
                               Xem chi tiết
@@ -1187,6 +1190,7 @@ const VaccineProgramList = () => {
                                   onClick={() => {
                                     setNotifyModalVisible(true);
                                     setNotifyProgramId(program.vaccineId);
+                                    setProgram(program); // Thêm dòng này!
                                   }}
                                 >
                                   Gửi thông báo
@@ -1449,7 +1453,7 @@ const VaccineProgramList = () => {
                   onCancel={() => {
                     setCreateVisible(false);
                     setEditMode(false);
-                    setProgram(null);
+                    setProgram();
                   }}
                   onFinish={modalMode === "edit" ? handleUpdate : handleCreate}
                   loading={loading}
@@ -1478,7 +1482,7 @@ const VaccineProgramList = () => {
                   }}
                 />
                 <Modal
-                  title={<span style={{ fontWeight: 700, fontSize: 22 }}>Chọn ngày hết hạn đăng ký</span>}
+                  title={<span style={{ fontWeight: 700, fontSize: 22 }}>Chọn ngày hết hạn đăng ký tham gia</span>}
                   open={notifyModalVisible}
                   onCancel={() => {
                     setNotifyModalVisible(false);
@@ -1490,17 +1494,23 @@ const VaccineProgramList = () => {
                   cancelText="Hủy"
                   confirmLoading={notifyLoading}
                 >
-                  <div style={{ marginBottom: 8, fontWeight: 600 }}>
-                    Ngày hết hạn gửi phiếu
-                  </div>
-                  <DatePicker
-                    value={notifyDeadline}
-                    onChange={setNotifyDeadline}
-                    format="YYYY-MM-DD"
-                    style={{ width: "100%" }}
-                    placeholder="Chọn ngày hết hạn đăng ký"
-                    disabledDate={(current) => current && current < dayjs().startOf("day")}
-                  />
+                  
+<DatePicker
+  value={notifyDeadline}
+  onChange={setNotifyDeadline}
+  format="YYYY-MM-DD"
+  style={{ width: "100%" }}
+  placeholder="Chọn ngày hết hạn đăng ký"
+  disabledDate={(current) => {
+    const today = dayjs().startOf("day");
+    const programDate = program?.startDate ? dayjs(program.startDate) : null;
+    return (
+      current.isBefore(today) ||
+      (programDate && !current.isBefore(programDate))
+      // chỉ cho chọn ngày nhỏ hơn programDate
+    );
+  }}
+/>
                 </Modal>
               </>
             ),

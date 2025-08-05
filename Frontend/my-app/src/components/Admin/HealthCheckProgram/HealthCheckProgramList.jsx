@@ -75,6 +75,10 @@ const HealthCheckProgramList = () => {
   }, []);
 
   useEffect(() => {
+    fetchProgram();
+  }, [activeTab]);
+
+  useEffect(() => {
     // Fetch y tá
     const fetchNurses = async () => {
       const token = localStorage.getItem("token");
@@ -1251,8 +1255,20 @@ const HealthCheckProgramList = () => {
                       <Descriptions.Item label="Lớp tham gia">
                         {program.participateClasses &&
                         program.participateClasses.length > 0
-                          ? program.participateClasses
-                              .map((p) => {
+                          ? Array.from(
+                              new Set(
+                                program.participateClasses
+                                  .filter((p) => p.type === "HEALTH_CHECK")
+                                  .map((p) => p.classDTO?.classId) // chỉ lấy classId để loại trùng
+                              )
+                            )
+                              .map((classId) => {
+                                const p = program.participateClasses.find(
+                                  (pc) =>
+                                    pc.classDTO?.classId === classId &&
+                                    pc.type === "HEALTH_CHECK"
+                                );
+                                if (!p) return null;
                                 const className = p.classDTO?.className || "";
                                 const teacher = p.classDTO?.teacherName || "";
                                 return teacher
@@ -1352,7 +1368,7 @@ const HealthCheckProgramList = () => {
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
-                    flexWrap: "wrap", 
+                    flexWrap: "wrap",
                   }}
                 >
                   <Select
@@ -1529,6 +1545,112 @@ const HealthCheckProgramList = () => {
                               onClick={() =>
                                 handleEditChange(true, record, "isChecked")
                               }
+                            />
+                          ),
+                      },
+                      {
+                        title: "Mã học sinh",
+                        dataIndex: ["studentDTO", "id"],
+                        key: "studentId",
+                        align: "center",
+                        width: 90,
+                        render: (_, record) =>
+                          record.studentDTO?.studentId || "-",
+                      },
+                      {
+                        title: "Tên học sinh",
+                        dataIndex: ["studentDTO", "fullName"],
+                        key: "studentName",
+                        align: "center",
+                        render: (_, record) =>
+                          record.studentDTO?.fullName || "-",
+                      },
+                      {
+                        title: "Lớp",
+                        dataIndex: ["studentDTO", "classDTO", "className"],
+                        key: "className",
+                        align: "center",
+                        render: (_, record) =>
+                          record.studentDTO?.classDTO?.className || "-",
+                      },
+                      {
+                        title: "Chiều cao (cm)",
+                        dataIndex: "height",
+                        key: "height",
+                        align: "center",
+                        render: (value) => value ?? "-",
+                      },
+                      {
+                        title: "Cân nặng (kg)",
+                        dataIndex: "weight",
+                        key: "weight",
+                        align: "center",
+                        render: (value) => value ?? "-",
+                      },
+                      {
+                        title: "Thị lực (1-10/10)",
+                        dataIndex: "vision",
+                        key: "vision",
+                        align: "center",
+                        render: (value) => value ?? "-",
+                      },
+                      {
+                        title: "Thính lực",
+                        dataIndex: "hearing",
+                        key: "hearing",
+                        align: "center",
+                        render: (value) => value || "-",
+                      },
+                      {
+                        title: "Răng miệng",
+                        dataIndex: "dentalStatus",
+                        key: "dentalStatus",
+                        align: "center",
+                        render: (value) => value || "-",
+                      },
+                      {
+                        title: "Huyết áp",
+                        dataIndex: "bloodPressure",
+                        key: "bloodPressure",
+                        align: "center",
+                        render: (value) => value || "-",
+                      },
+                      {
+                        title: "Nhịp tim",
+                        dataIndex: "heartRate",
+                        key: "heartRate",
+                        align: "center",
+                        render: (value) => value || "-",
+                      },
+                      {
+                        title: "Tình trạng chung",
+                        dataIndex: "generalCondition",
+                        key: "generalCondition",
+                        align: "center",
+                        render: (value) => value || "-",
+                      },
+                      {
+                        title: "Ghi chú",
+                        dataIndex: "note",
+                        key: "note",
+                        align: "center",
+                        render: (value) => value || "-",
+                      },
+
+                      {
+                        title: "Đã khám?",
+                        dataIndex: "isChecked",
+                        key: "isChecked",
+                        align: "center",
+                        render: (value) =>
+                          value ? (
+                            <CheckSquareTwoTone
+                              twoToneColor="#52c41a"
+                              style={{ fontSize: 22 }}
+                            />
+                          ) : (
+                            <BorderOutlined
+                              style={{ fontSize: 22, color: "#aaa" }}
                             />
                           ),
                       },
