@@ -9,8 +9,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 import { urlServer } from "../../../api/urlServer";
+import { Form, Input, DatePicker, Upload, Button, Select, Card, Divider, Space, Row, Col } from 'antd';
+import { UploadOutlined, CloseCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 
-export default function InstructionForm({ onShowHistory }) {
+const { Option } = Select;
+
+export default function InstructionForm({ onShowHistory, value }) {
   // Lấy students từ localStorage
   const storedStudents = JSON.parse(localStorage.getItem('students') || '[]');
   const students = (storedStudents.length > 0
@@ -64,20 +69,7 @@ const handleMedicineChange = (index, event) => {
     setMedicines(newMedicines);
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    const result = await Swal.fire({
-      title: 'Xác nhận gửi đơn thuốc?',
-      text: 'Bạn có chắc chắn muốn gửi đơn thuốc này?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Gửi',
-      cancelButtonText: 'Hủy',
-    });
-
-    if (!result.isConfirmed) return;
-
+  const handleSubmit = async () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const selectedDate = new Date(usageTime);
@@ -99,7 +91,7 @@ const handleMedicineChange = (index, event) => {
         medicineName: med.name,
         quantity: med.quantity,
         type: med.unit,
-        method: med.method, // thêm dòng này
+        method: med.method,
         timeSchedule: med.usage,
         note: med.usage ? '' : med.usage
       }))
@@ -119,7 +111,6 @@ const handleMedicineChange = (index, event) => {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`
-            // KHÔNG đặt Content-Type, fetch sẽ tự thêm boundary cho multipart/form-data
           },
           body: formData
         });
@@ -128,7 +119,6 @@ const handleMedicineChange = (index, event) => {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`
-            // KHÔNG đặt Content-Type ở đây!
           },
           body: formData
         });
@@ -193,15 +183,20 @@ useEffect(() => {
           }))
         : [{ name: '', quantity: '', unit: '', usage: '', method: '' }]
     );
-    setSelectedStudentId(req.studentDTO?.studentId || '');
+    setSelectedStudentId(req.studentDTO?.studentId || ''); // Tự động chọn lại học sinh
+    console.log("Selected student ID:", req.studentDTO?.studentId);
     setActiveTab('create');
     setEditingId(req.requestId);
-    setImageUrl(req.image || null); // Lưu url ảnh cũ
-    setImageFile(null); // Reset file input
+    setImageUrl(req.image || null);
+    setImageFile(null);
   };
   window.addEventListener('edit-medicine-request', handleEdit);
   return () => window.removeEventListener('edit-medicine-request', handleEdit);
 }, []);
+
+useEffect(() => {
+  if (value) setSelectedStudentId(value);
+}, [value]);
 
   return (
     <div className="instruction-form-container" style={{ position: "relative" }}>
@@ -289,236 +284,238 @@ useEffect(() => {
           Lịch sử gửi đơn thuốc
         </button>
       </div>
-
-      {/* Nội dung từng tab */}
-      {activeTab === 'create' && (
-        <form onSubmit={handleSubmit}>
-          <div className="form-content">
-            {/* Phần thông tin Học sinh */}
-            <div className="student-info-section">
-              <StudentInfoCard onChange={setSelectedStudentId} />
-            </div>
-            
-            {/* Phần Chi tiết đơn thuốc */}
-            <div className="prescription-details-section">
-              {/* Thêm input cho mục đích sử dụng thuốc */}
-            <div className="input-group">
-              <label style={{fontSize: '20px'}}>Mục đích gửi thuốc:</label>
-              <input
-                className="purpose-input"
-                width= "calc(100% - 20px)"
-                type="text"
-                value={purpose}
-                onChange={(e) => setPurpose(e.target.value)}
-                placeholder="Vd: Thuốc trị ho, thuốc hạ sốt..."
-                required
-              />
-            </div>
-            {/* Input thời gian sử dụng thuốc */}
-              <div className="input-group">
-                <label style={{fontSize: '20px'}}>Ngày dùng:</label>
-                <input
-                  type="date"
-                  value={usageTime}
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={e => {
-                    setUsageTime(e.target.value);
-                    setDateError('');
-                  }}
-                  required
-                  style={{fontSize: '16px', padding: '6px', borderRadius: '6px'}}
-                />
-              </div>
-              {dateError && (
-                <span style={{ color: 'red', fontSize: '0.9em' }}>{dateError}</span>
-              )}
-              {/* Thêm input chọn ảnh */}
-              <div className="input-group">
-                <label style={{fontSize: '20px'}}>Ảnh đơn thuốc (nếu có):</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={e => setImageFile(e.target.files[0])}
-                  style={{fontSize: '16px', padding: '6px', borderRadius: '6px'}}
-                />
-                {(imageFile || imageUrl) && (
-                  <div style={{marginTop: 8, position: "relative", display: "inline-block"}}>
-                    <img
-                      src={imageFile ? URL.createObjectURL(imageFile) : imageUrl}
-                      alt="Preview"
-                      style={{maxWidth: 120, maxHeight: 120, borderRadius: 8, border: '1px solid #eee', display: "block"}}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => { setImageFile(null); setImageUrl(null); }}
-                      style={{
-                        position: "absolute",
-                        top: 2,
-                        right: 750,
-                        background: "#fff",
-                        border: "1px solid #ccc",
-                        borderRadius: "50%",
-                        width: 22,
-                        height: 22,
-                        cursor: "pointer",
-                        color: "#d00",
-                        fontWeight: "bold",
-                        lineHeight: "18px",
-                        padding: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxShadow: "0 1px 4px #0001"
-                      }}
-                      title="Xóa ảnh"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-              </div>
-              <h2 style={{margin: '0px 0px 5px 0px'}}>Chi tiết đơn thuốc</h2>
-              <div className="medicine-list">
-                {medicines.map((medicine, index) => (
-                  <div key={index} className="medicine-item" style={{position: 'relative'}}>
-                    {/* Nút X xoá */}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMedicine(index)}
-                      style={{
-                        position: 'absolute',
-                        top: '-10px',
-                        right: '-10px',
-                        background: 'transparent',
-                        border: 'none',
-                        fontSize: '18px',
-                        color: '#d00',
-                        cursor: 'pointer',
-                        fontWeight: 'bold'
-                      }}
-                      aria-label="Xoá thuốc"
-                    >
-                      <FontAwesomeIcon icon={faXmark} />
-                    </button>
-                    <div className="input-group">
-                      <label>Tên thuốc:</label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={medicine.name}
-                        onChange={(e) => handleMedicineChange(index, e)}
-                        placeholder="Paracetamol, Aspirin..."
-                        required
-                      />
-                    </div>
-                    <div className="input-group" style={{ flexDirection: 'row', gap: 16, alignItems: 'center', marginBottom: 8 }}>
-  <div style={{ flex: 1 }}>
-    <label style={{ display: 'block', marginBottom: 4 }}>Số lượng:</label>
-    <input
-      type="number"
-      min="1"
-      step="1"
-      name="quantity"
-      value={medicine.quantity}
-      onChange={(e) => {
-        // Chỉ cho nhập số nguyên dương
-        const val = e.target.value.replace(/[^0-9]/g, '');
-        handleMedicineChange(index, { target: { name: 'quantity', value: val } });
-      }}
-      placeholder=""
-      required
-      style={{ width: '100%' }}
-    />
-  </div>
-  <div style={{ flex: 1 }}>
-    <label style={{ display: 'block', marginBottom: 4 }}>Đơn vị:</label>
-    <select
-      name="unit"
-      value={medicine.unit}
-      onChange={(e) => handleMedicineChange(index, e)}
-      required
-      style={{ width: '100%' }}
-    >
-      <option value="">-- Chọn đơn vị --</option>
-      <option value="Viên">Viên</option>
-      <option value="Gói">Gói</option>
-      <option value="Vỉ">Vỉ</option>
-      <option value="Chai">Chai</option>
-      <option value="Lọ">Lọ</option>
-      <option value="Tuýp">Tuýp</option>
-      <option value="Miếng dán">Miếng dán</option>
-      <option value="Liều">Liều</option>
-      <option value="Ống">Ống</option>
-    </select>
-  </div>
-</div>
-                    
-                    <div className="input-group">
-                      <label>Cách dùng:</label>
-                      <input
-                        type="text"
-                        name="method"
-                        value={medicine.method}
-                        onChange={(e) => handleMedicineChange(index, e)}
-                        placeholder="Nhập cách dùng (vd: uống, bôi, tiêm...)"
-                        required
-                        style={{ width: '100%' }}
-                      />
-                    </div>
-                    <div className="input-group" style={{ marginBottom: '0px' }}>
-                      <label>Thời gian:</label>
-                      <select
-                        name="usage"
-                        value={medicine.usage}
-                        onChange={(e) => handleMedicineChange(index, e)}
-                        required
-                      >
-                        <option value="">-- Chọn thời gian --</option>
-                        <option value="Sau ăn sáng từ 9h-9h30">Sau ăn sáng từ 9h-9h30</option>
-                        <option value="Trước ăn trưa: 10h30-11h">Trước ăn trưa: 10h30-11h</option>
-                        <option value="Sau ăn trưa: từ 11h30-12h">Sau ăn trưa: từ 11h30-12h</option>
-                      </select>
-                    </div>
-                  </div>
-                ))}
-                <button type="button" onClick={handleAddMedicine} className="add-medicine-btn">
-                  + Thêm
-                </button>
-              </div>
-
-              <div className="note-section">
-                <label>Ghi chú:</label>
-                <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="Bổ sung thêm thông tin .........."
-                  rows="3"
-                ></textarea>
-              </div>
-              <div className="submit-btn-wrapper">
-                <button type="submit" className="submit-btn">
-                  {editingId ? "Cập nhật" : "Xác nhận gửi"}
-                </button>
-              </div>
-            </div>
+      <div className="form-content">
+        {activeTab === 'create' && (
+          <div className="student-info-section">
+            <StudentInfoCard
+  value={selectedStudentId}
+  onChange={setSelectedStudentId}
+/>
           </div>
-        </form>
+        )}
+
+        {/* Nội dung từng tab */}
+        {activeTab === 'create' && (
+          <div className="prescription-details-section">
+            <Form
+  layout="vertical"
+  onFinish={async () => {
+    const result = await Swal.fire({
+      title: 'Xác nhận gửi đơn thuốc?',
+      text: 'Bạn có chắc chắn muốn gửi đơn thuốc này?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Gửi',
+      cancelButtonText: 'Hủy',
+    });
+    if (!result.isConfirmed) return;
+    handleSubmit();
+  }}
+>
+              <Form.Item label="Mục đích gửi thuốc" required>
+                <Input
+                  value={purpose}
+                  onChange={e => setPurpose(e.target.value)}
+                  placeholder="Vd: Thuốc trị ho, thuốc hạ sốt..."
+                />
+              </Form.Item>
+              <Row gutter={16}>
+                <Col xs={24} md={12}>
+                  <Form.Item label="Ngày dùng" required>
+                    <DatePicker
+                      value={usageTime ? dayjs(usageTime) : null}
+                      onChange={date => {
+                        setUsageTime(date ? date.format('YYYY-MM-DD') : '');
+                        setDateError('');
+                      }}
+                      style={{ width: '100%' }}
+                      disabledDate={current => current && current < dayjs().startOf('day')}
+                    />
+                    {dateError && <div style={{ color: 'red', fontSize: 13 }}>{dateError}</div>}
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item label="Ảnh đơn thuốc (nếu có)">
+                    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 16,
+      background: "#f5faff",
+      border: "1px dashed #91d5ff",
+      borderRadius: 8,
+      padding: "16px 12px"
+    }}>
+      <Upload
+        beforeUpload={file => {
+          setImageFile(file);
+          return false;
+        }}
+        showUploadList={false}
+        accept="image/*"
+      >
+        <Button
+          type="primary"
+          icon={<UploadOutlined style={{ fontSize: 20 }} />}
+          size="large"
+          style={{
+            fontWeight: 600,
+            borderRadius: 8,
+            boxShadow: "0 2px 8px #91d5ff55"
+          }}
+        >
+          Chọn ảnh
+        </Button>
+      </Upload>
+      {(imageFile || imageUrl) && (
+        <div style={{ position: "relative", display: "inline-block" }}>
+          <img
+            src={imageFile ? URL.createObjectURL(imageFile) : imageUrl}
+            alt="Preview"
+            style={{
+              maxWidth: 80,
+              maxHeight: 80,
+              borderRadius: 8,
+              border: '2px solid #91d5ff',
+              background: "#fff"
+            }}
+          />
+          <Button
+            type="text"
+            icon={<CloseCircleOutlined style={{ color: "#d00", fontSize: 30 }} />}
+            onClick={() => { setImageFile(null); setImageUrl(null); }}
+            style={{
+          color: "#d00",
+          fontSize: 14, // tăng kích thước
+          background: "#fff",
+          borderRadius: "50%",
+          padding: 20,
+          boxShadow: "0 2px 8px #d002"
+        }}
+          />
+        </div>
       )}
+    </div>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Divider orientation="left">Chi tiết đơn thuốc</Divider>
+              {medicines.map((medicine, index) => (
+                <Card
+                  key={index}
+                  style={{ marginBottom: 16, background: "#e0f2ff", borderRadius: 8, position: 'relative' }}
+                  bodyStyle={{ padding: 16 }}
+                >
+                  <Button
+                    type="text"
+                    icon={<CloseCircleOutlined style={{ color: "#d00" }} />}
+                    onClick={() => handleRemoveMedicine(index)}
+                    style={{ position: 'absolute', top: 8, right: 8 }}
+                  />
+                  <Row gutter={16}>
+                    <Col xs={24} md={12} lg={10}>
+                      <Form.Item label="Tên thuốc" required>
+                        <Input
+                          name="name"
+                          value={medicine.name}
+                          onChange={e => handleMedicineChange(index, e)}
+                          placeholder="Paracetamol, Aspirin..."
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={12} md={6} lg={5}>
+                      <Form.Item label="Số lượng" required>
+                        <Input
+                          type="number"
+                          min={1}
+                          name="quantity"
+                          value={medicine.quantity}
+                          onChange={e => {
+                            const val = e.target.value.replace(/[^0-9]/g, '');
+                            handleMedicineChange(index, { target: { name: 'quantity', value: val } });
+                          }}
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={12} md={6} lg={9}>
+                      <Form.Item label="Đơn vị" required>
+                        <Select
+                          name="unit"
+                          value={medicine.unit}
+                          onChange={value => handleMedicineChange(index, { target: { name: 'unit', value } })}
+                          placeholder="Chọn đơn vị"
+                        >
+                          <Option value="">-- Chọn đơn vị --</Option>
+                          <Option value="Viên">Viên</Option>
+                          <Option value="Gói">Gói</Option>
+                          <Option value="Vỉ">Vỉ</Option>
+                          <Option value="Chai">Chai</Option>
+                          <Option value="Lọ">Lọ</Option>
+                          <Option value="Tuýp">Tuýp</Option>
+                          <Option value="Miếng dán">Miếng dán</Option>
+                          <Option value="Liều">Liều</Option>
+                          <Option value="Ống">Ống</Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  <Form.Item label="Cách dùng" required>
+                    <Input
+                      name="method"
+                      value={medicine.method}
+                      onChange={e => handleMedicineChange(index, e)}
+                      placeholder="Nhập cách dùng (vd: uống, bôi, tiêm...)"
+                    />
+                  </Form.Item>
+                  <Form.Item label="Thời gian" required>
+                    <Select
+                      name="usage"
+                      value={medicine.usage}
+                      onChange={value => handleMedicineChange(index, { target: { name: 'usage', value } })}
+                      placeholder="Chọn thời gian"
+                    >
+                      <Option value="">-- Chọn thời gian --</Option>
+                      <Option value="Sau ăn sáng từ 9h-9h30">Sau ăn sáng từ 9h-9h30</Option>
+                      <Option value="Trước ăn trưa: 10h30-11h">Trước ăn trưa: 10h30-11h</Option>
+                      <Option value="Sau ăn trưa: từ 11h30-12h">Sau ăn trưa: từ 11h30-12h</Option>
+                    </Select>
+                  </Form.Item>
+                </Card>
+              ))}
+              <Button type="dashed" icon={<PlusOutlined />} onClick={handleAddMedicine} style={{ marginBottom: 16 }}>
+                Thêm thuốc
+              </Button>
+              <Form.Item label="Ghi chú">
+                <Input.TextArea
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
+                  placeholder="Bổ sung thêm thông tin .........."
+                  rows={3}
+                />
+              </Form.Item>
+              <Form.Item>
+                <Button type="primary" htmlType="submit" style={{ width: 180, fontWeight: 600 }}>
+                  {editingId ? "Cập nhật" : "Xác nhận gửi"}
+                </Button>
+              </Form.Item>
+            </Form>
+          </div>
+        )}
+      </div>
 
       {activeTab === 'history' && (
-        <MedicalRequestDetail/>
+        <MedicalRequestDetail />
       )}
       <ToastContainer
-  position="bottom-right" // Thêm dòng này
-  autoClose={3000}
-  hideProgressBar={false}
-  newestOnTop={false}
-  closeOnClick
-  rtl={false}
-  pauseOnFocusLoss
-  draggable
-  pauseOnHover
-/>
+      position="bottom-right" // Thêm dòng này
+      autoClose={3000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+    />
     </div>
   );
 };
