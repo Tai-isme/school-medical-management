@@ -2067,6 +2067,11 @@ public class NurseService {
 
         VaccineResultEntity savedResult = vaccineResultRepository.save(result);
 
+        // Nếu không tiêm thì không cần cập nhật lịch sử tiêm
+        if (!request.getIsInjected()) {
+            return modelMapper.map(savedResult, VaccineResultDTO.class);
+        }
+
         VaccineNameEntity vaccineName = form.getVaccineName();
 
         Optional<VaccineHistoryEntity> historyOpt = vaccineHistoryRepository.findByStudentAndVaccineNameEntity(student, vaccineName);
@@ -2076,7 +2081,7 @@ public class NurseService {
         history.setVaccineNameEntity(vaccineName);
         history.setNote("Đã tiêm ở trường");
         history.setCreateBy(true);
-        history.setUnit(historyOpt.map(VaccineHistoryEntity::getUnit).orElse(0) + 1);
+        history.setUnit(form.getVaccineProgram().getUnit());
 
         vaccineHistoryRepository.save(history);
 
