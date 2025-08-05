@@ -1,13 +1,13 @@
 // Navbar.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import '../Navbar/Navbar.css';
-import Login from '../Login/Login.jsx';
-import NotificationSocket from './NotificationSocket';
-import NotificationPanel from './NotificationPanel';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell } from '@fortawesome/free-solid-svg-icons';
-import { urlServer } from '../../../api/urlServer.js';
+import "../Navbar/Navbar.css";
+import Login from "../Login/Login.jsx";
+import NotificationSocket from "./NotificationSocket";
+import NotificationPanel from "./NotificationPanel";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBell } from "@fortawesome/free-solid-svg-icons";
+import { urlServer } from "../../../api/urlServer.js";
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -18,7 +18,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('users');
+    const storedUser = localStorage.getItem("users");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -27,7 +27,7 @@ const Navbar = () => {
   useEffect(() => {
     // Lắng nghe sự kiện đăng nhập thành công
     const handleUserLogin = () => {
-      const storedUser = localStorage.getItem('users');
+      const storedUser = localStorage.getItem("users");
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
@@ -41,15 +41,14 @@ const Navbar = () => {
 
     const fetchNotifications = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
-        const studentId = students[0]?.id;
+        const token = localStorage.getItem("token");
+        const parent = JSON.parse(localStorage.getItem("users") || "[]");
 
-        const res = await fetch(`${urlServer}/api/notify/${studentId}`, {
+        const res = await fetch(`${urlServer}/api/notify/${parent.id}`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
 
         if (!res.ok) throw new Error("Lỗi khi lấy thông báo");
@@ -69,27 +68,27 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
 
       const res = await fetch(`${urlServer}/api/auth/logout`, {
         method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
       if (!res.ok) {
         throw new Error("Lỗi khi đăng xuất");
       }
 
-      localStorage.removeItem('token');
-      localStorage.removeItem('users');
-      localStorage.removeItem('students');
-      localStorage.removeItem('role');
+      localStorage.removeItem("token");
+      localStorage.removeItem("users");
+      localStorage.removeItem("students");
+      localStorage.removeItem("role");
       window.dispatchEvent(new Event("user-login")); // Để Navbar cập nhật lại
       setUser(null);
-      navigate('/');
+      navigate("/");
     } catch (error) {
       console.error("❌ Đăng xuất thất bại:", error);
     }
@@ -97,11 +96,13 @@ const Navbar = () => {
 
   const toggleNotificationPanel = () => {
     setIsNotiOpen((prev) => !prev);
-    setNumberNoti("0");
+    if (!isNotiOpen) {
+      setNumberNoti("0"); // Chỉ reset khi mở panel
+    }
   };
 
   const renderGreeting = () => {
-    const name = user?.fullName?.split(" ").pop() || user?.email || '';
+    const name = user?.fullName?.split(" ").pop() || user?.email || "";
     return <b style={{ fontSize: "20px" }}>{name}</b>;
   };
 
@@ -109,15 +110,31 @@ const Navbar = () => {
     <>
       <nav className="navbar">
         <ul className="nav-links">
-          <li className="logo"><img src="../../../../public/logo.png" alt="Logo" /></li>
+          <li className="logo">
+            <img src="../../../../public/logo.png" alt="Logo" />
+          </li>
           <li>
-            <a style={{ cursor: 'pointer' }} onClick={() => { navigate("/") }}>Trang chủ</a>
+            <a
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                navigate("/");
+              }}
+            >
+              Trang chủ
+            </a>
           </li>
           <li>
             <a href="/">Tài liệu</a>
           </li>
           <li>
-            <a style={{ cursor: 'pointer' }} onClick={() => { navigate("/blog") }}>Blog</a>
+            <a
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                navigate("/blog");
+              }}
+            >
+              Blog
+            </a>
           </li>
           <li>
             <a href="/">Giới thiệu</a>
@@ -128,20 +145,28 @@ const Navbar = () => {
 
           {user && (
             <li className="notification-wrapper">
-              <button className="notification-button" onClick={toggleNotificationPanel}>
-                <FontAwesomeIcon icon={faBell} style={{ fontSize: "32px", color: "#1976d2" }} />
+              <button
+                className="notification-button"
+                onClick={toggleNotificationPanel}
+              >
+                <FontAwesomeIcon
+                  icon={faBell}
+                  style={{ fontSize: "32px", color: "#1976d2" }}
+                />
                 {(Number(numberNoti) >= 1 || notifications.length >= 1) && (
-                  <span style={{
-                    background: "#1976d2",
-                    color: "#fff",
-                    borderRadius: "50%",
-                    padding: "2px 8px",
-                    fontSize: "16px",
-                    marginLeft: "2px",
-                    position: "relative",
-                    top: "-12px",
-                    left: "-10px"
-                  }}>
+                  <span
+                    style={{
+                      background: "#1976d2",
+                      color: "#fff",
+                      borderRadius: "50%",
+                      padding: "2px 8px",
+                      fontSize: "16px",
+                      marginLeft: "2px",
+                      position: "relative",
+                      top: "-12px",
+                      left: "-10px",
+                    }}
+                  >
                     {numberNoti || notifications.length}
                   </span>
                 )}
@@ -159,12 +184,18 @@ const Navbar = () => {
             {user ? (
               <>
                 <span>{renderGreeting()}</span>
-                <button id="btn-logout" onClick={handleLogout} style={{ marginLeft: '10px' }}>
+                <button
+                  id="btn-logout"
+                  onClick={handleLogout}
+                  style={{ marginLeft: "10px" }}
+                >
                   Đăng xuất
                 </button>
               </>
             ) : (
-              <button id="btn-login" onClick={handleLoginClick}>Đăng nhập</button>
+              <button id="btn-login" onClick={handleLoginClick}>
+                Đăng nhập
+              </button>
             )}
           </li>
         </ul>
@@ -177,6 +208,7 @@ const Navbar = () => {
           parentId={user.id}
           onMessage={(message) => {
             setNotifications((prev) => [...prev, message]);
+            setNumberNoti((prev) => (parseInt(prev || 0) + 1).toString());
           }}
         />
       )}

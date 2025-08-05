@@ -105,7 +105,7 @@ export default function StudentInfoCard({ onChange }) {
           size={200}
           src={
             previewAvatar ||
-            selectedStudent?.avatar ||
+            selectedStudent?.avatarUrl ||
             "https://res.cloudinary.com/duzh5dnul/image/upload/v1750673843/6473ad42-3f20-4708-9bcf-76dff5d30ab2_avt2.jpg"
           }
         />
