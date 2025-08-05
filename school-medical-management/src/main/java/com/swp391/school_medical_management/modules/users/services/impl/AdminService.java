@@ -1642,9 +1642,9 @@ public class AdminService {
     public List<VaccineResultExportDTO> getVaccineResultsToExport(int vaccineProgramId) {
         VaccineProgramEntity vaccineProgramEntity = vaccineProgramRepository.findById(vaccineProgramId).orElseThrow(() ->
                 new IllegalArgumentException("Không tìm thấy chương trình tiêm chủng với ID: " + vaccineProgramId));
-        if (vaccineProgramEntity.getStatus() != VaccineProgramEntity.VaccineProgramStatus.COMPLETED) {
-            throw new IllegalArgumentException("Hãy hoàn thành chương trình tiêm chủng '" + vaccineProgramEntity.getVaccineProgramName() + "' trước khi xuất báo cáo thống kê của chương trình!");
-        }
+        // if (vaccineProgramEntity.getStatus() != VaccineProgramEntity.VaccineProgramStatus.COMPLETED) {
+        //     throw new IllegalArgumentException("Hãy hoàn thành chương trình tiêm chủng '" + vaccineProgramEntity.getVaccineProgramName() + "' trước khi xuất báo cáo thống kê của chương trình!");
+        // }
         List<VaccineResultExportDTO> dtoList = vaccineResultRepository.findExportByProgramId(vaccineProgramId);
         logger.info("dto list size: " + dtoList.size());
         if (dtoList.isEmpty()) {

@@ -20,5 +20,8 @@ public interface VaccineHistoryRepository extends JpaRepository<VaccineHistoryEn
     int sumUnitsByStudentAndVaccineName(@Param("student") StudentEntity student,
             @Param("vaccineName") VaccineNameEntity vaccineName);
 
+
+    Optional<VaccineHistoryEntity> findByStudentAndVaccineNameEntity_VaccineNameIdAndUnit(StudentEntity student, int vaccineNameId, int unit);
+
     Optional<VaccineHistoryEntity> findByStudentAndVaccineNameEntity(StudentEntity student, VaccineNameEntity vaccineName);
 }

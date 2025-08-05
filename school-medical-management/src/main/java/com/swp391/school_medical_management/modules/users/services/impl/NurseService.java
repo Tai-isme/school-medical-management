@@ -2454,7 +2454,18 @@ public class NurseService {
 
     // Nút xem kết quả
     public List<VaccineFormDTO> viewVaccineResultByProgram(int programId) {
-        List<VaccineFormEntity> vaccineForms = vaccineFormRepository.findByVaccineProgram_VaccineIdAndCommitIsTrue(programId);
+
+        VaccineProgramEntity programEntity = vaccineProgramRepository.findById(programId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình tiêm chủng"));
+        List<VaccineFormEntity> vaccineForms = new ArrayList<>();
+        if (programEntity.getStatus() == VaccineProgramEntity.VaccineProgramStatus.GENERATED_RESULT) {
+            vaccineForms = vaccineFormRepository.findByVaccineProgram_VaccineIdAndCommitIsTrue(programId);
+        } else if (programEntity.getStatus() == VaccineProgramEntity.VaccineProgramStatus.COMPLETED) {
+            vaccineForms = vaccineFormRepository.findByVaccineProgram_VaccineId(programId);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chương trình tiêm chủng chưa được xác nhận kết quả");
+        }
+
+
         if (vaccineForms.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phiếu tiêm chủng đã xác nhận");
         }
@@ -2549,8 +2560,6 @@ public class NurseService {
 
         VaccineNameEntity vaccineName = programEntity.getVaccineName();
 
-        List<VaccineUnitEntity> units = vaccineUnitRepository.findByVaccineName(vaccineName);
-        int totalUnit = units.size();
 
         for (ParticipateClassEntity pc : participateClasses) {
             List<StudentEntity> students = studentRepository.findByClassEntity(pc.getClazz());
@@ -2559,13 +2568,16 @@ public class NurseService {
                 UserEntity parent = student.getParent();
                 if (parent == null) continue;
 
-                int injectedUnit = vaccineHistoryRepository.sumUnitsByStudentAndVaccineName(student, vaccineName);
+                
+                Optional<VaccineHistoryEntity> vaccineHistoryEntity = vaccineHistoryRepository.findByStudentAndVaccineNameEntity_VaccineNameIdAndUnit(student, programEntity.getVaccineName().getVaccineNameId() , programEntity.getUnit());
+                
+                logger.info("vaccineHistoryEntity" + vaccineHistoryEntity.isPresent());
 
-                if (injectedUnit >= totalUnit) continue;
 
-                boolean hasUncommittedForm = vaccineFormRepository.findVaccineFormEntityByVaccineProgramAndStudent(programEntity, student).stream().anyMatch(form -> form.getCommit() == null);
-
-                if (hasUncommittedForm) continue;
+                if (vaccineHistoryEntity.isPresent() == true) {
+                 continue;
+                }
+                
 
                 VaccineFormEntity form = new VaccineFormEntity();
                 form.setStudent(student);
