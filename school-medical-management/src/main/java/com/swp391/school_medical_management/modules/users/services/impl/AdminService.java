@@ -442,7 +442,7 @@ public class AdminService {
                 participateDTO.setParticipate_id(participate.getParticipateId());
                 participateDTO.setProgram_id(entity.getId());
                 participateDTO.setClass_id(participate.getClazz().getClassId());
-                participate.setType(ParticipateClassEntity.Type.HEALTH_CHECK);
+                participateDTO.setType(ParticipateClassEntity.Type.HEALTH_CHECK.toString());
 
                 ClassEntity clazz = participate.getClazz();
                 ClassDTO classDTO = new ClassDTO();
