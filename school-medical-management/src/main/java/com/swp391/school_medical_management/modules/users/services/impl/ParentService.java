@@ -139,8 +139,11 @@ public class ParentService {
         }
         StudentDTO studentDTO = modelMapper.map(studentOpt.get(), StudentDTO.class);
         Optional<MedicalRecordEntity> recordOpt = medicalRecordsRepository.findByStudent_Id(request.getStudentId());
-        if (recordOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ y tế!");
+        MedicalRecordEntity medicalRecord;
+        if (recordOpt.isPresent()) {
+            medicalRecord = recordOpt.get();
+        } else {
+            medicalRecord = new MedicalRecordEntity();
         }
 
         Set<Integer> vaccineIds = new HashSet<>();
@@ -151,7 +154,6 @@ public class ParentService {
             }
         }
 
-        MedicalRecordEntity medicalRecord = recordOpt.get();
         medicalRecord.setAllergies(request.getAllergies());
         medicalRecord.setChronicDisease(request.getChronicDisease());
         medicalRecord.setVision(request.getVision());
@@ -223,7 +225,8 @@ public class ParentService {
         return null;
     }
 
-    public RecordAndHistoryDTO getMedicalRecordByStudentId(int parentId, int studentId) {
+
+public RecordAndHistoryDTO getMedicalRecordByStudentId(int parentId, int studentId) {
         Optional<MedicalRecordEntity> optMedicalRecord = medicalRecordsRepository.findByStudent_Id(studentId);
         StudentEntity student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy học sinh!"));
@@ -233,28 +236,41 @@ public class ParentService {
         }
 
         // Vaccine history
-        List<VaccineHistoryDTO> vaccineHistoryDTOList = vaccineHistoryRepository.findByStudent(student).stream()
-                .map(history -> {
-                    VaccineHistoryDTO dto = new VaccineHistoryDTO();
-                    dto.setId(history.getId());
-                    dto.setNote(history.getNote());
-                    dto.setCreateBy(history.isCreateBy());
-                    dto.setUnit(history.getUnit());
-                    dto.setStudentId(student.getId());
-                    dto.setStudentDTO(modelMapper.map(student, StudentDTO.class));
-                    dto.setVaccineNameDTO(modelMapper.map(history.getVaccineNameEntity(), VaccineNameDTO.class));
-                    return dto;
-                }).collect(Collectors.toList());
+        List<VaccineHistoryEntity> vaccineHistories = vaccineHistoryRepository.findByStudent(student);
+        
+
+        List<VaccineHistoryDTO> vaccineHistoryDTOList = new ArrayList<>();
+        if (vaccineHistories.isEmpty()) {
+            vaccineHistoryDTOList = null;
+        }else {
+    vaccineHistoryDTOList = vaccineHistories.stream().map(vaccineHistory -> {
+        VaccineHistoryDTO dto = modelMapper.map(vaccineHistory, VaccineHistoryDTO.class);
+
+        // Map VaccineNameEntity to VaccineNameDTO
+        VaccineNameEntity vaccineNameEntity = vaccineHistory.getVaccineNameEntity();
+        VaccineNameDTO vaccineNameDTO = modelMapper.map(vaccineNameEntity, VaccineNameDTO.class);
+
+        // Map VaccineUnitEntity list to VaccineUnitDTO list
+        List<VaccineUnitEntity> unitEntities = vaccineUnitRepository.findByVaccineName_VaccineNameId(vaccineNameEntity.getVaccineNameId());
+        List<VaccineUnitDTO> unitDTOs = unitEntities.stream()
+            .map(unit -> modelMapper.map(unit, VaccineUnitDTO.class))
+            .collect(Collectors.toList());
+        vaccineNameDTO.setVaccineUnitDTOs(unitDTOs);
+
+        // Set VaccineNameDTO to VaccineHistoryDTO
+        dto.setVaccineNameDTO(vaccineNameDTO);
+
+        return dto;
+    }).collect(Collectors.toList());
+}
+
 
         // Medical record
         MedicalRecordDTO medicalRecordDTO;
         if (optMedicalRecord.isPresent()) {
             medicalRecordDTO = modelMapper.map(optMedicalRecord.get(), MedicalRecordDTO.class);
         } else {
-            medicalRecordDTO = new MedicalRecordDTO();
-            medicalRecordDTO.setStudentId(student.getId());
-            medicalRecordDTO.setStudentDTO(modelMapper.map(student, StudentDTO.class));
-            medicalRecordDTO.setVaccineHistoryDTOS(Collections.emptyList());
+            medicalRecordDTO = null;
         }
 
         // Kết hợp 2 phần vào RecordAndHistoryDTO
@@ -263,6 +279,7 @@ public class ParentService {
         result.setVaccineHistories(vaccineHistoryDTOList);
         return result;
     }
+
 
 
     public void deleteMedicalRecord(int parentId, int studentId) {
@@ -329,16 +346,6 @@ public class ParentService {
         }
 
         medicalRequestRepository.save(medicalRequestEntity);
-
-        /*Gui thong bao */
-        notificationService.sendNotificationToAllNurse(
-                "Thông báo yê cầu gửi thuốc",
-                "Phụ huynh " + medicalRequestEntity.getParent().getFullName() + " đã tạo yêu cầu gửi thuốc mới.",
-                "MEDICAL_REQUEST",
-                medicalRequestEntity.getRequestId()
-        );
-        /*-------------*/
-
         MedicalRequestDTO medicalRequestDTO = modelMapper.map(medicalRequestEntity,
                 MedicalRequestDTO.class);
         List<MedicalRequestDetailDTO> medicalRequestDetailDTOList = medicalRequestEntity
