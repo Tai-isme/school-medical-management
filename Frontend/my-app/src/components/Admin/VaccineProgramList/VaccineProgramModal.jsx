@@ -145,7 +145,7 @@ const VaccineProgramModal = ({
         <Form.Item
           label={
             <span>
-              Tên chương trình{" "}
+              ❗ Tên chương trình{" "}
               <ExclamationCircleOutlined
                 style={{ color: "red", fontSize: 12, marginLeft: 4 }}
               />
@@ -167,7 +167,7 @@ const VaccineProgramModal = ({
           <Form.Item
             label={
               <span>
-                Loại vaccine{" "}
+                💉 Loại vaccine{" "}
                 <ExclamationCircleOutlined
                   style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                 />
@@ -196,7 +196,7 @@ const VaccineProgramModal = ({
           <Form.Item
             label={
               <span>
-                Mũi vaccine{" "}
+                🧪 Mũi vaccine{" "}
                 <ExclamationCircleOutlined
                   style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                 />
@@ -215,12 +215,11 @@ const VaccineProgramModal = ({
         </div>
 
         {/* Thời gian thực hiện và gửi form */}
-
-        <div style={{ display: "flex", gap: 16 }}>
+        <div style={{ display: "flex", gap: 16, marginBottom: 16 , marginTop: 16}}>
           <Form.Item
             label={
               <span>
-                Ngày thực hiện{" "}
+                📅 Ngày thực hiện{" "}
                 <ExclamationCircleOutlined
                   style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                 />
@@ -255,7 +254,7 @@ const VaccineProgramModal = ({
           <Form.Item
             label={
               <span>
-                Ngày gửi form cho học sinh{" "}
+                📬 Ngày gửi thông báo cho học sinh{" "}
                 <ExclamationCircleOutlined
                   style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                 />
@@ -294,7 +293,7 @@ const VaccineProgramModal = ({
 
         {/* Chọn lớp dạng button group đẹp */}
         <Form.Item
-          label={<span>Chọn lớp</span>}
+          label={<span>🏫 Chọn lớp</span>}
           name="classIds"
           rules={[{ required: true, message: "Vui lòng chọn ít nhất một lớp" }]}
           style={{ width: "100%" }}
@@ -312,7 +311,7 @@ const VaccineProgramModal = ({
         <Form.Item
           label={
             <span>
-              Y tá quản lý{" "}
+              🧑‍⚕️ Y tá quản lý{" "}
               <ExclamationCircleOutlined
                 style={{ color: "red", fontSize: 12, marginLeft: 4 }}
               />
@@ -350,7 +349,7 @@ const VaccineProgramModal = ({
         <Form.Item
           label={
             <span>
-              Địa điểm diễn ra{" "}
+              📍 Địa điểm diễn ra{" "}
               <ExclamationCircleOutlined
                 style={{ color: "red", fontSize: 12, marginLeft: 4 }}
               />
@@ -370,7 +369,7 @@ const VaccineProgramModal = ({
         <Form.Item
           label={
             <span>
-              Mô tả{" "}
+              📝 Mô tả chương trình{" "}
               <ExclamationCircleOutlined
                 style={{ color: "red", fontSize: 12, marginLeft: 4 }}
               />

@@ -23,6 +23,10 @@ import {
 import { Select } from "antd"; // Thêm dòng này
 import axios from "axios";
 import dayjs from "dayjs";
+import "dayjs/locale/vi";
+dayjs.locale("vi");
+import viVN from "antd/es/locale/vi_VN";
+import { ConfigProvider } from "antd";
 import Swal from "sweetalert2";
 import { Table } from "antd"; // Thêm import này
 import VaccineProgramModal from "./VaccineProgramModal"; // Import component mới tạo
@@ -57,6 +61,7 @@ const VaccineProgramList = () => {
   const [resultTablePageSize, setResultTablePageSize] = useState(8); // Số dòng mỗi trang
   const pageSize = 3; // Số chương trình mỗi trang
   const userRole = localStorage.getItem("role"); // Lấy role từ localStorage
+  const [filterDateRange, setFilterDateRange] = useState(null);
 
   // Thêm state để lưu danh sách vaccine
   const [vaccineList, setVaccineList] = useState([]);
@@ -176,18 +181,22 @@ const VaccineProgramList = () => {
 
   // Lọc danh sách theo tên chương trình và ngày tiêm
   const filteredPrograms = programs.filter((program) => {
-    const matchName =
-      typeof program.vaccineName === "object"
-        ? program.vaccineName?.vaccineName
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
-        : typeof program.vaccineName === "string"
-        ? program.vaccineName.toLowerCase().includes(searchTerm.toLowerCase())
-        : false;
-    const matchDate = filterDate
-      ? dayjs(program.vaccineDate).isSame(filterDate, "day")
-      : true;
+    const matchName = program.healthCheckName
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const matchDate =
+      filterDateRange?.[0] && filterDateRange?.[1]
+        ? dayjs(program.startDate).isBetween(
+            filterDateRange[0],
+            filterDateRange[1],
+            "day",
+            "[]"
+          )
+        : true;
+
     const matchStatus = filterStatus ? program.status === filterStatus : true;
+
     return matchName && matchDate && matchStatus;
   });
 
@@ -775,14 +784,16 @@ const VaccineProgramList = () => {
                         allowClear
                         style={{ width: 220, background: "#fff" }}
                       />
-                      <DatePicker
-                        placeholder="Lọc theo ngày tiêm"
-                        value={filterDate}
-                        onChange={setFilterDate}
-                        allowClear
-                        style={{ width: 170 }}
-                        format="YYYY-MM-DD"
-                      />
+                      <ConfigProvider locale={viVN}>
+                        <DatePicker.RangePicker
+                          value={filterDateRange}
+                          onChange={setFilterDateRange}
+                          allowClear
+                          format="YYYY-MM-DD"
+                          placeholder={["Từ ngày", "Đến ngày"]}
+                          style={{ width: 300 }}
+                        />
+                      </ConfigProvider>
                       <Select
                         placeholder="Lọc theo trạng thái"
                         value={filterStatus}

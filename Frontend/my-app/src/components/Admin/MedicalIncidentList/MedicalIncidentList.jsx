@@ -16,6 +16,10 @@ import {
   Avatar,
 } from "antd";
 import Swal from "sweetalert2";
+import { Tabs } from "antd";
+const { TabPane } = Tabs;
+import { Collapse } from "antd";
+const { Panel } = Collapse;
 import dayjs from "dayjs";
 import { Upload } from "antd";
 import {
@@ -601,12 +605,18 @@ const MedicalEventList = () => {
         </>
       )}
 
-      {/* Modal Chi tiết */}
       <Modal
         title={
-          <span style={{ color: "#1476d1", fontSize: 20, fontWeight: 600 }}>
+          <div
+            style={{
+              textAlign: "center",
+              color: "#1476d1",
+              fontSize: 18,
+              fontWeight: 600,
+            }}
+          >
             Chi tiết sự kiện y tế
-          </span>
+          </div>
         }
         open={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
@@ -615,139 +625,88 @@ const MedicalEventList = () => {
             Đóng
           </Button>,
         ]}
+        width={720}
         bodyStyle={{
-          position: "relative",
           padding: 24,
-          paddingTop: 40,
           backgroundColor: "#fefefe",
           borderRadius: 8,
-          maxHeight: "70vh",
+          maxHeight: "80vh",
           overflowY: "auto",
         }}
       >
         {selectedEvent && (
-          <div>
-            <div style={getLevelStyle(selectedEvent.levelCheck)}>
-              {renderLevelText(selectedEvent.levelCheck)}
-            </div>
+          <Collapse defaultActiveKey={["1"]} accordion>
+            <Panel header="🧠 Thông tin sự cố" key="1">
+              <p>
+                <strong>Sự cố:</strong> {selectedEvent.typeEvent}
+              </p>
+              <p>
+                <strong>Mức độ:</strong>{" "}
+                {renderLevelText(selectedEvent.levelCheck)}
+              </p>
+              <p>
+                <strong>Mô tả:</strong>{" "}
+                {selectedEvent.description || "(Không có)"}
+              </p>
+              <p>
+                <strong>Xử lý:</strong>{" "}
+                {selectedEvent.actionsTaken || "(Không có)"}
+              </p>
+            </Panel>
+            <Panel header="🧒 Học sinh" key="3">
+              <p>
+                <strong>Học sinh:</strong> {selectedEvent.studentName}
+              </p>
+              <p>
+                <strong>Lớp:</strong> {selectedEvent.className}
+              </p>
+            </Panel>
+            <Panel header="📍 Địa điểm & thời gian" key="2">
+              <p>
+                <strong>Địa điểm:</strong> {selectedEvent.location}
+              </p>
+              <p>
+                <strong>Ngày:</strong>{" "}
+                {dayjs(selectedEvent.date).format("DD/MM/YYYY")}
+              </p>
+            </Panel>
+            <Panel header="👨‍👩‍👦 Phụ huynh" key="5">
+              <p>
+                <strong>Tên:</strong> {selectedEvent.parentName}
+              </p>
+              <p>
+                <strong>Điện thoại:</strong> {selectedEvent.parentphone}
+              </p>
+            </Panel>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "12px 24px",
-                lineHeight: "1.8em",
-              }}
-            >
-              {/* Thông tin liên hệ */}
-              <div style={{ gridColumn: "1 / span 2" }}>
-                <div
-                  style={{
-                    border: "2px solid #91caff", // đậm hơn
-                    borderRadius: 8,
-                    padding: 16,
-                    backgroundColor: "#e6f7ff", // xanh nhạt làm nổi bật card
+            <Panel header="🩺 Y tá" key="4">
+              <p>
+                <strong>Y tá phụ trách:</strong> {selectedEvent.nurseName}
+              </p>
+              <p>
+                <strong>Số điện thoại:</strong> {selectedEvent.nursePhone}
+              </p>
+              <p>
+                <strong>Email:</strong> {selectedEvent.email}
+              </p>
+            </Panel>
+
+            <Panel header="🖼️ Hình ảnh" key="6">
+              {selectedEvent.image ? (
+                <img
+                  src={selectedEvent.image}
+                  alt="Ảnh sự kiện"
+                  style={{ maxWidth: "100%", borderRadius: 6 }}
+                  onClick={() => {
+                    setPreviewImage(selectedEvent.image);
+                    setPreviewVisible(true);
                   }}
-                >
-                  <strong
-                    style={{
-                      display: "block",
-                      marginBottom: 12,
-                      fontSize: 16,
-                      color: "#096dd9",
-                    }}
-                  >
-                    📞 Thông tin liên hệ
-                  </strong>
-
-                  <div style={{ marginBottom: 8 }}>
-                    <span style={{ fontWeight: 600, color: "#222" }}>
-                      👤 Phụ huynh:
-                    </span>{" "}
-                    <span style={{ fontSize: 15 }}>
-                      {selectedEvent.parentName}
-                    </span>
-                  </div>
-
-                  <div>
-                    <span style={{ fontWeight: 600, color: "#222" }}>
-                      📱 Điện thoại:
-                    </span>{" "}
-                    <span style={{ fontSize: 15 }}>
-                      {selectedEvent.parentphone}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Các thông tin khác */}
-              <div>
-                <strong>Loại sự kiện:</strong>
-                <div>{selectedEvent.typeEvent}</div>
-              </div>
-              <div>
-                <strong>Học sinh:</strong>
-                <div>{selectedEvent.studentName}</div>
-              </div>
-              <div>
-                <strong>Lớp:</strong>
-                <div>{selectedEvent.className}</div>
-              </div>
-              <div>
-                <strong>Y tá phụ trách:</strong>
-                <div>{selectedEvent.nurseName}</div>
-              </div>
-              <div>
-                <strong>Email Y Tá:</strong>
-                <div>{selectedEvent.email}</div>
-              </div>
-              <div>
-                <strong>Địa điểm:</strong>
-                <div>{selectedEvent.location}</div>
-              </div>
-              <div>
-                <strong>Ngày:</strong>
-                <div>{dayjs(selectedEvent.date).format("DD/MM/YYYY")}</div>
-              </div>
-            </div>
-
-            <div
-              style={{ margin: "16px 0", borderTop: "1px solid #f0f0f0" }}
-            ></div>
-
-            <div style={{ lineHeight: "1.8em" }}>
-              <div>
-                <strong>Mô tả:</strong>
-                <div>{selectedEvent.description || "(Không có)"}</div>
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <strong>Xử lý:</strong>
-                <div>{selectedEvent.actionsTaken || "(Không có)"}</div>
-              </div>
-            </div>
-
-            {selectedEvent.image && (
-              <div style={{ marginTop: 16 }}>
-                <strong>Hình ảnh sự cố:</strong>
-                <div>
-                  <img
-                    src={selectedEvent.image}
-                    alt="Ảnh sự kiện"
-                    style={{
-                      maxWidth: "40%",
-                      borderRadius: 8,
-                      marginTop: 8,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      setPreviewImage(selectedEvent.image);
-                      setPreviewVisible(true);
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+                />
+              ) : (
+                "(Không có hình ảnh)"
+              )}
+            </Panel>
+          </Collapse>
         )}
       </Modal>
 
@@ -795,7 +754,7 @@ const MedicalEventList = () => {
               <Form.Item
                 label={
                   <span>
-                    Sự cố{" "}
+                    🛑 Sự cố{" "}
                     <ExclamationCircleOutlined
                       style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                     />
@@ -813,7 +772,7 @@ const MedicalEventList = () => {
               <Form.Item
                 label={
                   <span>
-                    Ngày{" "}
+                    📅 Ngày{" "}
                     <ExclamationCircleOutlined
                       style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                     />
@@ -849,7 +808,7 @@ const MedicalEventList = () => {
               <Form.Item
                 label={
                   <span>
-                    Lớp{" "}
+                    🏫 Lớp{" "}
                     <ExclamationCircleOutlined
                       style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                     />
@@ -871,7 +830,7 @@ const MedicalEventList = () => {
               <Form.Item
                 label={
                   <span>
-                    Học sinh{" "}
+                    👦 Học sinh{" "}
                     <ExclamationCircleOutlined
                       style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                     />
@@ -905,7 +864,7 @@ const MedicalEventList = () => {
               <Form.Item
                 label={
                   <span>
-                    Địa điểm{" "}
+                    📍 Địa điểm{" "}
                     <ExclamationCircleOutlined
                       style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                     />
@@ -923,7 +882,7 @@ const MedicalEventList = () => {
               <Form.Item
                 label={
                   <span>
-                    Mức độ{" "}
+                    ⚠️ Mức độ{" "}
                     <ExclamationCircleOutlined
                       style={{ color: "red", fontSize: 12, marginLeft: 4 }}
                     />
@@ -944,7 +903,7 @@ const MedicalEventList = () => {
           </Row>
 
           <Row gutter={16}>
-            <Form.Item label="Ảnh">
+            <Form.Item label="🖼️ Ảnh">
               <Upload
                 listType="picture-card"
                 fileList={fileList}
@@ -984,11 +943,11 @@ const MedicalEventList = () => {
             </Form.Item>
           </Row>
 
-          <Form.Item label="Mô tả" name="description">
+          <Form.Item label="📝 Mô tả" name="description">
             <TextArea rows={2} placeholder="Mô tả ngắn gọn về sự kiện" />
           </Form.Item>
 
-          <Form.Item label="Xử lý" name="actionsTaken">
+          <Form.Item label="🛠️ Xử lý" name="actionsTaken">
             <TextArea rows={2} placeholder="Hành động đã thực hiện" />
           </Form.Item>
 
