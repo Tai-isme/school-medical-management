@@ -342,7 +342,7 @@ const VaccineProgramList = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `${urlServer}/api/nurse/vaccine-result/program/${programId}`,
+        `${urlServer}/api/nurse/view-vaccine-result-by-programId/${programId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Khi nhận response từ API (res.data là mảng như bạn gửi ở trên)
@@ -361,6 +361,7 @@ const VaccineProgramList = () => {
         // ...bạn có thể thêm các trường khác nếu cần
       }));
 
+      setModalMode("view")
       setSampleResultData(mappedData);
       setEditableRows(mappedData.map((item) => ({ ...item })));
     } catch (err) {
@@ -634,6 +635,7 @@ const VaccineProgramList = () => {
         createdAt: item.vaccineResultDTO?.createdAt || "",
         studentDTO: item.studentDTO || null,
       }));
+      setModalMode("edit");
       setSampleResultData(mappedData);
       setEditableRows(mappedData.map((item) => ({ ...item })));
     } catch (error) {
@@ -1185,8 +1187,8 @@ const VaccineProgramList = () => {
                                 </Button>
                               )}
                             {/* Nút Xem kết quả và Xuất kết quả ra excel */}
-                            {program.status === "COMPLETED" ||
-                              (program.status === "GENERATED_RESULT" && (
+                            {(program.status === "COMPLETED" ||
+                              program.status === "GENERATED_RESULT") && (
                                 <>
                                   <Button
                                     type="primary"
@@ -1203,7 +1205,7 @@ const VaccineProgramList = () => {
                                     Xem kết quả
                                   </Button>
                                 </>
-                              ))}
+                              )}
 
                             {(program.status === "COMPLETED" ||
                               program.status === "GENERATED_RESULT") &&

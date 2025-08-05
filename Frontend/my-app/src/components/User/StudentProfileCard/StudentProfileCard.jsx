@@ -30,6 +30,8 @@ const StudentProfile = () => {
   const [editMode, setEditMode] = useState(false);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [hasMedicalRecord, setHasMedicalRecord] = useState(false);
+  const [hasVaccineHistory, setHasVaccineHistory] = useState(false);
 
   // Lấy students từ localStorage
   useEffect(() => {
@@ -59,22 +61,28 @@ const StudentProfile = () => {
       const medicalRecord = res.data.medicalRecord;
       const vaccineHistories = res.data.vaccineHistories;
 
+      setHasMedicalRecord(!!medicalRecord);
+      setHasVaccineHistory(
+        Array.isArray(vaccineHistories) && vaccineHistories.length > 0
+      );
+
       setStudentInfo({
-        eyes: medicalRecord.vision || "",
-        ears: medicalRecord.hearing || "",
-        weight: medicalRecord.weight || "",
-        height: medicalRecord.height || "",
-        allergies: medicalRecord.allergies || "",
-        chronicDiseases: medicalRecord.chronicDisease || "",
-        medicalHistory: medicalRecord.treatmentHistory || "",
-        lastUpdated: medicalRecord.lastUpdate || "",
-        note: medicalRecord.note || "",
-        createBy: medicalRecord.createBy || false,
+        eyes: medicalRecord?.vision || "",
+        ears: medicalRecord?.hearing || "",
+        weight: medicalRecord?.weight || "",
+        height: medicalRecord?.height || "",
+        allergies: medicalRecord?.allergies || "",
+        chronicDiseases: medicalRecord?.chronicDisease || "",
+        medicalHistory: medicalRecord?.treatmentHistory || "",
+        lastUpdated: medicalRecord?.lastUpdate || "",
+        note: medicalRecord?.note || "",
+        createBy: medicalRecord?.createBy || false,
       });
 
       setVaccineHistory(vaccineHistories || []);
     } catch (err) {
-      // reset nếu lỗi
+      setHasMedicalRecord(false);
+      setHasVaccineHistory(false);
       setStudentInfo({
         eyes: "",
         ears: "",
@@ -271,7 +279,8 @@ const StudentProfile = () => {
 
         {/* Right Section: Student Details / Vaccine History */}
         <div className="right-panel">
-          {!studentInfo || Object.values(studentInfo).every((val) => !val) ? (
+          {(!hasMedicalRecord && !hasVaccineHistory) ? (
+            // Nếu cả hai đều rỗng thì mới cho khai báo
             <div
               style={{
                 background: "#fffbe6",
@@ -306,6 +315,7 @@ const StudentProfile = () => {
               </button>
             </div>
           ) : (
+            // Nếu 1 trong 2 có dữ liệu thì vẫn hiển thị thông tin, phần thiếu thì để rỗng
             <>
               {activeTab === "general" && (
                 <>
@@ -455,21 +465,17 @@ const StudentProfile = () => {
           )}
 
           <div className="buttons-container" style={{ marginTop: "0px" }}>
-            {activeTab === "general" && (
+            {activeTab === "general" && !( !hasMedicalRecord && !hasVaccineHistory ) && (
               <>
-                {/* Chỉ hiện nút nếu đã có hồ sơ */}
-                {studentInfo &&
-                  Object.values(studentInfo).some((val) => val) &&
-                  (!isEditing ? (
-                    <Button type="primary" onClick={handleEditClick}>
-                      <FontAwesomeIcon icon="fa-solid fa-pen-to-square" /> Chỉnh
-                      sửa
-                    </Button>
-                  ) : (
-                    <Button type="primary" onClick={handleSaveClick}>
-                      <FontAwesomeIcon icon="fa-solid fa-floppy-disk" /> Lưu
-                    </Button>
-                  ))}
+                {!isEditing ? (
+                  <Button type="primary" onClick={handleEditClick}>
+                    <FontAwesomeIcon icon="fa-solid fa-pen-to-square" /> Chỉnh sửa
+                  </Button>
+                ) : (
+                  <Button type="primary" onClick={handleSaveClick}>
+                    <FontAwesomeIcon icon="fa-solid fa-floppy-disk" /> Lưu
+                  </Button>
+                )}
               </>
             )}
           </div>
