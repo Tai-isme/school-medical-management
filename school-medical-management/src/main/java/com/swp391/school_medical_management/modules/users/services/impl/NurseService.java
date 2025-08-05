@@ -3,7 +3,6 @@ package com.swp391.school_medical_management.modules.users.services.impl;
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import com.swp391.school_medical_management.modules.users.entities.*;
-import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.*;
 import com.swp391.school_medical_management.service.EmailService;
@@ -957,7 +956,7 @@ public class NurseService {
                             <li><strong>Địa điểm:</strong> %s</li>
                             <li><strong>Mức độ nguy hiểm:</strong> <span style="color:%s; font-weight:bold;">%s</span></li>
                         </ul>
-                        <p>Vui lòng đăng nhập hệ thống để biết thêm chi tiết.</p>
+                        <p>Vui lòng <a href="http://localhost:5173/" target="_blank" style="color: #1476d1; text-decoration: none;">đăng nhập hệ thống</a> để biết thêm chi tiết.</p>
                     </div>
                 """.formatted(student.getFullName(), request.getTypeEvent(), request.getDescription(), formattedDate, request.getLocation(), levelColor, levelLabel);
 
@@ -2576,14 +2575,14 @@ public class NurseService {
                 UserEntity parent = student.getParent();
                 if (parent == null) continue;
 
-                
+
                 Optional<VaccineHistoryEntity> vaccineHistoryEntity = vaccineHistoryRepository.findByStudentAndVaccineNameEntity_VaccineNameId(student, programEntity.getVaccineName().getVaccineNameId());
-                
+
                 logger.info("vaccineHistoryEntity" + vaccineHistoryEntity.isPresent() + "StudentId: " + student.getId());
 
 
-                if (vaccineHistoryEntity.isPresent() == true) {
-                    if( vaccineHistoryEntity.get().getUnit() >= programEntity.getUnit()) {
+                if (vaccineHistoryEntity.isPresent()) {
+                    if (vaccineHistoryEntity.get().getUnit() >= programEntity.getUnit()) {
                         continue; // Học sinh đã tiêm đủ số lượng vaccine
                     }
                 }
