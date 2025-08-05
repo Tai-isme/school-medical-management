@@ -23,6 +23,7 @@ import {
   EditOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 
 import { urlServer } from "../../../api/urlServer";
 
@@ -753,7 +754,11 @@ const MedicalEventList = () => {
       {/* Modal Tạo sự kiện */}
 
       <Modal
-        title={editingId ? "Chỉnh sửa sự kiện y tế" : "Tạo sự kiện y tế"}
+        title={
+          <div style={{ textAlign: "center" }}>
+            {editingId ? "Chỉnh sửa sự kiện y tế" : "Tạo sự kiện y tế"}
+          </div>
+        }
         open={createModalVisible}
         onCancel={() => {
           setCreateModalVisible(false);
@@ -762,9 +767,14 @@ const MedicalEventList = () => {
         }}
         footer={null}
         destroyOnClose
-        width={720} // mở rộng modal để chia 2 cột thoải mái
+        width={720}
       >
-        <Form layout="vertical" form={form} onFinish={handleCreateEvent}>
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={handleCreateEvent}
+          requiredMark={false}
+        >
           {/* Hiển thị avatar nếu có */}
           {selectedStudent && selectedStudent.avatarUrl && (
             <div style={{ textAlign: "center", marginBottom: 16 }}>
@@ -783,19 +793,38 @@ const MedicalEventList = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="Loại sự kiện"
+                label={
+                  <span>
+                    Sự cố{" "}
+                    <ExclamationCircleOutlined
+                      style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                    />
+                  </span>
+                }
                 name="typeEvent"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true, message: "Vui lòng điền sự cố xảy ra" },
+                ]}
               >
                 <Input />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Ngày"
+                label={
+                  <span>
+                    Ngày{" "}
+                    <ExclamationCircleOutlined
+                      style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                    />
+                  </span>
+                }
                 name="date"
                 rules={[
-                  { required: true, message: "Vui lòng chọn ngày" },
+                  {
+                    required: true,
+                    message: "Vui lòng chọn ngày xảy ra sự cố",
+                  },
                   {
                     validator: (_, value) =>
                       value && value.isAfter(dayjs(), "day")
@@ -818,9 +847,16 @@ const MedicalEventList = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="Lớp"
+                label={
+                  <span>
+                    Lớp{" "}
+                    <ExclamationCircleOutlined
+                      style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                    />
+                  </span>
+                }
                 name="classId"
-                rules={[{ required: true }]}
+                rules={[{ required: true, message: "Vui lòng chọn lớp" }]}
               >
                 <Select placeholder="Chọn lớp" onChange={handleClassChange}>
                   {classOptions.map((cls) => (
@@ -833,9 +869,16 @@ const MedicalEventList = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Học sinh"
+                label={
+                  <span>
+                    Học sinh{" "}
+                    <ExclamationCircleOutlined
+                      style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                    />
+                  </span>
+                }
                 name="studentId"
-                rules={[{ required: true }]}
+                rules={[{ required: true, message: "Vui lòng chọn học sinh" }]}
               >
                 <Select
                   placeholder="Chọn học sinh"
@@ -860,18 +903,36 @@ const MedicalEventList = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="Địa điểm"
+                label={
+                  <span>
+                    Địa điểm{" "}
+                    <ExclamationCircleOutlined
+                      style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                    />
+                  </span>
+                }
                 name="location"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true, message: "Vui lòng điền địa điểm xảy ra" },
+                ]}
               >
                 <Input />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Mức độ"
+                label={
+                  <span>
+                    Mức độ{" "}
+                    <ExclamationCircleOutlined
+                      style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                    />
+                  </span>
+                }
                 name="levelCheck"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true, message: "Vui lòng chọn mức độ nguy hiểm" },
+                ]}
               >
                 <Select>
                   <Option value="LOW">Nhẹ</Option>

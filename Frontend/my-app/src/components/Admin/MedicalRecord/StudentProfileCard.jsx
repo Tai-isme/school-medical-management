@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, Tabs, Form, Input, Row, Col, Avatar, Spin } from "antd";
 import axios from "axios";
-import { urlServer } from "../../../api/urlServer"; 
+import { urlServer } from "../../../api/urlServer";
 
 export default function StudentProfileCard({ studentId, studentInfo }) {
   const [tab, setTab] = useState("chronic");
@@ -155,7 +155,8 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
                   <Input.TextArea
                     value={safeRecord.note || ""}
                     readOnly
-                    rows={2}
+                    rows={7} // Tăng số dòng hiển thị, ví dụ 5 dòng
+                    style={{ width: "100%" }}
                   />
                 </Form.Item>
               </Form>
@@ -194,7 +195,7 @@ export default function StudentProfileCard({ studentId, studentInfo }) {
                     </Col>
                     <Col span={3}>
                       <Input
-                        value={"Mũi " +  v.unit || ""}
+                        value={"Mũi " + v.unit || ""}
                         readOnly
                         style={{ fontSize: 16 }}
                       />

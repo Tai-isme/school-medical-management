@@ -27,7 +27,7 @@ import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 import Swal from "sweetalert2";
 import HealthCheckProgramModal from "./HealthCheckProgramModal";
-import {urlServer} from "../../../api/urlServer";
+import { urlServer } from "../../../api/urlServer";
 
 const HealthCheckProgramList = () => {
   const [programs, setPrograms] = useState([]);
@@ -76,12 +76,9 @@ const HealthCheckProgramList = () => {
     const fetchNurses = async () => {
       const token = localStorage.getItem("token");
       try {
-        const res = await axios.get(
-          `${urlServer}/api/nurse/nurse-list`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await axios.get(`${urlServer}/api/nurse/nurse-list`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setNurseOptions(
           res.data
             .filter((nurse) => nurse.role === "NURSE") // Lọc đúng role
@@ -96,12 +93,9 @@ const HealthCheckProgramList = () => {
     const fetchClasses = async () => {
       const token = localStorage.getItem("token");
       try {
-        const res = await axios.get(
-          `${urlServer}/api/nurse/class-list`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await axios.get(`${urlServer}/api/nurse/class-list`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         console.log(res.data);
         setClassOptions(
           res.data.map((cls) => ({
@@ -1239,8 +1233,20 @@ const HealthCheckProgramList = () => {
                       <Descriptions.Item label="Lớp tham gia">
                         {program.participateClasses &&
                         program.participateClasses.length > 0
-                          ? program.participateClasses
-                              .map((p) => {
+                          ? Array.from(
+                              new Set(
+                                program.participateClasses
+                                  .filter((p) => p.type === "HEALTH_CHECK")
+                                  .map((p) => p.classDTO?.classId) // chỉ lấy classId để loại trùng
+                              )
+                            )
+                              .map((classId) => {
+                                const p = program.participateClasses.find(
+                                  (pc) =>
+                                    pc.classDTO?.classId === classId &&
+                                    pc.type === "HEALTH_CHECK"
+                                );
+                                if (!p) return null;
                                 const className = p.classDTO?.className || "";
                                 const teacher = p.classDTO?.teacherName || "";
                                 return teacher
@@ -1964,8 +1970,6 @@ const HealthCheckProgramList = () => {
                   </Checkbox>
                 </Form.Item>
               </Col>
-
-              
             </Row>
           </Form>
         )}

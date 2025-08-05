@@ -371,7 +371,25 @@ const SendMedicineDetailModal = ({
                       )}
                       {!isGiveMedicineMode && item.note && (
                         <div>
-                          <b>Ghi chú của y tá:</b> {item.note}
+                          <b
+                            style={{
+                              color: "#d32f2f",
+                              fontWeight: "bold",
+                              fontSize: "16px",
+                            }}
+                          >
+                            Ghi chú của y tá:
+                          </b>{" "}
+                          <span
+                            style={{
+                              color: "#333",
+                              backgroundColor: "#fff3cd",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {item.note}
+                          </span>
                         </div>
                       )}
                     </div>

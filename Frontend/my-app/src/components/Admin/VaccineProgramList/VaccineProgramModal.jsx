@@ -3,6 +3,8 @@ import { Modal, Form, Input, Select, DatePicker, Button } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
 import { urlServer } from "../../../api/urlServer";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
+
 const VaccineProgramModal = ({
   open,
   onCancel,
@@ -25,16 +27,15 @@ const VaccineProgramModal = ({
     const fetchNurses = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `${urlServer}/api/nurse/nurse-list`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await axios.get(`${urlServer}/api/nurse/nurse-list`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setNurseOptions(
           (res.data || []).map((nurse) => ({
             value: nurse.id,
-            label: `🧑‍⚕️ ${nurse.fullName} • 📞 ${nurse.phone || "Không có số"} • ✉️ ${nurse.email || "Không có email"}`,
+            label: `🧑‍⚕️ ${nurse.fullName} • 📞 ${
+              nurse.phone || "Không có số"
+            } • ✉️ ${nurse.email || "Không có email"}`,
             node: (
               <div>
                 <div style={{ fontWeight: 500 }}>🧑‍⚕️ {nurse.fullName}</div>
@@ -58,12 +59,9 @@ const VaccineProgramModal = ({
     const fetchClasses = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `${urlServer}/api/nurse/class-list`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await axios.get(`${urlServer}/api/nurse/class-list`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         // Map to { value, label }
         setClassOptions(
           (res.data || []).map((cls) => ({
@@ -131,18 +129,32 @@ const VaccineProgramModal = ({
 
   return (
     <Modal
-      title="Lên lịch tiêm chủng"
+      title={<div style={{ textAlign: "center" }}>Lên lịch tiêm chủng</div>}
       open={open}
       onCancel={onCancel}
       footer={null}
       destroyOnClose
       width={600}
     >
-      <Form layout="vertical" form={form} onFinish={onFinish}>
+      <Form
+        layout="vertical"
+        form={form}
+        onFinish={onFinish}
+        requiredMark={false}
+      >
         <Form.Item
-          label="Tên chương trình"
-          name="vaccineProgramName" // Đổi tên trường này
-          rules={[{ required: true, message: "Nhập tên chương trình" }]}
+          label={
+            <span>
+              Tên chương trình{" "}
+              <ExclamationCircleOutlined
+                style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+              />
+            </span>
+          }
+          name="vaccineProgramName"
+          rules={[
+            { required: true, message: "Vui lòng nhập tên chương trình" },
+          ]}
         >
           <Input
             placeholder="Nhập tên chương trình tiêm chủng"
@@ -153,9 +165,16 @@ const VaccineProgramModal = ({
         {/* Loại vaccine và Mũi vaccine trên cùng 1 hàng */}
         <div style={{ display: "flex", gap: 16 }}>
           <Form.Item
-            label="Loại vaccine"
+            label={
+              <span>
+                Loại vaccine{" "}
+                <ExclamationCircleOutlined
+                  style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                />
+              </span>
+            }
             name="vaccineNameId"
-            rules={[{ required: true, message: "Chọn loại vaccine" }]}
+            rules={[{ required: true, message: "Vui lòng chọn loại vaccine" }]}
             style={{ flex: 1, marginBottom: 0 }}
           >
             <Select
@@ -165,7 +184,6 @@ const VaccineProgramModal = ({
               optionFilterProp="label"
               onChange={(value) => {
                 setSelectedVaccineId(value);
-                // Tự động chọn mũi đầu tiên khi chọn vaccine
                 const vaccine = vaccineList.find((v) => v.id === value);
                 if (vaccine) {
                   form.setFieldsValue({ unit: 1 });
@@ -174,10 +192,18 @@ const VaccineProgramModal = ({
               disabled={viewMode}
             />
           </Form.Item>
+
           <Form.Item
-            label="Mũi vaccine"
+            label={
+              <span>
+                Mũi vaccine{" "}
+                <ExclamationCircleOutlined
+                  style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                />
+              </span>
+            }
             name="unit"
-            rules={[{ required: true, message: "Chọn mũi vaccine" }]}
+            rules={[{ required: true, message: "Vui lòng chọn mũi vaccine" }]}
             style={{ flex: 1, marginBottom: 0 }}
           >
             <Select
@@ -189,12 +215,20 @@ const VaccineProgramModal = ({
         </div>
 
         {/* Thời gian thực hiện và gửi form */}
+
         <div style={{ display: "flex", gap: 16 }}>
           <Form.Item
-            label="Ngày thực hiện"
+            label={
+              <span>
+                Ngày thực hiện{" "}
+                <ExclamationCircleOutlined
+                  style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                />
+              </span>
+            }
             name="startDate"
             rules={[
-              { required: true, message: "Chọn ngày thực hiện" },
+              { required: true, message: "Vui lòng chọn ngày thực hiện" },
               {
                 validator: (_, value) => {
                   if (!value) return Promise.resolve();
@@ -217,19 +251,28 @@ const VaccineProgramModal = ({
               }
             />
           </Form.Item>
+
           <Form.Item
-            label="Ngày gửi form cho học sinh"
+            label={
+              <span>
+                Ngày gửi form cho học sinh{" "}
+                <ExclamationCircleOutlined
+                  style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+                />
+              </span>
+            }
             name="sendFormDate"
             dependencies={["startDate"]}
             rules={[
-              { required: true, message: "Chọn ngày gửi form" },
+              { required: true, message: "Vui lòng chọn ngày gửi thông báo" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  const startDate = getFieldValue("startDate")?.format("YYYY-MM-DD");
+                  const startDate =
+                    getFieldValue("startDate")?.format("YYYY-MM-DD");
                   if (!value || !startDate) return Promise.resolve();
                   if (!value.isBefore(startDate, "day")) {
                     return Promise.reject(
-                      "Ngày gửi form phải nhỏ hơn ngày thực hiện!"
+                      "Ngày gửi thông báo phải nhỏ hơn ngày thực hiện!"
                     );
                   }
                   return Promise.resolve();
@@ -251,16 +294,9 @@ const VaccineProgramModal = ({
 
         {/* Chọn lớp dạng button group đẹp */}
         <Form.Item
-          label={
-            <span>
-              <span role="img" aria-label="class">
-                🏫
-              </span>{" "}
-              Chọn lớp
-            </span>
-          }
+          label={<span>Chọn lớp</span>}
           name="classIds"
-          rules={[{ required: true, message: "Chọn ít nhất một lớp" }]}
+          rules={[{ required: true, message: "Vui lòng chọn ít nhất một lớp" }]}
           style={{ width: "100%" }}
         >
           <Select
@@ -274,9 +310,21 @@ const VaccineProgramModal = ({
         </Form.Item>
 
         <Form.Item
-          label="Y tá quản lý"
-          name="nurseId" // Sửa lại thành nurseId
-          rules={[{ required: true, message: "Chọn y tá quản lý" }]}
+          label={
+            <span>
+              Y tá quản lý{" "}
+              <ExclamationCircleOutlined
+                style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+              />
+            </span>
+          }
+          name="nurseId"
+          rules={[
+            {
+              required: true,
+              message: "Vui lòng chọn y tá quản lý chương trình này",
+            },
+          ]}
         >
           <Select
             placeholder="Chọn y tá"
@@ -288,7 +336,11 @@ const VaccineProgramModal = ({
             }
           >
             {nurseOptions.map((nurse) => (
-              <Select.Option key={nurse.value} value={nurse.value} label={nurse.label}>
+              <Select.Option
+                key={nurse.value}
+                value={nurse.value}
+                label={nurse.label}
+              >
                 {nurse.node}
               </Select.Option>
             ))}
@@ -296,17 +348,38 @@ const VaccineProgramModal = ({
         </Form.Item>
 
         <Form.Item
-          label="Địa điểm diễn ra"
+          label={
+            <span>
+              Địa điểm diễn ra{" "}
+              <ExclamationCircleOutlined
+                style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+              />
+            </span>
+          }
           name="location"
-          rules={[{ required: true, message: "Nhập địa điểm diễn ra" }]}
+          rules={[
+            {
+              required: true,
+              message: "Vui lòng nhập địa điểm diễn ra chương trình",
+            },
+          ]}
         >
           <Input placeholder="Nhập địa điểm diễn ra" />
         </Form.Item>
 
         <Form.Item
-          label="Mô tả"
+          label={
+            <span>
+              Mô tả{" "}
+              <ExclamationCircleOutlined
+                style={{ color: "red", fontSize: 12, marginLeft: 4 }}
+              />
+            </span>
+          }
           name="description"
-          rules={[{ required: false }]}
+          rules={[
+            { required: true, message: "Vui lòng điền mô tả của chương trình" },
+          ]}
         >
           <Input.TextArea
             rows={3}
