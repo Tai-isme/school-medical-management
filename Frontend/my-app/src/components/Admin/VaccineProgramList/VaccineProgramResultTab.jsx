@@ -283,7 +283,7 @@ const handleModalOk = async () => {
               <Input
                 value={
                   currentRecord
-                    ? `${currentRecord.studentDTO?.fullName || ""} - Lớp: ${currentRecord.studentDTO?.className || ""}`
+                    ? `${currentRecord.studentDTO?.fullName || ""} - Lớp: ${currentRecord.studentDTO?.classDTO?.className || ""}`
                     : ""
                 }
                 disabled
