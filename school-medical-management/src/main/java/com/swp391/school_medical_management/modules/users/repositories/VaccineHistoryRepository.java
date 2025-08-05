@@ -21,7 +21,7 @@ public interface VaccineHistoryRepository extends JpaRepository<VaccineHistoryEn
             @Param("vaccineName") VaccineNameEntity vaccineName);
 
 
-    Optional<VaccineHistoryEntity> findByStudentAndVaccineNameEntity_VaccineNameIdAndUnit(StudentEntity student, int vaccineNameId, int unit);
+    Optional<VaccineHistoryEntity> findByStudentAndVaccineNameEntity_VaccineNameId(StudentEntity student, int vaccineNameId);
 
     Optional<VaccineHistoryEntity> findByStudentAndVaccineNameEntity(StudentEntity student, VaccineNameEntity vaccineName);
 }

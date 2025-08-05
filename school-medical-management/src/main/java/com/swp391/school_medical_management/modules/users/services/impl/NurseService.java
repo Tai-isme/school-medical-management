@@ -2569,15 +2569,16 @@ public class NurseService {
                 if (parent == null) continue;
 
                 
-                Optional<VaccineHistoryEntity> vaccineHistoryEntity = vaccineHistoryRepository.findByStudentAndVaccineNameEntity_VaccineNameIdAndUnit(student, programEntity.getVaccineName().getVaccineNameId() , programEntity.getUnit());
+                Optional<VaccineHistoryEntity> vaccineHistoryEntity = vaccineHistoryRepository.findByStudentAndVaccineNameEntity_VaccineNameId(student, programEntity.getVaccineName().getVaccineNameId());
                 
-                logger.info("vaccineHistoryEntity" + vaccineHistoryEntity.isPresent());
+                logger.info("vaccineHistoryEntity" + vaccineHistoryEntity.isPresent() + "StudentId: " + student.getId());
 
 
                 if (vaccineHistoryEntity.isPresent() == true) {
-                 continue;
+                    if( vaccineHistoryEntity.get().getUnit() >= programEntity.getUnit()) {
+                        continue; // Học sinh đã tiêm đủ số lượng vaccine
+                    }
                 }
-                
 
                 VaccineFormEntity form = new VaccineFormEntity();
                 form.setStudent(student);
