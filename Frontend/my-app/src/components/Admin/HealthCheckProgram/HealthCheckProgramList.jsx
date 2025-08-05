@@ -23,6 +23,10 @@ import { CheckSquareTwoTone, BorderOutlined } from "@ant-design/icons";
 import { Select } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
+import "dayjs/locale/vi";
+dayjs.locale("vi");
+import viVN from "antd/es/locale/vi_VN";
+import { ConfigProvider} from "antd";
 import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 import Swal from "sweetalert2";
@@ -626,13 +630,17 @@ const HealthCheckProgramList = () => {
                       allowClear
                       style={{ width: 220, background: "#fff" }}
                     />
-                    <DatePicker.RangePicker
-                      value={filterDateRange}
-                      onChange={setFilterDateRange}
-                      allowClear
-                      format="YYYY-MM-DD"
-                      style={{ width: 300 }}
-                    />
+                    <ConfigProvider locale={viVN}>
+                      <DatePicker.RangePicker
+                        value={filterDateRange}
+                        onChange={setFilterDateRange}
+                        allowClear
+                        format="YYYY-MM-DD"
+                        placeholder={["Từ ngày", "Đến ngày"]}
+                        style={{ width: 300 }}
+                      />
+                    </ConfigProvider>
+
                     <Select
                       placeholder="Lọc theo trạng thái"
                       value={filterStatus}
@@ -1185,7 +1193,11 @@ const HealthCheckProgramList = () => {
                   />
                 </div>
                 <Modal
-                  title="Chi tiết chương trình khám sức khỏe"
+                  title={
+                    <div style={{ textAlign: "center" }}>
+                      Chi tiết chương trình khám sức khỏe
+                    </div>
+                  }
                   open={detailVisible}
                   onCancel={() => setDetailVisible(false)}
                   width={650}
@@ -1203,34 +1215,34 @@ const HealthCheckProgramList = () => {
                       labelStyle={{ fontWeight: 600, minWidth: 140 }}
                       contentStyle={{ color: "#333" }}
                     >
-                      <Descriptions.Item label="ID">
+                      <Descriptions.Item label="🆔 Mã chương trình">
                         {program.id}
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="Tên chương trình">
+                      <Descriptions.Item label="📋 Tên chương trình">
                         <span style={{ fontWeight: 700 }}>
                           {program.healthCheckName}
                         </span>
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="Ngày bắt đầu">
+                      <Descriptions.Item label="📅 Ngày bắt đầu">
                         {program.startDate
                           ? dayjs(program.startDate).format("DD/MM/YYYY")
                           : "-"}
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="Ngày gửi biểu mẫu">
+                      <Descriptions.Item label="📨 Ngày gửi biểu mẫu">
                         {program.dateSendForm
                           ? dayjs(program.dateSendForm).format("DD/MM/YYYY")
                           : "-"}
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="Ngày hết hạn đăng ký">
+                      <Descriptions.Item label="⏳ Ngày hết hạn đăng ký">
                         {program.dateSendForm
                           ? dayjs(program.expDate).format("DD/MM/YYYY")
                           : "-"}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Lớp tham gia">
+                      <Descriptions.Item label="🏫 Lớp tham gia">
                         {program.participateClasses &&
                         program.participateClasses.length > 0
                           ? Array.from(
@@ -1257,11 +1269,11 @@ const HealthCheckProgramList = () => {
                               .join(", ")
                           : "-"}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Địa điểm">
+                      <Descriptions.Item label="📍 Địa điểm">
                         {program.location || "-"}
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="Trạng thái">
+                      <Descriptions.Item label="📌 Trạng thái">
                         <Tag
                           color={getStatusColor(program.status)}
                           style={{ fontSize: 14, fontWeight: 500 }}
@@ -1270,7 +1282,7 @@ const HealthCheckProgramList = () => {
                         </Tag>
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="Y tá phụ trách">
+                      <Descriptions.Item label="🧑‍⚕️ Y tá phụ trách">
                         {program.nurseDTO ? (
                           <div>
                             <div style={{ fontWeight: 600 }}>
@@ -1287,13 +1299,13 @@ const HealthCheckProgramList = () => {
                         )}
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="Admin tạo">
+                      <Descriptions.Item label="👨‍💻 Người tạo">
                         {program.adminDTO
                           ? `${program.adminDTO.fullName} (ID: ${program.adminDTO.id})`
                           : "-"}
                       </Descriptions.Item>
 
-                      <Descriptions.Item label="Mô tả">
+                      <Descriptions.Item label="📝 Mô tả chương trình">
                         {program.description || "-"}
                       </Descriptions.Item>
                     </Descriptions>

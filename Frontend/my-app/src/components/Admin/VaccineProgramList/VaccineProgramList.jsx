@@ -23,6 +23,10 @@ import {
 import { Select } from "antd"; // Thêm dòng này
 import axios from "axios";
 import dayjs from "dayjs";
+import "dayjs/locale/vi";
+dayjs.locale("vi");
+import viVN from "antd/es/locale/vi_VN";
+import { ConfigProvider } from "antd";
 import Swal from "sweetalert2";
 import { Table } from "antd"; // Thêm import này
 import VaccineProgramModal from "./VaccineProgramModal"; // Import component mới tạo

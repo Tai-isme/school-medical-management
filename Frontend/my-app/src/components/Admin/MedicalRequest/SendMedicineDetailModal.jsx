@@ -3,6 +3,23 @@ import { Modal, Spin, Row, Col, Image, Input, Button, message } from "antd";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { urlServer } from "../../../api/urlServer"; // Import the URL server from your config
+import {
+  FileTextOutlined,
+  EditOutlined,
+  CalendarOutlined,
+  FileDoneOutlined,
+  CheckCircleOutlined,
+  UserOutlined,
+  UserSwitchOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  PictureOutlined,
+  ClockCircleOutlined,
+  NumberOutlined,
+  MedicineBoxOutlined,
+  CommentOutlined,
+} from "@ant-design/icons";
+
 const SendMedicineDetailModal = ({
   open,
   onClose,
@@ -194,13 +211,21 @@ const SendMedicineDetailModal = ({
                   }}
                 >
                   <div style={{ marginBottom: 12 }}>
-                    <b>Mã đơn thuốc:</b> {group.requestId}
+                    <b>
+                      <FileTextOutlined /> Mã đơn thuốc:
+                    </b>{" "}
+                    {group.requestId}
                   </div>
                   <div style={{ marginBottom: 12 }}>
-                    <b>Tên đơn thuốc:</b> {group.requestName}
+                    <b>
+                      <EditOutlined /> Tên đơn thuốc:
+                    </b>{" "}
+                    {group.requestName}
                   </div>
                   <div style={{ marginBottom: 12 }}>
-                    <b>Ngày dùng:</b>{" "}
+                    <b>
+                      <CalendarOutlined /> Ngày dùng:
+                    </b>{" "}
                     {group.date
                       ? new Date(group.date).toLocaleDateString("vi-VN", {
                           day: "2-digit",
@@ -210,10 +235,15 @@ const SendMedicineDetailModal = ({
                       : "---"}
                   </div>
                   <div style={{ marginBottom: 12 }}>
-                    <b>Ghi chú:</b> {group.note}
+                    <b>
+                      <FileDoneOutlined /> Ghi chú:
+                    </b>{" "}
+                    {group.note}
                   </div>
                   <div style={{ marginBottom: 12 }}>
-                    <b>Trạng thái:</b>{" "}
+                    <b>
+                      <CheckCircleOutlined /> Trạng thái:
+                    </b>{" "}
                     <span
                       style={{
                         color: statusColorMap[group.status] || "gray",
@@ -225,10 +255,15 @@ const SendMedicineDetailModal = ({
                   </div>
 
                   <div style={{ marginBottom: 12 }}>
-                    <b>Học sinh nhận thuốc:</b> {group.studentDTO.fullName}
+                    <b>
+                      <UserOutlined /> Học sinh nhận thuốc:
+                    </b>{" "}
+                    {group.studentDTO.fullName}
                   </div>
                   <div style={{ marginBottom: 12 }}>
-                    <b>Y tá phụ trách:</b>{" "}
+                    <b>
+                      <UserSwitchOutlined /> Y tá phụ trách:
+                    </b>{" "}
                     {group.nurseDTO && group.nurseDTO.fullName ? (
                       <span>
                         <span
@@ -244,10 +279,12 @@ const SendMedicineDetailModal = ({
                         {showNurseInfo[group.requestId] && (
                           <div style={{ marginTop: 8, paddingLeft: 12 }}>
                             <div>
-                              <b>SĐT:</b> {group.nurseDTO.phone}
+                              <PhoneOutlined /> <b>SĐT:</b>{" "}
+                              {group.nurseDTO.phone}
                             </div>
                             <div>
-                              <b>Email:</b> {group.nurseDTO.email}
+                              <MailOutlined /> <b>Email:</b>{" "}
+                              {group.nurseDTO.email}
                             </div>
                           </div>
                         )}
@@ -258,7 +295,9 @@ const SendMedicineDetailModal = ({
                   </div>
                   {group.image && (
                     <div style={{ marginBottom: 16 }}>
-                      <b>Ảnh đơn thuốc:</b>
+                      <b>
+                        <PictureOutlined /> Ảnh đơn thuốc:
+                      </b>
                       <br />
                       <Image
                         src={group.image}
@@ -300,15 +339,19 @@ const SendMedicineDetailModal = ({
                       }}
                     >
                       <div>
+                        <MedicineBoxOutlined style={{ marginRight: 6 }} />
                         <b>Tên thuốc:</b> {item.medicineName}
                       </div>
                       <div>
+                        <NumberOutlined style={{ marginRight: 6 }} />
                         <b>Liều lượng:</b> {item.quantity} {item.type}
                       </div>
                       <div>
+                        <EditOutlined style={{ marginRight: 6 }} />
                         <b>Cách dùng:</b> {item.method}
                       </div>
                       <div>
+                        <ClockCircleOutlined style={{ marginRight: 6 }} />
                         <b>Thời gian:</b> {item.timeSchedule}
                       </div>
                       {/* Tick chọn trạng thái uống thuốc khi ở chế độ ghi nhận */}
@@ -337,6 +380,7 @@ const SendMedicineDetailModal = ({
                         </div>
                       )}
                       <div>
+                        <CheckCircleOutlined style={{ marginRight: 6 }} />
                         <b>Trạng thái uống thuốc:</b>{" "}
                         {isGiveMedicineMode ? (
                           medicineStatus[item.detailId] ? (
@@ -344,7 +388,7 @@ const SendMedicineDetailModal = ({
                               Đã cho uống
                             </span>
                           ) : (
-                            <span style={{ color: "#faad14" }}>
+                            <span style={{ color: "#d46b08" }}>
                               Chưa cho uống
                             </span>
                           )
@@ -378,6 +422,7 @@ const SendMedicineDetailModal = ({
                               fontSize: "16px",
                             }}
                           >
+                            <CommentOutlined style={{ marginRight: 6 }} />
                             Ghi chú của y tá:
                           </b>{" "}
                           <span
