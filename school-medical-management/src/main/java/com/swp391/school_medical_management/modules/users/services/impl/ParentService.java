@@ -170,39 +170,33 @@ public class ParentService {
         List<VaccineHistoryRequest> incomingVaccines = request.getVaccineHistories();
         logger.info("incomingVaccines: " + incomingVaccines.size());
 
-        for (VaccineHistoryEntity existingVaccine : vaccineHistoryEntities) {
-            boolean stillExists = incomingVaccines.stream()
-                    .anyMatch(req -> req.getVaccineNameId() == existingVaccine.getVaccineNameEntity().getVaccineNameId()
-                            && req.getUnit() == existingVaccine.getUnit()
-                            && Objects.equals(req.getNote(), existingVaccine.getNote()));
-            if (!stillExists) {
-                vaccineHistoryRepository.delete(existingVaccine);
+        for (VaccineHistoryRequest incomingVaccine : incomingVaccines) {
+            boolean change = false;
+            for (VaccineHistoryEntity vaccineHistoryEntitie : vaccineHistoryEntities) {
+                if (vaccineHistoryEntitie.getVaccineNameEntity().getVaccineNameId() == incomingVaccine.getVaccineNameId()
+                    if (vaccineHistoryEntitie.getUnit() <= incomingVaccine.getUnit()) { 
+                    vaccineHistoryEntitie.getUnit() <= incomingVaccine.getUnit()) {
+                    vaccineHistoryEntitie.setNote(incomingVaccine.getNote());
+                    vaccineHistoryEntitie.setUnit(incomingVaccine.getUnit());
+                    vaccineHistoryRepository.save(vaccineHistoryEntitie);
+                    change = true;
+                    continue;
+                }else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không thể khai báo mũi tiêm mới nhở mũi tiêm trước đó chưa đủ liều lượng");
+                }
             }
-        }
-        for (VaccineHistoryRequest vaccineReq : incomingVaccines) {
-            if (vaccineReq.getVaccineNameId() < 0)
-                continue;
 
-            // Kiểm tra vaccine đã tồn tại y hệt chưa (cùng vaccineNameId, unit, note)
-            boolean alreadyExists = vaccineHistoryEntities.stream()
-                    .anyMatch(db -> db.getVaccineNameEntity().getVaccineNameId() == vaccineReq.getVaccineNameId()
-                            && db.getUnit() == vaccineReq.getUnit()
-                            && Objects.equals(db.getNote(), vaccineReq.getNote()));
-
-            if (alreadyExists)
-                continue; // Đã có rồi thì bỏ qua
-
-            // Nếu chưa có y hệt thì tạo mới bản ghi
-            VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(vaccineReq.getVaccineNameId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy vaccine!"));
-
-            VaccineHistoryEntity newVaccine = new VaccineHistoryEntity();
-            newVaccine.setVaccineNameEntity(vaccineNameEntity);
-            newVaccine.setUnit(vaccineReq.getUnit());
-            newVaccine.setNote(vaccineReq.getNote());
-            newVaccine.setCreateBy(false);
-            newVaccine.setStudent(studentOpt.get());
-            vaccineHistoryRepository.save(newVaccine);
+            if (change == false){
+                VaccineHistoryEntity vaccineHistory = new VaccineHistoryEntity();
+                VaccineNameEntity vaccineNameEntity = vaccineNameRepository.findById(incomingVaccine.getVaccineNameId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tồn tại vaccine"));
+                vaccineHistory.setNote(incomingVaccine.getNote());
+                vaccineHistory.setCreateBy(false);
+                vaccineHistory.setUnit(incomingVaccine.getUnit());
+                vaccineHistory.setStudent(studentOpt.get());
+                vaccineHistory.setVaccineNameEntity(vaccineNameEntity);
+                vaccineHistoryRepository.save(vaccineHistory);
+            }
         }
 
         List<VaccineHistoryEntity> updatedHistories = vaccineHistoryRepository.findByStudent(studentOpt.get());
