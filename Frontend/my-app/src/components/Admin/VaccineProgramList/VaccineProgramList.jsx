@@ -1167,6 +1167,7 @@ const VaccineProgramList = () => {
                                 });
                                 setProgram(program);
                                 setCreateVisible(true);
+                                
                               }}
                             >
                               Xem chi tiết
@@ -1452,7 +1453,7 @@ const VaccineProgramList = () => {
                   onCancel={() => {
                     setCreateVisible(false);
                     setEditMode(false);
-                    setProgram(null);
+                    setProgram();
                   }}
                   onFinish={modalMode === "edit" ? handleUpdate : handleCreate}
                   loading={loading}

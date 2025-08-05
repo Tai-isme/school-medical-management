@@ -11,8 +11,8 @@ const VaccineProgramModal = ({
   onFinish,
   loading,
   initialValues = {},
-  editMode = false,
-  viewMode = false,
+  editMode ,
+  viewMode ,
   vaccineList = [],
   program,
 }) => {
@@ -21,6 +21,9 @@ const VaccineProgramModal = ({
   const [nurseOptions, setNurseOptions] = useState([]);
   const [selectedVaccineId, setSelectedVaccineId] = useState(null);
   const [classOptions, setClassOptions] = useState([]);
+  const [selectedUnit, setSelectedUnit] = useState(1);
+
+  console.log("Action:" +  viewMode);
 
   // Fetch nurse list from API
   useEffect(() => {
@@ -127,15 +130,26 @@ const VaccineProgramModal = ({
     }));
   }, [selectedVaccineId, vaccineList]);
 
+  // Khi mở modal hoặc thay đổi initialValues, đồng bộ selectedUnit
+  useEffect(() => {
+    if (open) {
+      setSelectedUnit(initialValues?.unit || 1);
+    }
+  }, [open, initialValues]);
+
   return (
     <Modal
-      title={<div style={{ textAlign: "center" }}>Lên lịch tiêm chủng</div>}
-      open={open}
-      onCancel={onCancel}
-      footer={null}
-      destroyOnClose
-      width={600}
-    >
+  title={
+    <div style={{ textAlign: "center" }}>
+      {viewMode ? "Thông tin tiêm chủng" : "Lên lịch tiêm chủng"}
+    </div>
+  }
+  open={open}
+  onCancel={onCancel}
+  footer={null}
+  destroyOnClose
+  width={600}
+>
       <Form
         layout="vertical"
         form={form}
@@ -210,12 +224,63 @@ const VaccineProgramModal = ({
               placeholder="Chọn mũi tiêm"
               options={doseOptions}
               disabled={viewMode || !selectedVaccineId}
+              value={selectedUnit}
+              onChange={(value) => {
+                setSelectedUnit(value); // cập nhật state để re-render
+                form.setFieldsValue({ unit: value });
+              }}
             />
           </Form.Item>
         </div>
 
+        {/* ĐEM PHẦN PHÁC ĐỒ TIÊM LÊN ĐÂY */}
+        {(() => {
+          const vaccine = vaccineList.find((v) => v.id === selectedVaccineId);
+          if (vaccine && vaccine.vaccineUnitDTOs?.length) {
+            return (
+              <div
+                style={{
+                  margin: "8px 0 16px 0",
+                  padding: "12px",
+                  background: "#f6f6f6",
+                  borderRadius: 6,
+                  border: "1px solid #e4e4e4",
+                }}
+              >
+                <b>Phác đồ tiêm:</b>
+                <div>
+                  <b>Vaccine:</b> {vaccine.vaccineName}
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 20 }}>
+                  {vaccine.vaccineUnitDTOs.map((u) => (
+                    <li key={u.unit} style={{ marginBottom: 2 }}>
+                      <span
+                        style={
+                          u.unit === selectedUnit
+                            ? { fontWeight: "bold", color: "#1976d2" }
+                            : {}
+                        }
+                      >
+                        Mũi {u.unit}: {u.schedule}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <b>Độ tuổi phù hợp:</b>{" "}
+<span style={{ color: "#23b616ff", fontWeight: 600 }}>
+  {vaccine.ageFrom + " - " + vaccine.ageTo} tuổi
+</span>
+                <div style={{ marginTop: 4, color: "#888" }}>
+                  {vaccine.description}
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         {/* Thời gian thực hiện và gửi form */}
-        <div style={{ display: "flex", gap: 16, marginBottom: 16 , marginTop: 16}}>
+        <div style={{ display: "flex", gap: 16, marginBottom: 16 , marginTop: 16 }}>
           <Form.Item
             label={
               <span>
@@ -252,6 +317,7 @@ const VaccineProgramModal = ({
           </Form.Item>
 
           <Form.Item
+          
             label={
               <span>
                 📬 Ngày gửi thông báo cho học sinh{" "}
@@ -305,6 +371,7 @@ const VaccineProgramModal = ({
             showSearch
             optionFilterProp="label"
             style={{ width: "100%" }}
+            disabled={viewMode} // Thêm dòng này
           />
         </Form.Item>
 
@@ -333,6 +400,7 @@ const VaccineProgramModal = ({
             filterOption={(input, option) =>
               option.label?.toLowerCase().includes(input.toLowerCase())
             }
+            disabled={viewMode} // Thêm dòng này
           >
             {nurseOptions.map((nurse) => (
               <Select.Option
@@ -363,7 +431,7 @@ const VaccineProgramModal = ({
             },
           ]}
         >
-          <Input placeholder="Nhập địa điểm diễn ra" />
+          <Input placeholder="Nhập địa điểm diễn ra" disabled={viewMode} />
         </Form.Item>
 
         <Form.Item
@@ -383,51 +451,9 @@ const VaccineProgramModal = ({
           <Input.TextArea
             rows={3}
             placeholder="Nhập mô tả về chương trình tiêm chủng"
+            disabled={viewMode} // Thêm dòng này
           />
         </Form.Item>
-
-        {/* Hiển thị phác đồ tiêm */}
-        {(() => {
-          const vaccine = vaccineList.find((v) => v.id === selectedVaccineId);
-          const unit = form.getFieldValue("unit");
-          if (vaccine && vaccine.vaccineUnitDTOs?.length) {
-            return (
-              <div
-                style={{
-                  margin: "8px 0 16px 0",
-                  padding: "12px",
-                  background: "#f6f6f6",
-                  borderRadius: 6,
-                  border: "1px solid #e4e4e4",
-                }}
-              >
-                <b>Phác đồ tiêm:</b>
-                <div>
-                  <b>Vaccine:</b> {vaccine.vaccineName}
-                </div>
-                <ul style={{ margin: 0, paddingLeft: 20 }}>
-                  {vaccine.vaccineUnitDTOs.map((u) => (
-                    <li key={u.unit} style={{ marginBottom: 2 }}>
-                      <span
-                        style={
-                          u.unit === unit
-                            ? { fontWeight: "bold", color: "#1976d2" }
-                            : {}
-                        }
-                      >
-                        Mũi {u.unit}: {u.schedule}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <div style={{ marginTop: 4, color: "#888" }}>
-                  {vaccine.description}
-                </div>
-              </div>
-            );
-          }
-          return null;
-        })()}
 
         <Form.Item>
           {!viewMode && (
