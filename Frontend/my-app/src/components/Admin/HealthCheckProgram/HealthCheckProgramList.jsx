@@ -1134,34 +1134,35 @@ const HealthCheckProgramList = () => {
                                   </Button>
                                 )}
                             </>
-) : (program.status === "COMPLETED" || program.status === "GENERATED_RESULT") ? (
-  <>
-    <Button
-      type="primary"
-      style={{
-        marginLeft: 8,
-        background: "#722ed1",
-        border: "none",
-      }}
-      onClick={() => handleViewResult(program.id)}
-    >
-      Xem kết quả
-    </Button>
-    {userRole === "ADMIN" && (
-      <Button
-        style={{
-          marginLeft: 8,
-          background: "#2f54eb",
-          color: "#fff",
-          border: "none",
-        }}
-        onClick={() => handleExportExcel(program.id)}
-      >
-        Xuất Excel
-      </Button>
-    )}
-  </>
-) : null}
+                          ) : program.status === "COMPLETED" ||
+                            program.status === "GENERATED_RESULT" ? (
+                            <>
+                              <Button
+                                type="primary"
+                                style={{
+                                  marginLeft: 8,
+                                  background: "#722ed1",
+                                  border: "none",
+                                }}
+                                onClick={() => handleViewResult(program.id)}
+                              >
+                                Xem kết quả
+                              </Button>
+                              {userRole === "ADMIN" && (
+                                <Button
+                                  style={{
+                                    marginLeft: 8,
+                                    background: "#2f54eb",
+                                    color: "#fff",
+                                    border: "none",
+                                  }}
+                                  onClick={() => handleExportExcel(program.id)}
+                                >
+                                  Xuất Excel
+                                </Button>
+                              )}
+                            </>
+                          ) : null}
                         </div>
                         {/* Ẩn nút Sửa, Xóa nếu là NURSE */}
                         {userRole === "ADMIN" &&

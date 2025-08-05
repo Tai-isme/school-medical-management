@@ -58,7 +58,7 @@ const MedicalEventList = () => {
   const [fileList, setFileList] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-   const user = JSON.parse(localStorage.getItem("users"));
+  const user = JSON.parse(localStorage.getItem("users"));
   const userRole = user?.role || "";
 
   const [selectedNurse, setSelectedNurse] = useState("");
@@ -90,6 +90,7 @@ const MedicalEventList = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setClassOptions(res.data);
+      console.log("RES data: " + res.data)
     } catch (err) {
       message.error("Không thể tải danh sách lớp");
     }
@@ -344,7 +345,7 @@ const MedicalEventList = () => {
       const studentId = item.studentDTO?.studentId;
 
       const studentRes = await axios.get(
-        `${urlServer}/api/admin/students/${classId}`,
+        `${urlServer}/api/admin/students/${studentId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -488,7 +489,7 @@ const MedicalEventList = () => {
           <DatePicker.RangePicker
             format="DD/MM/YYYY"
             style={{ width: "100%" }}
-            placeholder={['Từ ngày', 'Đến ngày']}
+            placeholder={["Từ ngày", "Đến ngày"]}
             onChange={(dates) => setDateRange(dates)}
             allowClear
           />
@@ -710,14 +711,13 @@ const MedicalEventList = () => {
                 {renderLevelText(selectedEvent.levelCheck)}
               </p>
               <p>
-                <strong>Mô tả:</strong>{" "}
-                {selectedEvent.description || "(Không có)"}
-              </p>
-              <p>
                 <strong>Xử lý:</strong>{" "}
                 {selectedEvent.actionsTaken || "(Không có)"}
               </p>
-
+              <p>
+                <strong>Mô tả:</strong>{" "}
+                {selectedEvent.description || "(Không có)"}
+              </p>
               {selectedEvent.image ? (
                 <div style={{ marginTop: 12 }}>
                   <strong>Hình ảnh:</strong>
@@ -1036,12 +1036,11 @@ const MedicalEventList = () => {
             </Form.Item>
           </Row>
 
-          <Form.Item label="📝 Mô tả" name="description">
-            <TextArea rows={2} placeholder="Mô tả ngắn gọn về sự kiện" />
-          </Form.Item>
-
           <Form.Item label="🛠️ Xử lý" name="actionsTaken">
             <TextArea rows={2} placeholder="Hành động đã thực hiện" />
+          </Form.Item>
+          <Form.Item label="📝 Mô tả" name="description">
+            <TextArea rows={2} placeholder="Mô tả ngắn gọn về sự kiện" />
           </Form.Item>
 
           <Form.Item style={{ textAlign: "center", marginTop: 24 }}>
