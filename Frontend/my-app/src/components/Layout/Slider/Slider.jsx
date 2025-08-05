@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 
 const images = [
-  "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
+  "https://schoolmedicalmanagement.id.vn/assets/school3-uj2wFCjB.jpeg",
+  "https://ydvn.edu.vn/wp-content/uploads/2022/05/1650057647099.jpeg",
+  "https://giadinh.mediacdn.vn/2017/kham-benh-1512529403152.jpg",
   // Đổi ảnh thứ 4 thành ảnh mới
-  "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=1200&q=80"
+  "https://cdn.lawnet.vn/uploads/tintuc/2022/11/12/quyen-nghia-vu-nguoi-benh.jpg"
 ];
 
 export default function Slider() {

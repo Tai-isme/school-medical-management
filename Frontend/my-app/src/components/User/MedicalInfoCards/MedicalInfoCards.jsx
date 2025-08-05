@@ -11,7 +11,7 @@ const MedicalInfoCards = (props) => {
 
   return (
     <div className="medical-info-container">
-      <h1 className="main-title-medical-info-container" style={{margin: '0px 0px 40px 0px', fontSize: '36px'}}>Thông tin Y tế học đường</h1>
+      <h1 className="main-title-medical-info-container" style={{margin: '0px 0px 40px 0px', fontSize: '36px'}}>Các tính năng chính</h1>
       <div className="cards-grid">
         {/* Card 1: Gửi thuốc */}
         <div className="info-card" onClick={() => handleCardClick('/instruction-form')} style={{ cursor: 'pointer' }}>
