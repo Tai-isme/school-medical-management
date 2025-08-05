@@ -330,7 +330,7 @@ public RecordAndHistoryDTO getMedicalRecordByStudentId(int parentId, int student
             medicalRequestDetailEntity.setType(details.getType());
             medicalRequestDetailEntity.setMethod(details.getMethod());
             medicalRequestDetailEntity.setTimeSchedule(details.getTimeSchedule());
-            medicalRequestDetailEntity.setStatus(MedicalRequestDetailEntity.Status.NOT_TAKEN);
+            medicalRequestDetailEntity.setStatus(null);
             medicalRequestDetailEntity.setNote(details.getNote());
             medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
 

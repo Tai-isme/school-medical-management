@@ -6,4 +6,5 @@ import lombok.Data;
 public class UpdateRequestDetailStatusRequest {
     private int requestDetailId;
     private String note;
+    private String status;
 }

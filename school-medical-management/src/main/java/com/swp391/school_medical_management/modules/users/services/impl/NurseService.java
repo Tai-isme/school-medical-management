@@ -3,6 +3,7 @@ package com.swp391.school_medical_management.modules.users.services.impl;
 import com.swp391.school_medical_management.modules.users.dtos.request.*;
 import com.swp391.school_medical_management.modules.users.dtos.response.*;
 import com.swp391.school_medical_management.modules.users.entities.*;
+import com.swp391.school_medical_management.modules.users.entities.MedicalRequestEntity.MedicalRequestStatus;
 import com.swp391.school_medical_management.modules.users.entities.UserEntity.UserRole;
 import com.swp391.school_medical_management.modules.users.repositories.*;
 import com.swp391.school_medical_management.service.EmailService;
@@ -174,7 +175,7 @@ public class NurseService {
             medicalRequestDetailEntity.setType(details.getType());
             medicalRequestDetailEntity.setMethod(details.getMethod());
             medicalRequestDetailEntity.setTimeSchedule(details.getTimeSchedule());
-            medicalRequestDetailEntity.setStatus(MedicalRequestDetailEntity.Status.NOT_TAKEN);
+            medicalRequestDetailEntity.setStatus(null);
             medicalRequestDetailEntity.setNote(details.getNote());
             medicalRequestDetailEntity.setMedicalRequest(medicalRequestEntity);
 
@@ -332,7 +333,7 @@ public class NurseService {
 
         for (MedicalRequestEntity medicalRequestEntity : medicalRequestEntityList) {
             // Lấy các detail có status NOT_TAKEN
-            List<MedicalRequestDetailEntity> notTakenDetails = medicalRequestEntity.getMedicalRequestDetailEntities().stream().filter(d -> d.getStatus() == MedicalRequestDetailEntity.Status.NOT_TAKEN).collect(Collectors.toList());
+            List<MedicalRequestDetailEntity> notTakenDetails = medicalRequestEntity.getMedicalRequestDetailEntities().stream().filter(d -> d.getStatus() == null).collect(Collectors.toList());
 
             // Nhóm theo timeSchedule
             Map<Object, List<MedicalRequestDetailEntity>> groupedByTimeSchedule = notTakenDetails.stream().collect(Collectors.groupingBy(MedicalRequestDetailEntity::getTimeSchedule));
@@ -442,7 +443,7 @@ public class NurseService {
         for (UpdateRequestDetailStatusRequest req : requests) {
             MedicalRequestDetailEntity detail = medicalRequestDetailRepository.findById(req.getRequestDetailId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chi tiết thuốc! ID: " + req.getRequestDetailId()));
 
-            detail.setStatus(MedicalRequestDetailEntity.Status.TAKEN);
+            detail.setStatus(MedicalRequestDetailEntity.Status.valueOf(req.getStatus()));
             detail.setNote(req.getNote()); // nếu có field note
             medicalRequestDetailRepository.save(detail);
 
@@ -456,7 +457,9 @@ public class NurseService {
 
             List<MedicalRequestDetailEntity> allDetails = medicalRequestDetailRepository.findByMedicalRequest_RequestId(requestId);
 
-            boolean allTaken = allDetails.stream().allMatch(d -> d.getStatus() == MedicalRequestDetailEntity.Status.TAKEN);
+            boolean allTaken = allDetails.stream().allMatch(d -> d.getStatus() != null);
+
+            logger.info("All details taken for request ID {}: {}", requestId, allTaken);
 
             if (allTaken) {
                 MedicalRequestEntity request = allDetails.get(0).getMedicalRequest();
