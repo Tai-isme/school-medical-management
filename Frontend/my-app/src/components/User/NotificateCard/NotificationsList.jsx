@@ -130,7 +130,21 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
   const filteredNotifications = useMemo(() => {
     return sortedNotifications
       .filter((n) => {
-        // ...existing code...
+        // Filter by search (tên sự kiện)
+        const eventName =
+          n.type === "healthcheck"
+            ? n.healthCheckProgramDTO?.healthCheckName || ""
+            : n.vaccineProgramDTO?.vaccineProgramName || "";
+        if (search && !eventName.toLowerCase().includes(search.toLowerCase())) {
+          return false;
+        }
+
+        // Filter by status
+        const currentStatus = getStatus(n);
+        if (status && currentStatus !== status) {
+          return false;
+        }
+
         // Filter by date range (formDate)
         if (
           Array.isArray(dateRange) &&
