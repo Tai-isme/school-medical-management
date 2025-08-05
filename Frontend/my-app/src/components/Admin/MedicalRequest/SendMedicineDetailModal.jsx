@@ -236,7 +236,7 @@ const SendMedicineDetailModal = ({
                   </div>
                   <div style={{ marginBottom: 12 }}>
                     <b>
-                      <FileDoneOutlined /> Ghi chú:
+                      <FileDoneOutlined /> Ghi chú của phụ huynh:
                     </b>{" "}
                     {group.note}
                   </div>
