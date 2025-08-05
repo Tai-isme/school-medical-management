@@ -18,6 +18,9 @@ const SendMedicineDetailModal = ({
 }) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [medicineNotes, setMedicineNotes] = useState({});
+  // Thêm state lưu trạng thái uống thuốc cho từng detail
+  const [medicineStatus, setMedicineStatus] = useState({});
+  const [showNurseInfo, setShowNurseInfo] = useState({});
 
   console.log("isGiveMedicineMode:", isGiveMedicineMode);
 
@@ -32,9 +35,28 @@ const SendMedicineDetailModal = ({
     }
   }, [detailData, open]);
 
+  // Reset trạng thái uống thuốc khi mở modal mới
+  useEffect(() => {
+    if (detailData && detailData[0]?.medicalRequestDetailDTO) {
+      const statusObj = {};
+      detailData[0].medicalRequestDetailDTO.forEach((item) => {
+        statusObj[item.detailId] = item.status === "TAKEN";
+      });
+      setMedicineStatus(statusObj);
+    }
+  }, [detailData, open]);
+
   // Hàm xử lý thay đổi ghi chú
   const handleNoteChange = (detailId, value) => {
     setMedicineNotes((prev) => ({
+      ...prev,
+      [detailId]: value,
+    }));
+  };
+
+  // Hàm xử lý tick
+  const handleStatusChange = (detailId, value) => {
+    setMedicineStatus((prev) => ({
       ...prev,
       [detailId]: value,
     }));
@@ -49,6 +71,7 @@ const SendMedicineDetailModal = ({
         ([requestDetailId, note]) => ({
           requestDetailId: Number(requestDetailId),
           note: note || "",
+          status: medicineStatus[requestDetailId] ? "TAKEN" : "NOT_TAKEN",
         })
       );
 
@@ -135,6 +158,13 @@ const SendMedicineDetailModal = ({
     PROCESSING: "orange", // cam
     CANCELLED: "red", // đỏ
   };
+
+  const toggleNurseInfo = (requestId) => {
+    setShowNurseInfo((prev) => ({
+      ...prev,
+      [requestId]: !prev[requestId],
+    }));
+  };
   return (
     <Modal
       open={open}
@@ -199,9 +229,32 @@ const SendMedicineDetailModal = ({
                   </div>
                   <div style={{ marginBottom: 12 }}>
                     <b>Y tá phụ trách:</b>{" "}
-                    {group.nurseDTO && group.nurseDTO.fullName
-                      ? group.nurseDTO.fullName
-                      : "Chưa có"}
+                    {group.nurseDTO && group.nurseDTO.fullName ? (
+                      <span>
+                        <span
+                          style={{
+                            color: "#1976d2",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                          }}
+                          onClick={() => toggleNurseInfo(group.requestId)}
+                        >
+                          {group.nurseDTO.fullName}
+                        </span>
+                        {showNurseInfo[group.requestId] && (
+                          <div style={{ marginTop: 8, paddingLeft: 12 }}>
+                            <div>
+                              <b>SĐT:</b> {group.nurseDTO.phone}
+                            </div>
+                            <div>
+                              <b>Email:</b> {group.nurseDTO.email}
+                            </div>
+                          </div>
+                        )}
+                      </span>
+                    ) : (
+                      "Chưa có"
+                    )}
                   </div>
                   {group.image && (
                     <div style={{ marginBottom: 16 }}>
@@ -258,12 +311,47 @@ const SendMedicineDetailModal = ({
                       <div>
                         <b>Thời gian:</b> {item.timeSchedule}
                       </div>
+                      {/* Tick chọn trạng thái uống thuốc khi ở chế độ ghi nhận */}
+                      {isGiveMedicineMode && (
+                        <div style={{ margin: "8px 0" }}>
+                          <label style={{ marginRight: 16 }}>
+                            <input
+                              type="radio"
+                              checked={medicineStatus[item.detailId] === true}
+                              onChange={() =>
+                                handleStatusChange(item.detailId, true)
+                              }
+                            />{" "}
+                            Đã uống
+                          </label>
+                          <label>
+                            <input
+                              type="radio"
+                              checked={medicineStatus[item.detailId] === false}
+                              onChange={() =>
+                                handleStatusChange(item.detailId, false)
+                              }
+                            />{" "}
+                            Không uống
+                          </label>
+                        </div>
+                      )}
                       <div>
                         <b>Trạng thái uống thuốc:</b>{" "}
-                        {item.status === "TAKEN" ? (
-                          <span style={{ color: "#21ba45", fontWeight: "bold" }}>Đã cho uống</span>
+                        {isGiveMedicineMode ? (
+                          medicineStatus[item.detailId] ? (
+                            <span style={{ color: "#21ba45" }}>
+                              Đã cho uống
+                            </span>
+                          ) : (
+                            <span style={{ color: "#faad14" }}>
+                              Chưa cho uống
+                            </span>
+                          )
+                        ) : item.status === "TAKEN" ? (
+                          <span style={{ color: "#21ba45" }}>Đã cho uống</span>
                         ) : (
-                          <span style={{ color: "#faad14", fontWeight: "bold" }}>
+                          <span style={{ color: "#faad14" }}>
                             Chưa cho uống
                           </span>
                         )}

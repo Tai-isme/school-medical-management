@@ -30,7 +30,6 @@ const { Search } = Input;
 const { Option } = Select;
 const { TextArea } = Input;
 
-
 const MedicalEventList = () => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -42,22 +41,17 @@ const MedicalEventList = () => {
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
 
-
   const [classOptions, setClassOptions] = useState([]);
   const [studentOptions, setStudentOptions] = useState([]);
-
 
   const [uploadedImage, setUploadedImage] = useState(null);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
 
-
   const [editingId, setEditingId] = useState(null);
-
 
   const [fileList, setFileList] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
-
 
   const renderLevelText = (level) => {
     switch (level) {
@@ -72,29 +66,23 @@ const MedicalEventList = () => {
     }
   };
 
-
   useEffect(() => {
     if (createModalVisible) {
       fetchClassList();
     }
   }, [createModalVisible]);
 
-
   const fetchClassList = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${urlServer}/api/nurse/class-list`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await axios.get(`${urlServer}/api/nurse/class-list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setClassOptions(res.data);
     } catch (err) {
       message.error("Không thể tải danh sách lớp");
     }
   };
-
 
   const handleClassChange = async (classId) => {
     form.setFieldsValue({ studentId: undefined }); // reset student select
@@ -112,33 +100,32 @@ const MedicalEventList = () => {
     }
   };
 
-
   const [form] = Form.useForm();
 
-
   const pageSize = 3;
-
 
   useEffect(() => {
     fetchMedicalEvents();
   }, []);
 
-
   const fetchMedicalEvents = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${urlServer}/api/nurse/medical-event`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await axios.get(`${urlServer}/api/nurse/medical-event`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const apiData = res.data.map((item) => ({
         ...item,
-        classId: item.studentDTO?.classDTO?.classId || item.classDTO?.classId || item.classId, // Ưu tiên lấy từ studentDTO
+        classId:
+          item.studentDTO?.classDTO?.classId ||
+          item.classDTO?.classId ||
+          item.classId, // Ưu tiên lấy từ studentDTO
         studentName: item.studentDTO?.fullName || `ID ${item.studentId}`,
-        className: item.classDTO?.className || item.studentDTO?.classDTO?.className || "Không rõ",
+        className:
+          item.classDTO?.className ||
+          item.studentDTO?.classDTO?.className ||
+          "Không rõ",
         date: item.date,
         nurseName: item.nurseDTO?.fullName || `ID ${item.nurseId}`,
         parentName: item.parentDTO?.fullName || `ID ${item.parentId}`,
@@ -155,10 +142,8 @@ const MedicalEventList = () => {
     }
   };
 
-
   useEffect(() => {
     let tempData = [...data];
-
 
     if (searchText.trim() !== "") {
       tempData = tempData.filter(
@@ -168,32 +153,26 @@ const MedicalEventList = () => {
       );
     }
 
-
     if (selectedClass) {
       tempData = tempData.filter((item) => item.className === selectedClass);
     }
-
 
     if (selectedLevel) {
       tempData = tempData.filter((item) => item.levelCheck === selectedLevel);
     }
 
-
     setFilteredData(tempData);
     setCurrentPage(1);
   }, [searchText, selectedClass, selectedLevel, data]);
-
 
   const getUniqueClassNames = () => [
     ...new Set(data.map((item) => item.className)),
   ];
 
-
   const paginatedData = filteredData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-
 
   const getLevelStyle = (level) => {
     const baseStyle = {
@@ -208,7 +187,6 @@ const MedicalEventList = () => {
       textTransform: "uppercase",
     };
 
-
     switch (level) {
       case "LOW":
         return { ...baseStyle, backgroundColor: "#52c41a" };
@@ -221,89 +199,93 @@ const MedicalEventList = () => {
     }
   };
 
+  const [submitLoading, setSubmitLoading] = useState(false);
 
-const handleCreateEvent = async (values) => {
-  try {
-    const token = localStorage.getItem("token");
-    const formData = new FormData();
-    const requestObj = {
-      typeEvent: values.typeEvent,
-      date: dayjs(values.date).format("YYYY-MM-DDTHH:mm:ss"),
-      classId: values.classId,
-      studentId: values.studentId,
-      levelCheck: values.levelCheck,
-      location: values.location,
-      description: values.description || "",
-      actionsTaken: values.actionsTaken || "",
-    };
-    formData.append("request", JSON.stringify(requestObj));
-    if (fileList.length > 0 && fileList[0].originFileObj) {
-      formData.append("image", fileList[0].originFileObj);
-    }
-
-    let res;
-    if (editingId) {
-      // Sửa sự kiện
-      res = await axios.put(
-        `${urlServer}/api/nurse/medical-event/${editingId}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      Swal.fire({
-        icon: "success",
-        title: "Cập nhật sự kiện thành công!",
-        showConfirmButton: false,
-        timer: 2000,
-      });
-      fetchMedicalEvents();
-    } else {
-      // Tạo mới
-      res = await axios.post(
-        `${urlServer}/api/nurse/medical-event`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      Swal.fire({
-        icon: "success",
-        title: "Tạo sự kiện thành công!",
-        showConfirmButton: false,
-        timer: 2000,
-      });
-
-      const newEvent = {
-        ...res.data,
-        studentName: res.data.studentDTO?.fullName || `ID ${res.data.studentId}`,
-        className: res.data.classDTO?.className || "Không rõ",
-        nurseName: res.data.nurseDTO?.fullName || `ID ${res.data.nurseId}`,
-        parentName: res.data.parentDTO?.fullName || `ID ${res.data.parentId}`,
-        parentphone: res.data.parentDTO?.phone || "Không có",
+  const handleCreateEvent = async (values) => {
+    setSubmitLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      const requestObj = {
+        typeEvent: values.typeEvent,
+        date: dayjs(values.date).format("YYYY-MM-DDTHH:mm:ss"),
+        classId: values.classId,
+        studentId: values.studentId,
+        levelCheck: values.levelCheck,
+        location: values.location,
+        description: values.description || "",
+        actionsTaken: values.actionsTaken || "",
       };
-      setData((prev) => [newEvent, ...prev]);
-      setFilteredData((prev) => [newEvent, ...prev]);
+      formData.append("request", JSON.stringify(requestObj));
+      if (fileList.length > 0 && fileList[0].originFileObj) {
+        formData.append("image", fileList[0].originFileObj);
+      }
+
+      let res;
+      if (editingId) {
+        // Sửa sự kiện
+        res = await axios.put(
+          `${urlServer}/api/nurse/medical-event/${editingId}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Cập nhật sự kiện thành công!",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+        fetchMedicalEvents();
+      } else {
+        // Tạo mới
+        res = await axios.post(
+          `${urlServer}/api/nurse/medical-event`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Tạo sự kiện thành công!",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+
+        const newEvent = {
+          ...res.data,
+          studentName:
+            res.data.studentDTO?.fullName || `ID ${res.data.studentId}`,
+          className: res.data.classDTO?.className || "Không rõ",
+          nurseName: res.data.nurseDTO?.fullName || `ID ${res.data.nurseId}`,
+          parentName: res.data.parentDTO?.fullName || `ID ${res.data.parentId}`,
+          parentphone: res.data.parentDTO?.phone || "Không có",
+        };
+        setData((prev) => [newEvent, ...prev]);
+        setFilteredData((prev) => [newEvent, ...prev]);
+      }
+
+      // Reset form và modal
+      form.resetFields();
+      setUploadedImage(null);
+      setEditingId(null);
+      setCreateModalVisible(false);
+      setFileList([]);
+    } catch (error) {
+      console.error("Lỗi tạo/cập nhật sự kiện:", error);
+      message.error("Không thể lưu sự kiện.");
+    } finally {
+      setSubmitLoading(false);
     }
-
-    // Reset form và modal
-    form.resetFields();
-    setUploadedImage(null);
-    setEditingId(null);
-    setCreateModalVisible(false);
-    setFileList([]);
-  } catch (error) {
-    console.error("Lỗi tạo/cập nhật sự kiện:", error);
-    message.error("Không thể lưu sự kiện.");
-  }
-};
-
+  };
 
   const handleEditClick = async (item) => {
     setEditingId(item.eventId);
@@ -316,12 +298,9 @@ const handleCreateEvent = async (values) => {
 
       // Nếu chưa có danh sách lớp, tải
       if (classOptions.length === 0) {
-        const classRes = await axios.get(
-          `${urlServer}/api/nurse/class-list`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const classRes = await axios.get(`${urlServer}/api/nurse/class-list`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         loadedClassOptions = classRes.data;
         setClassOptions(loadedClassOptions);
       }
@@ -351,7 +330,6 @@ const handleCreateEvent = async (values) => {
         studentId,
       });
 
-
       // 4. Set ảnh và hiển thị preview
       if (item.image) {
         setUploadedImage(item.image);
@@ -367,16 +345,16 @@ const handleCreateEvent = async (values) => {
         setFileList([]); // Không có ảnh thì clear preview
       }
 
-
       // Set selectedStudent nếu có studentId
-      const student = loadedStudentOptions.find((s) => s.studentId === studentId);
+      const student = loadedStudentOptions.find(
+        (s) => s.studentId === studentId
+      );
       setSelectedStudent(student || null);
     } catch (error) {
       console.error("Lỗi khi load dữ liệu chỉnh sửa:", error);
       message.error("Không thể tải thông tin chỉnh sửa.");
     }
   };
-
 
   const handleDeleteEvent = (medicalEventId) => {
     Swal.fire({
@@ -408,7 +386,6 @@ const handleCreateEvent = async (values) => {
     });
   };
 
-
   return (
     <div
       style={{
@@ -433,7 +410,6 @@ const handleCreateEvent = async (values) => {
       >
         Danh sách sự kiện y tế
       </h2>
-
 
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
@@ -485,7 +461,6 @@ const handleCreateEvent = async (values) => {
         </Col>
       </Row>
 
-
       {filteredData.length === 0 ? (
         <p>Không có dữ liệu phù hợp.</p>
       ) : (
@@ -506,7 +481,6 @@ const handleCreateEvent = async (values) => {
               <div style={getLevelStyle(item.levelCheck)}>
                 {renderLevelText(item.levelCheck)}
               </div>
-
 
               {/* Nội dung bên trái */}
               <div>
@@ -561,7 +535,6 @@ const handleCreateEvent = async (values) => {
                 </Popover>
               </div>
 
-
               {/* Hàng chứa các nút hành động */}
               <div
                 style={{
@@ -581,7 +554,6 @@ const handleCreateEvent = async (values) => {
                 >
                   Xem chi tiết
                 </Button>
-
 
                 {/* Bên phải: Sửa và Xoá */}
                 <div style={{ display: "flex", gap: 8 }}>
@@ -618,7 +590,6 @@ const handleCreateEvent = async (values) => {
             </Card>
           ))}
 
-
           <Pagination
             current={currentPage}
             pageSize={pageSize}
@@ -628,7 +599,6 @@ const handleCreateEvent = async (values) => {
           />
         </>
       )}
-
 
       {/* Modal Chi tiết */}
       <Modal
@@ -660,7 +630,6 @@ const handleCreateEvent = async (values) => {
               {renderLevelText(selectedEvent.levelCheck)}
             </div>
 
-
             <div
               style={{
                 display: "grid",
@@ -690,7 +659,6 @@ const handleCreateEvent = async (values) => {
                     📞 Thông tin liên hệ
                   </strong>
 
-
                   <div style={{ marginBottom: 8 }}>
                     <span style={{ fontWeight: 600, color: "#222" }}>
                       👤 Phụ huynh:
@@ -699,7 +667,6 @@ const handleCreateEvent = async (values) => {
                       {selectedEvent.parentName}
                     </span>
                   </div>
-
 
                   <div>
                     <span style={{ fontWeight: 600, color: "#222" }}>
@@ -711,7 +678,6 @@ const handleCreateEvent = async (values) => {
                   </div>
                 </div>
               </div>
-
 
               {/* Các thông tin khác */}
               <div>
@@ -744,11 +710,9 @@ const handleCreateEvent = async (values) => {
               </div>
             </div>
 
-
             <div
               style={{ margin: "16px 0", borderTop: "1px solid #f0f0f0" }}
             ></div>
-
 
             <div style={{ lineHeight: "1.8em" }}>
               <div>
@@ -760,7 +724,6 @@ const handleCreateEvent = async (values) => {
                 <div>{selectedEvent.actionsTaken || "(Không có)"}</div>
               </div>
             </div>
-
 
             {selectedEvent.image && (
               <div style={{ marginTop: 16 }}>
@@ -787,9 +750,7 @@ const handleCreateEvent = async (values) => {
         )}
       </Modal>
 
-
       {/* Modal Tạo sự kiện */}
-
 
       <Modal
         title={editingId ? "Chỉnh sửa sự kiện y tế" : "Tạo sự kiện y tế"}
@@ -819,7 +780,6 @@ const handleCreateEvent = async (values) => {
             </div>
           )}
 
-
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -847,12 +807,13 @@ const handleCreateEvent = async (values) => {
                 <DatePicker
                   format="DD/MM/YYYY"
                   style={{ width: "100%" }}
-                  disabledDate={(current) => current && current > dayjs().endOf("day")}
+                  disabledDate={(current) =>
+                    current && current > dayjs().endOf("day")
+                  }
                 />
               </Form.Item>
             </Col>
           </Row>
-
 
           <Row gutter={16}>
             <Col span={12}>
@@ -896,7 +857,6 @@ const handleCreateEvent = async (values) => {
             </Col>
           </Row>
 
-
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -921,7 +881,6 @@ const handleCreateEvent = async (values) => {
               </Form.Item>
             </Col>
           </Row>
-
 
           <Row gutter={16}>
             <Form.Item label="Ảnh">
@@ -964,25 +923,27 @@ const handleCreateEvent = async (values) => {
             </Form.Item>
           </Row>
 
-
           <Form.Item label="Mô tả" name="description">
             <TextArea rows={2} placeholder="Mô tả ngắn gọn về sự kiện" />
           </Form.Item>
-
 
           <Form.Item label="Xử lý" name="actionsTaken">
             <TextArea rows={2} placeholder="Hành động đã thực hiện" />
           </Form.Item>
 
-
           <Form.Item style={{ textAlign: "center", marginTop: 24 }}>
-            <Button type="primary" htmlType="submit" style={{ width: 200 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              style={{ width: 200 }}
+              loading={submitLoading} // Thêm loading
+              disabled={submitLoading} // Ngăn bấm thêm
+            >
               {editingId ? "Lưu chỉnh sửa" : "Tạo sự kiện"}
             </Button>
           </Form.Item>
         </Form>
       </Modal>
-
 
       <Modal
         open={previewVisible}
@@ -1002,8 +963,4 @@ const handleCreateEvent = async (values) => {
   );
 };
 
-
 export default MedicalEventList;
-
-
-

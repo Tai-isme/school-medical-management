@@ -336,7 +336,7 @@ const handleReject = (record) => {
                 style={{ background: "#21ba45", borderColor: "#21ba45", cursor: "default" }}
                 disabled
               >
-                Đã cho uống
+                Đã hoàn thành
               </Button>
               
             </div>

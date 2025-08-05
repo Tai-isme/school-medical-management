@@ -498,7 +498,7 @@ const HealthCheckProgramList = () => {
       case "COMPLETED":
         return "Đã hoàn thành";
       case "FORM_SENT":
-        return "Đã gửi biểu mẫu";
+        return "Đã gửi thông báo";
       case "GENERATED_RESULT":
         return "Kết quả được tạo";
       default:

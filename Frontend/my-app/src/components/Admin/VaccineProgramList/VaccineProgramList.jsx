@@ -99,14 +99,11 @@ const VaccineProgramList = () => {
   const fetchProgram = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get(
-        `${urlServer}/api/admin/vaccine-program`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.get(`${urlServer}/api/admin/vaccine-program`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       // Chuẩn hóa dữ liệu để tương thích với render
       const programs = res.data
         .map((item) => ({
@@ -166,10 +163,9 @@ const VaccineProgramList = () => {
     setNurseResultsLoading(true);
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get(
-        `${urlServer}/api/nurse/vaccine-result`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axios.get(`${urlServer}/api/nurse/vaccine-result`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setNurseResults(res.data);
     } catch {
       setNurseResults([]);
@@ -361,7 +357,7 @@ const VaccineProgramList = () => {
         // ...bạn có thể thêm các trường khác nếu cần
       }));
 
-      setModalMode("view")
+      setModalMode("view");
       setSampleResultData(mappedData);
       setEditableRows(mappedData.map((item) => ({ ...item })));
     } catch (err) {
@@ -542,7 +538,7 @@ const VaccineProgramList = () => {
       case "NOT_STARTED":
         return "Chưa bắt đầu";
       case "FORM_SENT":
-        return "Đã gửi form";
+        return "Đã gửi thông báo";
       case "ON_GOING":
         return "Đang diễn ra";
       case "GENERATED_RESULT":
@@ -699,7 +695,13 @@ const VaccineProgramList = () => {
   const memoInitialValues = useMemo(() => editData, [editData]);
 
   const [modalMode, setModalMode] = useState("create"); // "create" | "edit" | "view"
-
+  const [showNurseInfo, setShowNurseInfo] = useState({});
+  const toggleNurseInfo = (programId) => {
+    setShowNurseInfo((prev) => ({
+      ...prev,
+      [programId]: !prev[programId],
+    }));
+  };
   return (
     <div
       style={{
@@ -1189,23 +1191,23 @@ const VaccineProgramList = () => {
                             {/* Nút Xem kết quả và Xuất kết quả ra excel */}
                             {(program.status === "COMPLETED" ||
                               program.status === "GENERATED_RESULT") && (
-                                <>
-                                  <Button
-                                    type="primary"
-                                    style={{
-                                      marginLeft: 8,
-                                      background: "#1890ff",
-                                      border: "none",
-                                    }}
-                                    onClick={() => {
-                                      setProgram(program); // Thêm dòng này!
-                                      handleViewResult(program.vaccineId);
-                                    }}
-                                  >
-                                    Xem kết quả
-                                  </Button>
-                                </>
-                              )}
+                              <>
+                                <Button
+                                  type="primary"
+                                  style={{
+                                    marginLeft: 8,
+                                    background: "#1890ff",
+                                    border: "none",
+                                  }}
+                                  onClick={() => {
+                                    setProgram(program); // Thêm dòng này!
+                                    handleViewResult(program.vaccineId);
+                                  }}
+                                >
+                                  Xem kết quả
+                                </Button>
+                              </>
+                            )}
 
                             {(program.status === "COMPLETED" ||
                               program.status === "GENERATED_RESULT") &&
