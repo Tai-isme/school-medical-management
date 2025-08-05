@@ -113,29 +113,35 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
       modalNotification.commit === "false");
   const disableSend = isExpired || isRegistered;
 
-  // Filter logic
-  const filteredNotifications = useMemo(() => {
+  // Sort and Filter logic
+  const sortedNotifications = useMemo(() => {
     return (notifications || [])
-      .filter((n) => {
-        // Filter by search
-        const eventName =
-          n.type === "healthcheck"
-            ? n.healthCheckProgramDTO?.healthCheckName || ""
-            : n.vaccineProgramDTO?.vaccineProgramName || "";
-        if (search && !eventName.toLowerCase().includes(search.toLowerCase()))
-          return false;
-        // Filter by status
-        if (status && getStatus(n) !== status) return false;
-        // Filter by date range (formDate)
+      .slice() // tạo bản sao để không mutate prop
+      .sort((a, b) => new Date(b.expDate) - new Date(a.expDate));
+  }, [notifications]);
+
+const filteredNotifications = useMemo(() => {
+  return sortedNotifications
+    .filter((n) => {
+      // ...existing code...
+      // Filter by date range (formDate)
+      if (
+        Array.isArray(dateRange) &&
+        dateRange.length === 2 &&
+        dateRange[0] &&
+        dateRange[1] &&
+        n.formDate
+      ) {
         if (
-          dateRange.length === 2 &&
-          (new Date(n.formDate) < dateRange[0]._d ||
-            new Date(n.formDate) > dateRange[1]._d)
-        )
+          new Date(n.formDate) < new Date(dateRange[0]._d) ||
+          new Date(n.formDate) > new Date(dateRange[1]._d)
+        ) {
           return false;
-        return true;
-      });
-  }, [notifications, search, status, dateRange]);
+        }
+      }
+      return true;
+    });
+}, [sortedNotifications, search, status, dateRange]);
 
   const handleResetFilters = () => {
     setSearch("");
@@ -202,11 +208,11 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                   }}
                 >
                   {notification.type === "healthcheck"
-                    ? `Khảo sát sức khỏe: ${
+                    ? `${
                         notification.healthCheckProgramDTO?.healthCheckName ||
                         ""
                       }`
-                    : `Tiêm phòng: ${
+                    : `${
                         notification.vaccineProgramDTO?.vaccineProgramName || ""
                       }`}
                 </p>
