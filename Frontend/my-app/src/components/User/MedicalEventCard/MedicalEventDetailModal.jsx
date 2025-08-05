@@ -79,11 +79,12 @@ const MedicalEventDetailModal = ({ visible, event, onClose, loading }) => {
                     minute: "2-digit",
                   }) || "---"}
                 </p>
-                <p style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}>
-                  <b>Mô tả:</b> {event.description || "---"}
-                </p>
+                
                 <p style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}>
                   <b>Y tá xử lý:</b> {event.actionsTaken || "---"}
+                </p>
+                <p style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}>
+                  <b>Mô tả:</b> {event.description || "---"}
                 </p>
                 <p>
                   <b>Độ nguy hiểm:</b>{" "}

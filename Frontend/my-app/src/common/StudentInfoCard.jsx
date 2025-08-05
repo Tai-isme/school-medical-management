@@ -4,7 +4,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 const { Title, Text } = Typography;
 
-export default function StudentInfoCard({ onChange }) {
+export default function StudentInfoCard({ onChange, value }) {
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState();
   const [uploading, setUploading] = useState(false);
@@ -15,8 +15,15 @@ export default function StudentInfoCard({ onChange }) {
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("students") || "[]");
     setStudents(stored);
-    if (stored.length > 0) setSelectedStudentId(stored[0].studentId);
-  }, []);
+    // Nếu có prop value thì ưu tiên, không thì lấy mặc định
+    if (value) setSelectedStudentId(value);
+    else if (stored.length > 0) setSelectedStudentId(stored[0].studentId);
+  }, [value]);
+
+  // Khi prop value thay đổi thì cập nhật state
+  useEffect(() => {
+    if (value && value !== selectedStudentId) setSelectedStudentId(value);
+  }, [value]);
 
   useEffect(() => {
     if (onChange && selectedStudentId) onChange(selectedStudentId);

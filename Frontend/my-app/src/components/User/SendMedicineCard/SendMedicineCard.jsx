@@ -287,7 +287,8 @@ useEffect(() => {
       <div className="form-content">
         {activeTab === 'create' && (
           <div className="student-info-section">
-            <StudentInfoCard
+<StudentInfoCard
+  key={selectedStudentId}
   value={selectedStudentId}
   onChange={setSelectedStudentId}
 />
