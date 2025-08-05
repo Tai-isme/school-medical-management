@@ -1474,7 +1474,7 @@ const VaccineProgramList = () => {
                   }}
                 />
                 <Modal
-                  title={<span style={{ fontWeight: 700, fontSize: 22 }}>Chọn ngày hết hạn đăng ký</span>}
+                  title={<span style={{ fontWeight: 700, fontSize: 22 }}>Chọn ngày hết hạn đăng ký tham gia</span>}
                   open={notifyModalVisible}
                   onCancel={() => {
                     setNotifyModalVisible(false);
@@ -1486,9 +1486,7 @@ const VaccineProgramList = () => {
                   cancelText="Hủy"
                   confirmLoading={notifyLoading}
                 >
-                  <div style={{ marginBottom: 8, fontWeight: 600 }}>
-                    Ngày hết hạn gửi phiếu
-                  </div>
+                  
                   <DatePicker
                     value={notifyDeadline}
                     onChange={setNotifyDeadline}
