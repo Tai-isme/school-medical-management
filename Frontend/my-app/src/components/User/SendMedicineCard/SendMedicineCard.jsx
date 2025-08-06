@@ -323,7 +323,7 @@ useEffect(() => {
         // LẤY DỮ LIỆU THUỐC TỪ values.medicines
         const medicalRequestObject = {
           requestName: values.purpose,
-          note: values.note,
+          note: values.note, // LẤY GHI CHÚ TỪ FORM
           date: values.usageTime,
           studentId: selectedStudent.studentId,
           medicalRequestDetailRequests: (values.medicines || []).map(med => ({
@@ -332,10 +332,11 @@ useEffect(() => {
             type: med.unit,
             method: med.method,
             timeSchedule: med.usage,
-            note: med.usage ? '' : med.usage
+            note: "" // ghi chú từng thuốc nếu muốn, còn không thì để rỗng
           }))
         };
 
+        console.log("note:", values.note);
         const formData = new FormData();
         formData.append('request', JSON.stringify(medicalRequestObject));
         if (imageFile) {
@@ -575,7 +576,9 @@ useEffect(() => {
     </>
   )}
 </Form.List>
-      <Form.Item label="Ghi chú">
+      <Form.Item label="Ghi chú"
+        name="note" // THÊM DÒNG NÀY
+      >
         <Input.TextArea
           value={note}
           onChange={e => setNote(e.target.value)}
