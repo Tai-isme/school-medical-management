@@ -263,10 +263,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                         : notification.commit === false
                         ? "#bfbfbf"
                         : new Date(notification.expDate) <
-                            new Date(new Date().toDateString()) &&
-                          notification.commit == null
-                        ? "#bfbfbf"
-                        : new Date(notification.formDate) < new Date()
+                            new Date(new Date().toDateString())
                         ? "#ff4d4f"
                         : "#1890ff",
                     borderRadius: 8,
@@ -278,11 +275,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                     ? "Đã đăng ký"
                     : notification.commit === false
                     ? "Không tham gia"
-                    : new Date(notification.expDate) <
-                        new Date(new Date().toDateString()) &&
-                      notification.commit == null
-                    ? "Không tham gia"
-                    : new Date(notification.formDate) < new Date()
+                    : new Date(notification.expDate) < new Date(new Date().toDateString())
                     ? "Đã hết hạn"
                     : "Chưa đăng ký"}
                 </span>
@@ -310,16 +303,20 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
         {modalNotification && modalNotification.type === "vaccine" && (
           <div style={{ maxWidth: 540, margin: "0 auto" }}>
             <VaccineNotificationModalContent
-              notification={modalNotification}
-              checked={checked}
-              setChecked={setChecked}
-              reason={note}
-              setReason={setNote}
-              onSubmit={handleConfirmVaccine}
-              loading={loading}
-              disabled={disableSend}
-              parentNote={modalNotification.note}
-            />
+  notification={modalNotification}
+  checked={checked}
+  setChecked={setChecked}
+  reason={note}
+  setReason={setNote}
+  onSubmit={handleConfirmVaccine}
+  loading={loading}
+  disabled={
+    modalNotification?.commit === true ||
+    modalNotification?.commit === false ||
+    new Date(modalNotification?.expDate) < new Date(new Date().toDateString())
+  }
+  parentNote={modalNotification.note}
+/>
           </div>
         )}
         {modalNotification && modalNotification.type === "healthcheck" && (

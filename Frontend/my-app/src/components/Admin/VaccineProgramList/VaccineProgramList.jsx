@@ -897,7 +897,7 @@ const VaccineProgramList = () => {
                             }}
                             onClick={() => setImportVaccineVisible(true)}
                           >
-                            Import tên vaccine
+                            Import vaccine
                           </Button>
                         </>
                       )}

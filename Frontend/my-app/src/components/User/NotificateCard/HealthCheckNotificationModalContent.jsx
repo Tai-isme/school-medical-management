@@ -145,7 +145,8 @@ const HealthCheckNotificationModalContent = ({
           disabled={
             disabled ||
             !checked ||
-            (notification?.commit !== null && notification?.commit !== undefined)
+            notification?.commit === true ||
+            notification?.commit === false
           }
           loading={loading}
         >

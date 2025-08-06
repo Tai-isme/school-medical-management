@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { Input, Table, Modal, Form, Button, DatePicker, Radio } from "antd";
+import { Input, Table, Modal, Form, Button, DatePicker, Radio, Select } from "antd";
 import dayjs from "dayjs";
 import { SearchOutlined } from "@ant-design/icons";
 import { urlServer } from "../../../api/urlServer";
 import { CheckSquareTwoTone, BorderOutlined } from "@ant-design/icons";
+const { Option } = Select;
+
 const VaccineProgramResultTab = ({
   program, // Nhận prop này
   searchTermResult,
@@ -28,8 +30,15 @@ const VaccineProgramResultTab = ({
   const [modalVisible, setModalVisible] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
   const [modalForm] = Form.useForm();
-console.log("VaccineProgramResultTab rendered with program:", program);
-console.log("viewMode:", viewMode);
+  const [selectedClass, setSelectedClass] = useState(""); // Thêm state cho lớp
+
+  // Lấy danh sách lớp từ dữ liệu
+  const classOptions = Array.from(
+    new Set((sampleResultData || []).map(item => item.studentDTO?.classDTO?.className).filter(Boolean))
+  );
+
+  console.log("VaccineProgramResultTab rendered with program:", program);
+  console.log("viewMode:", viewMode);
   // Khi bấm "Ghi nhận"
   const handleOpenModal = (record) => {
      console.log("Record khi mở modal:", record);
@@ -149,6 +158,8 @@ const handleModalOk = async () => {
       dataIndex: ["studentDTO", "classDTO", "className"],
       key: "className",
       render: (_, record) => record.studentDTO?.classDTO?.className || "",
+      sorter: (a, b) =>
+        (a.studentDTO?.classDTO?.className || "").localeCompare(b.studentDTO?.classDTO?.className || ""),
     },
     {
       title: "Giới tính",
