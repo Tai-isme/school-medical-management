@@ -2039,6 +2039,24 @@ public class NurseService {
     }
 
     public VaccineResultDTO createVaccineResultsByProgramId(int programId, VaccineResultRequest request) {
+
+        if(request.getIsInjected() == false){
+            VaccineFormEntity form = vaccineFormRepository.findById(request.getVaccineFormId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy form với ID: " + request.getVaccineFormId()));
+            
+            VaccineProgramEntity program = vaccineProgramRepository.findById(programId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chương trình tiêm chủng với ID: " + programId));
+
+            Optional<VaccineHistoryEntity> history = vaccineHistoryRepository.findByStudentAndVaccineNameEntity_vaccineNameIdAndUnit(
+    form.getStudent(),
+    form.getVaccineName().getVaccineNameId(), // Lấy ID thay vì entity
+    program.getUnit()
+);
+            if( history.isPresent()){ 
+                vaccineHistoryRepository.delete(history.get());
+            }
+        }
+
+
+
         int nurseId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
         UserEntity nurse = userRepository.findById(nurseId).orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy y tá."));
 
