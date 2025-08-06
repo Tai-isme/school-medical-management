@@ -18,24 +18,12 @@ import { urlServer } from "../../../api/urlServer";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-const STATUS_OPTIONS = [
-  { label: "Tất cả", value: "" },
-  { label: "CHƯA ĐĂNG KÝ", value: "pending" },
-  { label: "ĐÃ ĐĂNG KÝ", value: "registered" },
-  { label: "KHÔNG THAM GIA", value: "not_participate" },
-];
-
 const getStatus = (notification) => {
   if (notification.commit === true || notification.commit === "true")
-    return "registered";
-  if (
-    notification.commit === false ||
-    notification.commit === "false" ||
-    (new Date(notification.expDate) < new Date(new Date().toDateString()) &&
-      notification.commit == null)
-  )
-    return "not_participate";
-  return "pending";
+    return "registered"; // ĐÃ ĐĂNG KÝ
+  if (notification.commit === false || notification.commit === "false")
+    return "not_participate"; // KHÔNG THAM GIA
+  return "pending"; // CHƯA ĐĂNG KÝ
 };
 
 const NotificationsList = ({ notifications, fetchNotifications }) => {
@@ -47,8 +35,8 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
 
   // Filter states
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
   const [dateRange, setDateRange] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("");
 
   const handleModalOpen = (notification) => {
     setModalNotification(notification);
@@ -120,6 +108,16 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
       modalNotification.commit === "false");
   const disableSend = isExpired || isRegistered;
 
+  const getNotificationStatus = (notification) => {
+    if (new Date(notification.expDate) < new Date(new Date().toDateString()))
+      return "expired";
+    if (notification.commit === true || notification.commit === "true")
+      return "registered";
+    if (notification.commit === false || notification.commit === "false")
+      return "not_participate";
+    return "pending";
+  };
+
   // Sort and Filter logic
   const sortedNotifications = useMemo(() => {
     return (notifications || [])
@@ -128,46 +126,51 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
   }, [notifications]);
 
   const filteredNotifications = useMemo(() => {
-    return sortedNotifications
-      .filter((n) => {
-        // Filter by search (tên sự kiện)
-        const eventName =
-          n.type === "healthcheck"
-            ? n.healthCheckProgramDTO?.healthCheckName || ""
-            : n.vaccineProgramDTO?.vaccineProgramName || "";
-        if (search && !eventName.toLowerCase().includes(search.toLowerCase())) {
+    if (!notifications) return [];
+    return sortedNotifications.filter((n) => {
+      // Date range filter
+      if (
+        Array.isArray(dateRange) &&
+        dateRange.length === 2 &&
+        dateRange[0] &&
+        dateRange[1] &&
+        n.formDate
+      ) {
+        const formDate = new Date(n.formDate);
+        const startDate = new Date(dateRange[0]._d);
+        const endDate = new Date(dateRange[1]._d);
+        if (formDate < startDate || formDate > endDate) {
           return false;
         }
+      }
+      // Search filter
+      const eventName =
+        n.type === "healthcheck"
+          ? n.healthCheckProgramDTO?.healthCheckName || ""
+          : n.vaccineProgramDTO?.vaccineProgramName || "";
+      if (search && !eventName.toLowerCase().includes(search.toLowerCase())) {
+        return false;
+      }
+      // Status filter
+      if (statusFilter && getNotificationStatus(n) !== statusFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [sortedNotifications, search, dateRange, statusFilter]);
 
-        // Filter by status
-        const currentStatus = getStatus(n);
-        if (status && currentStatus !== status) {
-          return false;
-        }
-
-        // Filter by date range (formDate)
-        if (
-          Array.isArray(dateRange) &&
-          dateRange.length === 2 &&
-          dateRange[0] &&
-          dateRange[1] &&
-          n.formDate
-        ) {
-          if (
-            new Date(n.formDate) < new Date(dateRange[0]._d) ||
-            new Date(n.formDate) > new Date(dateRange[1]._d)
-          ) {
-            return false;
-          }
-        }
-        return true;
-      });
-  }, [sortedNotifications, search, status, dateRange]);
+  const uniqueFilteredNotifications = useMemo(() => {
+    const map = new Map();
+    filteredNotifications.forEach((n) => {
+      if (!map.has(n.id)) map.set(n.id, n);
+    });
+    return Array.from(map.values());
+  }, [filteredNotifications]);
 
   const handleResetFilters = () => {
     setSearch("");
-    setStatus("");
     setDateRange([]);
+    setStatusFilter("");
   };
 
   return (
@@ -182,21 +185,6 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <Select
-              style={{ width: "100%" }}
-              value={status}
-              onChange={setStatus}
-              placeholder="Lọc theo trạng thái"
-              allowClear
-            >
-              {STATUS_OPTIONS.map((opt) => (
-                <Option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </Option>
-              ))}
-            </Select>
-          </Col>
           <Col xs={24} sm={24} md={8} lg={8}>
             <RangePicker
               style={{ width: "100%" }}
@@ -207,6 +195,20 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
               allowClear
             />
           </Col>
+          <Col xs={24} sm={24} md={8} lg={6}>
+            <Select
+              style={{ width: "100%" }}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              allowClear
+              placeholder="Lọc theo trạng thái"
+            >
+              <Option value="registered">Đã đăng ký</Option>
+              <Option value="pending">Chưa đăng ký</Option>
+              <Option value="expired">Đã hết hạn</Option>
+              <Option value="not_participate">Không tham gia</Option>
+            </Select>
+          </Col>
           <Col xs={24} sm={24} md={24} lg={4}>
             <Button onClick={handleResetFilters}>Đặt lại bộ lọc</Button>
           </Col>
@@ -214,7 +216,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
       </div>
       <div className="notifications-list">
         {filteredNotifications && filteredNotifications.length > 0 ? (
-          filteredNotifications.map((notification) => (
+          uniqueFilteredNotifications.map((notification) => (
             <div
               className="notification-item"
               key={notification.id}
