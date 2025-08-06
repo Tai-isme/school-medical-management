@@ -36,7 +36,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
   // Filter states
   const [search, setSearch] = useState("");
   const [dateRange, setDateRange] = useState([]);
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState(""); // Đúng rồi!
 
   const handleModalOpen = (notification) => {
     setModalNotification(notification);
@@ -109,12 +109,14 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
   const disableSend = isExpired || isRegistered;
 
   const getNotificationStatus = (notification) => {
-    if (new Date(notification.expDate) < new Date(new Date().toDateString()))
+    const expiredDate = notification.expDate || notification.formDate;
+    
+    if (new Date(expiredDate) < new Date(new Date().toDateString()))
       return "expired";
     if (notification.commit === true || notification.commit === "true")
       return "registered";
-    if (notification.commit === false || notification.commit === "false")
-      return "not_participate";
+    // if (notification.commit === false || notification.commit === "false")
+    //   return "not_participate";
     return "pending";
   };
 
@@ -133,13 +135,14 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
         Array.isArray(dateRange) &&
         dateRange.length === 2 &&
         dateRange[0] &&
-        dateRange[1] &&
-        n.formDate
+        dateRange[1]
       ) {
-        const formDate = new Date(n.formDate);
-        const startDate = new Date(dateRange[0]._d);
-        const endDate = new Date(dateRange[1]._d);
-        if (formDate < startDate || formDate > endDate) {
+        // Sử dụng ngày hết hạn (expDate hoặc formDate)
+        const expiredDate = new Date(n.expDate || n.formDate);
+        const startDate = new Date(dateRange[0].format("YYYY-MM-DD"));
+        const endDate = new Date(dateRange[1].format("YYYY-MM-DD"));
+        // Chỉ lấy các form có ngày hết hạn nằm trong khoảng đã chọn
+        if (expiredDate < startDate || expiredDate > endDate) {
           return false;
         }
       }
@@ -170,7 +173,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
   const handleResetFilters = () => {
     setSearch("");
     setDateRange([]);
-    setStatusFilter("");
+    setStatusFilter(""); // Hiển thị tất cả các form
   };
 
   return (
@@ -264,8 +267,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                         ? "#52c41a"
                         : notification.commit === false
                         ? "#bfbfbf"
-                        : new Date(notification.expDate) <
-                            new Date(new Date().toDateString())
+                        : new Date((notification.expDate || notification.formDate)) < new Date(new Date().toDateString())
                         ? "#ff4d4f"
                         : "#1890ff",
                     borderRadius: 8,
@@ -277,7 +279,7 @@ const NotificationsList = ({ notifications, fetchNotifications }) => {
                     ? "Đã đăng ký"
                     : notification.commit === false
                     ? "Không tham gia"
-                    : new Date(notification.expDate) < new Date(new Date().toDateString())
+                    : new Date((notification.expDate || notification.formDate)) < new Date(new Date().toDateString())
                     ? "Đã hết hạn"
                     : "Chưa đăng ký"}
                 </span>
