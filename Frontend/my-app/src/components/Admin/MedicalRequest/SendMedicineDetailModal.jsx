@@ -381,22 +381,22 @@ const SendMedicineDetailModal = ({
                       )}
                       <div>
                         <CheckCircleOutlined style={{ marginRight: 6 }} />
-                        <b>Trạng thái uống thuốc:</b>{" "}
+                        <b>Trạng thái:</b>{" "}
                         {isGiveMedicineMode ? (
                           medicineStatus[item.detailId] ? (
                             <span style={{ color: "#21ba45" }}>
-                              Đã cho uống
+                              Đã dùng thuốc
                             </span>
                           ) : (
                             <span style={{ color: "#d46b08" }}>
-                              Chưa cho uống
+                              Không dùng
                             </span>
                           )
                         ) : item.status === "TAKEN" ? (
-                          <span style={{ color: "#21ba45" }}>Đã cho uống</span>
+                          <span style={{ color: "#21ba45" }}>Đã dùng thuốc</span>
                         ) : (
                           <span style={{ color: "#faad14" }}>
-                            Chưa cho uống
+                            Không dùng
                           </span>
                         )}
                       </div>

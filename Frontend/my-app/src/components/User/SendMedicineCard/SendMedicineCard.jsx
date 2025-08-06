@@ -251,6 +251,7 @@ useEffect(() => {
             setImageFile(null);
             setImageUrl(null);
             setEditingId(null);
+            form.resetFields(); // THÊM DÒNG NÀY để reset toàn bộ field của Form
             setActiveTab('create');
           }}
           className={activeTab === 'create' ? 'active' : ''}
@@ -405,21 +406,27 @@ useEffect(() => {
       <Row gutter={16}>
         <Col xs={24} md={12}>
           <Form.Item
-            label="Ngày dùng"
-            name="usageTime"
-            rules={[{ required: true, message: "Vui lòng chọn ngày dùng!" }]}
-            initialValue={usageTime ? dayjs(usageTime) : null}
-          >
-            <DatePicker
-              value={usageTime ? dayjs(usageTime) : null}
-              onChange={date => {
-                setUsageTime(date ? date.format('YYYY-MM-DD') : '');
-                setDateError('');
-              }}
-              style={{ width: '100%' }}
-              disabledDate={current => current && current < dayjs().startOf('day')}
-            />
-          </Form.Item>
+  label="Ngày dùng"
+  name="usageTime"
+  rules={[{ required: true, message: "Vui lòng chọn ngày dùng!" }]}
+  initialValue={usageTime ? dayjs(usageTime) : null}
+>
+  <DatePicker
+    value={usageTime ? dayjs(usageTime) : null}
+    onChange={date => {
+      setUsageTime(date ? date.format('YYYY-MM-DD') : '');
+      setDateError('');
+    }}
+    style={{ width: '100%' }}
+    disabledDate={current => {
+      const today = dayjs().startOf('day');
+      const maxDay = today.add(3, 'day');
+      return (
+        current && (current < today || current > maxDay)
+      );
+    }}
+  />
+</Form.Item>
         </Col>
         <Col xs={24} md={12}>
           <Form.Item label="Ảnh đơn thuốc (nếu có)">
