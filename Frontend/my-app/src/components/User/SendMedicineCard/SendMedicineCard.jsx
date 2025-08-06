@@ -183,12 +183,28 @@ useEffect(() => {
           }))
         : [{ name: '', quantity: '', unit: '', usage: '', method: '' }]
     );
-    setSelectedStudentId(req.studentDTO?.studentId || ''); // Tự động chọn lại học sinh
-    console.log("Selected student ID:", req.studentDTO?.studentId);
+    setSelectedStudentId(req.studentDTO?.studentId || '');
     setActiveTab('create');
     setEditingId(req.requestId);
     setImageUrl(req.image || null);
     setImageFile(null);
+
+    // Đổ dữ liệu vào form
+    form.setFieldsValue({
+      purpose: req.requestName || '',
+      note: req.note || '',
+      usageTime: req.date ? dayjs(req.date) : null,
+      medicines:
+        req.medicalRequestDetailDTO && Array.isArray(req.medicalRequestDetailDTO)
+          ? req.medicalRequestDetailDTO.map(item => ({
+              name: item.medicineName,
+              quantity: item.quantity,
+              unit: item.type,
+              usage: item.timeSchedule,
+              method: item.method || '',
+            }))
+          : [{ name: '', quantity: '', unit: '', usage: '', method: '' }]
+    });
   };
   window.addEventListener('edit-medicine-request', handleEdit);
   return () => window.removeEventListener('edit-medicine-request', handleEdit);
@@ -303,6 +319,9 @@ useEffect(() => {
       form={form}
       layout="vertical"
       onFinish={async (values) => {
+        // Ép usageTime về dạng chuỗi ngày
+        const usageDate = values.usageTime ? dayjs(values.usageTime).format('YYYY-MM-DD') : '';
+
         // Validate từng thuốc nếu muốn
         for (const [i, med] of (values.medicines || []).entries()) {
           if (!med.name || !med.quantity || !med.unit || !med.usage || !med.method) {
@@ -324,8 +343,8 @@ useEffect(() => {
         // LẤY DỮ LIỆU THUỐC TỪ values.medicines
         const medicalRequestObject = {
           requestName: values.purpose,
-          note: values.note, // LẤY GHI CHÚ TỪ FORM
-          date: values.usageTime,
+          note: values.note,
+          date: usageDate, // CHỈ GỬI CHUỖI NGÀY
           studentId: selectedStudent.studentId,
           medicalRequestDetailRequests: (values.medicines || []).map(med => ({
             medicineName: med.name,
@@ -333,7 +352,7 @@ useEffect(() => {
             type: med.unit,
             method: med.method,
             timeSchedule: med.usage,
-            note: "" // ghi chú từng thuốc nếu muốn, còn không thì để rỗng
+            note: ""
           }))
         };
 
