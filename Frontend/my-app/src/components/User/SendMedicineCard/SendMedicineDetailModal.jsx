@@ -193,11 +193,11 @@ const SendMedicineDetailModal = ({ open, onClose, loading, detailData }) => {
                     <b>Thời gian:</b> {item.timeSchedule}
                   </div>
                   <div>
-                    <b>Trạng thái uống thuốc:</b>{" "}
+                    <b>Trạng thái:</b>{" "}
                     {item.status === "TAKEN" ? (
-                      <span style={{ color: "#21ba45" }}>Đã cho uống</span>
+                      <span style={{ color: "#21ba45" }}>Đã dùng thuốc</span>
                     ) : (
-                      <span style={{ color: "#faad14" }}>Chưa cho uống</span>
+                      <span style={{ color: "#faad14" }}>Không dùng thuốc</span>
                     )}
                     {item.note && (
                       <div>

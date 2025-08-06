@@ -365,7 +365,7 @@ const SendMedicineDetailModal = ({
                                 handleStatusChange(item.detailId, true)
                               }
                             />{" "}
-                            Đã uống
+                            Đã dùng
                           </label>
                           <label>
                             <input
@@ -375,7 +375,7 @@ const SendMedicineDetailModal = ({
                                 handleStatusChange(item.detailId, false)
                               }
                             />{" "}
-                            Không uống
+                            Không dùng
                           </label>
                         </div>
                       )}
